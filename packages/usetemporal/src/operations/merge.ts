@@ -10,10 +10,7 @@ export function merge(
   targetUnit?: AdapterUnit
 ): Period | null {
   if (periods.length === 0) {
-    // Return current period with the target unit (or 'day' if not specified)
-    const unit = targetUnit || "day";
-    const now = new Date();
-    return period(adapter, now, unit);
+    throw new Error("merge() requires at least one period");
   }
   if (periods.length === 1) {
     // If target unit is specified, promote the single period to that unit

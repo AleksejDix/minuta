@@ -30,11 +30,11 @@ export function createWeekHandler(
 
       // Adjust if week doesn't start on Monday
       if (isoWeekday !== 1) {
-        const startOfWeek = this.startOf(date);
-        return DateTime.fromJSDate(startOfWeek)
-          .plus({ days: 6 })
-          .endOf("day")
-          .toJSDate();
+        const mondayStart = dt.startOf("week");
+        const currentWeekday = mondayStart.weekday;
+        const daysToSubtract = (currentWeekday - isoWeekday + 7) % 7;
+        const weekStart = mondayStart.minus({ days: daysToSubtract });
+        return weekStart.plus({ days: 6 }).endOf("day").toJSDate();
       }
 
       return endOfWeek.toJSDate();

@@ -106,12 +106,10 @@ withAllAdapters("merge", (adapter) => {
       );
     });
 
-    it("should handle empty array", () => {
-      const merged = merge(adapter, [], "day");
-
-      // Should return a period for the current date
-      expect(merged!.type).toBe("day");
-      expect(merged!.date).toBeDefined();
+    it("should throw on empty array", () => {
+      expect(() => merge(adapter, [], "day")).toThrow(
+        "merge() requires at least one period"
+      );
     });
 
     it("should merge across boundaries", () => {

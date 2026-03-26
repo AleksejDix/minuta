@@ -35,12 +35,7 @@ export interface UnitRegistry {
  * Extensible via module augmentation of UnitRegistry
  */
 export type AdapterUnit = keyof UnitRegistry;
-export type Unit =
-  | AdapterUnit
-  | "custom"
-  | "stableMonth"
-  | "stableYear"
-  | (string & {});
+export type Unit = AdapterUnit | "custom" | "stableMonth" | "stableYear";
 
 /**
  * All available time unit constants grouped for better autocomplete and imports.

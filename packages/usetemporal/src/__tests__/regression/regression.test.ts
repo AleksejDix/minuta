@@ -14,23 +14,10 @@ describe("regression tests for critical bugs", () => {
   const adapter = createNativeAdapter();
 
   describe("merge() regression tests", () => {
-    it("should return current period when given empty array (bug #1)", () => {
-      // Previously returned null, should return current day period
-      const merged = merge(adapter, [], "day");
-      expect(merged).not.toBeNull();
-      expect(merged!.type).toBe("day");
-      expect(merged!.date).toBeInstanceOf(Date);
-    });
-
-    it("should return current period with specified unit when given empty array", () => {
-      // Test with different units
-      const mergedWeek = merge(adapter, [], "week");
-      expect(mergedWeek).not.toBeNull();
-      expect(mergedWeek!.type).toBe("week");
-
-      const mergedMonth = merge(adapter, [], "month");
-      expect(mergedMonth).not.toBeNull();
-      expect(mergedMonth!.type).toBe("month");
+    it("should throw on empty array (bug #1)", () => {
+      expect(() => merge(adapter, [], "day")).toThrow(
+        "merge() requires at least one period"
+      );
     });
 
     it("should promote single period to target unit (bug #2)", () => {

@@ -1,6 +1,7 @@
 import {
   derived,
   get,
+  readable,
   writable,
   type Readable,
   type Writable,
@@ -43,7 +44,7 @@ export function createTemporal(
   }
 
   const dateStore: Writable<Date> = options.date ?? writable(new Date());
-  const nowStore: Readable<Date> = options.now ?? writable(new Date());
+  const nowStore: Readable<Date> = options.now ?? readable(new Date());
 
   const browsing = writable<Period>(
     period(options.adapter, get(dateStore), "day")

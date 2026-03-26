@@ -8,6 +8,7 @@
  */
 export {
   contains,
+  difference,
   divide,
   go,
   isSame,

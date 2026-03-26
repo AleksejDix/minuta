@@ -132,8 +132,16 @@ withAllAdapters("divide", (adapter) => {
       const marchDay = period(adapter, new Date(2024, 2, 10), "day");
       const hours = divide(adapter, marchDay, "hour");
 
-      // Even with DST, we should get 24 hour periods
-      expect(hours).toHaveLength(24);
+      // DST spring-forward days have 23 hours in affected timezones, 24 otherwise
+      expect(hours.length).toBeGreaterThanOrEqual(23);
+      expect(hours.length).toBeLessThanOrEqual(24);
+
+      // Hours should be continuous regardless of DST
+      for (let i = 1; i < hours.length; i++) {
+        expect(hours[i].start.getTime()).toBeGreaterThan(
+          hours[i - 1].start.getTime()
+        );
+      }
     });
 
     it("should handle partial periods correctly", () => {

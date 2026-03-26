@@ -1,4 +1,5 @@
 import type { UnitHandler } from "../../../types";
+import { plainDateTimeToLocal } from "../toLocalDate";
 
 export const hourHandler: UnitHandler = {
   startOf(date: Date): Date {
@@ -25,7 +26,7 @@ export const hourHandler: UnitHandler = {
       millisecond: date.getMilliseconds(),
     });
     const result = plainDateTime.add({ hours: amount });
-    return new Date(result.toString());
+    return plainDateTimeToLocal(result);
   },
 
   diff(from: Date, to: Date): number {

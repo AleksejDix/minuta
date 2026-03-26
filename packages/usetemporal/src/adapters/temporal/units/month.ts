@@ -1,4 +1,5 @@
 import type { UnitHandler } from "../../../types";
+import { plainDateToLocal } from "../toLocalDate";
 
 export const monthHandler: UnitHandler = {
   startOf(date: Date): Date {
@@ -28,14 +29,13 @@ export const monthHandler: UnitHandler = {
       day: date.getDate(),
     });
     const result = plainDate.add({ months: amount });
-    const newDate = new Date(result.toString());
-    newDate.setHours(
+    return plainDateToLocal(
+      result,
       date.getHours(),
       date.getMinutes(),
       date.getSeconds(),
       date.getMilliseconds()
     );
-    return newDate;
   },
 
   diff(from: Date, to: Date): number {

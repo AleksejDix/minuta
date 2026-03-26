@@ -12,8 +12,12 @@ export function testAdapterCompliance(
   options?: { timezone?: string }
 ) {
   describe(`${adapterName} Adapter Compliance`, () => {
-    // Test date for consistency
-    const testDate = new Date(2024, 5, 15, 14, 30, 45, 123); // June 15, 2024 14:30:45.123
+    // When testing a UTC-based adapter, construct dates as UTC so local TZ doesn't skew results
+    const isUTC = options?.timezone === "UTC";
+    const createDate = (...args: Parameters<typeof Date.UTC>) =>
+      isUTC ? new Date(Date.UTC(...args)) : new Date(...args);
+
+    const testDate = createDate(2024, 5, 15, 14, 30, 45, 123); // June 15, 2024 14:30:45.123
     const resolvedTimeZone =
       options?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -124,13 +128,13 @@ export function testAdapterCompliance(
       });
 
       it("should handle February in leap year", () => {
-        const febDate = new Date(2024, 1, 15); // February 15, 2024
+        const febDate = createDate(2024, 1, 15); // February 15, 2024
         const result = adapter.endOf(febDate, "month");
         expect(getDayOfMonth(result)).toBe(29); // 2024 is a leap year
       });
 
       it("should handle February in non-leap year", () => {
-        const febDate = new Date(2023, 1, 15); // February 15, 2023
+        const febDate = createDate(2023, 1, 15); // February 15, 2023
         const result = adapter.endOf(febDate, "month");
         expect(getDayOfMonth(result)).toBe(28); // 2023 is not a leap year
       });
@@ -175,21 +179,21 @@ export function testAdapterCompliance(
 
       it("should handle daylight saving time transitions", () => {
         // This is a conceptual test - actual DST handling depends on the environment
-        const dstDate = new Date(2024, 2, 10, 2, 0, 0); // March 10, 2024 2:00 AM
+        const dstDate = createDate(2024, 2, 10, 2, 0, 0); // March 10, 2024 2:00 AM
         const result = adapter.add(dstDate, 1, "day");
         expect(getDayOfMonth(result)).toBe(11);
       });
     });
 
     describe("diff operations", () => {
-      const date1 = new Date(2024, 0, 1); // Jan 1, 2024
-      const date2 = new Date(2024, 5, 15); // June 15, 2024
+      const date1 = createDate(2024, 0, 1); // Jan 1, 2024
+      const date2 = createDate(2024, 5, 15); // June 15, 2024
 
       it("should calculate year difference", () => {
         const diff = adapter.diff(date1, date2, "year");
         expect(diff).toBe(0); // Same year
 
-        const date3 = new Date(2026, 0, 1);
+        const date3 = createDate(2026, 0, 1);
         const diff2 = adapter.diff(date1, date3, "year");
         expect(diff2).toBe(2);
       });
@@ -214,8 +218,8 @@ export function testAdapterCompliance(
       });
 
       it("should calculate quarter difference", () => {
-        const q1Date = new Date(2024, 2, 31); // End of Q1
-        const q3Date = new Date(2024, 8, 30); // End of Q3
+        const q1Date = createDate(2024, 2, 31); // End of Q1
+        const q3Date = createDate(2024, 8, 30); // End of Q3
         const diff = adapter.diff(q1Date, q3Date, "quarter");
         // Different adapters may calculate quarter boundaries differently
         expect(diff).toBeGreaterThanOrEqual(1);
@@ -225,7 +229,7 @@ export function testAdapterCompliance(
 
     describe("edge cases", () => {
       it("should handle month-end dates correctly", () => {
-        const jan31 = new Date(2024, 0, 31);
+        const jan31 = createDate(2024, 0, 31);
         const result = adapter.add(jan31, 1, "month");
         // JavaScript's setMonth handles overflow - Jan 31 + 1 month = Feb 31 = Mar 3 (in leap year)
         // This is expected behavior for the native JavaScript Date handling
@@ -251,7 +255,7 @@ export function testAdapterCompliance(
       });
 
       it("should handle year boundaries", () => {
-        const dec31 = new Date(2024, 11, 31);
+        const dec31 = createDate(2024, 11, 31);
         const nextDay = adapter.add(dec31, 1, "day");
         expect(getYear(nextDay)).toBe(2025);
         expect(getMonthIndex(nextDay)).toBe(0);

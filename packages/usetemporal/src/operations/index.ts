@@ -1,5 +1,6 @@
 export { contains } from "./contains";
 export { period } from "./period";
+export { difference } from "./difference";
 export { divide } from "./divide";
 export { go } from "./go";
 export { isSame } from "./isSame";

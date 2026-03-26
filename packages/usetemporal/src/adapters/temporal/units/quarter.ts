@@ -1,4 +1,5 @@
 import type { UnitHandler } from "../../../types";
+import { plainDateToLocal } from "../toLocalDate";
 
 export const quarterHandler: UnitHandler = {
   startOf(date: Date): Date {
@@ -32,14 +33,13 @@ export const quarterHandler: UnitHandler = {
       day: date.getDate(),
     });
     const result = plainDate.add({ months: amount * 3 });
-    const newDate = new Date(result.toString());
-    newDate.setHours(
+    return plainDateToLocal(
+      result,
       date.getHours(),
       date.getMinutes(),
       date.getSeconds(),
       date.getMilliseconds()
     );
-    return newDate;
   },
 
   diff(from: Date, to: Date): number {

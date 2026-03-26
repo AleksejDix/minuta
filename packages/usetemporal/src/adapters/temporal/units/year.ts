@@ -1,4 +1,5 @@
 import type { UnitHandler } from "../../../types";
+import { plainDateToLocal } from "../toLocalDate";
 
 export const yearHandler: UnitHandler = {
   startOf(date: Date): Date {
@@ -14,8 +15,7 @@ export const yearHandler: UnitHandler = {
       day: date.getDate(),
     });
     const endOfYear = plainDate.with({ month: 12, day: 31 });
-    const endDate = new Date(endOfYear.toString());
-    endDate.setHours(23, 59, 59, 999);
+    const endDate = plainDateToLocal(endOfYear, 23, 59, 59, 999);
     return endDate;
   },
 
@@ -27,14 +27,13 @@ export const yearHandler: UnitHandler = {
       day: date.getDate(),
     });
     const result = plainDate.add({ years: amount });
-    const newDate = new Date(result.toString());
-    newDate.setHours(
+    return plainDateToLocal(
+      result,
       date.getHours(),
       date.getMinutes(),
       date.getSeconds(),
       date.getMilliseconds()
     );
-    return newDate;
   },
 
   diff(from: Date, to: Date): number {

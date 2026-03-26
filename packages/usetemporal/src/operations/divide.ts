@@ -30,18 +30,15 @@ export function divide(
 
     // If the next date is the same as the current one (e.g. DST), we must advance manually
     if (nextDate.getTime() <= current.getTime()) {
-      current = new Date(start.getTime() + 24 * 60 * 60 * 1000); // Move to next day
+      current = adapter.add(start, 2, unit);
     } else {
       current = nextDate;
     }
 
-    // For safety, break if we've gone too far (prevent infinite loops)
     if (periods.length > 2000) {
-      // This limit might need to be adjusted depending on expected use cases.
-      // For example, dividing a year by minutes would exceed this.
-      // For now, keeping it as a safeguard.
-      console.warn("divide operation generated over 2000 periods, aborting.");
-      break;
+      throw new Error(
+        "divide() generated over 2000 periods — use a larger unit or smaller parent period"
+      );
     }
   }
 
