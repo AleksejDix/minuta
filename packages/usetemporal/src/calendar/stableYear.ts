@@ -2,6 +2,7 @@
  * StableYear unit - Always returns a consistent grid of full weeks (52 or 53) for year visualizations
  */
 import type { Adapter, Period } from "../types";
+import { registerPeriodNavigator } from "../operations/periodNavigation";
 
 /**
  * Helper to calculate the stable year grid boundaries
@@ -66,7 +67,14 @@ export function createStableYear(
   return {
     start: bounds.start,
     end: bounds.end,
-    type: "stableYear", // This is now a custom string type
-    date: adapter.startOf(date, "year"), // Reference date is the actual year start
+    type: "stableYear",
+    date: adapter.startOf(date, "year"),
+    meta: { weekStartsOn },
   };
 }
+
+registerPeriodNavigator("stableYear", (adapter, p, steps) => {
+  const weekStartsOn = (p.meta?.weekStartsOn as number) ?? 1;
+  const newYearDate = adapter.add(p.date, steps, "year");
+  return createStableYear(adapter, weekStartsOn, newYearDate);
+});

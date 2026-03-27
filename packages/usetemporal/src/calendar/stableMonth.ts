@@ -2,6 +2,7 @@
  * StableMonth unit - Always returns a 42-day (6-week) grid for consistent calendar layouts
  */
 import type { Adapter, Period } from "../types";
+import { registerPeriodNavigator } from "../operations/periodNavigation";
 
 /**
  * Helper to calculate the stable month grid boundaries
@@ -44,7 +45,14 @@ export function createStableMonth(
   return {
     start: bounds.start,
     end: bounds.end,
-    type: "stableMonth", // This is now a custom string type
-    date: adapter.startOf(date, "month"), // Reference date is the actual month start
+    type: "stableMonth",
+    date: adapter.startOf(date, "month"),
+    meta: { weekStartsOn },
   };
 }
+
+registerPeriodNavigator("stableMonth", (adapter, p, steps) => {
+  const weekStartsOn = (p.meta?.weekStartsOn as number) ?? 1;
+  const newMonthDate = adapter.add(p.date, steps, "month");
+  return createStableMonth(adapter, weekStartsOn, newMonthDate);
+});

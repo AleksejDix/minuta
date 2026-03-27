@@ -1,6 +1,7 @@
 import type { Period, Adapter, AdapterUnit } from "../types";
 import { period } from "./period";
 import { shiftCustomPeriod } from "./customPeriod";
+import { getPeriodNavigator } from "./periodNavigation";
 
 /**
  * Move by a specific number of periods
@@ -8,11 +9,12 @@ import { shiftCustomPeriod } from "./customPeriod";
 export function go(adapter: Adapter, p: Period, steps: number): Period {
   if (steps === 0) return p;
 
-  if (
-    p.type === "custom" ||
-    p.type === "stableMonth" ||
-    p.type === "stableYear"
-  ) {
+  const navigator = getPeriodNavigator(p.type);
+  if (navigator) {
+    return navigator(adapter, p, steps);
+  }
+
+  if (p.type === "custom") {
     return shiftCustomPeriod(p, steps);
   }
 

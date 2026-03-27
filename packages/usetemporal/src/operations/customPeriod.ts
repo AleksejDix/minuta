@@ -11,7 +11,8 @@ export function shiftCustomPeriod(p: Period, steps: number): Period {
   return {
     start: newStart,
     end: newEnd,
-    type: "custom",
+    type: p.type,
     date: newStart,
+    meta: p.meta,
   };
 }

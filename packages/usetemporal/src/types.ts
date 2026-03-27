@@ -14,6 +14,9 @@ export interface Period {
 
   /** The reference date used to create this period */
   date: Date;
+
+  /** Optional metadata for derived period types (e.g., weekStartsOn for stableMonth/stableYear) */
+  meta?: Record<string, unknown>;
 }
 
 /**
