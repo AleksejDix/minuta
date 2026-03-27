@@ -1,4 +1,5 @@
 import type { Period, Adapter, AdapterUnit } from "../types";
+import { validatePeriod } from "./validate";
 
 /**
  * Divide a period into smaller units
@@ -8,6 +9,8 @@ export function divide(
   period: Period,
   unit: AdapterUnit
 ): Period[] {
+  validatePeriod(period);
+
   const periods: Period[] = [];
   let current = new Date(period.start);
 

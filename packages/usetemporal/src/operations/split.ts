@@ -1,9 +1,12 @@
 import type { Period } from "../types";
+import { validatePeriod } from "./validate";
 
 /**
  * Split a period at a specific date
  */
 export function split(period: Period, splitDate: Date): [Period, Period] {
+  validatePeriod(period);
+
   const splitTime = splitDate.getTime();
   const startTime = period.start.getTime();
   const endTime = period.end.getTime();

@@ -1,5 +1,6 @@
 import type { Period, Adapter, AdapterUnit } from "../types";
 import { period } from "./period";
+import { validatePeriod } from "./validate";
 
 /**
  * Merge multiple periods into a single period
@@ -11,6 +12,10 @@ export function merge(
 ): Period | null {
   if (periods.length === 0) {
     throw new Error("merge() requires at least one period");
+  }
+
+  for (const p of periods) {
+    validatePeriod(p);
   }
   if (periods.length === 1) {
     // If target unit is specified, promote the single period to that unit
