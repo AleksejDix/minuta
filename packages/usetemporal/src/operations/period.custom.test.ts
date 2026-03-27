@@ -96,4 +96,18 @@ describe("period with custom options", () => {
     });
     expect(customPeriod.type).toBe("custom");
   });
+
+  it("should throw for non-adapter units", () => {
+    const date = new Date(2024, 0, 15);
+
+    expect(() => period(adapter, date, "custom" as any)).toThrow(
+      'Cannot create period with unit "custom"'
+    );
+    expect(() => period(adapter, date, "stableMonth" as any)).toThrow(
+      'Cannot create period with unit "stableMonth"'
+    );
+    expect(() => period(adapter, date, "stableYear" as any)).toThrow(
+      'Cannot create period with unit "stableYear"'
+    );
+  });
 });

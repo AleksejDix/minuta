@@ -10,10 +10,10 @@ interface CustomPeriodOptions {
  * Create a period of a specific type from a date
  * @param adapter - The adapter instance
  * @param date - The date to create the period from
- * @param unit - The unit type
+ * @param unit - The unit type (must be an adapter unit, not "custom"/"stableMonth"/"stableYear")
  * @returns A period of the specified type
  */
-export function period(adapter: Adapter, date: Date, unit: Unit): Period;
+export function period(adapter: Adapter, date: Date, unit: AdapterUnit): Period;
 
 /**
  * Create a custom period with specific start and end dates
@@ -53,13 +53,16 @@ export function period(
 
   // Standard period logic
   const date = dateOrOptions as Date;
-  const type = unit!; // We know unit is defined when dateOrOptions is a Date
+  const type = unit!;
 
-  // For stableMonth and stableYear, users should import from '@allystudio/usetemporal/calendar'
-  // and use createStableMonth() / createStableYear() directly
+  if (type === "custom" || type === "stableMonth" || type === "stableYear") {
+    throw new Error(
+      `Cannot create period with unit "${type}" from a date. Use period(adapter, {start, end}) for custom periods, or createStableMonth()/createStableYear() from '@allystudio/usetemporal/calendar'.`
+    );
+  }
 
-  const start = adapter.startOf(date, type as AdapterUnit);
-  const end = adapter.endOf(date, type as AdapterUnit);
+  const start = adapter.startOf(date, type);
+  const end = adapter.endOf(date, type);
 
   return {
     start,
