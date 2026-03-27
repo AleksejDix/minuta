@@ -177,6 +177,21 @@ export function testAdapterCompliance(
         expect(getMonthIndex(result)).toBe(3); // April
       });
 
+      it("should add quarters correctly", () => {
+        const result = adapter.add(testDate, 1, "quarter");
+        expect(getYear(result)).toBe(2024);
+        expect(getMonthIndex(result)).toBe(8); // September
+        expect(getDayOfMonth(result)).toBe(15);
+      });
+
+      it("should clamp day-of-month when adding quarters", () => {
+        const jan31 = createDate(2024, 0, 31); // Jan 31
+        const result = adapter.add(jan31, 1, "quarter");
+        expect(getYear(result)).toBe(2024);
+        expect(getMonthIndex(result)).toBe(3); // April
+        expect(getDayOfMonth(result)).toBe(30); // April has 30 days
+      });
+
       it("should handle daylight saving time transitions", () => {
         // This is a conceptual test - actual DST handling depends on the environment
         const dstDate = createDate(2024, 2, 10, 2, 0, 0); // March 10, 2024 2:00 AM
