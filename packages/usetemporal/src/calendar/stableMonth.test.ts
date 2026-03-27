@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { period, divide, contains } from "..";
+import { derivePeriod as period, divide, contains } from "..";
 import { createNativeAdapter } from "../adapters/native";
 import { createDateFnsAdapter } from "../adapters/date-fns";
 import { createLuxonAdapter } from "../adapters/luxon";

@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { createNativeAdapter } from "../../adapters/native";
 import { merge } from "../../operations/merge";
 import { go } from "../../operations/go";
-import { period } from "../../operations/period";
+import { derivePeriod as period } from "../../operations/period";
 import { divide } from "../../operations/divide";
 
 /**

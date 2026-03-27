@@ -1,5 +1,5 @@
 export { contains } from "./contains";
-export { derivePeriod, createPeriod, period } from "./period";
+export { derivePeriod, createPeriod } from "./period";
 export { difference } from "./difference";
 export { divide } from "./divide";
 export { go } from "./go";

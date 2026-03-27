@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { split } from "./split";
-import { period } from "./period";
+import { derivePeriod as period } from "./period";
 import { withAllAdapters } from "../test/shared-adapter-tests";
 
 withAllAdapters("split", (adapter) => {

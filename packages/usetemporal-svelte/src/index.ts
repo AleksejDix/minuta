@@ -10,7 +10,8 @@ export type {
 export { CalendarExample, Navigator } from "./components";
 
 export {
-  period,
+  derivePeriod,
+  createPeriod,
   divide,
   merge,
   split,

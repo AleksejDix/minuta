@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { divide } from "./divide";
 import { split } from "./split";
 import { merge } from "./merge";
-import { period } from "./period";
+import { derivePeriod as period } from "./period";
 import { createNativeAdapter } from "../adapters/native";
 import type { Period } from "../types";
 

@@ -7,7 +7,6 @@ export {
   contains,
   derivePeriod,
   createPeriod,
-  period,
   split,
   merge,
   isSame,

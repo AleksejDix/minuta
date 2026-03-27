@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { next, previous } from "./index";
-import { period } from "./period";
+import { derivePeriod as period } from "./period";
 import { withAllAdapters } from "../test/shared-adapter-tests";
 
 withAllAdapters("next/previous", (adapter) => {

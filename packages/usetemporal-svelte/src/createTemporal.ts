@@ -6,7 +6,7 @@ import {
   type Readable,
   type Writable,
 } from "svelte/store";
-import { period } from "@allystudio/usetemporal/operations";
+import { derivePeriod } from "@allystudio/usetemporal/operations";
 import type { Period } from "@allystudio/usetemporal";
 import { createTemporalBuilder } from "./builder";
 import type {
@@ -47,11 +47,11 @@ export function createTemporal(
   const nowStore: Readable<Date> = options.now ?? readable(new Date());
 
   const browsing = writable<Period>(
-    period(options.adapter, get(dateStore), "day")
+    derivePeriod(options.adapter, get(dateStore), "day")
   );
 
   const now = derived(nowStore, ($now) =>
-    period(options.adapter, $now, "second")
+    derivePeriod(options.adapter, $now, "second")
   );
 
   const temporal: SvelteTemporal = {

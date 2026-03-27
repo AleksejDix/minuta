@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { period } from "@allystudio/usetemporal/operations";
+import { derivePeriod } from "@allystudio/usetemporal/operations";
 import { createTemporalBuilder } from "./builder";
 import type {
   UseTemporalOptions,
@@ -45,13 +45,13 @@ export function useTemporal(options: UseTemporalOptions): TemporalBuilder {
 
   // Create reactive Period for browsing (default to 'day' unit for point in time)
   const browsing = useMemo(
-    () => period(adapter, browsingDate, "day"),
+    () => derivePeriod(adapter, browsingDate, "day"),
     [adapter, browsingDate]
   );
 
   // Create reactive Period for now (use 'second' for most precise point in time)
   const now = useMemo(
-    () => period(adapter, nowDate, "second"),
+    () => derivePeriod(adapter, nowDate, "second"),
     [adapter, nowDate]
   );
 

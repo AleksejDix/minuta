@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { period, divide } from "../..";
+import { derivePeriod as period, divide } from "../..";
 import { createNativeAdapter } from "../../adapters/native";
 import { createStableMonth, createStableYear } from "../../calendar";
 

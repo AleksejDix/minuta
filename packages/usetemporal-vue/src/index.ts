@@ -1,4 +1,4 @@
-// export { createTemporal } from "./createTemporal"; // Deprecated - use useTemporal
+export { createTemporal } from "./createTemporal";
 export { useTemporal } from "./useTemporal";
 export { usePeriod } from "./usePeriod";
 export { createTemporalBuilder } from "./builder";
@@ -10,7 +10,8 @@ export type {
 } from "./types";
 
 export {
-  period,
+  derivePeriod,
+  createPeriod,
   divide,
   merge,
   split,

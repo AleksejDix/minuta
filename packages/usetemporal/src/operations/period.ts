@@ -1,4 +1,4 @@
-import type { Period, Adapter, AdapterUnit, Unit } from "../types";
+import type { Period, Adapter, AdapterUnit } from "../types";
 
 /**
  * Derive a period's boundaries from the adapter for a given date and unit.
@@ -49,23 +49,4 @@ export function createPeriod(start: Date, end: Date): Period {
     type: "custom",
     date: new Date((start.getTime() + end.getTime()) / 2),
   };
-}
-
-/**
- * @deprecated Use `derivePeriod` for unit-based periods or `createPeriod` for custom periods.
- */
-export function period(adapter: Adapter, date: Date, unit: AdapterUnit): Period;
-export function period(
-  adapter: Adapter,
-  options: { start: Date; end: Date }
-): Period;
-export function period(
-  adapter: Adapter,
-  dateOrOptions: Date | { start: Date; end: Date },
-  unit?: Unit
-): Period {
-  if ("start" in dateOrOptions && "end" in dateOrOptions) {
-    return createPeriod(dateOrOptions.start, dateOrOptions.end);
-  }
-  return derivePeriod(adapter, dateOrOptions as Date, unit! as AdapterUnit);
 }

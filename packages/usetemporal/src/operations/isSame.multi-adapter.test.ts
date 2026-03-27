@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { isSame } from "./isSame";
-import { period } from "./period";
+import { derivePeriod as period } from "./period";
 import {
   withAllAdapters,
   getAdapterTestCases,

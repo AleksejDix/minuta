@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { difference } from "./difference";
-import { period } from "./period";
+import { derivePeriod as period, createPeriod } from "./period";
 import { withAllAdapters } from "../test/shared-adapter-tests";
 
 withAllAdapters("difference", (adapter) => {
@@ -81,9 +81,9 @@ withAllAdapters("difference", (adapter) => {
 
     it("should handle overlapping periods", () => {
       const period1 = period(adapter, new Date(2024, 0, 15), "month"); // All of January
-      const period2 = period(
-        adapter,
-        { start: new Date(2024, 0, 20), end: new Date(2024, 1, 10) } // Jan 20 - Feb 10
+      const period2 = createPeriod(
+        new Date(2024, 0, 20),
+        new Date(2024, 1, 10) // Jan 20 - Feb 10
       );
 
       const diff = difference(adapter, period1, period2);
@@ -144,14 +144,11 @@ withAllAdapters("difference", (adapter) => {
     });
 
     it("should handle custom periods", () => {
-      const custom1 = period(adapter, {
-        start: new Date(2024, 0, 1),
-        end: new Date(2024, 0, 10),
-      });
-      const custom2 = period(adapter, {
-        start: new Date(2024, 0, 20),
-        end: new Date(2024, 0, 31),
-      });
+      const custom1 = createPeriod(new Date(2024, 0, 1), new Date(2024, 0, 10));
+      const custom2 = createPeriod(
+        new Date(2024, 0, 20),
+        new Date(2024, 0, 31)
+      );
 
       const diff = difference(adapter, custom1, custom2);
 

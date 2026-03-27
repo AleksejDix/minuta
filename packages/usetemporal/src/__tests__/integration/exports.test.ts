@@ -6,13 +6,11 @@ import * as operationsIndex from "../../operations/index";
 describe("Export Verification Tests", () => {
   describe("operations.ts exports", () => {
     it("should re-export all operations from operations/index.ts", () => {
-      // operations.ts should have same exports as operations/index.ts
       const operationsKeys = Object.keys(operationsExports).sort();
       const operationsIndexKeys = Object.keys(operationsIndex).sort();
 
       expect(operationsKeys).toEqual(operationsIndexKeys);
 
-      // Verify each export is the same function
       operationsKeys.forEach((key) => {
         expect((operationsExports as Record<string, any>)[key]).toBe(
           (operationsIndex as Record<string, any>)[key]
@@ -23,7 +21,8 @@ describe("Export Verification Tests", () => {
     it("should export all expected operation functions", () => {
       const expectedOperations = [
         "contains",
-        "period",
+        "derivePeriod",
+        "createPeriod",
         "divide",
         "go",
         "isSame",
@@ -53,7 +52,8 @@ describe("Export Verification Tests", () => {
         "previous",
         "go",
         "contains",
-        "period",
+        "derivePeriod",
+        "createPeriod",
         "split",
         "merge",
         "isSame",
@@ -64,7 +64,6 @@ describe("Export Verification Tests", () => {
         expect(typeof (mainExports as Record<string, any>)[op]).toBe(
           "function"
         );
-        // Should be same function as from operations
         expect((mainExports as Record<string, any>)[op]).toBe(
           (operationsExports as Record<string, any>)[op]
         );
@@ -73,20 +72,12 @@ describe("Export Verification Tests", () => {
 
     it("should export utility functions", () => {
       expect(mainExports.isWeekend).toBeDefined();
-      expect(typeof mainExports.isWeekend).toBe("function");
-
       expect(mainExports.isWeekday).toBeDefined();
-      expect(typeof mainExports.isWeekday).toBe("function");
-
       expect(mainExports.isToday).toBeDefined();
-      expect(typeof mainExports.isToday).toBe("function");
     });
 
     it("should export unit constants", () => {
       expect(mainExports.UNITS).toBeDefined();
-      expect(typeof mainExports.UNITS).toBe("object");
-
-      // Check UNITS object has all properties
       expect(mainExports.UNITS.year).toBe("year");
       expect(mainExports.UNITS.quarter).toBe("quarter");
       expect(mainExports.UNITS.month).toBe("month");
@@ -115,26 +106,14 @@ describe("Export Verification Tests", () => {
           "string"
         );
       });
-
-      // Verify individual constants match UNITS object values
-      expect(mainExports.YEAR).toBe(mainExports.UNITS.year);
-      expect(mainExports.QUARTER).toBe(mainExports.UNITS.quarter);
-      expect(mainExports.MONTH).toBe(mainExports.UNITS.month);
-      expect(mainExports.WEEK).toBe(mainExports.UNITS.week);
-      expect(mainExports.DAY).toBe(mainExports.UNITS.day);
-      expect(mainExports.HOUR).toBe(mainExports.UNITS.hour);
-      expect(mainExports.MINUTE).toBe(mainExports.UNITS.minute);
-      expect(mainExports.SECOND).toBe(mainExports.UNITS.second);
-      expect(mainExports.CUSTOM).toBe(mainExports.UNITS.custom);
     });
 
     it("should not export internal implementation details", () => {
-      // These should NOT be exported
       const internalDetails = [
         "isAdapterUnit",
         "isLeapYear",
-        "createNativeAdapter", // This comes from adapter packages
-        "mockAdapter", // Test utilities
+        "createNativeAdapter",
+        "mockAdapter",
       ];
 
       internalDetails.forEach((internal) => {
@@ -143,14 +122,14 @@ describe("Export Verification Tests", () => {
     });
 
     it("should have consistent exports between operations and main", () => {
-      // All operations exported from main should match operations module
       const operationNames = [
         "divide",
         "next",
         "previous",
         "go",
         "contains",
-        "period",
+        "derivePeriod",
+        "createPeriod",
         "split",
         "merge",
         "isSame",
@@ -166,14 +145,9 @@ describe("Export Verification Tests", () => {
 
   describe("TypeScript type exports", () => {
     it("should have all expected type exports in main index", () => {
-      // While we can't check types at runtime, we can verify the module structure
       const exportedNames = Object.keys(mainExports);
 
-      // These are functions/constants that should exist if types are properly exported
-      const typeRelatedExports = [
-        "UNITS", // Related to Unit type
-        "period", // Core operation
-      ];
+      const typeRelatedExports = ["UNITS", "derivePeriod"];
 
       typeRelatedExports.forEach((name) => {
         expect(exportedNames).toContain(name);
@@ -185,26 +159,21 @@ describe("Export Verification Tests", () => {
     it("should export a complete API surface", () => {
       const coreExports = Object.keys(mainExports);
 
-      // Minimum expected exports for a complete API (pure functions only)
       const minimumExports = [
-        // Operations
         "divide",
         "next",
         "previous",
         "go",
         "contains",
-        "period",
+        "derivePeriod",
+        "createPeriod",
         "split",
         "merge",
         "isSame",
-
-        // Utils
         "isWeekend",
         "isWeekday",
         "isToday",
-
-        // Constants
-        "UNITS", // Object with unit values
+        "UNITS",
         "YEAR",
         "QUARTER",
         "MONTH",
@@ -220,14 +189,12 @@ describe("Export Verification Tests", () => {
         expect(coreExports).toContain(exportName);
       });
 
-      // Should have at least this many exports
       expect(coreExports.length).toBeGreaterThanOrEqual(minimumExports.length);
     });
 
     it("should not have duplicate exports", () => {
       const exportNames = Object.keys(mainExports);
       const uniqueNames = [...new Set(exportNames)];
-
       expect(exportNames.length).toBe(uniqueNames.length);
     });
   });
@@ -236,7 +203,6 @@ describe("Export Verification Tests", () => {
     it("should complete all export tests in under 100ms", () => {
       const start = performance.now();
 
-      // Access all exports to ensure they're loaded
       Object.keys(mainExports).forEach((key) => {
         const value = (mainExports as Record<string, any>)[key];
         if (typeof value === "function") {

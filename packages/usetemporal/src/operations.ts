@@ -16,7 +16,6 @@ export {
   next,
   derivePeriod,
   createPeriod,
-  period,
   previous,
   split,
   isToday,

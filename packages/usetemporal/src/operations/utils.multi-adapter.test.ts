@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { isToday, isWeekday, isWeekend } from "./utils";
-import { period } from "./period";
+import { derivePeriod as period } from "./period";
 import { withAllAdapters } from "../test/shared-adapter-tests";
 
 withAllAdapters("utils", (adapter) => {
