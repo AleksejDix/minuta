@@ -8,6 +8,18 @@ Declarative calendar library built on the **Period + divide()** pattern. Model t
 npm install @allystudio/usetemporal
 ```
 
+## Bundle Size
+
+| What you import              | gzipped |
+| ---------------------------- | ------- |
+| Core + operations            | ~3.7 kB |
+| + Native adapter (zero deps) | ~4.7 kB |
+| + Calendar utilities         | ~5.1 kB |
+| + date-fns adapter           | ~5.4 kB |
+| + date-fns-tz adapter        | ~8.2 kB |
+
+Luxon and Temporal adapters are heavier due to bundled library code (~45-50 kB). Use the native adapter for the smallest footprint.
+
 ## Core Concept
 
 Every time range is a **Period**: `{ start, end, type, date }`. The `divide()` function splits any period into smaller ones. That's the entire model.
