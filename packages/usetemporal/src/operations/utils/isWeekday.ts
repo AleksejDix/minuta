@@ -1,11 +1,15 @@
 import type { Period } from "../../types";
-import { isWeekend } from "./isWeekend";
+
+const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
 /**
- * Checks if a period falls on a weekday (Monday through Friday)
- * @param period - The period to check
- * @returns true if the period's date is not Saturday or Sunday
+ * Checks if a period falls entirely within weekdays.
+ * Returns false for periods spanning more than 2 days.
  */
 export function isWeekday(p: Period): boolean {
-  return !isWeekend(p);
+  if (p.end.getTime() - p.start.getTime() >= TWO_DAYS_MS) return false;
+
+  const startDay = p.start.getDay();
+  const endDay = p.end.getDay();
+  return startDay >= 1 && startDay <= 5 && endDay >= 1 && endDay <= 5;
 }

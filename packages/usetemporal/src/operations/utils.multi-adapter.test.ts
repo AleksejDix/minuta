@@ -126,12 +126,12 @@ withAllAdapters("utils", (adapter) => {
     });
 
     it("should handle non-day periods", () => {
-      const weekdayWeek = period(adapter, new Date(2024, 0, 15), "week");
-      const weekdayMonth = period(adapter, new Date(2024, 0, 15), "month");
+      const weekPeriod = period(adapter, new Date(2024, 0, 15), "week");
+      const monthPeriod = period(adapter, new Date(2024, 0, 15), "month");
 
-      // These use the period's reference date
-      expect(isWeekday(weekdayWeek)).toBe(true); // Monday
-      expect(isWeekday(weekdayMonth)).toBe(true); // Monday
+      // Week and month span both weekdays and weekends — neither is fully a weekday
+      expect(isWeekday(weekPeriod)).toBe(false);
+      expect(isWeekday(monthPeriod)).toBe(false);
     });
   });
 
