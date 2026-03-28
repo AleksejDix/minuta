@@ -42,16 +42,14 @@ export function merge(
     periods.length === DAYS_PER_WEEK &&
     periods.every((p) => p.type === "day")
   ) {
-    let consecutive = true;
-    for (let i = 1; i < sorted.length; i++) {
-      const expected = adapter.add(sorted[i - 1].start, 1, "day");
-      if (
-        adapter.startOf(expected, "day").getTime() !== sorted[i].start.getTime()
-      ) {
-        consecutive = false;
-        break;
-      }
-    }
+    const consecutive = sorted.every((p, i) => {
+      if (i === 0) return true;
+      const expected = adapter.startOf(
+        adapter.add(sorted[i - 1].start, 1, "day"),
+        "day"
+      );
+      return expected.getTime() === p.start.getTime();
+    });
 
     if (consecutive) {
       const startOfWeek = adapter.startOf(sorted[0].start, "week");
