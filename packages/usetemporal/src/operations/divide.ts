@@ -4,7 +4,7 @@ import { validatePeriod } from "./validate";
 const DEFAULT_MAX_PERIODS = 100_000;
 
 export interface DivideOptions {
-  /** Maximum number of periods before throwing. Default: 10,000. */
+  /** Maximum number of periods before throwing. Default: 100,000. */
   maxPeriods?: number;
 }
 

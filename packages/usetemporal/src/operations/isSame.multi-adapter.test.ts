@@ -56,11 +56,5 @@ describe.each(adapters)("isSame with %s adapter", (_, adapter) => {
     expect(isSame(adapter, period1, period2, "month")).toBe(true);
   });
 
-  it("should handle null/undefined correctly", () => {
-    const p = period(adapter, testDates.jun15, "day");
-
-    expect(isSame(adapter, null, p, "day")).toBe(false);
-    expect(isSame(adapter, p, null, "day")).toBe(false);
-    expect(isSame(adapter, null, null, "day")).toBe(false);
-  });
+  // null/undefined is prevented by the type system — isSame requires Period.
 });

@@ -1,15 +1,11 @@
-import type { Period, Adapter } from "../../types";
+import type { TimePeriod, Adapter } from "../../types";
 import { isSame } from "../isSame";
 import { derivePeriod } from "../period";
 
 /**
  * Checks if a period represents today
- * @param adapter - The adapter instance
- * @param now - The current date
- * @param p - The period to check
- * @returns true if the period is a day period that represents today
  */
-export function isToday(adapter: Adapter, now: Date, p: Period): boolean {
+export function isToday(adapter: Adapter, now: Date, p: TimePeriod): boolean {
   if (p.type !== "day") {
     return false;
   }

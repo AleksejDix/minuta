@@ -9,7 +9,7 @@ withAllAdapters("difference", (adapter) => {
       const jan = period(adapter, new Date(2024, 0, 15), "month");
       const march = period(adapter, new Date(2024, 2, 15), "month");
 
-      const diff = difference(adapter, jan, march);
+      const diff = difference(jan, march);
 
       expect(diff.type).toBe("custom");
       // Should be the gap between Jan 31 and March 1 (February)
@@ -21,7 +21,7 @@ withAllAdapters("difference", (adapter) => {
       const date1 = new Date(2024, 0, 1); // Jan 1
       const date2 = new Date(2024, 0, 10); // Jan 10
 
-      const diff = difference(adapter, date1, date2);
+      const diff = difference(date1, date2);
 
       expect(diff.type).toBe("custom");
       expect(diff.start.getTime()).toBe(date1.getTime());
@@ -32,7 +32,7 @@ withAllAdapters("difference", (adapter) => {
       const jan = period(adapter, new Date(2024, 0, 15), "month");
       const feb15 = new Date(2024, 1, 15);
 
-      const diff = difference(adapter, jan, feb15);
+      const diff = difference(jan, feb15);
 
       expect(diff.type).toBe("custom");
       expect(diff.start.getTime()).toBe(jan.end.getTime() + 1);
@@ -43,7 +43,7 @@ withAllAdapters("difference", (adapter) => {
       const jan15 = new Date(2024, 0, 15);
       const march = period(adapter, new Date(2024, 2, 15), "month");
 
-      const diff = difference(adapter, jan15, march);
+      const diff = difference(jan15, march);
 
       expect(diff.type).toBe("custom");
       expect(diff.start.getTime()).toBe(jan15.getTime());
@@ -54,7 +54,7 @@ withAllAdapters("difference", (adapter) => {
       const march = period(adapter, new Date(2024, 2, 15), "month");
       const jan = period(adapter, new Date(2024, 0, 15), "month");
 
-      const diff = difference(adapter, march, jan);
+      const diff = difference(march, jan);
 
       expect(diff.type).toBe("custom");
       // Should reverse: from March start back to Jan end
@@ -68,7 +68,7 @@ withAllAdapters("difference", (adapter) => {
       const jan = period(adapter, new Date(2024, 0, 15), "month");
       const feb = period(adapter, new Date(2024, 1, 15), "month");
 
-      const diff = difference(adapter, jan, feb);
+      const diff = difference(jan, feb);
 
       expect(diff.type).toBe("custom");
       // Gap should be exactly 1 millisecond (from jan.end+1 to feb.start-1)
@@ -86,7 +86,7 @@ withAllAdapters("difference", (adapter) => {
         new Date(2024, 1, 10) // Jan 20 - Feb 10
       );
 
-      const diff = difference(adapter, period1, period2);
+      const diff = difference(period1, period2);
 
       expect(diff.type).toBe("custom");
       // Gap from end of period1 to start of period2
@@ -99,7 +99,7 @@ withAllAdapters("difference", (adapter) => {
     it("should handle same date/period (zero duration)", () => {
       const date = new Date(2024, 0, 15);
 
-      const diff = difference(adapter, date, date);
+      const diff = difference(date, date);
 
       expect(diff.type).toBe("custom");
       expect(diff.start.getTime()).toBe(date.getTime());
@@ -109,7 +109,7 @@ withAllAdapters("difference", (adapter) => {
     it("should handle same period", () => {
       const jan = period(adapter, new Date(2024, 0, 15), "month");
 
-      const diff = difference(adapter, jan, jan);
+      const diff = difference(jan, jan);
 
       expect(diff.type).toBe("custom");
       // From end+1 to start-1 of same period = negative
@@ -122,7 +122,7 @@ withAllAdapters("difference", (adapter) => {
       const date1 = new Date(2024, 0, 1);
       const date2 = new Date(2024, 0, 10);
 
-      const diff = difference(adapter, date1, date2);
+      const diff = difference(date1, date2);
 
       expect(diff.start.getTime()).toBe(date1.getTime());
       expect(diff.end.getTime()).toBe(date2.getTime());
@@ -132,7 +132,7 @@ withAllAdapters("difference", (adapter) => {
       const week1 = period(adapter, new Date(2024, 0, 8), "week");
       const week3 = period(adapter, new Date(2024, 0, 22), "week");
 
-      const diff = difference(adapter, week1, week3);
+      const diff = difference(week1, week3);
 
       expect(diff.type).toBe("custom");
       // Should be the gap between week1 and week3 (week2)
@@ -147,7 +147,7 @@ withAllAdapters("difference", (adapter) => {
         new Date(2024, 0, 31)
       );
 
-      const diff = difference(adapter, custom1, custom2);
+      const diff = difference(custom1, custom2);
 
       expect(diff.type).toBe("custom");
       // Gap from Jan 10 end to Jan 20 start
@@ -159,7 +159,7 @@ withAllAdapters("difference", (adapter) => {
       const hour1 = period(adapter, new Date(2024, 0, 15, 10), "hour");
       const hour3 = period(adapter, new Date(2024, 0, 15, 12), "hour");
 
-      const diff = difference(adapter, hour1, hour3);
+      const diff = difference(hour1, hour3);
 
       expect(diff.type).toBe("custom");
       // Should be the gap (hour 11)
@@ -171,7 +171,7 @@ withAllAdapters("difference", (adapter) => {
       const min1 = period(adapter, new Date(2024, 0, 15, 10, 0), "minute");
       const min5 = period(adapter, new Date(2024, 0, 15, 10, 4), "minute");
 
-      const diff = difference(adapter, min1, min5);
+      const diff = difference(min1, min5);
 
       expect(diff.type).toBe("custom");
       // Should be the gap (minutes 1-3)
@@ -183,7 +183,7 @@ withAllAdapters("difference", (adapter) => {
       const later = new Date(2024, 0, 10);
       const earlier = new Date(2024, 0, 1);
 
-      const diff = difference(adapter, later, earlier);
+      const diff = difference(later, earlier);
 
       expect(diff.type).toBe("custom");
       expect(diff.start.getTime()).toBe(earlier.getTime());
@@ -194,7 +194,7 @@ withAllAdapters("difference", (adapter) => {
       const year2020 = period(adapter, new Date(2020, 0, 15), "year");
       const year2024 = period(adapter, new Date(2024, 0, 15), "year");
 
-      const diff = difference(adapter, year2020, year2024);
+      const diff = difference(year2020, year2024);
 
       expect(diff.type).toBe("custom");
       // Should span 2021-2023
