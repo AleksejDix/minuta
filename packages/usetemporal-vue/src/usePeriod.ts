@@ -1,5 +1,5 @@
 import { computed, type ComputedRef, type Ref } from "vue";
-import { period } from "@allystudio/usetemporal/operations";
+import { derivePeriod } from "@allystudio/usetemporal/operations";
 import type { Period, AdapterUnit } from "@allystudio/usetemporal";
 import type { VueTemporal } from "./types";
 
@@ -18,6 +18,10 @@ export function usePeriod(
 ): ComputedRef<Period> {
   return computed(() => {
     const unitValue = typeof unit === "string" ? unit : unit.value;
-    return period(temporal.adapter, temporal.browsing.value.date, unitValue);
+    return derivePeriod(
+      temporal.adapter,
+      temporal.browsing.value.start,
+      unitValue
+    );
   });
 }

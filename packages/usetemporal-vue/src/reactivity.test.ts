@@ -31,7 +31,7 @@ describe("Vue Reactivity Integration", () => {
       });
 
       expect(effectCount).toBe(1);
-      expect(lastPeriod!.date).toEqual(testDate);
+      expect(lastPeriod!.start).toEqual(testDate);
 
       // Navigate forward
       const monthPeriod = usePeriod(temporal, "month");
@@ -39,7 +39,7 @@ describe("Vue Reactivity Integration", () => {
       temporal.browsing.value = nextMonth;
 
       expect(effectCount).toBe(2);
-      expect(lastPeriod!.date.getMonth()).toBe(1); // February
+      expect(lastPeriod!.start.getMonth()).toBe(1); // February
     });
 
     it("should handle reactive now updates", () => {
@@ -60,13 +60,13 @@ describe("Vue Reactivity Integration", () => {
       });
 
       expect(nowEffectCount).toBe(1);
-      expect(lastNow!.date).toEqual(nowRef.value);
+      expect(lastNow!.start).toEqual(nowRef.value);
 
       // Update now
       nowRef.value = new Date(2024, 0, 1, 13, 0, 0);
 
       expect(nowEffectCount).toBe(2);
-      expect(lastNow!.date.getHours()).toBe(13);
+      expect(lastNow!.start.getHours()).toBe(13);
     });
 
     it("should support computed properties based on temporal state", () => {
@@ -76,7 +76,7 @@ describe("Vue Reactivity Integration", () => {
       });
 
       const currentMonth = computed(() => {
-        return temporal.browsing.value.date.getMonth();
+        return temporal.browsing.value.start.getMonth();
       });
 
       const monthName = computed(() => {
@@ -120,7 +120,7 @@ describe("Vue Reactivity Integration", () => {
 
       expect(isRef(yearPeriod)).toBe(true);
       expect(yearPeriod.value.type).toBe("year");
-      expect(yearPeriod.value.date.getFullYear()).toBe(2024);
+      expect(yearPeriod.value.start.getFullYear()).toBe(2024);
 
       // Should update when browsing changes
       let effectCount = 0;
@@ -135,7 +135,7 @@ describe("Vue Reactivity Integration", () => {
       temporal.browsing.value = go(temporal.adapter, yearPeriod.value, 1);
 
       expect(effectCount).toBe(2);
-      expect(yearPeriod.value.date.getFullYear()).toBe(2025);
+      expect(yearPeriod.value.start.getFullYear()).toBe(2025);
     });
 
     it("should support multiple reactive periods", () => {
@@ -149,8 +149,8 @@ describe("Vue Reactivity Integration", () => {
       const week = usePeriod(temporal, "week");
 
       const periodInfo = computed(() => ({
-        year: year.value.date.getFullYear(),
-        month: month.value.date.getMonth(),
+        year: year.value.start.getFullYear(),
+        month: month.value.start.getMonth(),
         weekStart: week.value.start.getDate(),
       }));
 
@@ -215,7 +215,7 @@ describe("Vue Reactivity Integration", () => {
         return {
           count: selectedPeriods.value.length,
           hasSelection: selectedPeriods.value.length > 0,
-          firstDate: selectedPeriods.value[0]?.date,
+          firstDate: selectedPeriods.value[0]?.start,
         };
       });
 
@@ -292,8 +292,8 @@ describe("Vue Reactivity Integration", () => {
       const combined = computed(() => {
         updates.push("combined-computed");
         return {
-          year: yearPeriod.value.date.getFullYear(),
-          month: monthPeriod.value.date.getMonth(),
+          year: yearPeriod.value.start.getFullYear(),
+          month: monthPeriod.value.start.getMonth(),
         };
       });
 
@@ -398,16 +398,16 @@ describe("Vue Reactivity Integration", () => {
 
       const highlightedPeriods = computed(() => {
         return periods.value.filter((p) => {
-          return p.date.getDate() === highlightedDate.value.getDate();
+          return p.start.getDate() === highlightedDate.value.getDate();
         });
       });
 
       expect(highlightedPeriods.value.length).toBe(1);
-      expect(highlightedPeriods.value[0].date.getDate()).toBe(20);
+      expect(highlightedPeriods.value[0].start.getDate()).toBe(20);
 
       // Change highlighted date
       highlightedDate.value = new Date(2024, 0, 25);
-      expect(highlightedPeriods.value[0].date.getDate()).toBe(25);
+      expect(highlightedPeriods.value[0].start.getDate()).toBe(25);
     });
   });
 
@@ -423,7 +423,7 @@ describe("Vue Reactivity Integration", () => {
       // Create multiple reactive computations
       for (let i = 0; i < 10; i++) {
         const period = usePeriod(temporal, "day");
-        computed(() => period.value.date.getTime());
+        computed(() => period.value.start.getTime());
       }
 
       // Trigger multiple updates

@@ -55,11 +55,9 @@ export function createTemporalBuilder(temporal: VueTemporal): TemporalBuilder {
 
     period(dateOrOptions: Date | CustomPeriodOptions, unit?: Unit): Period {
       if (typeof dateOrOptions === "object" && "start" in dateOrOptions) {
-        // Custom period
-        return ops.period(temporal.adapter, dateOrOptions);
+        return ops.createPeriod(dateOrOptions.start, dateOrOptions.end);
       }
-      // Standard period
-      return ops.period(
+      return ops.derivePeriod(
         temporal.adapter,
         dateOrOptions as Date,
         unit! as AdapterUnit

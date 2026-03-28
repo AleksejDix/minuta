@@ -52,14 +52,12 @@ withAllAdapters("contains", (adapter) => {
         start: new Date(2024, 0, 10),
         end: new Date(2024, 0, 20),
         type: "custom" as const,
-        date: new Date(2024, 0, 15),
       };
 
       const period2 = {
         start: new Date(2024, 0, 15),
         end: new Date(2024, 0, 25),
         type: "custom" as const,
-        date: new Date(2024, 0, 20),
       };
 
       // period1 does not fully contain period2

@@ -29,11 +29,9 @@ export function createTemporalBuilder(
 
     period(dateOrOptions: Date | CustomPeriodOptions, unit?: Unit): Period {
       if (typeof dateOrOptions === "object" && "start" in dateOrOptions) {
-        // Custom period
-        return ops.period(temporal.adapter, dateOrOptions);
+        return ops.createPeriod(dateOrOptions.start, dateOrOptions.end);
       }
-      // Standard period
-      return ops.period(
+      return ops.derivePeriod(
         temporal.adapter,
         dateOrOptions as Date,
         unit! as AdapterUnit
@@ -54,7 +52,7 @@ export function createTemporalBuilder(
           ? ops.next(temporal.adapter, period)
           : ops.go(temporal.adapter, period, count);
 
-      setBrowsingDate(result.date);
+      setBrowsingDate(result.start);
 
       return result;
     },
@@ -65,7 +63,7 @@ export function createTemporalBuilder(
           ? ops.previous(temporal.adapter, period)
           : ops.go(temporal.adapter, period, -count);
 
-      setBrowsingDate(result.date);
+      setBrowsingDate(result.start);
 
       return result;
     },
@@ -73,7 +71,7 @@ export function createTemporalBuilder(
     go(period: Period, count: number): Period {
       const result = ops.go(temporal.adapter, period, count);
 
-      setBrowsingDate(result.date);
+      setBrowsingDate(result.start);
 
       return result;
     },

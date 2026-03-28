@@ -1,16 +1,25 @@
 import type { Period, Adapter, AdapterUnit } from "../types";
 import { validatePeriod } from "./validate";
 
+const DEFAULT_MAX_PERIODS = 100_000;
+
+export interface DivideOptions {
+  /** Maximum number of periods before throwing. Default: 10,000. */
+  maxPeriods?: number;
+}
+
 /**
  * Divide a period into smaller units
  */
 export function divide(
   adapter: Adapter,
   period: Period,
-  unit: AdapterUnit
+  unit: AdapterUnit,
+  options?: DivideOptions
 ): Period[] {
   validatePeriod(period);
 
+  const maxPeriods = options?.maxPeriods ?? DEFAULT_MAX_PERIODS;
   const periods: Period[] = [];
   let current = new Date(period.start);
 
@@ -37,9 +46,9 @@ export function divide(
       current = nextDate;
     }
 
-    if (periods.length > 2000) {
+    if (periods.length > maxPeriods) {
       throw new Error(
-        "divide() generated over 2000 periods — use a larger unit or smaller parent period"
+        `divide() generated over ${maxPeriods} periods — use a larger unit, smaller parent period, or increase maxPeriods`
       );
     }
   }

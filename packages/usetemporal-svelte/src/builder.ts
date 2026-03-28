@@ -46,9 +46,9 @@ export function createTemporalBuilder(
 
     period(dateOrOptions: Date | CustomPeriodOptions, unit?: Unit): Period {
       if (typeof dateOrOptions === "object" && "start" in dateOrOptions) {
-        return ops.period(temporal.adapter, dateOrOptions);
+        return ops.createPeriod(dateOrOptions.start, dateOrOptions.end);
       }
-      return ops.period(
+      return ops.derivePeriod(
         temporal.adapter,
         dateOrOptions as Date,
         unit! as AdapterUnit

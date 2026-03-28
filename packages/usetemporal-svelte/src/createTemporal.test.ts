@@ -16,8 +16,8 @@ describe("createTemporal", () => {
 
     const nextDay = temporal.next(get(temporal.browsing));
     expect(nextDay.start.getUTCDate()).toBe(2);
-    expect(get(temporal.browsing).date.toISOString()).toBe(
-      nextDay.date.toISOString()
+    expect(get(temporal.browsing).start.toISOString()).toBe(
+      nextDay.start.toISOString()
     );
 
     const month = usePeriod(temporal, "month");

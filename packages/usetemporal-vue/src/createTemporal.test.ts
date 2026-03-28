@@ -98,7 +98,7 @@ describe("createTemporal", () => {
         now: ref(nowDate),
       });
 
-      expect(temporal.now.value.date).toEqual(nowDate);
+      expect(temporal.now.value.start).toEqual(nowDate);
     });
 
     it("should default now to current date when not provided", () => {
@@ -109,7 +109,7 @@ describe("createTemporal", () => {
       });
       const afterCreate = new Date();
 
-      const nowTime = temporal.now.value.date.getTime();
+      const nowTime = temporal.now.value.start.getTime();
       expect(nowTime).toBeGreaterThanOrEqual(beforeCreate.getTime());
       expect(nowTime).toBeLessThanOrEqual(afterCreate.getTime());
     });
@@ -123,12 +123,12 @@ describe("createTemporal", () => {
         adapter: mockAdapter,
       });
 
-      expect(temporal.browsing.value.date).toEqual(testDate);
+      expect(temporal.browsing.value.start).toEqual(testDate);
 
       // Update ref
       const newDate = new Date(2024, 1, 1);
       dateRef.value = newDate;
-      expect(temporal.browsing.value.date).toEqual(testDate); // browsing is its own ref
+      expect(temporal.browsing.value.start).toEqual(testDate); // browsing is its own ref
     });
 
     it("should accept ref now and preserve reactivity", () => {
@@ -139,7 +139,7 @@ describe("createTemporal", () => {
         now: nowRef,
       });
 
-      expect(temporal.now.value.date).toEqual(nowRef.value);
+      expect(temporal.now.value.start).toEqual(nowRef.value);
 
       // Verify reactivity
       let effectCount = 0;
@@ -153,7 +153,7 @@ describe("createTemporal", () => {
       // Update ref
       nowRef.value = new Date(2024, 0, 21);
       expect(effectCount).toBe(2);
-      expect(temporal.now.value.date).toEqual(nowRef.value);
+      expect(temporal.now.value.start).toEqual(nowRef.value);
     });
   });
 
@@ -168,7 +168,7 @@ describe("createTemporal", () => {
       expect(browsing.start).toEqual(testDate);
       expect(browsing.end).toEqual(testDate);
       expect(browsing.type).toBe("day");
-      expect(browsing.date).toEqual(testDate);
+      expect(browsing.start).toEqual(testDate);
     });
 
     it("should initialize now period as computed", () => {
@@ -183,7 +183,7 @@ describe("createTemporal", () => {
       expect(now.start).toEqual(nowDate);
       expect(now.end).toEqual(nowDate);
       expect(now.type).toBe("second");
-      expect(now.date).toEqual(nowDate);
+      expect(now.start).toEqual(nowDate);
     });
   });
 
@@ -223,8 +223,8 @@ describe("createTemporal", () => {
         adapter: mockAdapter,
       });
 
-      const year = computed(() => temporal.browsing.value.date.getFullYear());
-      const month = computed(() => temporal.browsing.value.date.getMonth());
+      const year = computed(() => temporal.browsing.value.start.getFullYear());
+      const month = computed(() => temporal.browsing.value.start.getMonth());
 
       expect(year.value).toBe(2024);
       expect(month.value).toBe(0); // January
@@ -329,7 +329,7 @@ describe("createTemporal", () => {
         adapter: mockAdapter,
       });
 
-      expect(temporal.browsing.value.date).toEqual(endOfYear);
+      expect(temporal.browsing.value.start).toEqual(endOfYear);
     });
 
     it("should handle leap year dates", () => {
@@ -339,7 +339,7 @@ describe("createTemporal", () => {
         adapter: mockAdapter,
       });
 
-      expect(temporal.browsing.value.date).toEqual(leapDay);
+      expect(temporal.browsing.value.start).toEqual(leapDay);
     });
 
     it("should handle invalid weekStartsOn gracefully", () => {
@@ -449,7 +449,7 @@ describe("createTemporal", () => {
         const newPeriod = temporal.period(new Date(targetDate), "day");
         temporal.browsing.value = newPeriod;
 
-        expect(temporal.browsing.value.date.getTime()).toBe(
+        expect(temporal.browsing.value.start.getTime()).toBe(
           targetDate.getTime()
         );
         const start = temporal.browsing.value.start;

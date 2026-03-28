@@ -150,7 +150,6 @@ withAllAdapters("divide", (adapter) => {
         start: new Date(2024, 0, 15, 14, 30),
         end: new Date(2024, 0, 16, 10, 45),
         type: "custom" as const,
-        date: new Date(2024, 0, 16),
       };
 
       const hours = divide(adapter, customPeriod, "hour");

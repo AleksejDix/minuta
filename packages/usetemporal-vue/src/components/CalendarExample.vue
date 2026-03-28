@@ -52,8 +52,8 @@ const weekdayLabels = computed(() => WEEKDAY_ORDER[weekStartsOn.value]);
 const isCurrentMonth = computed(() => {
   const current = temporal.now.value;
   return (
-    month.value.date.getFullYear() === current.date.getFullYear() &&
-    month.value.date.getMonth() === current.date.getMonth()
+    month.value.start.getFullYear() === current.start.getFullYear() &&
+    month.value.start.getMonth() === current.start.getMonth()
   );
 });
 
@@ -72,7 +72,7 @@ function goToDay(day: Period) {
 }
 
 function isOutside(day: Period) {
-  return !temporal.contains(month.value, day.date);
+  return !temporal.contains(month.value, day.start);
 }
 
 function isToday(day: Period) {
@@ -116,7 +116,7 @@ function isToday(day: Period) {
     <div class="period-display">
       <div>
         <p class="eyebrow">Browsing</p>
-        <h2>{{ monthFormatter.format(month.date) }}</h2>
+        <h2>{{ monthFormatter.format(month.start) }}</h2>
       </div>
       <dl>
         <div>
@@ -156,10 +156,12 @@ function isToday(day: Period) {
           class="day-cell"
           :class="{ 'is-outside': isOutside(day), 'is-today': isToday(day) }"
           @click="goToDay(day)"
-          :title="dayFormatter.format(day.date)"
+          :title="dayFormatter.format(day.start)"
         >
-          <span class="date-number">{{ day.date.getDate() }}</span>
-          <span class="weekday-label">{{ dayFormatter.format(day.date) }}</span>
+          <span class="date-number">{{ day.start.getDate() }}</span>
+          <span class="weekday-label">{{
+            dayFormatter.format(day.start)
+          }}</span>
         </button>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { period } from "@allystudio/usetemporal/operations";
-import type { Period, AdapterUnit } from "@allystudio/usetemporal";
+import { derivePeriod } from "@allystudio/usetemporal/operations";
+import type { AdapterUnit, Period } from "@allystudio/usetemporal";
 import type { TemporalBuilder } from "./types";
 
 /**
@@ -16,7 +16,7 @@ export function usePeriod(
   unit: AdapterUnit
 ): Period {
   return useMemo(
-    () => period(temporal.adapter, temporal.browsing.date, unit),
+    () => derivePeriod(temporal.adapter, temporal.browsing.start, unit),
     [temporal.adapter, temporal.browsing, unit]
   );
 }

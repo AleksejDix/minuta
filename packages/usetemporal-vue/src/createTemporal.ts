@@ -44,18 +44,15 @@ export function createTemporal(
   const browsing = ref<Period>({
     start: browsingDate.value,
     end: browsingDate.value,
-    type: "day", // Default browsing unit is day
-    date: browsingDate.value,
+    type: "day",
   });
 
-  // Create a reactive Period for now that represents a point in time
-  const now = computed(() => {
+  const now = computed<Period>(() => {
     const nowValue = nowDate.value;
     return {
       start: nowValue,
       end: nowValue,
-      type: "second" as const, // Most precise unit for a point in time
-      date: nowValue,
+      type: "second",
     };
   });
 

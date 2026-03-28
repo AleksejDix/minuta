@@ -14,7 +14,6 @@ describe("input validation", () => {
       start: new Date("invalid"),
       end: new Date("also-invalid"),
       type: "day",
-      date: new Date("nope"),
     };
 
     it("divide() should throw on invalid date", () => {
@@ -41,7 +40,6 @@ describe("input validation", () => {
       start: new Date(2024, 5, 15),
       end: new Date(2024, 0, 1),
       type: "day",
-      date: new Date(2024, 0, 1),
     };
 
     it("divide() should throw on reversed period", () => {
@@ -70,7 +68,6 @@ describe("input validation", () => {
         start: point.start,
         end: point.start,
         type: "day",
-        date: point.start,
       };
       expect(() => divide(adapter, zeroDuration, "hour")).not.toThrow();
     });

@@ -102,7 +102,6 @@ withAllAdapters("split", (adapter) => {
         start: new Date(2024, 0, 10, 10, 0),
         end: new Date(2024, 0, 20, 18, 0),
         type: "custom" as const,
-        date: new Date(2024, 0, 15),
       };
 
       const splitDate = new Date(2024, 0, 15, 14, 0);
