@@ -1,9 +1,9 @@
-import type { Period, Adapter } from "../types";
+import type { TimePeriod, Adapter } from "../types";
 import { go } from "./go";
 
 /**
  * Move to the previous period
  */
-export function previous(adapter: Adapter, p: Period): Period {
+export function previous(adapter: Adapter, p: TimePeriod): TimePeriod {
   return go(adapter, p, -1);
 }

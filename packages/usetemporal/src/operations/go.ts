@@ -1,23 +1,16 @@
-import type { Period, Adapter, AdapterUnit } from "../types";
+import type { TimePeriod, Adapter, AdapterUnit } from "../types";
 import { derivePeriod } from "./period";
 import { shiftCustomPeriod } from "./customPeriod";
 
 /**
  * Move by a specific number of periods.
- * Only works with TimePeriod (adapter units + custom).
- * For PeriodSeries (stableMonth/stableYear), use createStableMonth/createStableYear directly.
+ * Only accepts TimePeriod (adapter units + custom).
  */
-export function go(adapter: Adapter, p: Period, steps: number): Period {
+export function go(adapter: Adapter, p: TimePeriod, steps: number): TimePeriod {
   if (steps === 0) return p;
 
   if (p.type === "custom") {
     return shiftCustomPeriod(p, steps);
-  }
-
-  if (p.type === "stableMonth" || p.type === "stableYear") {
-    throw new Error(
-      `Cannot navigate "${p.type}" with go(). Use createStableMonth() or createStableYear() directly.`
-    );
   }
 
   const unit: AdapterUnit = p.type;

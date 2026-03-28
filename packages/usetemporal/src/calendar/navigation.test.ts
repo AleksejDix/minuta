@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { createNativeAdapter } from "../adapters/native";
 import { createStableMonth } from "./stableMonth";
 import { createStableYear } from "./stableYear";
-import { go } from "../operations/go";
 import { divide } from "../operations/divide";
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 });
@@ -104,14 +103,4 @@ describe("stableYear navigation via createStableYear", () => {
   });
 });
 
-describe("go() rejects PeriodSeries", () => {
-  it("should throw for stableMonth", () => {
-    const grid = createStableMonth(adapter, 1, new Date(2024, 0, 15));
-    expect(() => go(adapter, grid, 1)).toThrow("Cannot navigate");
-  });
-
-  it("should throw for stableYear", () => {
-    const grid = createStableYear(adapter, 1, new Date(2024, 5, 15));
-    expect(() => go(adapter, grid, 1)).toThrow("Cannot navigate");
-  });
-});
+// go() does not accept PeriodSeries — the type system prevents it at compile time.
