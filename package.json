@@ -7,10 +7,10 @@
   "homepage": "https://usetemporal.vercel.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AleksejDix/usetemporal.git"
+    "url": "git+https://github.com/AleksejDix/minuta.git"
   },
   "bugs": {
-    "url": "https://github.com/AleksejDix/usetemporal/issues"
+    "url": "https://github.com/AleksejDix/minuta/issues"
   },
   "workspaces": [
     "packages/*"

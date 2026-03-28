@@ -501,7 +501,7 @@ Pads with previous/next month days. **One shape, every month.**
 # Thank you
 
 <div class="mt-4 text-center">
-  <p class="text-2xl font-bold">github.com/AleksejDix/usetemporal</p>
+  <p class="text-2xl font-bold">github.com/AleksejDix/minuta</p>
 </div>
 
 <iframe src="https://webzurich.ch/" class="w-full h-96 mt-4 rounded border" />

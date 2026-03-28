@@ -7,11 +7,11 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AleksejDix/usetemporal.git",
+    "url": "git+https://github.com/AleksejDix/minuta.git",
     "directory": "packages/usetemporal-svelte"
   },
   "bugs": {
-    "url": "https://github.com/AleksejDix/usetemporal/issues"
+    "url": "https://github.com/AleksejDix/minuta/issues"
   },
   "homepage": "https://usetemporal.vercel.app",
   "sideEffects": false,
