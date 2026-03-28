@@ -51,7 +51,7 @@ export function createStableMonth(
 }
 
 registerPeriodNavigator("stableMonth", (adapter, p, steps) => {
-  const meta = p.meta as { weekStartsOn: number; monthStart: Date };
-  const newMonthDate = adapter.add(meta.monthStart, steps, "month");
-  return createStableMonth(adapter, meta.weekStartsOn, newMonthDate);
+  if (p.type !== "stableMonth") return p;
+  const newMonthDate = adapter.add(p.meta.monthStart, steps, "month");
+  return createStableMonth(adapter, p.meta.weekStartsOn, newMonthDate);
 });

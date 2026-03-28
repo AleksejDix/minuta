@@ -1,20 +1,38 @@
+/** Metadata for stableMonth periods */
+export interface StableMonthMeta {
+  weekStartsOn: number;
+  monthStart: Date;
+}
+
+/** Metadata for stableYear periods */
+export interface StableYearMeta {
+  weekStartsOn: number;
+  yearStart: Date;
+}
+
 /**
  * Core data structure for representing time periods
  * This is a plain data structure - no methods, just data
  */
-export interface Period {
-  /** Start date of the period (inclusive) */
-  start: Date;
-
-  /** End date of the period (inclusive) */
-  end: Date;
-
-  /** Type of time unit this period represents */
-  type: Unit;
-
-  /** Optional metadata for derived period types (e.g., weekStartsOn for stableMonth/stableYear) */
-  meta?: Record<string, unknown>;
-}
+export type Period =
+  | {
+      start: Date;
+      end: Date;
+      type: "stableMonth";
+      meta: StableMonthMeta;
+    }
+  | {
+      start: Date;
+      end: Date;
+      type: "stableYear";
+      meta: StableYearMeta;
+    }
+  | {
+      start: Date;
+      end: Date;
+      type: Exclude<Unit, "stableMonth" | "stableYear">;
+      meta?: undefined;
+    };
 
 /**
  * Registry for unit types - extend this interface to add custom units
