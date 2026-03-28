@@ -7,9 +7,10 @@ import type { Period } from "../types";
  * - Period + Period → gap between them (from end of first to start of second)
  * - Mixed → gap from the date/period boundary to the other
  *
- * Returns a custom TimePeriod. If periods overlap, start > end (negative gap).
+ * Returns a custom TimePeriod. Always start <= end.
+ * If periods overlap or touch, returns a zero-duration period at the boundary.
  */
-export function difference(from: Period | Date, to: Period | Date): Period {
+export function gap(from: Period | Date, to: Period | Date): Period {
   const fromStart = from instanceof Date ? from : from.start;
   const fromEnd = from instanceof Date ? from : from.end;
   const toStart = to instanceof Date ? to : to.start;
@@ -33,25 +34,30 @@ export function difference(from: Period | Date, to: Period | Date): Period {
       start = from;
       end = new Date(toStart.getTime() - 1);
     } else {
-      start = from;
-      end = toEnd;
+      start = toEnd;
+      end = from;
     }
   } else if (to instanceof Date) {
     if (isForward) {
       start = new Date(fromEnd.getTime() + 1);
       end = to;
     } else {
-      start = fromStart;
-      end = to;
+      start = to;
+      end = fromStart;
     }
   } else {
     if (isForward) {
       start = new Date(fromEnd.getTime() + 1);
       end = new Date(toStart.getTime() - 1);
     } else {
-      start = fromStart;
-      end = toEnd;
+      start = new Date(toEnd.getTime() + 1);
+      end = new Date(fromStart.getTime() - 1);
     }
+  }
+
+  // Normalize: if periods overlap, there's no gap — return zero-duration at boundary
+  if (start.getTime() > end.getTime()) {
+    return { start, end: start, type: "custom" };
   }
 
   return { start, end, type: "custom" };
