@@ -71,10 +71,10 @@ describe("Calendar Units Integration", () => {
       });
 
       // First day should be Monday
-      expect(days[0].date.getDay()).toBe(1);
+      expect(days[0].start.getDay()).toBe(1);
 
       // Last day should be Sunday
-      expect(days[days.length - 1].date.getDay()).toBe(0);
+      expect(days[days.length - 1].start.getDay()).toBe(0);
     });
 
     it("should handle year transitions correctly", () => {
@@ -134,7 +134,7 @@ describe("Calendar Units Integration", () => {
         const stableMonth = createStableMonth(
           adapter,
           weekStartsOn,
-          month.date
+          month.start
         );
         const weeks = divide(adapter, stableMonth, "week");
         expect(weeks).toHaveLength(6);
@@ -154,10 +154,10 @@ describe("Calendar Units Integration", () => {
       const days = divide(adapter, year, "day");
 
       // First day should be Sunday
-      expect(days[0].date.getDay()).toBe(0);
+      expect(days[0].start.getDay()).toBe(0);
 
       // Last day should be Saturday
-      expect(days[days.length - 1].date.getDay()).toBe(6);
+      expect(days[days.length - 1].start.getDay()).toBe(6);
     });
 
     it("should adapt stableMonth to Wednesday start", () => {
@@ -171,7 +171,7 @@ describe("Calendar Units Integration", () => {
       const days = divide(adapter, month, "day");
 
       // First day should be Wednesday
-      expect(days[0].date.getDay()).toBe(3);
+      expect(days[0].start.getDay()).toBe(3);
 
       // Grid should still be 42 days
       expect(days).toHaveLength(42);

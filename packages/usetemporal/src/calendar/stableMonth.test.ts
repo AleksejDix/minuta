@@ -88,7 +88,7 @@ describe("StableMonth Unit", () => {
           expect(days).toHaveLength(42);
 
           // Check that we have days from January and March
-          const months = new Set(days.map((d) => d.date.getMonth()));
+          const months = new Set(days.map((d) => d.start.getMonth()));
           expect(months.size).toBeGreaterThan(1); // Should span multiple months
         });
 
@@ -103,7 +103,7 @@ describe("StableMonth Unit", () => {
           expect(days).toHaveLength(42);
 
           // Check that we have days from different years
-          const years = new Set(days.map((d) => d.date.getFullYear()));
+          const years = new Set(days.map((d) => d.start.getFullYear()));
           if (years.size > 1) {
             expect([...years]).toContain(2023);
             expect([...years]).toContain(2024);
@@ -200,7 +200,7 @@ describe("StableMonth Unit", () => {
       expect(days).toHaveLength(42);
 
       // February 2024 has 29 days
-      const febDays = days.filter((d) => d.date.getMonth() === 1);
+      const febDays = days.filter((d) => d.start.getMonth() === 1);
       expect(febDays.length).toBeLessThanOrEqual(29);
     });
 

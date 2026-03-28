@@ -6,6 +6,6 @@ import type { Period } from "../../types";
  * @returns true if the period's date is Saturday (6) or Sunday (0)
  */
 export function isWeekend(p: Period): boolean {
-  const day = p.date.getDay();
+  const day = p.start.getDay();
   return day === 0 || day === 6;
 }

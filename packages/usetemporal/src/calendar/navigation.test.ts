@@ -27,9 +27,10 @@ describe("stableMonth navigation", () => {
 
   it("should reconstruct correct grid for next month", () => {
     const feb = next(adapter, jan2024);
-    // Feb 2024 stableMonth should reference February
-    expect(feb.date.getMonth()).toBe(1); // February
-    expect(feb.date.getFullYear()).toBe(2024);
+    // Feb 2024 stableMonth should reference February via meta
+    const monthStart = feb.meta?.monthStart as Date;
+    expect(monthStart.getMonth()).toBe(1); // February
+    expect(monthStart.getFullYear()).toBe(2024);
     // Should be 42 days
     const days = divide(adapter, feb, "day");
     expect(days.length).toBe(42);
@@ -57,8 +58,6 @@ describe("stableMonth navigation", () => {
 
   it("should round-trip: previous(next(p)) returns same month", () => {
     const roundTrip = previous(adapter, next(adapter, jan2024));
-    expect(roundTrip.date.getMonth()).toBe(jan2024.date.getMonth());
-    expect(roundTrip.date.getFullYear()).toBe(jan2024.date.getFullYear());
     expect(roundTrip.start.getTime()).toBe(jan2024.start.getTime());
     expect(roundTrip.end.getTime()).toBe(jan2024.end.getTime());
   });
@@ -66,8 +65,9 @@ describe("stableMonth navigation", () => {
   it("should handle year boundary crossing", () => {
     const dec2024 = createStableMonth(adapter, 1, new Date(2024, 11, 15));
     const jan2025 = next(adapter, dec2024);
-    expect(jan2025.date.getMonth()).toBe(0);
-    expect(jan2025.date.getFullYear()).toBe(2025);
+    const monthStart = jan2025.meta?.monthStart as Date;
+    expect(monthStart.getMonth()).toBe(0);
+    expect(monthStart.getFullYear()).toBe(2025);
     expect(jan2025.type).toBe("stableMonth");
   });
 });
@@ -82,7 +82,8 @@ describe("stableYear navigation", () => {
 
   it("should reconstruct correct grid for next year", () => {
     const year2025 = next(adapter, year2024);
-    expect(year2025.date.getFullYear()).toBe(2025);
+    const yearStart = year2025.meta?.yearStart as Date;
+    expect(yearStart.getFullYear()).toBe(2025);
     // Should contain 52 or 53 weeks
     const weeks = divide(adapter, year2025, "week");
     expect(weeks.length).toBeGreaterThanOrEqual(52);
@@ -98,7 +99,7 @@ describe("stableYear navigation", () => {
 
   it("should round-trip: previous(next(p)) returns same year", () => {
     const roundTrip = previous(adapter, next(adapter, year2024));
-    expect(roundTrip.date.getFullYear()).toBe(year2024.date.getFullYear());
+    expect(roundTrip.start.getFullYear()).toBe(year2024.start.getFullYear());
   });
 });
 
@@ -108,7 +109,6 @@ describe("plain custom periods still use duration shifting", () => {
       start: new Date(2024, 0, 1),
       end: new Date(2024, 0, 10, 23, 59, 59, 999),
       type: "custom" as const,
-      date: new Date(2024, 0, 5),
     };
 
     const shifted = next(adapter, custom);

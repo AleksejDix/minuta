@@ -17,7 +17,7 @@ export function previous(adapter: Adapter, p: Period): Period {
   }
 
   const unit: AdapterUnit = p.type;
-  const prevValue = adapter.add(p.date, -1, unit);
+  const prevValue = adapter.add(p.start, -1, unit);
 
   return derivePeriod(adapter, prevValue, unit);
 }

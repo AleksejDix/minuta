@@ -6,7 +6,7 @@ import type { Period, Adapter, AdapterUnit } from "../types";
  *
  * @example
  * derivePeriod(adapter, new Date("2025-03-15"), "month")
- * // { start: Mar 1, end: Mar 31, type: "month", date: Mar 15 }
+ * // { start: Mar 1, end: Mar 31, type: "month" }
  */
 export function derivePeriod(
   adapter: Adapter,
@@ -26,12 +26,7 @@ export function derivePeriod(
   const start = adapter.startOf(date, unit);
   const end = adapter.endOf(date, unit);
 
-  return {
-    start,
-    end,
-    type: unit,
-    date,
-  };
+  return { start, end, type: unit };
 }
 
 /**
@@ -40,13 +35,8 @@ export function derivePeriod(
  *
  * @example
  * createPeriod(new Date("2025-01-01"), new Date("2025-03-31"))
- * // { start: Jan 1, end: Mar 31, type: "custom", date: midpoint }
+ * // { start: Jan 1, end: Mar 31, type: "custom" }
  */
 export function createPeriod(start: Date, end: Date): Period {
-  return {
-    start,
-    end,
-    type: "custom",
-    date: new Date((start.getTime() + end.getTime()) / 2),
-  };
+  return { start, end, type: "custom" };
 }

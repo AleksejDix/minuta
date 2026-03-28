@@ -130,22 +130,12 @@ withAllAdapters("period", (adapter) => {
       expect(week.end.getTime()).toBeGreaterThanOrEqual(newYearsEve.getTime());
     });
 
-    it("should preserve the reference date in the period", () => {
+    it("should have start normalized to unit boundary", () => {
       const date = new Date(2024, 5, 15, 14, 30);
-      const units = [
-        "year",
-        "month",
-        "week",
-        "day",
-        "hour",
-        "minute",
-        "second",
-      ] as const;
-
-      units.forEach((unit) => {
-        const p = period(adapter, date, unit);
-        expect(p.date.getTime()).toBe(date.getTime());
-      });
+      const p = period(adapter, date, "month");
+      // start should be June 1, not June 15
+      expect(p.start.getDate()).toBe(1);
+      expect(p.start.getMonth()).toBe(5);
     });
   });
 });

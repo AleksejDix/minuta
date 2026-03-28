@@ -19,7 +19,7 @@ export function go(adapter: Adapter, p: Period, steps: number): Period {
   }
 
   const unit: AdapterUnit = p.type;
-  const newValue = adapter.add(p.date, steps, unit);
+  const newValue = adapter.add(p.start, steps, unit);
 
   return derivePeriod(adapter, newValue, unit);
 }

@@ -68,13 +68,13 @@ export function createStableYear(
     start: bounds.start,
     end: bounds.end,
     type: "stableYear",
-    date: adapter.startOf(date, "year"),
-    meta: { weekStartsOn },
+    meta: { weekStartsOn, yearStart: adapter.startOf(date, "year") },
   };
 }
 
 registerPeriodNavigator("stableYear", (adapter, p, steps) => {
   const weekStartsOn = (p.meta?.weekStartsOn as number) ?? 1;
-  const newYearDate = adapter.add(p.date, steps, "year");
+  const yearStart = (p.meta?.yearStart as Date) ?? p.start;
+  const newYearDate = adapter.add(yearStart, steps, "year");
   return createStableYear(adapter, weekStartsOn, newYearDate);
 });

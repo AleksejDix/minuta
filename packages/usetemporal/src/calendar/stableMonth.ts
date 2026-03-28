@@ -46,13 +46,13 @@ export function createStableMonth(
     start: bounds.start,
     end: bounds.end,
     type: "stableMonth",
-    date: adapter.startOf(date, "month"),
-    meta: { weekStartsOn },
+    meta: { weekStartsOn, monthStart: adapter.startOf(date, "month") },
   };
 }
 
 registerPeriodNavigator("stableMonth", (adapter, p, steps) => {
   const weekStartsOn = (p.meta?.weekStartsOn as number) ?? 1;
-  const newMonthDate = adapter.add(p.date, steps, "month");
+  const monthStart = (p.meta?.monthStart as Date) ?? p.start;
+  const newMonthDate = adapter.add(monthStart, steps, "month");
   return createStableMonth(adapter, weekStartsOn, newMonthDate);
 });

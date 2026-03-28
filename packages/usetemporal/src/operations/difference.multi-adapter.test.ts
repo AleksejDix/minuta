@@ -118,17 +118,14 @@ withAllAdapters("difference", (adapter) => {
       expect(diff.end.getTime()).toBeLessThan(diff.start.getTime());
     });
 
-    it("should set reference date to midpoint", () => {
+    it("should return period spanning the two dates", () => {
       const date1 = new Date(2024, 0, 1);
       const date2 = new Date(2024, 0, 10);
 
       const diff = difference(adapter, date1, date2);
 
-      // Reference date should be midpoint
-      const expectedMidpoint = new Date(
-        (date1.getTime() + date2.getTime()) / 2
-      );
-      expect(diff.date.getTime()).toBe(expectedMidpoint.getTime());
+      expect(diff.start.getTime()).toBe(date1.getTime());
+      expect(diff.end.getTime()).toBe(date2.getTime());
     });
 
     it("should handle different time units", () => {

@@ -183,7 +183,7 @@ withAllAdapters("merge", (adapter) => {
       const merged = merge(adapter, periods, "week");
 
       // Reference date should come from the first period
-      expect(merged!.date.getTime()).toBe(periods[0].date.getTime());
+      expect(merged!.start.getTime()).toBe(periods[0].start.getTime());
     });
   });
 });

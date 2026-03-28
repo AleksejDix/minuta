@@ -12,7 +12,6 @@ export function shiftCustomPeriod(p: Period, steps: number): Period {
     start: newStart,
     end: newEnd,
     type: p.type,
-    date: newStart,
     meta: p.meta,
   };
 }

@@ -238,7 +238,7 @@ describe("stableYear unit", () => {
           });
 
           // First day should be the configured weekStartsOn
-          expect(days[0].date.getDay()).toBe(1); // Monday
+          expect(days[0].start.getDay()).toBe(1); // Monday
         });
 
         it("should maintain consistent grid alignment across years", () => {
@@ -250,7 +250,7 @@ describe("stableYear unit", () => {
             const days = divide(adapter, stableYear, "day");
 
             // First day should always be Monday (weekStartsOn = 1)
-            expect(days[0].date.getDay()).toBe(1);
+            expect(days[0].start.getDay()).toBe(1);
 
             // Last day should always be Sunday
             const lastDay = days[days.length - 1];

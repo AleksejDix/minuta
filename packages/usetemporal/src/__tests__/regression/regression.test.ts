@@ -62,7 +62,7 @@ describe("regression tests for critical bugs", () => {
       ];
 
       const merged = merge(adapter, periods, "week");
-      expect(merged!.date.getTime()).toBe(periods[0].date.getTime());
+      expect(merged!.start.getTime()).toBe(periods[0].start.getTime());
     });
   });
 

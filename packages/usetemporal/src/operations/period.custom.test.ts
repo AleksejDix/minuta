@@ -40,16 +40,6 @@ describe("createPeriod", () => {
     expect(customPeriod.end).toEqual(end);
   });
 
-  it("should calculate midpoint as reference date", () => {
-    const start = new Date(2024, 0, 1);
-    const end = new Date(2024, 0, 31);
-
-    const customPeriod = createPeriod(start, end);
-
-    const expectedMiddle = new Date((start.getTime() + end.getTime()) / 2);
-    expect(customPeriod.date).toEqual(expectedMiddle);
-  });
-
   it("should handle same start and end dates", () => {
     const date = new Date(2024, 0, 15, 12, 0, 0);
 
@@ -57,7 +47,6 @@ describe("createPeriod", () => {
 
     expect(customPeriod.start).toEqual(date);
     expect(customPeriod.end).toEqual(date);
-    expect(customPeriod.date).toEqual(date);
   });
 
   it("should handle time components", () => {
@@ -68,7 +57,6 @@ describe("createPeriod", () => {
 
     expect(customPeriod.start.getHours()).toBe(9);
     expect(customPeriod.end.getHours()).toBe(17);
-    expect(customPeriod.date.getHours()).toBe(13);
   });
 
   it("should handle cross-month periods", () => {
@@ -89,14 +77,5 @@ describe("createPeriod", () => {
 
     expect(customPeriod.start.getFullYear()).toBe(2023);
     expect(customPeriod.end.getFullYear()).toBe(2024);
-  });
-
-  it("should handle millisecond precision", () => {
-    const start = new Date(2024, 0, 1, 0, 0, 0, 0);
-    const end = new Date(2024, 0, 1, 0, 0, 0, 999);
-
-    const customPeriod = createPeriod(start, end);
-
-    expect(customPeriod.date.getMilliseconds()).toBe(499);
   });
 });

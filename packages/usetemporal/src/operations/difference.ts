@@ -98,13 +98,5 @@ export function difference(
     }
   }
 
-  // Calculate midpoint for reference date
-  const midpoint = new Date((start.getTime() + end.getTime()) / 2);
-
-  return {
-    start,
-    end,
-    type: "custom",
-    date: midpoint,
-  };
+  return { start, end, type: "custom" };
 }

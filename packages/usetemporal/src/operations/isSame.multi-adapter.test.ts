@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { isSame } from "./isSame";
 import { derivePeriod as period } from "./period";
+import type { Period } from "../types";
 import {
   withAllAdapters,
   getAdapterTestCases,
@@ -26,19 +27,17 @@ withAllAdapters("isSame operation", (adapter) => {
   });
 
   describe("custom period comparison", () => {
-    it("should return true for custom periods with same date", () => {
-      const date = new Date(2024, 5, 15, 14, 30, 45, 123);
-      const period1 = {
-        start: date,
-        end: new Date(date.getTime() + 1000 * 60 * 60 * 24),
-        type: "custom" as const,
-        date: date,
+    it("should return true for custom periods with same start", () => {
+      const start = new Date(2024, 5, 15, 14, 30, 45, 123);
+      const period1: Period = {
+        start,
+        end: new Date(start.getTime() + 1000 * 60 * 60 * 24),
+        type: "custom",
       };
-      const period2 = {
-        start: new Date(date.getTime() - 1000 * 60 * 60),
-        end: new Date(date.getTime() + 1000 * 60 * 60),
-        type: "custom" as const,
-        date: date,
+      const period2: Period = {
+        start,
+        end: new Date(start.getTime() + 1000 * 60 * 60),
+        type: "custom",
       };
 
       expect(isSame(adapter, period1, period2, "custom")).toBe(true);

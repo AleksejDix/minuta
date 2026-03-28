@@ -24,7 +24,6 @@ export function divide(
         start: start < period.start ? period.start : start,
         end: end > period.end ? period.end : end,
         type: unit,
-        date: new Date(current),
       });
     }
 
