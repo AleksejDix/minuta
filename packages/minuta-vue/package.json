@@ -1,0 +1,76 @@
+{
+  "name": "minuta-vue",
+  "version": "1.0.0-beta.1",
+  "description": "Vue.js integration for useTemporal with reactive composables",
+  "author": "Aleksej Dix <git@aleksejdix.com>",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleksejDix/usetemporal.git",
+    "directory": "packages/usetemporal-vue"
+  },
+  "bugs": {
+    "url": "https://github.com/AleksejDix/usetemporal/issues"
+  },
+  "homepage": "https://usetemporal.vercel.app",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./types": "./dist/types.d.ts"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "keywords": [
+    "vue",
+    "composable",
+    "reactive",
+    "temporal",
+    "time",
+    "calendar"
+  ],
+  "scripts": {
+    "pretest": "npm run build --workspace=minuta",
+    "build": "vite build",
+    "dev": "vite --mode demo",
+    "demo:build": "vite build --mode demo",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules",
+    "lint": "oxlint --config ../../oxlint.vite.json .",
+    "lint:fix": "oxlint --config ../../oxlint.vite.json --fix ."
+  },
+  "dependencies": {
+    "minuta": "^1.0.0-beta.1",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.1",
+    "@usetemporal/tsconfig": "^2.0.0-alpha.1",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "typescript": "^5.7.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.4.0",
+    "vitest": "^4.0.13"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
+}

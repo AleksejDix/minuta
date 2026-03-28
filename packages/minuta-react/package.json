@@ -1,0 +1,77 @@
+{
+  "name": "minuta-react",
+  "version": "1.0.0-beta.1",
+  "description": "React hooks for useTemporal",
+  "author": "Aleksej Dix <git@aleksejdix.com>",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleksejDix/usetemporal.git",
+    "directory": "packages/usetemporal-react"
+  },
+  "bugs": {
+    "url": "https://github.com/AleksejDix/usetemporal/issues"
+  },
+  "homepage": "https://usetemporal.vercel.app",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./types": "./dist/types.d.ts"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "keywords": [
+    "react",
+    "hooks",
+    "temporal",
+    "time",
+    "calendar"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --mode demo",
+    "demo:build": "vite build --mode demo",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules",
+    "lint": "oxlint --config ../../oxlint.vite.json .",
+    "lint:fix": "oxlint --config ../../oxlint.vite.json --fix ."
+  },
+  "dependencies": {
+    "minuta": "^1.0.0-beta.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "@testing-library/react": "^14.0.0",
+    "@types/node": "^22.12.1",
+    "@types/react": "^18.0.0",
+    "@usetemporal/tsconfig": "^2.0.0-alpha.1",
+    "jsdom": "^25.0.1",
+    "react": "^18.0.0",
+    "typescript": "^5.7.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.4.0",
+    "vitest": "^4.0.13"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  }
+}

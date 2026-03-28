@@ -1,0 +1,21 @@
+/**
+ * Pure operation functions - Level 1 API
+ *
+ * Import from 'minuta/operations'
+ *
+ * These are the fundamental operations for time manipulation.
+ * Tree-shakable - only import what you need.
+ */
+export {
+  contains,
+  difference,
+  divide,
+  go,
+  isSame,
+  merge,
+  next,
+  derivePeriod,
+  createPeriod,
+  previous,
+  split,
+} from "./operations/index";

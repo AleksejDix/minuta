@@ -10,9 +10,9 @@ export default defineConfig({
     },
     setupFiles: ["./vitest.setup.ts"],
     projects: [
-      "packages/usetemporal",
-      "packages/usetemporal-vue",
-      "packages/usetemporal-react",
+      "packages/minuta",
+      "packages/minuta-vue",
+      "packages/minuta-react",
     ],
     coverage: {
       provider: "v8",

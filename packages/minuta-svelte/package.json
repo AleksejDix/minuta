@@ -1,0 +1,70 @@
+{
+  "name": "minuta-svelte",
+  "version": "1.0.0-beta.1",
+  "description": "Svelte integration for useTemporal with reactive stores",
+  "author": "Aleksej Dix <git@aleksejdix.com>",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleksejDix/usetemporal.git",
+    "directory": "packages/usetemporal-svelte"
+  },
+  "bugs": {
+    "url": "https://github.com/AleksejDix/usetemporal/issues"
+  },
+  "homepage": "https://usetemporal.vercel.app",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./types": "./dist/types.d.ts"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "keywords": [
+    "svelte",
+    "store",
+    "temporal",
+    "time",
+    "calendar"
+  ],
+  "scripts": {
+    "pretest": "npm run build --workspace=minuta",
+    "build": "vite build",
+    "dev": "vite --mode demo",
+    "demo:build": "vite build --mode demo",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules",
+    "lint": "oxlint --config ../../oxlint.vite.json .",
+    "lint:fix": "oxlint --config ../../oxlint.vite.json --fix ."
+  },
+  "dependencies": {
+    "minuta": "^1.0.0-beta.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.1",
+    "@usetemporal/tsconfig": "^2.0.0-alpha.1",
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "svelte": "^5.0.0",
+    "typescript": "^5.7.3",
+    "vite": "^5.4.10",
+    "vite-plugin-dts": "^4.4.0",
+    "vitest": "^4.0.13"
+  },
+  "peerDependencies": {
+    "svelte": "^4.0.0 || ^5.0.0"
+  }
+}

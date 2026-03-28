@@ -1,7 +1,7 @@
 {
-  "name": "usetemporal",
+  "name": "minuta-monorepo",
   "private": true,
-  "description": "Revolutionary time library with unique divide() pattern for hierarchical time management",
+  "description": "Minuta — divide time into pieces",
   "author": "Aleksej Dix <git@aleksejdix.com>",
   "license": "Apache-2.0",
   "homepage": "https://usetemporal.vercel.app",
