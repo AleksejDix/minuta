@@ -1,5 +1,5 @@
 import * as ops from "@allystudio/usetemporal/operations";
-import type { AdapterUnit, Period, Unit } from "@allystudio/usetemporal";
+import type { AdapterUnit, Period } from "@allystudio/usetemporal";
 import type { TemporalBuilder, ReactTemporal } from "./types";
 
 /**
@@ -27,15 +27,12 @@ export function createTemporalBuilder(
   return {
     ...temporal,
 
-    period(dateOrOptions: Date | CustomPeriodOptions, unit?: Unit): Period {
-      if (typeof dateOrOptions === "object" && "start" in dateOrOptions) {
-        return ops.createPeriod(dateOrOptions.start, dateOrOptions.end);
-      }
-      return ops.derivePeriod(
-        temporal.adapter,
-        dateOrOptions as Date,
-        unit! as AdapterUnit
-      );
+    derivePeriod(date: Date, unit: AdapterUnit): Period {
+      return ops.derivePeriod(temporal.adapter, date, unit);
+    },
+
+    createPeriod(start: Date, end: Date): Period {
+      return ops.createPeriod(start, end);
     },
 
     divide(period: Period, unit: AdapterUnit): Period[] {
@@ -92,9 +89,4 @@ export function createTemporalBuilder(
       return ops.isSame(temporal.adapter, period1, period2, unit);
     },
   };
-}
-
-interface CustomPeriodOptions {
-  start: Date;
-  end: Date;
 }

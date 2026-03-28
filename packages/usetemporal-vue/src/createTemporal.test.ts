@@ -401,13 +401,13 @@ describe("createTemporal", () => {
         adapter: mondayAdapter,
       });
 
-      const mondayWeek = temporal.period(date, "week");
+      const mondayWeek = temporal.derivePeriod(date, "week");
       expect(mondayWeek.start.getDay()).toBe(1);
       expect(mondayWeek.start.getDate()).toBe(1);
 
       temporal.adapter = sundayAdapter;
 
-      const sundayWeek = temporal.period(date, "week");
+      const sundayWeek = temporal.derivePeriod(date, "week");
       expect(sundayWeek.start.getDay()).toBe(0);
       expect(sundayWeek.start.getDate()).toBe(31);
       expect(sundayWeek.start.getMonth()).toBe(11); // Dec 31, 2023
@@ -446,7 +446,7 @@ describe("createTemporal", () => {
           adapter: createNativeAdapter(),
         });
 
-        const newPeriod = temporal.period(new Date(targetDate), "day");
+        const newPeriod = temporal.derivePeriod(new Date(targetDate), "day");
         temporal.browsing.value = newPeriod;
 
         expect(temporal.browsing.value.start.getTime()).toBe(
