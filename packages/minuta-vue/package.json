@@ -53,11 +53,11 @@
     "lint:fix": "oxlint --config ../../oxlint.vite.json --fix ."
   },
   "dependencies": {
-    "minuta": "^1.0.0-beta.1",
-    "vue": "^3.5.18"
+    "minuta": "^1.0.0-beta.1"
   },
   "devDependencies": {
     "@types/node": "^22.12.1",
+    "vue": "^3.5.18",
     "@usetemporal/tsconfig": "^2.0.0-alpha.1",
     "@vitejs/plugin-vue": "^6.0.2",
     "typescript": "^5.7.3",
