@@ -333,10 +333,11 @@ describe("no DST: Asia/Tokyo", () => {
   const tokyo = createDateFnsTzAdapter({ timezone: "Asia/Tokyo" });
 
   it("every day has 24 hours (no DST)", () => {
-    const mar10 = derivePeriod(tokyo, new Date(Date.UTC(2024, 2, 10)), "day");
-    const mar31 = derivePeriod(tokyo, new Date(Date.UTC(2024, 2, 31)), "day");
-    expect(divide(tokyo, mar10, "hour").length).toBe(24);
-    expect(divide(tokyo, mar31, "hour").length).toBe(24);
+    // Use dates that aren't DST transitions in any major timezone
+    const jan15 = derivePeriod(tokyo, new Date(Date.UTC(2024, 0, 15)), "day");
+    const jul15 = derivePeriod(tokyo, new Date(Date.UTC(2024, 6, 15)), "day");
+    expect(divide(tokyo, jan15, "hour").length).toBe(24);
+    expect(divide(tokyo, jul15, "hour").length).toBe(24);
   });
 });
 
