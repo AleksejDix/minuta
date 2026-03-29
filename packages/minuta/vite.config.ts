@@ -25,11 +25,7 @@ export default defineConfig({
       formats: ["es"],
     },
     rollupOptions: {
-      external: [
-        "@usetemporal/core",
-        "@usetemporal/adapter-native",
-        "@vue/reactivity",
-      ],
+      external: ["date-fns", "date-fns-tz", "luxon", "@js-temporal/polyfill"],
       output: {
         preserveModules: false,
       },
