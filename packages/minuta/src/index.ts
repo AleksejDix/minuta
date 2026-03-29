@@ -10,6 +10,7 @@ export {
   split,
   merge,
   isSame,
+  gap,
 } from "./operations";
 
 // Types
