@@ -7,9 +7,13 @@ import type { Period } from "../types";
  */
 export function validatePeriod(p: Period): void {
   if (isNaN(p.start.getTime()) || isNaN(p.end.getTime())) {
-    throw new Error("Period contains invalid date");
+    throw new Error(
+      `Period contains invalid date: start=${p.start}, end=${p.end}`
+    );
   }
   if (p.start.getTime() > p.end.getTime()) {
-    throw new Error("Period start must be before or equal to end");
+    throw new Error(
+      `Period start (${p.start.toISOString()}) must be before or equal to end (${p.end.toISOString()})`
+    );
   }
 }

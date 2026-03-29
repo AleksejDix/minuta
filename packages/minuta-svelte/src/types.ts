@@ -1,4 +1,4 @@
-import type { Adapter, AdapterUnit, Period } from "minuta";
+import type { Adapter, AdapterUnit, Period, TimePeriod } from "minuta";
 import type { Readable, Writable } from "svelte/store";
 
 /**
@@ -27,14 +27,14 @@ export interface CreateMinutaOptions {
  * Temporal builder users interact with.
  */
 export interface MinutaBuilder extends SvelteMinuta {
-  derivePeriod(date: Date, unit: AdapterUnit): Period;
-  createPeriod(start: Date, end: Date): Period;
-  divide(period: Period, unit: AdapterUnit): Period[];
-  merge(periods: Period[], targetUnit?: AdapterUnit): Period;
-  next(period: Period, count?: number): Period;
-  previous(period: Period, count?: number): Period;
-  go(period: Period, count: number): Period;
-  split(period: Period, date: Date): [Period, Period];
+  derivePeriod(date: Date, unit: AdapterUnit): TimePeriod;
+  createPeriod(start: Date, end: Date): TimePeriod;
+  divide(period: Period, unit: AdapterUnit): TimePeriod[];
+  merge(periods: TimePeriod[], targetUnit?: AdapterUnit): TimePeriod;
+  next(period: TimePeriod, count?: number): TimePeriod;
+  previous(period: TimePeriod, count?: number): TimePeriod;
+  go(period: TimePeriod, count: number): TimePeriod;
+  split(period: TimePeriod, date: Date): [TimePeriod, TimePeriod];
   contains(period: Period, dateOrPeriod: Date | Period): boolean;
   isSame(
     period1: Period,

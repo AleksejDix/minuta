@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref } from "vue";
 import { derivePeriod } from "minuta/operations";
-import type { Period, AdapterUnit } from "minuta";
+import type { TimePeriod, AdapterUnit } from "minuta";
 import type { VueMinuta } from "./types";
 
 /**
@@ -15,7 +15,7 @@ import type { VueMinuta } from "./types";
 export function usePeriod(
   temporal: VueMinuta,
   unit: AdapterUnit | Ref<AdapterUnit> | ComputedRef<AdapterUnit>
-): ComputedRef<Period> {
+): ComputedRef<TimePeriod> {
   return computed(() => {
     const unitValue = typeof unit === "string" ? unit : unit.value;
     return derivePeriod(
