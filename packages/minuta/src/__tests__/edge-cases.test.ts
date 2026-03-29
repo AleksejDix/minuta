@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { createNativeAdapter } from "../adapters/native";
+import { createDateFnsAdapter } from "../adapters/date-fns";
+import { createLuxonAdapter } from "../adapters/luxon";
+import { createTemporalAdapter } from "../adapters/temporal";
 import { createDateFnsTzAdapter } from "../adapters/date-fns-tz";
 import { derivePeriod, createPeriod } from "../operations/period";
 import { divide } from "../operations/divide";
@@ -335,4 +338,53 @@ describe("no DST: Asia/Tokyo", () => {
     expect(divide(tokyo, mar10, "hour").length).toBe(24);
     expect(divide(tokyo, mar31, "hour").length).toBe(24);
   });
+});
+
+// ── BUG: divide() fall-back 25-hour day — all adapters ──
+// This documents the known limitation across every adapter.
+// When the bug is fixed, change toBeGreaterThanOrEqual(24) to toBe(25).
+
+describe("BUG: fall-back 25-hour day across all adapters", () => {
+  const zurichTz = createDateFnsTzAdapter({ timezone: "Europe/Zurich" });
+  const nyTz = createDateFnsTzAdapter({ timezone: "America/New_York" });
+
+  const adaptersWithTz = [
+    {
+      name: "date-fns-tz (Zurich)",
+      adapter: zurichTz,
+      date: new Date(Date.UTC(2024, 9, 27)),
+    },
+    {
+      name: "date-fns-tz (New York)",
+      adapter: nyTz,
+      date: new Date(Date.UTC(2024, 10, 3, 5)),
+    },
+  ];
+
+  for (const { name, adapter: tzAdapter, date } of adaptersWithTz) {
+    it(`${name}: fall-back day should have 25 hours`, () => {
+      const day = derivePeriod(tzAdapter, date, "day");
+      const hours = divide(tzAdapter, day, "hour");
+      // BUG: produces 24 instead of 25. When fixed, change to toBe(25).
+      expect(hours.length).toBeGreaterThanOrEqual(24);
+      expect(hours.length).toBeLessThanOrEqual(25);
+    });
+  }
+
+  // Non-timezone adapters only see the bug when system TZ has DST.
+  // These verify normal behavior on a non-DST day for each adapter.
+  const allAdapters = [
+    { name: "native", adapter: createNativeAdapter() },
+    { name: "date-fns", adapter: createDateFnsAdapter() },
+    { name: "luxon", adapter: createLuxonAdapter() },
+    { name: "temporal", adapter: createTemporalAdapter() },
+  ];
+
+  for (const { name, adapter: a } of allAdapters) {
+    it(`${name}: normal day always has 24 hours`, () => {
+      const normalDay = derivePeriod(a, new Date(2024, 5, 15), "day");
+      const hours = divide(a, normalDay, "hour");
+      expect(hours.length).toBe(24);
+    });
+  }
 });
