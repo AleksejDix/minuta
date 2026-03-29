@@ -2,13 +2,13 @@
 import type { Period } from "minuta";
 import type { Ref } from "vue";
 import { computed, unref } from "vue";
-import { useTemporal, usePeriod } from "minuta-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
 const props = defineProps<{
   period?: Period | Ref<Period>;
 }>();
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const month = usePeriod(temporal, "month");
 
 const formatter = new Intl.DateTimeFormat(temporal.locale, { month: "long" });

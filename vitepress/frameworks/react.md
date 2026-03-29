@@ -18,11 +18,11 @@ npm install minuta \
 ## Hooks example
 
 ```tsx
-import { useTemporal, usePeriod } from "minuta-react";
+import { useMinuta, usePeriod } from "minuta-react";
 import { createNativeAdapter } from "minuta/native";
 
 export function MonthCalendar() {
-  const temporal = useTemporal({
+  const temporal = useMinuta({
     adapter: createNativeAdapter({ weekStartsOn: 1 }),
     date: new Date(),
   });
@@ -69,7 +69,7 @@ export function App() {
     [weekStartsOn]
   );
 
-  const temporal = useTemporal({ adapter, date: new Date() });
+  const temporal = useMinuta({ adapter, date: new Date() });
 
   return (
     <div>
@@ -82,5 +82,5 @@ export function App() {
 
 ## API surface
 
-- `useTemporal(options)` — Creates a reactive builder bound to React state.
+- `useMinuta(options)` — Creates a reactive builder bound to React state.
 - `usePeriod(temporal, unit)` — Derives the target period as component state.

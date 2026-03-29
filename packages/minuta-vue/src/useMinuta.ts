@@ -8,8 +8,8 @@ import { injectMinuta } from "./minutaContext";
  *
  * @example
  * ```ts
- * const temporal = useMinuta();
- * const month = temporal.period(new Date(), "month");
+ * const minuta = useMinuta();
+ * const month = minuta.period(new Date(), "month");
  * ```
  */
 export function useMinuta(): MinutaBuilder {

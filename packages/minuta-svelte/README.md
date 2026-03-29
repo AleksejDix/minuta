@@ -23,7 +23,7 @@ npm install minuta/native
   import { writable } from "svelte/store";
   import {
     createTemporal,
-    useTemporal,
+    useMinuta,
     usePeriod
   } from "minuta-svelte";
   import { createNativeAdapter } from "minuta/native";
@@ -41,7 +41,7 @@ npm install minuta/native
   const month = usePeriod(temporal, "month");
 
   // Children can access the same builder from context
-  const nestedTemporal = useTemporal();
+  const nestedTemporal = useMinuta();
 </script>
 
 {#await $month}
@@ -69,14 +69,14 @@ weekStartsOn.set(0); // recompute derived periods through store updates
 
 ### API
 
-- `createTemporal(options: CreateTemporalOptions): TemporalBuilder`  
+- `createTemporal(options: CreateMinutaOptions): TemporalBuilder`  
   Creates (and automatically provides) a reactive temporal instance. Pass a
   Svelte `Writable<Date>` for `date` (and optionally for `now`) to stay in
   control of reactivity. Methods from the builder delegate to the core
   operations while passing the adapter automatically. Optionally provide
   `locale` (defaults to `"en"`).
 
-- `useTemporal(): TemporalBuilder`  
+- `useMinuta(): TemporalBuilder`  
   Injects the nearest provided temporal instance so nested components can reuse
   the same builder without prop drilling.
 

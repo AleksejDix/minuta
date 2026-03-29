@@ -8,11 +8,11 @@ export function provideMinuta(builder: MinutaBuilder) {
 }
 
 export function injectMinuta(): MinutaBuilder {
-  const temporal = inject<MinutaBuilder | null>(MINUTA_CONTEXT_KEY, null);
-  if (!temporal) {
+  const minuta = inject<MinutaBuilder | null>(MINUTA_CONTEXT_KEY, null);
+  if (!minuta) {
     throw new Error(
       "No minuta instance provided. Call createMinuta() in an ancestor component before using useMinuta()."
     );
   }
-  return temporal;
+  return minuta;
 }

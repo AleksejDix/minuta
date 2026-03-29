@@ -17,11 +17,11 @@ npm install minuta/native
 ## Quick Start
 
 ```tsx
-import { useTemporal, usePeriod } from "minuta-react";
+import { useMinuta, usePeriod } from "minuta-react";
 import { createNativeAdapter } from "minuta/native";
 
 function Calendar() {
-  const temporal = useTemporal({
+  const temporal = useMinuta({
     adapter: createNativeAdapter(),
     date: new Date(),
   });
@@ -55,7 +55,7 @@ function App() {
     [weekStartsOn]
   );
 
-  const temporal = useTemporal({ adapter, date: new Date() });
+  const temporal = useMinuta({ adapter, date: new Date() });
 
   return (
     <div>
@@ -69,11 +69,11 @@ function App() {
 ### Calendar Component Example
 
 ```tsx
-import { useTemporal, usePeriod } from "minuta-react";
+import { useMinuta, usePeriod } from "minuta-react";
 import { createNativeAdapter } from "minuta/native";
 
 function MonthCalendar() {
-  const temporal = useTemporal({
+  const temporal = useMinuta({
     adapter: createNativeAdapter(),
     date: new Date(),
   });
@@ -139,7 +139,7 @@ export function Demo() {
 
 ## API
 
-### `useTemporal(options: UseTemporalOptions): TemporalBuilder`
+### `useMinuta(options: UseMinutaOptions): TemporalBuilder`
 
 Creates a reactive temporal instance with builder methods.
 
@@ -174,7 +174,7 @@ Creates a reactive period that updates when `browsing` changes.
 All operations from `minuta/operations` are available as builder methods:
 
 ```tsx
-const temporal = useTemporal({ adapter, date: new Date() });
+const temporal = useMinuta({ adapter, date: new Date() });
 
 // Create periods
 const year = temporal.period(new Date(), "year");
@@ -202,7 +202,7 @@ All core operations and types are re-exported for convenience:
 ```tsx
 import {
   // Hooks
-  useTemporal,
+  useMinuta,
   usePeriod,
 
   // Operations
@@ -240,7 +240,7 @@ Navigation helpers always keep `browsing` in sync with the period you pass,
 making it safe to drive state changes from derived periods.
 
 ```tsx
-const temporal = useTemporal({ adapter, date: new Date() });
+const temporal = useMinuta({ adapter, date: new Date() });
 const month = usePeriod(temporal, "month");
 
 // Derived navigation reuses the same helpers

@@ -8,11 +8,11 @@ export function provideMinuta(builder: MinutaBuilder) {
 }
 
 export function injectMinuta(): MinutaBuilder {
-  const temporal = getContext<MinutaBuilder>(MINUTA_CONTEXT_KEY);
-  if (!temporal) {
+  const minuta = getContext<MinutaBuilder>(MINUTA_CONTEXT_KEY);
+  if (!minuta) {
     throw new Error(
       "No minuta instance provided. Call createMinuta() inside a component before using useMinuta()."
     );
   }
-  return temporal;
+  return minuta;
 }

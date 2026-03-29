@@ -45,67 +45,67 @@ describe("createMinuta", () => {
   });
 
   describe("basic initialization", () => {
-    it("should create temporal with required options", () => {
-      const temporal = createMinuta({
+    it("should create minuta with required options", () => {
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
       });
 
-      expect(temporal).toBeDefined();
-      expect(temporal.adapter).toBe(mockAdapter);
-      expect(temporal.weekStartsOn).toBe(1); // Default Monday
-      expect(isRef(temporal.browsing)).toBe(true);
-      expect(isRef(temporal.now)).toBe(true);
+      expect(minuta).toBeDefined();
+      expect(minuta.adapter).toBe(mockAdapter);
+      expect(minuta.weekStartsOn).toBe(1); // Default Monday
+      expect(isRef(minuta.browsing)).toBe(true);
+      expect(isRef(minuta.now)).toBe(true);
     });
 
     it("should accept custom weekStartsOn values", () => {
       for (let day = 0; day <= 6; day++) {
-        const temporal = createMinuta({
+        const minuta = createMinuta({
           date: ref(testDate),
           adapter: mockAdapter,
           weekStartsOn: day,
         });
-        expect(temporal.weekStartsOn).toBe(day);
+        expect(minuta.weekStartsOn).toBe(day);
       }
     });
 
     it("should default locale to en", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
       });
-      expect(temporal.locale).toBe("en");
+      expect(minuta.locale).toBe("en");
     });
 
     it("should accept custom locale", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
         locale: "zh-CN",
       });
-      expect(temporal.locale).toBe("zh-CN");
+      expect(minuta.locale).toBe("zh-CN");
     });
 
     it("should use provided now date", () => {
       const nowDate = new Date(2024, 0, 20, 10, 0, 0);
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
         now: ref(nowDate),
       });
 
-      expect(temporal.now.value.start).toEqual(nowDate);
+      expect(minuta.now.value.start).toEqual(nowDate);
     });
 
     it("should default now to current date when not provided", () => {
       const beforeCreate = new Date();
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
       });
       const afterCreate = new Date();
 
-      const nowTime = temporal.now.value.start.getTime();
+      const nowTime = minuta.now.value.start.getTime();
       expect(nowTime).toBeGreaterThanOrEqual(beforeCreate.getTime());
       expect(nowTime).toBeLessThanOrEqual(afterCreate.getTime());
     });
@@ -114,33 +114,33 @@ describe("createMinuta", () => {
   describe("reactive date handling", () => {
     it("should accept ref date and preserve reactivity", () => {
       const dateRef = ref(testDate);
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: dateRef,
         adapter: mockAdapter,
       });
 
-      expect(temporal.browsing.value.start).toEqual(testDate);
+      expect(minuta.browsing.value.start).toEqual(testDate);
 
       // Update ref
       const newDate = new Date(2024, 1, 1);
       dateRef.value = newDate;
-      expect(temporal.browsing.value.start).toEqual(testDate); // browsing is its own ref
+      expect(minuta.browsing.value.start).toEqual(testDate); // browsing is its own ref
     });
 
     it("should accept ref now and preserve reactivity", () => {
       const nowRef = ref(new Date(2024, 0, 20));
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
         now: nowRef,
       });
 
-      expect(temporal.now.value.start).toEqual(nowRef.value);
+      expect(minuta.now.value.start).toEqual(nowRef.value);
 
       // Verify reactivity
       let effectCount = 0;
       effect(() => {
-        temporal.now.value;
+        minuta.now.value;
         effectCount++;
       });
 
@@ -149,18 +149,18 @@ describe("createMinuta", () => {
       // Update ref
       nowRef.value = new Date(2024, 0, 21);
       expect(effectCount).toBe(2);
-      expect(temporal.now.value.start).toEqual(nowRef.value);
+      expect(minuta.now.value.start).toEqual(nowRef.value);
     });
   });
 
   describe("period initialization", () => {
     it("should initialize browsing period correctly", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
       });
 
-      const browsing = temporal.browsing.value;
+      const browsing = minuta.browsing.value;
       expect(browsing.start).toEqual(testDate);
       expect(browsing.end).toEqual(testDate);
       expect(browsing.type).toBe("day");
@@ -169,13 +169,13 @@ describe("createMinuta", () => {
 
     it("should initialize now period as computed", () => {
       const nowDate = new Date(2024, 0, 20, 15, 30, 45);
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
         now: ref(nowDate),
       });
 
-      const now = temporal.now.value;
+      const now = minuta.now.value;
       expect(now.start).toEqual(nowDate);
       expect(now.end).toEqual(nowDate);
       expect(now.type).toBe("second");
@@ -185,7 +185,7 @@ describe("createMinuta", () => {
 
   describe("reactivity behavior", () => {
     it("should trigger effects when browsing changes", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
       });
@@ -194,7 +194,7 @@ describe("createMinuta", () => {
       let lastBrowsing;
 
       effect(() => {
-        lastBrowsing = temporal.browsing.value;
+        lastBrowsing = minuta.browsing.value;
         effectCount++;
       });
 
@@ -207,26 +207,26 @@ describe("createMinuta", () => {
         type: "day" as const,
         date: new Date(2024, 1, 1),
       };
-      temporal.browsing.value = newPeriod;
+      minuta.browsing.value = newPeriod;
 
       expect(effectCount).toBe(2);
       expect(lastBrowsing).toEqual(newPeriod);
     });
 
-    it("should support computed properties based on temporal state", () => {
-      const temporal = createMinuta({
+    it("should support computed properties based on minuta state", () => {
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
       });
 
-      const year = computed(() => temporal.browsing.value.start.getFullYear());
-      const month = computed(() => temporal.browsing.value.start.getMonth());
+      const year = computed(() => minuta.browsing.value.start.getFullYear());
+      const month = computed(() => minuta.browsing.value.start.getMonth());
 
       expect(year.value).toBe(2024);
       expect(month.value).toBe(0); // January
 
       // Update browsing
-      temporal.browsing.value = {
+      minuta.browsing.value = {
         start: new Date(2025, 5, 15),
         end: new Date(2025, 5, 15),
         type: "day",
@@ -238,7 +238,7 @@ describe("createMinuta", () => {
     });
 
     it("should cleanup reactive effects properly", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
       });
@@ -247,7 +247,7 @@ describe("createMinuta", () => {
 
       // Create effect runner
       const runner = effect(() => {
-        temporal.browsing.value;
+        minuta.browsing.value;
         effectCount++;
       });
 
@@ -256,7 +256,7 @@ describe("createMinuta", () => {
       const initialCount = effectCount;
 
       // Update should trigger effect
-      temporal.browsing.value = {
+      minuta.browsing.value = {
         start: new Date(2025, 0, 1),
         end: new Date(2025, 0, 1),
         type: "day",
@@ -270,7 +270,7 @@ describe("createMinuta", () => {
       runner.effect.stop();
 
       // Update should not trigger effect after stopping
-      temporal.browsing.value = {
+      minuta.browsing.value = {
         start: new Date(2025, 6, 1),
         end: new Date(2025, 6, 1),
         type: "day",
@@ -284,7 +284,7 @@ describe("createMinuta", () => {
       const dateRef = ref(testDate);
       const nowRef = ref(new Date(2024, 0, 20));
 
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: dateRef,
         adapter: mockAdapter,
         now: nowRef,
@@ -293,12 +293,12 @@ describe("createMinuta", () => {
       const updates: string[] = [];
 
       effect(() => {
-        temporal.browsing.value;
+        minuta.browsing.value;
         updates.push("browsing");
       });
 
       effect(() => {
-        temporal.now.value;
+        minuta.now.value;
         updates.push("now");
       });
 
@@ -320,42 +320,42 @@ describe("createMinuta", () => {
   describe("edge cases", () => {
     it("should handle dates at year boundaries", () => {
       const endOfYear = new Date(2023, 11, 31, 23, 59, 59);
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(endOfYear),
         adapter: mockAdapter,
       });
 
-      expect(temporal.browsing.value.start).toEqual(endOfYear);
+      expect(minuta.browsing.value.start).toEqual(endOfYear);
     });
 
     it("should handle leap year dates", () => {
       const leapDay = new Date(2024, 1, 29); // Feb 29, 2024
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(leapDay),
         adapter: mockAdapter,
       });
 
-      expect(temporal.browsing.value.start).toEqual(leapDay);
+      expect(minuta.browsing.value.start).toEqual(leapDay);
     });
 
     it("should handle invalid weekStartsOn gracefully", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
         weekStartsOn: -1 as any,
       });
 
-      expect(temporal.weekStartsOn).toBe(-1); // Uses provided value
+      expect(minuta.weekStartsOn).toBe(-1); // Uses provided value
     });
 
     it("should handle weekStartsOn as undefined", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
         weekStartsOn: undefined,
       });
 
-      expect(temporal.weekStartsOn).toBe(1); // Default Monday
+      expect(minuta.weekStartsOn).toBe(1); // Default Monday
     });
   });
 
@@ -369,22 +369,22 @@ describe("createMinuta", () => {
         diff: vi.fn(),
       };
 
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: customAdapter,
       });
 
-      expect(temporal.adapter).toBe(customAdapter);
+      expect(minuta.adapter).toBe(customAdapter);
     });
 
     it("should preserve adapter reference", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter: mockAdapter,
       });
 
-      expect(temporal.adapter).toBe(mockAdapter);
-      expect(temporal.adapter.startOf).toBe(mockAdapter.startOf);
+      expect(minuta.adapter).toBe(mockAdapter);
+      expect(minuta.adapter.startOf).toBe(mockAdapter.startOf);
     });
 
     it("should recompute week periods when adapter weekStartsOn changes", () => {
@@ -392,18 +392,18 @@ describe("createMinuta", () => {
       const mondayAdapter = createNativeAdapter({ weekStartsOn: 1 });
       const sundayAdapter = createNativeAdapter({ weekStartsOn: 0 });
 
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date,
         adapter: mondayAdapter,
       });
 
-      const mondayWeek = temporal.derivePeriod(date, "week");
+      const mondayWeek = minuta.derivePeriod(date, "week");
       expect(mondayWeek.start.getDay()).toBe(1);
       expect(mondayWeek.start.getDate()).toBe(1);
 
-      temporal.adapter = sundayAdapter;
+      minuta.adapter = sundayAdapter;
 
-      const sundayWeek = temporal.derivePeriod(date, "week");
+      const sundayWeek = minuta.derivePeriod(date, "week");
       expect(sundayWeek.start.getDay()).toBe(0);
       expect(sundayWeek.start.getDate()).toBe(31);
       expect(sundayWeek.start.getMonth()).toBe(11); // Dec 31, 2023
@@ -437,19 +437,19 @@ describe("createMinuta", () => {
 
       it(`should assign browsing period for ${label}`, () => {
         const baseDate = new Date(Date.UTC(2024, 0, 1));
-        const temporal = createMinuta({
+        const minuta = createMinuta({
           date: ref(baseDate),
           adapter: createNativeAdapter(),
         });
 
-        const newPeriod = temporal.derivePeriod(new Date(targetDate), "day");
-        temporal.browsing.value = newPeriod;
+        const newPeriod = minuta.derivePeriod(new Date(targetDate), "day");
+        minuta.browsing.value = newPeriod;
 
-        expect(temporal.browsing.value.start.getTime()).toBe(
+        expect(minuta.browsing.value.start.getTime()).toBe(
           targetDate.getTime()
         );
-        const start = temporal.browsing.value.start;
-        const end = temporal.browsing.value.end;
+        const start = minuta.browsing.value.start;
+        const end = minuta.browsing.value.end;
 
         expect(start.getFullYear()).toBe(targetDate.getFullYear());
         expect(start.getMonth()).toBe(targetDate.getMonth());

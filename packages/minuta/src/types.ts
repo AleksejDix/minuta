@@ -75,8 +75,8 @@ export type Unit = AdapterUnit | "custom" | "stableMonth" | "stableYear";
  * import { UNITS } from 'minuta'
  *
  * // Better autocomplete
- * const months = divide(temporal, year, UNITS.month)
- * const days = divide(temporal, month, UNITS.day)
+ * const months = divide(adapter, year, UNITS.month)
+ * const days = divide(adapter, month, UNITS.day)
  */
 export const UNITS = Object.freeze({
   year: "year",

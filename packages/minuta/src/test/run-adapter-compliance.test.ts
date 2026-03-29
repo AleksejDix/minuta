@@ -4,7 +4,7 @@ import { createNativeAdapter } from "../adapters/native";
 import { createDateFnsAdapter } from "../adapters/date-fns";
 import { createDateFnsTzAdapter } from "../adapters/date-fns-tz";
 import { createLuxonAdapter } from "../adapters/luxon";
-import { createTemporalAdapter } from "../adapters/temporal";
+import { createMinutaAdapter } from "../adapters/temporal";
 
 // Run compliance tests for all adapters
 describe("Adapter Compliance Tests", () => {
@@ -25,5 +25,5 @@ describe("Adapter Compliance Tests", () => {
   testAdapterCompliance("Luxon", createLuxonAdapter({ weekStartsOn: 1 }));
 
   // Temporal adapter - now includes polyfill automatically
-  testAdapterCompliance("Temporal", createTemporalAdapter({ weekStartsOn: 1 }));
+  testAdapterCompliance("Temporal", createMinutaAdapter({ weekStartsOn: 1 }));
 });

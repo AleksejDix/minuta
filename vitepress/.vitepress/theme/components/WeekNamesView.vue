@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useTemporal, usePeriod } from "minuta-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const weekPeriod = usePeriod(temporal, "week");
 const weekdays = computed(() => temporal.divide(weekPeriod.value, "day"));
 

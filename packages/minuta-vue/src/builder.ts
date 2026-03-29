@@ -19,53 +19,53 @@ import type { MinutaBuilder, VueMinuta } from "./types";
  * This wraps pure operations with automatic adapter passing.
  * Each method is tree-shakable - unused methods add 0KB to bundle.
  *
- * @param temporal - The base minuta instance
+ * @param minuta - The base minuta instance
  * @returns A minuta builder with convenience methods
  *
  * @example
  * ```typescript
- * const temporal = createMinuta({ adapter: nativeAdapter, date: ref(new Date()) });
- * const builder = createMinutaBuilder(temporal);
+ * const minuta = createMinuta({ adapter: nativeAdapter, date: ref(new Date()) });
+ * const builder = createMinutaBuilder(minuta);
  *
  * const year = builder.period(new Date(), 'year');
  * const months = builder.divide(year, 'month');
  * ```
  */
-export function createMinutaBuilder(temporal: VueMinuta): MinutaBuilder {
+export function createMinutaBuilder(minuta: VueMinuta): MinutaBuilder {
   return {
     get adapter() {
-      return temporal.adapter;
+      return minuta.adapter;
     },
     set adapter(value) {
-      temporal.adapter = value;
+      minuta.adapter = value;
     },
     get weekStartsOn() {
-      return temporal.weekStartsOn;
+      return minuta.weekStartsOn;
     },
     set weekStartsOn(value) {
-      temporal.weekStartsOn = value;
+      minuta.weekStartsOn = value;
     },
     get browsing() {
-      return temporal.browsing;
+      return minuta.browsing;
     },
     set browsing(value) {
-      temporal.browsing = value;
+      minuta.browsing = value;
     },
     get now() {
-      return temporal.now;
+      return minuta.now;
     },
     set now(value) {
-      temporal.now = value;
+      minuta.now = value;
     },
     get locale() {
-      return temporal.locale;
+      return minuta.locale;
     },
     set locale(value: string) {
-      temporal.locale = value;
+      minuta.locale = value;
     },
 
     derivePeriod(date: Date, unit: AdapterUnit): TimePeriod {
-      return derivePeriod(temporal.adapter, date, unit);
+      return derivePeriod(minuta.adapter, date, unit);
     },
 
     createPeriod(start: Date, end: Date): TimePeriod {
@@ -73,34 +73,34 @@ export function createMinutaBuilder(temporal: VueMinuta): MinutaBuilder {
     },
 
     divide(period: Period, unit: AdapterUnit): TimePeriod[] {
-      return divide(temporal.adapter, period, unit);
+      return divide(minuta.adapter, period, unit);
     },
 
     merge(periods: TimePeriod[], targetUnit?: AdapterUnit): TimePeriod {
-      return merge(temporal.adapter, periods, targetUnit);
+      return merge(minuta.adapter, periods, targetUnit);
     },
 
     next(period: TimePeriod, count: number = 1): TimePeriod {
       const result =
         count === 1
-          ? next(temporal.adapter, period)
-          : go(temporal.adapter, period, count);
-      temporal.browsing.value = result;
+          ? next(minuta.adapter, period)
+          : go(minuta.adapter, period, count);
+      minuta.browsing.value = result;
       return result;
     },
 
     previous(period: TimePeriod, count: number = 1): TimePeriod {
       const result =
         count === 1
-          ? previous(temporal.adapter, period)
-          : go(temporal.adapter, period, -count);
-      temporal.browsing.value = result;
+          ? previous(minuta.adapter, period)
+          : go(minuta.adapter, period, -count);
+      minuta.browsing.value = result;
       return result;
     },
 
     go(period: TimePeriod, count: number): TimePeriod {
-      const result = go(temporal.adapter, period, count);
-      temporal.browsing.value = result;
+      const result = go(minuta.adapter, period, count);
+      minuta.browsing.value = result;
       return result;
     },
 
@@ -117,7 +117,7 @@ export function createMinutaBuilder(temporal: VueMinuta): MinutaBuilder {
       period2: Period,
       unit: AdapterUnit | "custom"
     ): boolean {
-      return isSame(temporal.adapter, period1, period2, unit);
+      return isSame(minuta.adapter, period1, period2, unit);
     },
   };
 }

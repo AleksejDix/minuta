@@ -11,7 +11,7 @@ const props = defineProps<{
   week: Period | Ref<Period>;
 }>();
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const targetWeek = computed(() => unref(props.week));
 const days = computed(() => temporal.divide(targetWeek.value, "day"));
 const hourFormatter = computed(

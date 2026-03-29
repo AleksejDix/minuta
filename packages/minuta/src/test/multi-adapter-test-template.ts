@@ -6,7 +6,7 @@
  * import { createNativeAdapter } from "../adapters/native";
  *
  * describe("myOperation", () => {
- *   const temporal = createTemporal({
+ *   const minuta = createMinuta({
  *     adapter: createNativeAdapter({ weekStartsOn: 1 }),
  *   });
  *
@@ -21,7 +21,7 @@
  * import { withAllAdapters } from "../test/shared-adapter-tests";
  *
  * withAllAdapters("myOperation", (adapter) => {
- *   const temporal = createTemporal({ adapter });
+ *   const minuta = createMinuta({ adapter });
  *
  *   it("should do something", () => {
  *     // test
@@ -32,13 +32,13 @@
 
 import { describe, it } from "vitest";
 import { withAllAdapters, getAdapterTestCases } from "./shared-adapter-tests";
-// import { createTemporal } from "../createTemporal";
+// import { createMinuta } from "../createTemporal";
 
 // Example 1: Using withAllAdapters for simple conversion
 export function example1() {
   withAllAdapters("operation name", () => {
     // Setup that uses the adapter
-    // const temporal = createTemporal({
+    // const minuta = createMinuta({
     //   adapter,
     //   weekStartsOn: 1,
     //   date: new Date(2024, 0, 1),
@@ -59,7 +59,7 @@ export function example2() {
   const adapters = getAdapterTestCases();
 
   describe.each(adapters)("operation with %s adapter", () => {
-    // const temporal = createTemporal({
+    // const minuta = createMinuta({
     //   adapter,
     //   weekStartsOn: 1,
     //   date: new Date(2024, 0, 1),
@@ -90,9 +90,9 @@ export function example3() {
 
       // Skip tests for specific adapters if needed
       it.skipIf(adapterName === "Temporal")(
-        "test not applicable to temporal adapter",
+        "test not applicable to Temporal adapter",
         () => {
-          // Test that doesn't make sense for temporal adapter (e.g., not yet supported)
+          // Test that doesn't make sense for Temporal adapter (e.g., not yet supported)
         }
       );
 

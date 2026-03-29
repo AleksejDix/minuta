@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Minuta } from "minuta-vue";
 
-const { now, go } = useTemporal();
+const { now, go } = useMinuta();
 </script>
 
 <template>

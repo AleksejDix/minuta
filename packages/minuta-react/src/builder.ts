@@ -19,27 +19,27 @@ import type { MinutaBuilder, ReactMinuta } from "./types";
  * This wraps pure operations with automatic adapter passing.
  * Each method is tree-shakable - unused methods add 0KB to bundle.
  *
- * @param temporal - The base minuta instance
+ * @param minuta - The base minuta instance
  * @param setBrowsingDate - React state setter for browsing date
  * @returns A minuta builder with convenience methods
  *
  * @example
  * ```typescript
- * const temporal = useMinuta({ adapter: nativeAdapter, date: new Date() });
+ * const minuta = useMinuta({ adapter: nativeAdapter, date: new Date() });
  *
- * const year = temporal.period(new Date(), 'year');
- * const months = temporal.divide(year, 'month');
+ * const year = minuta.period(new Date(), 'year');
+ * const months = minuta.divide(year, 'month');
  * ```
  */
 export function createMinutaBuilder(
-  temporal: ReactMinuta,
+  minuta: ReactMinuta,
   setBrowsingDate: (date: Date) => void
 ): MinutaBuilder {
   return {
-    ...temporal,
+    ...minuta,
 
     derivePeriod(date: Date, unit: AdapterUnit): TimePeriod {
-      return derivePeriod(temporal.adapter, date, unit);
+      return derivePeriod(minuta.adapter, date, unit);
     },
 
     createPeriod(start: Date, end: Date): TimePeriod {
@@ -47,18 +47,18 @@ export function createMinutaBuilder(
     },
 
     divide(period: TimePeriod, unit: AdapterUnit): TimePeriod[] {
-      return divide(temporal.adapter, period, unit);
+      return divide(minuta.adapter, period, unit);
     },
 
     merge(periods: TimePeriod[], targetUnit?: AdapterUnit): TimePeriod {
-      return merge(temporal.adapter, periods, targetUnit);
+      return merge(minuta.adapter, periods, targetUnit);
     },
 
     next(period: TimePeriod, count: number = 1): TimePeriod {
       const result =
         count === 1
-          ? next(temporal.adapter, period)
-          : go(temporal.adapter, period, count);
+          ? next(minuta.adapter, period)
+          : go(minuta.adapter, period, count);
 
       setBrowsingDate(result.start);
 
@@ -68,8 +68,8 @@ export function createMinutaBuilder(
     previous(period: TimePeriod, count: number = 1): TimePeriod {
       const result =
         count === 1
-          ? previous(temporal.adapter, period)
-          : go(temporal.adapter, period, -count);
+          ? previous(minuta.adapter, period)
+          : go(minuta.adapter, period, -count);
 
       setBrowsingDate(result.start);
 
@@ -77,7 +77,7 @@ export function createMinutaBuilder(
     },
 
     go(period: TimePeriod, count: number): TimePeriod {
-      const result = go(temporal.adapter, period, count);
+      const result = go(minuta.adapter, period, count);
 
       setBrowsingDate(result.start);
 
@@ -97,7 +97,7 @@ export function createMinutaBuilder(
       period2: Period,
       unit: AdapterUnit | "custom"
     ): boolean {
-      return isSame(temporal.adapter, period1, period2, unit);
+      return isSame(minuta.adapter, period1, period2, unit);
     },
   };
 }

@@ -18,7 +18,7 @@ Starting with Minuta v2.0.0, all adapter packages have been consolidated into th
 import { createNativeAdapter } from 'minuta/native';
 import { createDateFnsAdapter } from 'minuta/date-fns';
 import { createLuxonAdapter } from 'minuta/luxon';
-import { createTemporalAdapter } from 'minuta/temporal';
+import { createMinutaAdapter } from 'minuta/temporal';
 ```
 
 ### After (Recommended)
@@ -27,7 +27,7 @@ import { createTemporalAdapter } from 'minuta/temporal';
 import { createNativeAdapter } from 'minuta/native';
 import { createDateFnsAdapter } from 'minuta/date-fns';
 import { createLuxonAdapter } from 'minuta/luxon';
-import { createTemporalAdapter } from 'minuta/temporal';
+import { createMinutaAdapter } from 'minuta/temporal';
 ```
 
 ## Required Changes
@@ -38,7 +38,7 @@ import { createTemporalAdapter } from 'minuta/temporal';
 import { createNativeAdapter } from 'minuta/native';
 import { createDateFnsAdapter } from 'minuta/date-fns';
 import { createLuxonAdapter } from 'minuta/luxon';
-import { createTemporalAdapter } from 'minuta/temporal';
+import { createMinutaAdapter } from 'minuta/temporal';
 ```
 
 ### After (Recommended)
@@ -47,7 +47,7 @@ import { createTemporalAdapter } from 'minuta/temporal';
 import { createNativeAdapter } from 'minuta/native';
 import { createDateFnsAdapter } from 'minuta/date-fns';
 import { createLuxonAdapter } from 'minuta/luxon';
-import { createTemporalAdapter } from 'minuta/temporal';
+import { createMinutaAdapter } from 'minuta/temporal';
 ```
 
 ## Migration to Pure Operations (v2.0.0-alpha.1)

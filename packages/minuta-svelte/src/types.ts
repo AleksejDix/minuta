@@ -24,7 +24,7 @@ export interface CreateMinutaOptions {
 }
 
 /**
- * Temporal builder users interact with.
+ * Minuta builder users interact with.
  */
 export interface MinutaBuilder extends SvelteMinuta {
   derivePeriod(date: Date, unit: AdapterUnit): TimePeriod;

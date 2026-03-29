@@ -21,7 +21,7 @@ npm install minuta/native
 
 ```ts
 import { ref } from "vue";
-import { createTemporal, useTemporal, usePeriod } from "minuta-vue";
+import { createTemporal, useMinuta, usePeriod } from "minuta-vue";
 import { createNativeAdapter } from "minuta/native";
 
 const date = ref(new Date());
@@ -37,7 +37,7 @@ const temporal = createTemporal({
 const month = usePeriod(temporal, "month");
 
 // Child components can access the same instance via the injector:
-const nestedTemporal = useTemporal();
+const nestedTemporal = useMinuta();
 
 month.value.start; // Reactive!
 ```
@@ -85,14 +85,14 @@ it through the default slot for renderless patterns.
 
 ### API
 
-- `createTemporal(options: CreateTemporalOptions): TemporalBuilder`  
+- `createTemporal(options: CreateMinutaOptions): TemporalBuilder`  
   Creates (and automatically provides) a reactive temporal instance. Pass Vue
   refs for both `date` and (optionally) `now` so you remain in control of
   reactivity. Methods from the builder delegate to the core operations while
   passing the adapter automatically. Optionally provide `locale` (defaults to
   `"en"`) to keep downstream UI helpers in sync with your preferred language.
 
-- `useTemporal(): TemporalBuilder`  
+- `useMinuta(): TemporalBuilder`  
   Injects the nearest provided temporal instance so nested components can tap
   into the same builder without prop drilling.
 

@@ -23,7 +23,7 @@ const emit = defineEmits<{
   select: [day: Period];
 }>();
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 
 const targetMonth = computed(() => unref(props.month));
 const selectedDay = computed<Period | null>(() => {

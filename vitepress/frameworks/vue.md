@@ -4,7 +4,7 @@
 helpers so `browsing`, `now`, and derived periods stay reactive throughout your
 component tree.
 
-- Provides/injects automatically so nested components can call `useTemporal()`.
+- Provides/injects automatically so nested components can call `useMinuta()`.
 - Accepts `ref`/`computed` adapters for reactive configuration.
 - Ships a Vue-only bundle that keeps tree-shaking tight (<22 KB gzipped).
 
@@ -127,16 +127,16 @@ const temporal = createTemporal({
 ```
 
 Mount this component once (e.g., in `App.vue`). Children can now call
-`useTemporal()`—no prop drilling required.
+`useMinuta()`—no prop drilling required.
 
 ### 2. Navigation controls with `usePeriod`
 
 ```vue
 <!-- MonthHeader.vue -->
 <script setup lang="ts">
-import { useTemporal, usePeriod } from "minuta-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const month = usePeriod(temporal, "month");
 </script>
 
@@ -157,9 +157,9 @@ const month = usePeriod(temporal, "month");
 <!-- MonthGrid.vue -->
 <script setup lang="ts">
 import { computed } from "vue";
-import { useTemporal, usePeriod } from "minuta-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const month = usePeriod(temporal, "month");
 
 const weeks = computed(() =>
@@ -196,7 +196,7 @@ under `packages/minuta-vue/examples/`) for a runnable version of this pattern.
 
 - `createTemporal(options)` — Creates + provides the builder with reactive
   `browsing`/`now`.
-- `useTemporal()` — Injects the closest provided instance for child components.
+- `useMinuta()` — Injects the closest provided instance for child components.
 - `usePeriod(temporal, unit)` — Returns a computed period that updates with
   `browsing` or `unit` changes.
 

@@ -3,7 +3,7 @@ import type { Adapter } from "../types";
 import { createNativeAdapter } from "../adapters/native";
 import { createDateFnsAdapter } from "../adapters/date-fns";
 import { createLuxonAdapter } from "../adapters/luxon";
-import { createTemporalAdapter } from "../adapters/temporal";
+import { createMinutaAdapter } from "../adapters/temporal";
 
 // Define adapter configurations
 export interface AdapterConfig {
@@ -28,7 +28,7 @@ export const testAdapters: AdapterConfig[] = [
   },
   {
     name: "Temporal",
-    createAdapter: () => createTemporalAdapter({ weekStartsOn: 1 }),
+    createAdapter: () => createMinutaAdapter({ weekStartsOn: 1 }),
   },
 ];
 

@@ -25,7 +25,7 @@ const now = ref(new Date());
 const weekStartsOn = ref<0 | 1>(1);
 const adapter = ref(createNativeAdapter({ weekStartsOn: weekStartsOn.value }));
 
-const temporal = createMinuta({
+const minuta = createMinuta({
   adapter: adapter.value,
   date,
   now,
@@ -35,22 +35,22 @@ const temporal = createMinuta({
 
 watch(weekStartsOn, (value) => {
   adapter.value = createNativeAdapter({ weekStartsOn: value });
-  temporal.adapter = adapter.value;
-  temporal.weekStartsOn = value;
+  minuta.adapter = adapter.value;
+  minuta.weekStartsOn = value;
 });
 
-const month = usePeriod(temporal, "month");
+const month = usePeriod(minuta, "month");
 const weeks = computed(() =>
-  temporal.divide(month.value, "week").map((week) => ({
+  minuta.divide(month.value, "week").map((week) => ({
     key: `${week.start.toISOString()}-${week.end.toISOString()}`,
     period: week,
-    days: temporal.divide(week, "day"),
+    days: minuta.divide(week, "day"),
   }))
 );
 const weekdayLabels = computed(() => WEEKDAY_ORDER[weekStartsOn.value]);
 
 const isCurrentMonth = computed(() => {
-  const current = temporal.now.value;
+  const current = minuta.now.value;
   return (
     month.value.start.getFullYear() === current.start.getFullYear() &&
     month.value.start.getMonth() === current.start.getMonth()
@@ -68,15 +68,15 @@ function toggleWeekStart(value: 0 | 1) {
 }
 
 function goToDay(day: Period) {
-  temporal.go(day, 0);
+  minuta.go(day, 0);
 }
 
 function isOutside(day: Period) {
-  return !temporal.contains(month.value, day.start);
+  return !minuta.contains(month.value, day.start);
 }
 
 function isToday(day: Period) {
-  return temporal.isSame(day, temporal.now.value, "day");
+  return minuta.isSame(day, minuta.now.value, "day");
 }
 </script>
 
@@ -131,14 +131,10 @@ function isToday(day: Period) {
     </div>
 
     <div class="toolbar-row">
-      <button
-        type="button"
-        class="nav-button"
-        @click="temporal.previous(month)"
-      >
+      <button type="button" class="nav-button" @click="minuta.previous(month)">
         ← Previous
       </button>
-      <button type="button" class="nav-button" @click="temporal.next(month)">
+      <button type="button" class="nav-button" @click="minuta.next(month)">
         Next →
       </button>
     </div>

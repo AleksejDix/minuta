@@ -395,10 +395,10 @@ const date = ref(new Date("2025-03-13"));
 <!-- MonthGrid.vue -->
 <script setup lang="ts">
 import { computed } from "vue";
-import { useTemporal, usePeriod } from "minuta-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 import { divide } from "minuta/operations";
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const month = usePeriod(temporal, "month");
 const days = computed(() => divide(temporal.adapter, month.value, "day"));
 </script>

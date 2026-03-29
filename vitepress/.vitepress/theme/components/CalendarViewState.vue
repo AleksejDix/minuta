@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Unit } from "minuta";
 import { computed, ref } from "vue";
-import { useTemporal, usePeriod } from "minuta-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
 const props = withDefaults(
   defineProps<{
@@ -20,7 +20,7 @@ const slots = defineSlots<{
   }) => any;
 }>();
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const viewUnit = ref<Unit>(props.initialUnit);
 const unitComputed = computed(() => viewUnit.value);
 const viewPeriod = usePeriod(temporal, unitComputed);

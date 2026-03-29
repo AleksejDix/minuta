@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createNativeAdapter } from "../adapters/native";
 import { createDateFnsAdapter } from "../adapters/date-fns";
 import { createLuxonAdapter } from "../adapters/luxon";
-import { createTemporalAdapter } from "../adapters/temporal";
+import { createMinutaAdapter } from "../adapters/temporal";
 import { createDateFnsTzAdapter } from "../adapters/date-fns-tz";
 import { derivePeriod, createPeriod } from "../operations/period";
 import { divide } from "../operations/divide";
@@ -378,7 +378,7 @@ describe("BUG: fall-back 25-hour day across all adapters", () => {
     { name: "native", adapter: createNativeAdapter() },
     { name: "date-fns", adapter: createDateFnsAdapter() },
     { name: "luxon", adapter: createLuxonAdapter() },
-    { name: "temporal", adapter: createTemporalAdapter() },
+    { name: "minuta-temporal", adapter: createMinutaAdapter() },
   ];
 
   for (const { name, adapter: a } of allAdapters) {

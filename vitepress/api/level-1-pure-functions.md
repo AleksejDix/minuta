@@ -70,8 +70,8 @@ import { createLuxonAdapter } from 'minuta/luxon';
 const adapter = createLuxonAdapter({ weekStartsOn: 1 });
 
 // Temporal adapter (future)
-import { createTemporalAdapter } from 'minuta/temporal';
-const adapter = createTemporalAdapter({ weekStartsOn: 1 });
+import { createMinutaAdapter } from 'minuta/temporal';
+const adapter = createMinutaAdapter({ weekStartsOn: 1 });
 ```
 
 ## TypeScript Support

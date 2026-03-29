@@ -19,7 +19,7 @@ const props = withDefaults(
 );
 
 const slots = defineSlots<{
-  default?: (scope: { temporal: MinutaBuilder }) => any;
+  default?: (scope: { minuta: MinutaBuilder }) => any;
 }>();
 
 const fallbackDate = ref(new Date());
@@ -28,7 +28,7 @@ const fallbackNow = ref(new Date());
 const dateRef = props.date ?? fallbackDate;
 const nowRef = props.now ?? fallbackNow;
 
-const temporal = createMinuta({
+const minuta = createMinuta({
   adapter: props.adapter,
   date: dateRef,
   now: nowRef,
@@ -39,25 +39,25 @@ const temporal = createMinuta({
 watch(
   () => props.adapter,
   (adapter) => {
-    temporal.adapter = adapter;
+    minuta.adapter = adapter;
   }
 );
 
 watch(
   () => props.weekStartsOn,
   (value) => {
-    temporal.weekStartsOn = value ?? 1;
+    minuta.weekStartsOn = value ?? 1;
   }
 );
 
 watch(
   () => props.lang,
   (value) => {
-    temporal.locale = value ?? "en";
+    minuta.locale = value ?? "en";
   }
 );
 </script>
 
 <template>
-  <slot :temporal="temporal" />
+  <slot :minuta="minuta" />
 </template>

@@ -135,14 +135,14 @@ const week = period(sundayAdapter, new Date(), 'week')
 
 **Vue:**
 ```typescript
-import { useTemporal, usePeriod } from 'minuta-vue'
+import { useMinuta, usePeriod } from 'minuta-vue'
 import { createNativeAdapter } from 'minuta/native'
 
 // Minuta is the main composable (replaces createTemporal)
 const weekStartsOn = ref(1)  // ← Reactive adapter setting
 
 // Adapter is recreated when weekStartsOn changes
-const temporal = useTemporal({
+const temporal = useMinuta({
   adapter: computed(() => createNativeAdapter({ weekStartsOn: weekStartsOn.value })),
   date: ref(new Date())  // ← Reactive browsing date
 })
@@ -156,14 +156,14 @@ const month = usePeriod(temporal, 'month')
 
 **React:**
 ```typescript
-import { useTemporal, usePeriod } from 'minuta-react'
+import { useMinuta, usePeriod } from 'minuta-react'
 import { createNativeAdapter } from 'minuta/native'
 
 function MyComponent() {
   const [weekStartsOn, setWeekStartsOn] = useState(1)
 
   // Adapter recreates when weekStartsOn changes
-  const temporal = useTemporal({
+  const temporal = useMinuta({
     adapter: useMemo(
       () => createNativeAdapter({ weekStartsOn }),
       [weekStartsOn]
@@ -205,7 +205,7 @@ This validates that adapter configuration management belongs in framework packag
 - ❌ NO reactive state management
 
 **minuta-vue**
-- ✅ `useTemporal()` - Main Vue composable for reactive state
+- ✅ `useMinuta()` - Main Vue composable for reactive state
   - Manages reactive `browsing` and `now` periods
   - Accepts reactive adapter (allows reactive adapter recreation)
   - Returns reactive refs that trigger recalculation
@@ -215,7 +215,7 @@ This validates that adapter configuration management belongs in framework packag
 - ✅ Depends on: @vue/reactivity, minuta
 
 **minuta-react**
-- ✅ `useTemporal()` - Main React hook for state management
+- ✅ `useMinuta()` - Main React hook for state management
   - Manages state for `browsing` and `now` periods
   - Accepts memoized adapter (allows adapter recreation on state change)
   - Returns state and navigation functions
@@ -349,9 +349,9 @@ This validates that adapter configuration management belongs in framework packag
    import { createTemporal, usePeriod } from 'minuta'
 
    // After (stable) - Framework packages
-   import { useTemporal, usePeriod } from 'minuta-vue'
+   import { useMinuta, usePeriod } from 'minuta-vue'
    // or
-   import { useTemporal, usePeriod } from 'minuta-react'
+   import { useMinuta, usePeriod } from 'minuta-react'
 
    // Pure functions still from core
    import { period, divide } from 'minuta/operations'
