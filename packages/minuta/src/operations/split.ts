@@ -1,10 +1,13 @@
-import type { Period } from "../types";
+import type { Period, TimePeriod } from "../types";
 import { validatePeriod } from "./validate";
 
 /**
  * Split a period at a specific date
  */
-export function split(period: Period, splitDate: Date): [Period, Period] {
+export function split(
+  period: TimePeriod,
+  splitDate: Date
+): [TimePeriod, TimePeriod] {
   validatePeriod(period);
 
   const splitTime = splitDate.getTime();

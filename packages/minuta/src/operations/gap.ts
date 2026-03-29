@@ -1,4 +1,4 @@
-import type { Period } from "../types";
+import type { Period, TimePeriod } from "../types";
 
 /**
  * Calculate the gap or span between two temporal points.
@@ -10,7 +10,7 @@ import type { Period } from "../types";
  * Returns a custom TimePeriod. Always start <= end.
  * If periods overlap or touch, returns a zero-duration period at the boundary.
  */
-export function gap(from: Period | Date, to: Period | Date): Period {
+export function gap(from: Period | Date, to: Period | Date): TimePeriod {
   const fromStart = from instanceof Date ? from : from.start;
   const fromEnd = from instanceof Date ? from : from.end;
   const toStart = to instanceof Date ? to : to.start;

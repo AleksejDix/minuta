@@ -1,4 +1,4 @@
-import type { Period, Adapter, AdapterUnit } from "../types";
+import type { Period, TimePeriod, Adapter, AdapterUnit } from "../types";
 import { derivePeriod } from "./period";
 import { validatePeriod } from "./validate";
 
@@ -12,7 +12,7 @@ export function merge(
   adapter: Adapter,
   periods: Period[],
   targetUnit?: AdapterUnit
-): Period {
+): TimePeriod {
   if (periods.length === 0) {
     throw new Error("merge() requires at least one period");
   }
