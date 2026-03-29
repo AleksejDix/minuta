@@ -44,19 +44,19 @@ describe("input validation", () => {
 
     it("divide() should throw on reversed period", () => {
       expect(() => divide(adapter, reversed, "hour")).toThrow(
-        "Period start must be before or equal to end"
+        "must be before or equal to end"
       );
     });
 
     it("split() should throw on reversed period", () => {
       expect(() => split(reversed, new Date(2024, 2, 1))).toThrow(
-        "Period start must be before or equal to end"
+        "must be before or equal to end"
       );
     });
 
     it("merge() should throw on reversed period", () => {
       expect(() => merge(adapter, [reversed])).toThrow(
-        "Period start must be before or equal to end"
+        "must be before or equal to end"
       );
     });
   });

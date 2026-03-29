@@ -1,5 +1,5 @@
 import { derived, readable, type Readable } from "svelte/store";
-import type { Period, AdapterUnit } from "minuta";
+import type { TimePeriod, AdapterUnit } from "minuta";
 import { derivePeriod } from "minuta/operations";
 import type { SvelteMinuta } from "./types";
 
@@ -9,7 +9,7 @@ import type { SvelteMinuta } from "./types";
 export function usePeriod(
   temporal: SvelteMinuta,
   unit: AdapterUnit | Readable<AdapterUnit>
-): Readable<Period> {
+): Readable<TimePeriod> {
   const unitStore: Readable<AdapterUnit> =
     typeof unit === "string" ? readable(unit) : unit;
 

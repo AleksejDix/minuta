@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { derivePeriod } from "minuta/operations";
-import type { AdapterUnit, Period } from "minuta";
+import type { AdapterUnit, TimePeriod } from "minuta";
 import type { MinutaBuilder } from "./types";
 
 /**
@@ -11,7 +11,10 @@ import type { MinutaBuilder } from "./types";
  * const year = usePeriod(temporal, 'year')
  * const month = usePeriod(temporal, 'month')
  */
-export function usePeriod(temporal: MinutaBuilder, unit: AdapterUnit): Period {
+export function usePeriod(
+  temporal: MinutaBuilder,
+  unit: AdapterUnit
+): TimePeriod {
   return useMemo(
     () => derivePeriod(temporal.adapter, temporal.browsing.start, unit),
     [temporal.adapter, temporal.browsing, unit]

@@ -1,4 +1,15 @@
-import * as ops from "minuta/operations";
+import {
+  derivePeriod,
+  createPeriod,
+  divide,
+  merge,
+  next,
+  previous,
+  go,
+  split,
+  contains,
+  isSame,
+} from "minuta/operations";
 import type { AdapterUnit, Period, TimePeriod } from "minuta";
 import type { MinutaBuilder, ReactMinuta } from "./types";
 
@@ -27,58 +38,58 @@ export function createMinutaBuilder(
   return {
     ...temporal,
 
-    derivePeriod(date: Date, unit: AdapterUnit): Period {
-      return ops.derivePeriod(temporal.adapter, date, unit);
+    derivePeriod(date: Date, unit: AdapterUnit): TimePeriod {
+      return derivePeriod(temporal.adapter, date, unit);
     },
 
-    createPeriod(start: Date, end: Date): Period {
-      return ops.createPeriod(start, end);
+    createPeriod(start: Date, end: Date): TimePeriod {
+      return createPeriod(start, end);
     },
 
-    divide(period: Period, unit: AdapterUnit): Period[] {
-      return ops.divide(temporal.adapter, period, unit);
+    divide(period: TimePeriod, unit: AdapterUnit): TimePeriod[] {
+      return divide(temporal.adapter, period, unit);
     },
 
-    merge(periods: Period[], targetUnit?: AdapterUnit): Period {
-      return ops.merge(temporal.adapter, periods, targetUnit);
+    merge(periods: TimePeriod[], targetUnit?: AdapterUnit): TimePeriod {
+      return merge(temporal.adapter, periods, targetUnit);
     },
 
-    next(period: Period, count: number = 1): Period {
+    next(period: TimePeriod, count: number = 1): TimePeriod {
       const result =
         count === 1
-          ? ops.next(temporal.adapter, period as TimePeriod)
-          : ops.go(temporal.adapter, period as TimePeriod, count);
+          ? next(temporal.adapter, period)
+          : go(temporal.adapter, period, count);
 
       setBrowsingDate(result.start);
 
       return result;
     },
 
-    previous(period: Period, count: number = 1): Period {
+    previous(period: TimePeriod, count: number = 1): TimePeriod {
       const result =
         count === 1
-          ? ops.previous(temporal.adapter, period as TimePeriod)
-          : ops.go(temporal.adapter, period as TimePeriod, -count);
+          ? previous(temporal.adapter, period)
+          : go(temporal.adapter, period, -count);
 
       setBrowsingDate(result.start);
 
       return result;
     },
 
-    go(period: Period, count: number): Period {
-      const result = ops.go(temporal.adapter, period as TimePeriod, count);
+    go(period: TimePeriod, count: number): TimePeriod {
+      const result = go(temporal.adapter, period, count);
 
       setBrowsingDate(result.start);
 
       return result;
     },
 
-    split(period: Period, date: Date): [Period, Period] {
-      return ops.split(period, date);
+    split(period: TimePeriod, date: Date): [TimePeriod, TimePeriod] {
+      return split(period, date);
     },
 
     contains(period: Period, dateOrPeriod: Date | Period): boolean {
-      return ops.contains(period, dateOrPeriod);
+      return contains(period, dateOrPeriod);
     },
 
     isSame(
@@ -86,7 +97,7 @@ export function createMinutaBuilder(
       period2: Period,
       unit: AdapterUnit | "custom"
     ): boolean {
-      return ops.isSame(temporal.adapter, period1, period2, unit);
+      return isSame(temporal.adapter, period1, period2, unit);
     },
   };
 }
