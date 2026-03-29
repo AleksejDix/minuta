@@ -67,11 +67,16 @@ describe("DST spring forward", () => {
     expect(dstDay.end.getDate()).toBe(10);
   });
 
-  it("dividing DST day into hours produces 23 or 24 hours", () => {
-    const dstDay = derivePeriod(adapter, new Date(2024, 2, 10), "day");
-    const hours = divide(adapter, dstDay, "hour");
-    // In timezones with DST spring forward, this day has 23 hours
-    // In UTC or timezones without DST, 24 hours
+  it("US DST day (Mar 10) divides into 23 or 24 hours", () => {
+    const usDst = derivePeriod(adapter, new Date(2024, 2, 10), "day");
+    const hours = divide(adapter, usDst, "hour");
+    expect(hours.length).toBeGreaterThanOrEqual(23);
+    expect(hours.length).toBeLessThanOrEqual(24);
+  });
+
+  it("EU DST day (Mar 31) divides into 23 or 24 hours", () => {
+    const euDst = derivePeriod(adapter, new Date(2024, 2, 31), "day");
+    const hours = divide(adapter, euDst, "hour");
     expect(hours.length).toBeGreaterThanOrEqual(23);
     expect(hours.length).toBeLessThanOrEqual(24);
   });
