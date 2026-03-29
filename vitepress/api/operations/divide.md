@@ -1,12 +1,12 @@
 # divide()
 
-The revolutionary `divide()` function is the heart of useTemporal's unique time management pattern. It allows you to split any time period into smaller units with perfect synchronization and consistency.
+The revolutionary `divide()` function is the heart of Minuta's unique time management pattern. It allows you to split any time period into smaller units with perfect synchronization and consistency.
 
 ## Usage
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date(), 'month')
@@ -57,8 +57,8 @@ Common division patterns:
 ### Basic Usage
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -81,8 +81,8 @@ console.log(months.length) // 12
 ### Calendar Grid
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 }) // Monday
 
@@ -104,8 +104,8 @@ weeks.forEach(week => {
 divide() works with any period, including custom periods:
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -126,9 +126,9 @@ console.log(sprintDays.length) // 14 days
 Full type safety across the entire API:
 
 ```typescript
-import type { Adapter, Period, Unit } from '@allystudio/usetemporal'
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import type { Adapter, Period, Unit } from 'minuta'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter: Adapter = createNativeAdapter()
 const month: Period = period(adapter, new Date(), 'month')

@@ -1,15 +1,15 @@
 # Communication Plan: StableMonth Removal from Core
 
 ## Overview
-This plan outlines how we'll communicate the removal of `stableMonth` from the core library and its future availability in the `@usetemporal/calendar-units` package.
+This plan outlines how we'll communicate the removal of `stableMonth` from the core library and its future availability in the `minuta/calendar` package.
 
 ## Key Messages
 
 ### Primary Message
-"We're improving useTemporal's architecture by moving calendar-specific units like `stableMonth` to a dedicated package, keeping the core library focused on fundamental time operations."
+"We're improving Minuta's architecture by moving calendar-specific units like `stableMonth` to a dedicated package, keeping the core library focused on fundamental time operations."
 
 ### Supporting Messages
-1. **No functionality lost** - stableMonth will be available in @usetemporal/calendar-units
+1. **No functionality lost** - stableMonth will be available in minuta/calendar
 2. **Better architecture** - Separation of concerns between time math and display
 3. **Smaller core** - Users who don't need calendar features get a smaller bundle
 4. **Future-ready** - Calendar package can grow without affecting core
@@ -28,7 +28,7 @@ Starting today, we're removing the unimplemented `stableMonth` type from core as
 
 Key points:
 - stableMonth was defined but never implemented in core
-- Will be properly implemented in new @usetemporal/calendar-units package
+- Will be properly implemented in new minuta/calendar package
 - Improves separation of concerns
 - No impact on existing functionality
 
@@ -43,7 +43,7 @@ See architecture decision: /docs/architecture/decision-calendar-units-separation
 ```markdown
 ## Breaking Changes
 
-- **Removed `stableMonth` from core types**: The `stableMonth` unit has been removed from the core package. It will be available in the upcoming `@usetemporal/calendar-units` package for calendar-specific functionality.
+- **Removed `stableMonth` from core types**: The `stableMonth` unit has been removed from the core package. It will be available in the upcoming `minuta/calendar` package for calendar-specific functionality.
 
 ### Migration Guide
 
@@ -51,10 +51,10 @@ If you were using the `stableMonth` type (note: it was never implemented):
 
 ```typescript
 // Before (type only, no implementation)
-import { STABLE_MONTH } from '@usetemporal/core'
+import { STABLE_MONTH } from 'minuta'
 
 // After (coming soon)
-import { stableMonth } from '@usetemporal/calendar-units'
+import { stableMonth } from 'minuta/calendar'
 ```
 
 For now, continue using the manual stable month pattern shown in our documentation.
@@ -74,7 +74,7 @@ For now, continue using the manual stable month pattern shown in our documentati
 **Migration Notice for Docs**:
 ```markdown
 ::: tip Coming Soon
-The `stableMonth` unit is moving to the `@usetemporal/calendar-units` package 
+The `stableMonth` unit is moving to the `minuta/calendar` package 
 to better separate display concerns from core time operations. 
 
 Until the package is released, use the pattern shown below.
@@ -87,10 +87,10 @@ Until the package is released, use the pattern shown below.
 **Channels**: Discord, Twitter, Reddit (if applicable)
 **Message**:
 ```
-📢 useTemporal Architecture Update
+📢 Minuta Architecture Update
 
 We're improving our library structure! Calendar-specific units like stableMonth 
-are moving to a dedicated @usetemporal/calendar-units package.
+are moving to a dedicated minuta/calendar package.
 
 Why?
 ✅ Cleaner separation of concerns
@@ -117,7 +117,7 @@ Hi [username],
 Heads up that we're moving `stableMonth` to a dedicated calendar package as part of our architecture improvements. Since you've shown interest in this functionality, wanted to let you know:
 
 1. stableMonth is being removed from core (it was never implemented)
-2. It will be properly implemented in @usetemporal/calendar-units
+2. It will be properly implemented in minuta/calendar
 3. This provides better separation of concerns and smaller bundles
 
 The calendar package will be released soon with full stableMonth support plus other calendar-specific utilities.
@@ -148,7 +148,7 @@ A: Development is planned for the next sprint cycle.
 A: Only if you were importing the STABLE_MONTH constant, which had no implementation.
 
 ### Q: What about other calendar features?
-A: They'll be added to @usetemporal/calendar-units, keeping core minimal.
+A: They'll be added to minuta/calendar, keeping core minimal.
 
 ## Success Metrics
 

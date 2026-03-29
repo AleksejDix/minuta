@@ -75,7 +75,7 @@ describe("useMinuta", () => {
   });
 
   describe("basic initialization", () => {
-    it("should create temporal with required options", () => {
+    it("should create minuta with required options", () => {
       const { result } = renderHook(() =>
         useMinuta({
           date: testDate,

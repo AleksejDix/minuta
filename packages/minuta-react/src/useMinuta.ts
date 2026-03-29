@@ -14,13 +14,13 @@ import type { UseMinutaOptions, MinutaBuilder, ReactMinuta } from "./types";
  *
  * @example
  * ```typescript
- * const temporal = useMinuta({
+ * const minuta = useMinuta({
  *   adapter: nativeAdapter,
  *   date: new Date()
  * });
  *
- * const year = temporal.period(new Date(), "year");
- * const months = temporal.divide(year, "month");
+ * const year = minuta.period(new Date(), "year");
+ * const months = minuta.divide(year, "month");
  * ```
  */
 export function useMinuta(options: UseMinutaOptions): MinutaBuilder {
@@ -51,13 +51,13 @@ export function useMinuta(options: UseMinutaOptions): MinutaBuilder {
     [adapter, nowDate]
   );
 
-  // Create base temporal state
-  const reactTemporal: ReactMinuta = {
+  // Create base minuta state
+  const reactMinuta: ReactMinuta = {
     adapter,
     weekStartsOn,
     browsing,
     now,
   };
 
-  return createMinutaBuilder(reactTemporal, setBrowsingDate);
+  return createMinutaBuilder(reactMinuta, setBrowsingDate);
 }

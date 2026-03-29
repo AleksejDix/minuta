@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Unit } from "@allystudio/usetemporal";
+import type { Unit } from "minuta";
 import type { Ref } from "vue";
 import { computed, unref } from "vue";
 
@@ -26,8 +26,8 @@ const unitComponent = computed(() => {
 </script>
 
 <template>
-  <header class="temporal-calendar-header">
-    <div class="temporal-header-title">
+  <header class="minuta-calendar-header">
+    <div class="minuta-header-title">
       <component :is="unitComponent" :unit="unitValue" />
     </div>
     <div class="navigation">

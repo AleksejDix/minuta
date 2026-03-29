@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Unit } from "@allystudio/usetemporal";
+import type { Unit } from "minuta";
 import { computed, ref } from "vue";
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
 const props = withDefaults(
   defineProps<{
@@ -20,10 +20,10 @@ const slots = defineSlots<{
   }) => any;
 }>();
 
-const temporal = useTemporal();
+const minuta = useMinuta();
 const viewUnit = ref<Unit>(props.initialUnit);
 const unitComputed = computed(() => viewUnit.value);
-const viewPeriod = usePeriod(temporal, unitComputed);
+const viewPeriod = usePeriod(minuta, unitComputed);
 
 function setUnit(next: Unit) {
   viewUnit.value = next;

@@ -1,4 +1,4 @@
-# useTemporal Adapter Consolidation Brownfield Enhancement PRD (Retrospective)
+# Minuta Adapter Consolidation Brownfield Enhancement PRD (Retrospective)
 
 **Status:** COMPLETED (Sprint: 2025-01-25)
 
@@ -11,7 +11,7 @@
 **Analysis Source:** IDE-based fresh analysis from the current project context
 
 **Current Project State:**
-useTemporal is a revolutionary time library featuring a unique `divide()` pattern for hierarchical time management. The project is organized as a monorepo with framework-agnostic architecture. Prior to this enhancement, the project had separate packages for each date library adapter (native, temporal, luxon, date-fns), which caused issues with test coverage visibility and bundle optimization.
+Minuta is a revolutionary time library featuring a unique `divide()` pattern for hierarchical time management. The project is organized as a monorepo with framework-agnostic architecture. Prior to this enhancement, the project had separate packages for each date library adapter (native, temporal, luxon, date-fns), which caused issues with test coverage visibility and bundle optimization.
 
 ### Documentation Analysis
 
@@ -33,7 +33,7 @@ useTemporal is a revolutionary time library featuring a unique `divide()` patter
 - [x] Technology Stack Upgrade (architectural improvement)
 
 **Enhancement Description:**
-Consolidation of four separate adapter packages (@usetemporal/adapter-native, @usetemporal/adapter-temporal, @usetemporal/adapter-luxon, @usetemporal/adapter-date-fns) into the core package (@usetemporal/core) to improve developer experience, enable accurate test coverage reporting, and optimize bundle sizes through better tree-shaking.
+Consolidation of four separate adapter packages (minuta/native, /adapter-temporal, /adapter-luxon, minuta/date-fns) into the core package (minuta) to improve developer experience, enable accurate test coverage reporting, and optimize bundle sizes through better tree-shaking.
 
 **Impact Assessment:**
 - [x] Major Impact (architectural changes required)
@@ -48,7 +48,7 @@ Consolidation of four separate adapter packages (@usetemporal/adapter-native, @u
 - Enable better maintainability with consolidated codebase
 
 **Background Context:**
-The useTemporal library had grown to include four separate adapter packages, each in its own npm package. This separation, while initially logical, created several pain points: test coverage showed 0% for adapter packages (since tests lived in core), bundle optimization was suboptimal due to package boundaries, and developers had to install and manage multiple packages. 
+The Minuta library had grown to include four separate adapter packages, each in its own npm package. This separation, while initially logical, created several pain points: test coverage showed 0% for adapter packages (since tests lived in core), bundle optimization was suboptimal due to package boundaries, and developers had to install and manage multiple packages. 
 
 The consolidation into the core package addresses these issues while maintaining the library's "Calculus for Time" philosophy of providing fundamental operations that compose into complex solutions. This enhancement aligns with the library's goal of minimal API surface while maximizing developer efficiency.
 
@@ -63,7 +63,7 @@ The consolidation into the core package addresses these issues while maintaining
 
 ### Functional
 
-- FR1: The core package must provide separate entry points for each adapter (@usetemporal/core/native, @usetemporal/core/temporal, etc.) to enable optimal tree-shaking
+- FR1: The core package must provide separate entry points for each adapter (minuta/native, minuta/temporal, etc.) to enable optimal tree-shaking
 - FR2: All existing adapter functionality must be preserved without any breaking changes to the adapter APIs
 - FR3: The Temporal adapter must continue to automatically load its polyfill when imported
 - FR4: Old adapter packages must continue to work as re-export facades with deprecation warnings
@@ -151,7 +151,7 @@ This enhancement was structured as a single epic because all changes were tightl
 
 ## Epic 1: Adapter Consolidation into Core Package
 
-**Epic Goal**: Consolidate all adapter packages into @usetemporal/core to improve developer experience, enable accurate test coverage reporting, and optimize bundle sizes through tree-shaking while maintaining full backward compatibility.
+**Epic Goal**: Consolidate all adapter packages into minuta to improve developer experience, enable accurate test coverage reporting, and optimize bundle sizes through tree-shaking while maintaining full backward compatibility.
 
 **Integration Requirements**: 
 - Maintain all existing adapter APIs without breaking changes
@@ -190,8 +190,8 @@ so that I can benefit from accurate coverage metrics and better tree-shaking.
 5: Coverage improves from ~80% to >95%
 
 #### Integration Verification
-- IV1: Existing imports from @usetemporal/adapter-native still work
-- IV2: New imports from @usetemporal/core/native work identically
+- IV1: Existing imports from minuta/native still work
+- IV2: New imports from minuta/native work identically
 - IV3: No performance regression in date operations
 
 ### Story 1.3: Migrate Temporal Adapter ✅ COMPLETED
@@ -316,7 +316,7 @@ This brownfield enhancement has been successfully completed, consolidating four 
 
 - **Coverage Improvements**: Native (100%), Temporal (89%), Luxon (82%), Date-fns (90%)
 - **Bundle Size**: Each adapter ~0.9KB when imported individually
-- **Developer Experience**: Simplified imports from `@usetemporal/adapter-x` to `@usetemporal/core/x`
+- **Developer Experience**: Simplified imports from `/adapter-x` to `minuta/x`
 - **Backward Compatibility**: Maintained through re-export facades with deprecation warnings
 - **Documentation**: Comprehensive migration guide and updated examples throughout
 

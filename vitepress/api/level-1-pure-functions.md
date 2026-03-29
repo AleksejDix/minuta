@@ -16,15 +16,15 @@ The purist approach - minimal bundle size, maximum tree-shaking.
 ## Import Pattern
 
 ```typescript
-import { period, divide, merge } from '@allystudio/usetemporal/operations';
-import { createNativeAdapter } from '@allystudio/usetemporal/native';
+import { period, divide, merge } from 'minuta/operations';
+import { createNativeAdapter } from 'minuta/native';
 ```
 
 ## Example: Calendar Grid
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations';
-import { createNativeAdapter } from '@allystudio/usetemporal/native';
+import { period, divide } from 'minuta/operations';
+import { createNativeAdapter } from 'minuta/native';
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 });
 
@@ -58,20 +58,20 @@ weeks.forEach(week => {
 
 ```typescript
 // Native adapter (no dependencies)
-import { createNativeAdapter } from '@allystudio/usetemporal/native';
+import { createNativeAdapter } from 'minuta/native';
 const adapter = createNativeAdapter({ weekStartsOn: 0 }); // Sunday
 
 // date-fns adapter
-import { createDateFnsAdapter } from '@allystudio/usetemporal/date-fns';
+import { createDateFnsAdapter } from 'minuta/date-fns';
 const adapter = createDateFnsAdapter({ weekStartsOn: 1 }); // Monday
 
 // Luxon adapter
-import { createLuxonAdapter } from '@allystudio/usetemporal/luxon';
+import { createLuxonAdapter } from 'minuta/luxon';
 const adapter = createLuxonAdapter({ weekStartsOn: 1 });
 
 // Temporal adapter (future)
-import { createTemporalAdapter } from '@allystudio/usetemporal/temporal';
-const adapter = createTemporalAdapter({ weekStartsOn: 1 });
+import { createMinutaAdapter } from 'minuta/temporal';
+const adapter = createMinutaAdapter({ weekStartsOn: 1 });
 ```
 
 ## TypeScript Support
@@ -79,7 +79,7 @@ const adapter = createTemporalAdapter({ weekStartsOn: 1 });
 Full TypeScript support with strict typing:
 
 ```typescript
-import type { Adapter, Period, Unit } from '@allystudio/usetemporal/types';
+import type { Adapter, Period, Unit } from 'minuta/types';
 
 const adapter: Adapter = createNativeAdapter();
 const month: Period = period(adapter, new Date(), 'month');
@@ -91,7 +91,7 @@ Unused operations are completely eliminated from your bundle:
 
 ```typescript
 // Only imports period and divide - merge, next, previous etc. excluded
-import { period, divide } from '@allystudio/usetemporal/operations';
+import { period, divide } from 'minuta/operations';
 ```
 
 ## Related

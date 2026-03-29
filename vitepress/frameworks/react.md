@@ -1,28 +1,28 @@
 # React Integration
 
-`@allystudio/usetemporal-react` exposes idiomatic hooks so React apps get the
+`minuta-react` exposes idiomatic hooks so React apps get the
 same reactive builder API as Vue without any globals.
 
-- Hooks follow standard patterns (`useTemporal`, `usePeriod`).
+- Hooks follow standard patterns (`Minuta`, `usePeriod`).
 - Works with `useMemo` adapters for dynamic configuration.
 - Builder exposes every operation so advanced flows stay in React land.
 
 ## Installation
 
 ```bash
-npm install @allystudio/usetemporal \
-  @allystudio/usetemporal-react \
-  @allystudio/usetemporal/native
+npm install minuta \
+  minuta-react \
+  minuta/native
 ```
 
 ## Hooks example
 
 ```tsx
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-react";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { useMinuta, usePeriod } from "minuta-react";
+import { createNativeAdapter } from "minuta/native";
 
 export function MonthCalendar() {
-  const temporal = useTemporal({
+  const temporal = useMinuta({
     adapter: createNativeAdapter({ weekStartsOn: 1 }),
     date: new Date(),
   });
@@ -58,8 +58,8 @@ export function MonthCalendar() {
 
 ```tsx
 import { useMemo, useState } from "react";
-import { useTemporal } from "@allystudio/usetemporal-react";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { Minuta } from "minuta-react";
+import { createNativeAdapter } from "minuta/native";
 
 export function App() {
   const [weekStartsOn, setWeekStartsOn] = useState(1);
@@ -69,7 +69,7 @@ export function App() {
     [weekStartsOn]
   );
 
-  const temporal = useTemporal({ adapter, date: new Date() });
+  const temporal = useMinuta({ adapter, date: new Date() });
 
   return (
     <div>
@@ -82,5 +82,5 @@ export function App() {
 
 ## API surface
 
-- `useTemporal(options)` — Creates a reactive builder bound to React state.
+- `useMinuta(options)` — Creates a reactive builder bound to React state.
 - `usePeriod(temporal, unit)` — Derives the target period as component state.

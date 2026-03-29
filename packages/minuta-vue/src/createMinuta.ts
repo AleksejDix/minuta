@@ -15,13 +15,13 @@ import { provideMinuta } from "./minutaContext";
  *
  * @example
  * ```typescript
- * const temporal = createMinuta({
+ * const minuta = createMinuta({
  *   adapter: nativeAdapter,
  *   date: ref(new Date())
  * });
  *
- * const year = temporal.period(new Date(), "year");
- * const months = temporal.divide(year, "month");
+ * const year = minuta.period(new Date(), "year");
+ * const months = minuta.divide(year, "month");
  * ```
  */
 export function createMinuta(options: CreateMinutaOptions): MinutaBuilder {
@@ -50,7 +50,7 @@ export function createMinuta(options: CreateMinutaOptions): MinutaBuilder {
     };
   });
 
-  const temporal: VueMinuta = {
+  const minuta: VueMinuta = {
     adapter: options.adapter,
     weekStartsOn: options.weekStartsOn ?? 1, // Default to Monday
     locale: options.locale ?? "en",
@@ -58,7 +58,7 @@ export function createMinuta(options: CreateMinutaOptions): MinutaBuilder {
     now,
   };
 
-  const builder = createMinutaBuilder(temporal);
+  const builder = createMinutaBuilder(minuta);
   if (getCurrentInstance()) {
     provideMinuta(builder);
   }

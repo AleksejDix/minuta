@@ -1,27 +1,27 @@
-# @allystudio/usetemporal-react
+# minuta-react
 
-React integration package for `@allystudio/usetemporal`. Built on React hooks, it provides a reactive temporal instance where `browsing`, `now`, and derived periods update automatically with React's state management.
+React integration package for `minuta`. Built on React hooks, it provides a reactive temporal instance where `browsing`, `now`, and derived periods update automatically with React's state management.
 
 ## Installation
 
 ```bash
-npm install @allystudio/usetemporal @allystudio/usetemporal-react
+npm install minuta minuta-react
 ```
 
 Install whichever adapter you need:
 
 ```bash
-npm install @allystudio/usetemporal/native
+npm install minuta/native
 ```
 
 ## Quick Start
 
 ```tsx
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-react";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { useMinuta, usePeriod } from "minuta-react";
+import { createNativeAdapter } from "minuta/native";
 
 function Calendar() {
-  const temporal = useTemporal({
+  const temporal = useMinuta({
     adapter: createNativeAdapter(),
     date: new Date(),
   });
@@ -43,8 +43,8 @@ function Calendar() {
 
 ```tsx
 import { useMemo, useState } from "react";
-import { useTemporal } from "@allystudio/usetemporal-react";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { Minuta } from "minuta-react";
+import { createNativeAdapter } from "minuta/native";
 
 function App() {
   const [weekStartsOn, setWeekStartsOn] = useState(1);
@@ -55,7 +55,7 @@ function App() {
     [weekStartsOn]
   );
 
-  const temporal = useTemporal({ adapter, date: new Date() });
+  const temporal = useMinuta({ adapter, date: new Date() });
 
   return (
     <div>
@@ -69,11 +69,11 @@ function App() {
 ### Calendar Component Example
 
 ```tsx
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-react";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { useMinuta, usePeriod } from "minuta-react";
+import { createNativeAdapter } from "minuta/native";
 
 function MonthCalendar() {
-  const temporal = useTemporal({
+  const temporal = useMinuta({
     adapter: createNativeAdapter(),
     date: new Date(),
   });
@@ -126,7 +126,7 @@ Need a ready-made playground? Import the packaged calendar straight from the
 components entry point:
 
 ```tsx
-import { CalendarExample } from "@allystudio/usetemporal-react/components";
+import { CalendarExample } from "minuta-react/components";
 
 export function Demo() {
   return (
@@ -139,7 +139,7 @@ export function Demo() {
 
 ## API
 
-### `useTemporal(options: UseTemporalOptions): TemporalBuilder`
+### `useMinuta(options: UseMinutaOptions): TemporalBuilder`
 
 Creates a reactive temporal instance with builder methods.
 
@@ -164,17 +164,17 @@ Creates a reactive period that updates when `browsing` changes.
 
 **Parameters:**
 
-- `temporal: TemporalBuilder` - The temporal instance from `useTemporal`
+- `temporal: TemporalBuilder` - The temporal instance from `Minuta`
 - `unit: Unit` - Period unit type (`'year'`, `'month'`, `'week'`, `'day'`, etc.)
 
 **Returns:** A period that automatically updates when browsing changes
 
 ### Builder Methods
 
-All operations from `@allystudio/usetemporal/operations` are available as builder methods:
+All operations from `minuta/operations` are available as builder methods:
 
 ```tsx
-const temporal = useTemporal({ adapter, date: new Date() });
+const temporal = useMinuta({ adapter, date: new Date() });
 
 // Create periods
 const year = temporal.period(new Date(), "year");
@@ -202,7 +202,7 @@ All core operations and types are re-exported for convenience:
 ```tsx
 import {
   // Hooks
-  useTemporal,
+  useMinuta,
   usePeriod,
 
   // Operations
@@ -231,7 +231,7 @@ import {
   MONTH,
   WEEK,
   DAY,
-} from "@allystudio/usetemporal-react";
+} from "minuta-react";
 ```
 
 ## Navigation State Management
@@ -240,7 +240,7 @@ Navigation helpers always keep `browsing` in sync with the period you pass,
 making it safe to drive state changes from derived periods.
 
 ```tsx
-const temporal = useTemporal({ adapter, date: new Date() });
+const temporal = useMinuta({ adapter, date: new Date() });
 const month = usePeriod(temporal, "month");
 
 // Derived navigation reuses the same helpers
@@ -259,14 +259,14 @@ console.log(temporal.browsing.date); // Reflects the previous month
 ## Testing
 
 ```bash
-npm run build --workspace=@allystudio/usetemporal-react
-TZ=UTC npm test --workspace=@allystudio/usetemporal-react
-npm run type-check --workspace=@allystudio/usetemporal-react
+npm run build --workspace=minuta-react
+TZ=UTC npm test --workspace=minuta-react
+npm run type-check --workspace=minuta-react
 ```
 
 ## Documentation
 
-Complete documentation available at https://usetemporal.vercel.app
+Complete documentation available at https://minuta.vercel.app
 
 ## License
 

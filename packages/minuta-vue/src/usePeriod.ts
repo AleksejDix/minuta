@@ -8,20 +8,16 @@ import type { VueMinuta } from "./types";
  * This is the unified composable that can replace all individual unit composables
  *
  * @example
- * const year = usePeriod(temporal, "year")
- * const month = usePeriod(temporal, "month")
- * const customUnit = usePeriod(temporal, unitRef) // reactive unit
+ * const year = usePeriod(minuta, "year")
+ * const month = usePeriod(minuta, "month")
+ * const customUnit = usePeriod(minuta, unitRef) // reactive unit
  */
 export function usePeriod(
-  temporal: VueMinuta,
+  minuta: VueMinuta,
   unit: AdapterUnit | Ref<AdapterUnit> | ComputedRef<AdapterUnit>
 ): ComputedRef<TimePeriod> {
   return computed(() => {
     const unitValue = typeof unit === "string" ? unit : unit.value;
-    return derivePeriod(
-      temporal.adapter,
-      temporal.browsing.value.start,
-      unitValue
-    );
+    return derivePeriod(minuta.adapter, minuta.browsing.value.start, unitValue);
   });
 }

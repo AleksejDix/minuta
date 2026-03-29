@@ -5,11 +5,11 @@
   "description": "Divide time into pieces. Pure functional calendar library with a 4-method adapter contract.",
   "license": "Apache-2.0",
   "author": "Aleksej Dix <git@aleksejdix.com>",
-  "homepage": "https://usetemporal.vercel.app",
+  "homepage": "https://github.com/AleksejDix/minuta",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AleksejDix/minuta.git",
-    "directory": "packages/usetemporal"
+    "directory": "packages/minuta"
   },
   "bugs": {
     "url": "https://github.com/AleksejDix/minuta/issues"
@@ -75,7 +75,7 @@
     "@js-temporal/polyfill": "^0.5.1",
     "@types/luxon": "^3.7.1",
     "@types/node": "^22.12.1",
-    "@usetemporal/tsconfig": "2.0.0-alpha.1",
+    "@minuta/tsconfig": "2.0.0-alpha.1",
     "@vitest/coverage-v8": "^4.0.13",
     "jsdom": "^26.0.0",
     "typescript": "^5.7.3",

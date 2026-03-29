@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
-const temporal = useTemporal();
-const weekPeriod = usePeriod(temporal, "week");
-const weekdays = computed(() => temporal.divide(weekPeriod.value, "day"));
+const minuta = useMinuta();
+const weekPeriod = usePeriod(minuta, "week");
+const weekdays = computed(() => minuta.divide(weekPeriod.value, "day"));
 
-const formatter = new Intl.DateTimeFormat(temporal.locale, { weekday: "short" });
+const formatter = new Intl.DateTimeFormat(minuta.locale, { weekday: "short" });
 
 </script>
 

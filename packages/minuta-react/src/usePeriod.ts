@@ -5,18 +5,18 @@ import type { MinutaBuilder } from "./types";
 
 /**
  * Creates a reactive period of any unit type
- * Period updates when temporal.browsing changes
+ * Period updates when minuta.browsing changes
  *
  * @example
- * const year = usePeriod(temporal, 'year')
- * const month = usePeriod(temporal, 'month')
+ * const year = usePeriod(minuta, 'year')
+ * const month = usePeriod(minuta, 'month')
  */
 export function usePeriod(
-  temporal: MinutaBuilder,
+  minuta: MinutaBuilder,
   unit: AdapterUnit
 ): TimePeriod {
   return useMemo(
-    () => derivePeriod(temporal.adapter, temporal.browsing.start, unit),
-    [temporal.adapter, temporal.browsing, unit]
+    () => derivePeriod(minuta.adapter, minuta.browsing.start, unit),
+    [minuta.adapter, minuta.browsing, unit]
   );
 }

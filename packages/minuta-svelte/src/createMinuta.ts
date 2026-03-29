@@ -12,7 +12,7 @@ import { createMinutaBuilder } from "./builder";
 import type { CreateMinutaOptions, MinutaBuilder, SvelteMinuta } from "./types";
 import { provideMinuta } from "./minutaContext";
 
-function tryProvideTemporal(builder: MinutaBuilder) {
+function tryProvideMinuta(builder: MinutaBuilder) {
   try {
     provideMinuta(builder);
   } catch (error) {
@@ -48,7 +48,7 @@ export function createMinuta(options: CreateMinutaOptions): MinutaBuilder {
     derivePeriod(options.adapter, $now, "second")
   );
 
-  const temporal: SvelteMinuta = {
+  const minuta: SvelteMinuta = {
     adapter: options.adapter,
     weekStartsOn: options.weekStartsOn ?? 1,
     locale: options.locale ?? "en",
@@ -56,7 +56,7 @@ export function createMinuta(options: CreateMinutaOptions): MinutaBuilder {
     now,
   };
 
-  const builder = createMinutaBuilder(temporal);
-  tryProvideTemporal(builder);
+  const builder = createMinutaBuilder(minuta);
+  tryProvideMinuta(builder);
   return builder;
 }

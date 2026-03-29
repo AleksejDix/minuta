@@ -1,6 +1,6 @@
 # Research Directory
 
-This directory contains the feature backlog and RFC (Request for Comments) documents for the useTemporal project.
+This directory contains the feature backlog and RFC (Request for Comments) documents for the Minuta project.
 
 ## Structure
 

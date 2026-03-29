@@ -1,6 +1,6 @@
 # The divide() Pattern
 
-The divide() pattern is the core idea behind useTemporal. It lets you treat time as a hierarchy instead of isolated timestamps, so you can derive months from a year, weeks from a month, days from a week, and so on—all with a single function.
+The divide() pattern is the core idea behind Minuta. It lets you treat time as a hierarchy instead of isolated timestamps, so you can derive months from a year, weeks from a month, days from a week, and so on—all with a single function.
 
 ## Core Concept
 
@@ -21,8 +21,8 @@ Every node can be split into smaller units. The divide() function performs this 
 ## Basic Usage
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 })
 
@@ -60,8 +60,8 @@ The result is a plain JavaScript object tree that you can render in any framewor
 ## Type Safety
 
 ```typescript
-import { divide, period } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { divide, period } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date(), 'month')

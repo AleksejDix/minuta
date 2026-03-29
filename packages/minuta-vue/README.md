@@ -1,6 +1,6 @@
-# @allystudio/usetemporal-vue
+# minuta-vue
 
-Vue integration package for `@allystudio/usetemporal`. Built directly on the
+Vue integration package for `minuta`. Built directly on the
 Vue 3 runtime and Composition API, it exposes composables that wrap the core
 library so `browsing`, `now`, and derived periods remain fully reactive inside
 Vue applications.
@@ -8,25 +8,21 @@ Vue applications.
 ## Installation
 
 ```bash
-npm install @allystudio/usetemporal @allystudio/usetemporal-vue
+npm install minuta minuta-vue
 ```
 
 Install whichever adapter you need (the core ships the native adapter entry):
 
 ```bash
-npm install @allystudio/usetemporal/native
+npm install minuta/native
 ```
 
 ## Quick Start
 
 ```ts
 import { ref } from "vue";
-import {
-  createTemporal,
-  useTemporal,
-  usePeriod,
-} from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { createTemporal, useMinuta, usePeriod } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 
 const date = ref(new Date());
 const now = ref(new Date());
@@ -41,7 +37,7 @@ const temporal = createTemporal({
 const month = usePeriod(temporal, "month");
 
 // Child components can access the same instance via the injector:
-const nestedTemporal = useTemporal();
+const nestedTemporal = useMinuta();
 
 month.value.start; // Reactive!
 ```
@@ -50,8 +46,8 @@ month.value.start; // Reactive!
 
 ```ts
 import { computed, ref } from "vue";
-import { createTemporal } from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { createTemporal } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 
 const weekStartsOn = ref(1);
 const temporal = createTemporal({
@@ -69,8 +65,8 @@ weekStartsOn.value = 0; // automatically recalculates browsing periods
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { Temporal } from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { Temporal } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 });
 const date = ref(new Date());
@@ -89,14 +85,14 @@ it through the default slot for renderless patterns.
 
 ### API
 
-- `createTemporal(options: CreateTemporalOptions): TemporalBuilder`  
+- `createTemporal(options: CreateMinutaOptions): TemporalBuilder`  
   Creates (and automatically provides) a reactive temporal instance. Pass Vue
   refs for both `date` and (optionally) `now` so you remain in control of
   reactivity. Methods from the builder delegate to the core operations while
   passing the adapter automatically. Optionally provide `locale` (defaults to
   `"en"`) to keep downstream UI helpers in sync with your preferred language.
 
-- `useTemporal(): TemporalBuilder`  
+- `useMinuta(): TemporalBuilder`  
   Injects the nearest provided temporal instance so nested components can tap
   into the same builder without prop drilling.
 
@@ -114,14 +110,14 @@ it through the default slot for renderless patterns.
 ```ts
 // Before (core package)
 import { ref } from "vue";
-import { createTemporal, usePeriod } from "@allystudio/usetemporal";
+import { createTemporal, usePeriod } from "minuta";
 
 const date = ref(new Date());
 const temporal = createTemporal({ adapter, date });
 
 // After
 import { ref } from "vue";
-import { createTemporal, usePeriod } from "@allystudio/usetemporal-vue";
+import { createTemporal, usePeriod } from "minuta-vue";
 
 const date = ref(new Date());
 const temporal = createTemporal({ adapter, date });
@@ -129,9 +125,9 @@ const temporal = createTemporal({ adapter, date });
 
 ## Scripts
 
-- `npm run build --workspace=@allystudio/usetemporal-vue`
-- `TZ=UTC npm test --workspace=@allystudio/usetemporal-vue`
-- `npm run type-check --workspace=@allystudio/usetemporal-vue`
+- `npm run build --workspace=minuta-vue`
+- `TZ=UTC npm test --workspace=minuta-vue`
+- `npm run type-check --workspace=minuta-vue`
 
 ## Example playground
 
@@ -139,24 +135,24 @@ Run the bundled Vite playground directly from this workspace to experiment with
 the composables and shipped calendar component:
 
 ```bash
-cd packages/usetemporal-vue/examples
+cd packages/minuta-vue/examples
 npm install
 npm run dev
 ```
 
 It imports the workspace source directly, so any local changes are reflected
 instantly. You can also consume the packaged demo component via
-`@allystudio/usetemporal-vue/components`.
+`minuta-vue/components`.
 
 ## Components entry point
 
-`@allystudio/usetemporal-vue/components` ships ready-to-run Vue components that
+`minuta-vue/components` ships ready-to-run Vue components that
 mirror our docs examples. Import the `CalendarExample` anywhere you want a quick
 sandbox:
 
 ```vue
 <script setup lang="ts">
-import { CalendarExample } from "@allystudio/usetemporal-vue/components";
+import { CalendarExample } from "minuta-vue/components";
 </script>
 
 <template>
@@ -166,7 +162,7 @@ import { CalendarExample } from "@allystudio/usetemporal-vue/components";
 
 ## Documentation
 
-Complete docs live at https://usetemporal.vercel.app.
+Complete docs live at https://minuta.vercel.app.
 
 ## License
 

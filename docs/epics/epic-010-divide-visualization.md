@@ -2,13 +2,13 @@
 
 ## Epic Overview
 
-Create an interactive visualization component for the VitePress landing page that demonstrates useTemporal's revolutionary divide() pattern through animated hierarchical time navigation.
+Create an interactive visualization component for the VitePress landing page that demonstrates Minuta's revolutionary divide() pattern through animated hierarchical time navigation.
 
 ## Business Value
 
 - **User Understanding**: Visitors immediately grasp the power of divide() pattern
 - **Engagement**: Interactive demo increases time on site and library adoption
-- **Differentiation**: Visual demonstration sets useTemporal apart from other date libraries
+- **Differentiation**: Visual demonstration sets Minuta apart from other date libraries
 - **Documentation**: Serves as both marketing and educational tool
 
 ## Technical Approach
@@ -86,7 +86,7 @@ Build the visualization in layers:
 
 ## Dependencies
 
-- useTemporal core library
+- Minuta core library
 - Vue 3.3+
 - VitePress 1.0+
 - Modern CSS (Grid, Flexbox, Transforms)
@@ -127,4 +127,4 @@ Build the visualization in layers:
 
 ## Notes
 
-This epic demonstrates useTemporal's core value proposition through interactive visualization. The divide() pattern is what makes useTemporal unique, and this component will help users understand it instantly.
+This epic demonstrates Minuta's core value proposition through interactive visualization. The divide() pattern is what makes Minuta unique, and this component will help users understand it instantly.

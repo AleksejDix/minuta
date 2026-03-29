@@ -83,7 +83,7 @@ src/
 ## Example Directory Structure After Migration
 
 ```
-packages/usetemporal/src/
+packages/minuta/src/
 ├── operations/
 │   ├── divide.ts
 │   ├── divide.test.ts

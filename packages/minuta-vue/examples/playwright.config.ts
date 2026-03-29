@@ -20,7 +20,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm --prefix ../../.. run dev --workspace=@allystudio/usetemporal-vue',
+    command: 'npm --prefix ../../.. run dev --workspace=minuta-vue',
     port: 5173,
     reuseExistingServer: !process.env.CI,
   },

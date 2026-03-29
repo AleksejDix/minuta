@@ -1,16 +1,16 @@
-# useTemporal Interactive Documentation UI/UX Specification
+# Minuta Interactive Documentation UI/UX Specification
 
 ## Introduction
 
-This document defines the user experience goals, information architecture, user flows, and visual design specifications for useTemporal Interactive Documentation's user interface. It serves as the foundation for visual design and frontend development, ensuring a cohesive and user-centered experience.
+This document defines the user experience goals, information architecture, user flows, and visual design specifications for Minuta Interactive Documentation's user interface. It serves as the foundation for visual design and frontend development, ensuring a cohesive and user-centered experience.
 
 ### Overall UX Goals & Principles
 
 #### Target User Personas
 
-1. **Time-Curious Developer**: Developers who are evaluating useTemporal for their projects. They need to quickly understand what makes useTemporal unique (the divide() pattern) and see it in action before committing.
+1. **Time-Curious Developer**: Developers who are evaluating Minuta for their projects. They need to quickly understand what makes Minuta unique (the divide() pattern) and see it in action before committing.
 
-2. **Implementation Developer**: Developers actively integrating useTemporal into their applications. They need clear, interactive examples they can modify and test to understand exact behavior.
+2. **Implementation Developer**: Developers actively integrating Minuta into their applications. They need clear, interactive examples they can modify and test to understand exact behavior.
 
 3. **Learning Developer**: Developers who want to deeply understand time manipulation concepts. They benefit from visualizations that make abstract time concepts tangible.
 
@@ -96,7 +96,7 @@ graph TD
 
 ### Flow 1: Discovering the Divide Pattern
 
-**User Goal:** Understand what makes useTemporal unique and why they should use it
+**User Goal:** Understand what makes Minuta unique and why they should use it
 
 **Entry Points:** 
 - Landing page "See it in Action" button
@@ -144,7 +144,7 @@ graph TD
 
 ### Flow 2: Building a Calendar Widget
 
-**User Goal:** Create a functional calendar component using useTemporal
+**User Goal:** Create a functional calendar component using Minuta
 
 **Entry Points:**
 - Examples > Calendar

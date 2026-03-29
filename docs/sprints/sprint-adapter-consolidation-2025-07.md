@@ -15,8 +15,8 @@ Following the successful Quality Enhancement Sprint, this sprint focuses on a ma
 4. Automatic polyfill loading where needed
 
 ## User Value Delivered
-- **Before**: `npm install @usetemporal/core @usetemporal/adapter-native`
-- **After**: `npm install @usetemporal/core` (all adapters included!)
+- **Before**: `npm install minuta minuta/native`
+- **After**: `npm install minuta` (all adapters included!)
 - **Bundle Size**: Only imports what you use - better tree-shaking
 - **DX Improvement**: Cleaner, more intuitive imports
 - **Reliability**: Better tested adapters with visible coverage
@@ -96,8 +96,8 @@ Following the successful Quality Enhancement Sprint, this sprint focuses on a ma
 1. **Cleaner Imports**:
    ```typescript
    // New way - much cleaner!
-   import { createTemporal } from '@usetemporal/core'
-   import { createNativeAdapter } from '@usetemporal/core/native'
+   import { createTemporal } from 'minuta'
+   import { createNativeAdapter } from 'minuta/native'
    ```
 
 2. **Better Tree-Shaking**: Only bundle the adapter you use

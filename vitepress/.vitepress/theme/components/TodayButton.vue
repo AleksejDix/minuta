@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useTemporal } from "@allystudio/usetemporal-vue";
+import { Minuta } from "minuta-vue";
 
-const { now, go } = useTemporal();
+const { now, go } = useMinuta();
 </script>
 
 <template>
-  <button class="temporal-nav-button" @click="go(now, 0)">
+  <button class="minuta-nav-button" @click="go(now, 0)">
     <slot>Today</slot>
   </button>
 </template>

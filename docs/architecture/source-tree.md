@@ -1,6 +1,6 @@
 # Source Tree
 
-This document provides a detailed overview of the useTemporal project structure, explaining the purpose of each directory and key files.
+This document provides a detailed overview of the Minuta project structure, explaining the purpose of each directory and key files.
 
 ## Project Root Structure
 
@@ -31,14 +31,14 @@ The monorepo has been consolidated to a single main package with integrated adap
 
 ```
 packages/
-├── usetemporal/                   # Main library with all functionality
+├── minuta/                   # Main library with all functionality
 └── tsconfig/                      # Shared TypeScript configs
 ```
 
-### UseTemporal Package Structure
+### Minuta Package Structure
 
 ```
-packages/usetemporal/
+packages/minuta/
 ├── src/
 │   ├── index.ts                  # Public API exports
 │   ├── types.ts                  # Core type definitions
@@ -155,11 +155,11 @@ Available adapters:
 docs/
 ├── prd/                        # Product Requirements
 │   ├── README.md
-│   ├── usetemporal-prd.md
+│   ├── minuta-prd.md
 │   └── adapter-consolidation-brownfield-prd.md
 ├── architecture/               # Technical Architecture
 │   ├── README.md
-│   ├── usetemporal-architecture.md
+│   ├── minuta-architecture.md
 │   ├── coding-standards.md
 │   ├── tech-stack.md
 │   └── source-tree.md         # This document
@@ -207,7 +207,7 @@ vitepress/
 │   ├── unit-system/            # Unit plugin system
 │   └── utilities/              # Utility functions
 ├── guide/                      # User Guide
-│   ├── what-is-usetemporal.md
+│   ├── what-is-minuta.md
 │   ├── getting-started.md
 │   ├── installation.md
 │   ├── adapters.md            # Date adapter guide
@@ -263,7 +263,7 @@ Each package includes:
 | File | Purpose | Inheritance |
 |------|---------|-------------|
 | package.json | Package manifest | Independent |
-| tsconfig.json | TypeScript config | Extends @usetemporal/tsconfig |
+| tsconfig.json | TypeScript config | Extends @minuta/tsconfig |
 | vite.config.ts | Build configuration | Shared patterns |
 | vitest.config.ts | Test configuration | Coverage, environment |
 
@@ -353,15 +353,15 @@ research/
 import { ref } from "@vue/reactivity";
 
 // Main package
-import { createTemporal, period, divide } from "usetemporal";
+import { createTemporal, period, divide } from "minuta";
 
 // Specific adapter
-import { createNativeAdapter } from "usetemporal/native";
-import { createDateFnsAdapter } from "usetemporal/date-fns";
+import { createNativeAdapter } from "minuta/native";
+import { createDateFnsAdapter } from "minuta/date-fns";
 
 // Submodule imports
-import { usePeriod } from "usetemporal/composables";
-import { UNITS } from "usetemporal/units";
+import { usePeriod } from "minuta/composables";
+import { UNITS } from "minuta/units";
 ```
 
 ### Export Structure
@@ -402,7 +402,7 @@ The package provides multiple entry points:
 Only files explicitly exported from index.ts:
 
 ```typescript
-// packages/usetemporal/src/index.ts
+// packages/minuta/src/index.ts
 export { createTemporal } from "./createTemporal";
 export { usePeriod } from "./composables";
 export { 

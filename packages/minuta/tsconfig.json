@@ -1,5 +1,5 @@
 {
-  "extends": "@usetemporal/tsconfig/library.json",
+  "extends": "@minuta/tsconfig/library.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",

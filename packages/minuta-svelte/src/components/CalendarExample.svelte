@@ -9,41 +9,41 @@
   const date = writable(new Date());
   const now = writable(new Date());
 
-  const temporal = createMinuta({
+  const minuta = createMinuta({
     adapter: createNativeAdapter({ weekStartsOn: 1 }),
     date,
     now,
     locale: "en",
   });
 
-  const month = usePeriod(temporal, "month");
+  const month = usePeriod(minuta, "month");
   const weekPeriods = derived(month, ($month) =>
-    temporal.divide($month, "week")
+    minuta.divide($month, "week")
   );
   const dayPeriods = derived(weekPeriods, ($weeks) =>
-    $weeks.flatMap((week) => temporal.divide(week, "day"))
+    $weeks.flatMap((week) => minuta.divide(week, "day"))
   );
 
   const monthLabel = derived(month, ($month) =>
-    $month.start.toLocaleDateString(temporal.locale, {
+    $month.start.toLocaleDateString(minuta.locale, {
       month: "long",
       year: "numeric",
     })
   );
 
   const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const browsing = temporal.browsing;
+  const browsing = minuta.browsing;
 
   function select(day: Period) {
-    temporal.browsing.set(day);
+    minuta.browsing.set(day);
   }
 
   function isCurrentMonth(day: Period) {
-    return temporal.isSame(day, get(month), "month");
+    return minuta.isSame(day, get(month), "month");
   }
 
   function isToday(day: Period) {
-    return temporal.isSame(day, get(browsing), "day");
+    return minuta.isSame(day, get(browsing), "day");
   }
 </script>
 
@@ -69,7 +69,7 @@
         >
           <button type="button" on:click={() => select(day)}>
             <span class="date-label">{day.start.getDate()}</span>
-            <small>{day.start.toLocaleDateString(temporal.locale, { weekday: "short" })}</small>
+            <small>{day.start.toLocaleDateString(minuta.locale, { weekday: "short" })}</small>
           </button>
         </div>
       {/each}

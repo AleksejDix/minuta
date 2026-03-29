@@ -1,12 +1,12 @@
 # Operations Guide
 
-useTemporal exposes a small set of pure functions. They all accept an adapter, periods, and simple primitives—no global state.
+Minuta exposes a small set of pure functions. They all accept an adapter, periods, and simple primitives—no global state.
 
 ## Creating Periods
 
 ```ts
-import { period } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 })
 
@@ -21,7 +21,7 @@ const custom = period(adapter, {
 ## Dividing Periods
 
 ```ts
-import { divide } from '@allystudio/usetemporal/operations'
+import { divide } from 'minuta/operations'
 
 const days = divide(adapter, month, 'day')
 const weeks = divide(adapter, month, 'week')
@@ -31,7 +31,7 @@ const hours = divide(adapter, days[0], 'hour')
 ## Navigation
 
 ```ts
-import { next, previous, go } from '@allystudio/usetemporal/operations'
+import { next, previous, go } from 'minuta/operations'
 
 const today = period(adapter, new Date(), 'day')
 const tomorrow = next(adapter, today)
@@ -43,7 +43,7 @@ const lastMonth = go(adapter, month, -1) // move back one month
 ## Comparison
 
 ```ts
-import { isSame, contains } from '@allystudio/usetemporal/operations'
+import { isSame, contains } from 'minuta/operations'
 
 const thisMonth = period(adapter, new Date(), 'month')
 const sameMonth = isSame(adapter, thisMonth, period(adapter, new Date(), 'month'), 'month')

@@ -3,10 +3,10 @@
 ## Tasks
 
 1. **Rename packages**
-   - `@allystudio/usetemporal` → `minuta`
-   - `@allystudio/usetemporal-vue` → `minuta-vue`
-   - `@allystudio/usetemporal-react` → `minuta-react`
-   - `@allystudio/usetemporal-svelte` → `minuta-svelte`
+   - `minuta` → `minuta`
+   - `minuta-vue` → `minuta-vue`
+   - `minuta-react` → `minuta-react`
+   - `minuta-svelte` → `minuta-svelte`
 
 2. **Update all internal imports** across framework packages
 
@@ -23,4 +23,4 @@
 ## Open questions
 
 - npm scope: `minuta` or `@minuta/core`?
-- Keep `@allystudio/usetemporal` as deprecated redirect?
+- Keep `minuta` as deprecated redirect?

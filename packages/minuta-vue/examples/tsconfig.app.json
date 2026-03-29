@@ -7,8 +7,8 @@
 
     "paths": {
       "@/*": ["./src/*"],
-      "@allystudio/usetemporal-vue": ["../src/index"],
-      "@allystudio/usetemporal-vue/components": ["../src/components/index"]
+      "minuta-vue": ["../src/index"],
+      "minuta-vue/components": ["../src/components/index"]
     }
   }
 }

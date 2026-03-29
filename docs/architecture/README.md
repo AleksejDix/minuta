@@ -13,7 +13,7 @@ Architecture documents capture the current state of the system, including:
 
 ## Structure
 
-- Main Architecture: `usetemporal-architecture.md` - Core system architecture
+- Main Architecture: `minuta-architecture.md` - Core system architecture
 - Component docs: Detailed architecture for specific components (as needed)
 - Sharded docs: Large architecture documents may be split into sections
 

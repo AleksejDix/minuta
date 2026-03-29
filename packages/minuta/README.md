@@ -120,7 +120,7 @@ import { createDateFnsTzAdapter } from "minuta/date-fns-tz";
 import { createLuxonAdapter } from "minuta/luxon";
 
 // Temporal API
-import { createTemporalAdapter } from "minuta/temporal";
+import { createMinutaAdapter } from "minuta/temporal";
 ```
 
 ## Framework Integrations

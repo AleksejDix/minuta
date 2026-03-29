@@ -9,10 +9,10 @@ duration: 25min
 info: |
   ## Visual Guide to Building Reliable Calendars
 
-  A step-by-step visual walkthrough of how our calendar stack failed, why Swiss-local databases exposed every weakness, and how `@allystudio/usetemporal` fixes it with predictable data primitives.
+  A step-by-step visual walkthrough of how our calendar stack failed, why Swiss-local databases exposed every weakness, and how `minuta` fixes it with predictable data primitives.
 ---
 
-<h1 class="text-lg font-700">useTemporal</h1>
+<h1 class="text-lg font-700">Minuta</h1>
 <h1>Declarative Calendar Library</h1>
 
 <div>
@@ -317,7 +317,7 @@ function buildCalendarGrid(cursor, weekStartsOn = 1) {
   <p><strong>The Pattern:</strong> Year → Month → Day → Hour → Minute → Second</p>
   <p class="mt-2">Every level is a <strong>Period</strong> with <code>{ start, end, type }</code></p>
   <p class="mt-2">The red hour (02:00-03:00)? That's the DST "spring forward" that <strong>doesn't exist</strong> in Switzerland on March 30.</p>
-  <p class="mt-2"><strong>useTemporal's divide() gives you ANY level from ANY starting period.</strong></p>
+  <p class="mt-2"><strong>Minuta's divide() gives you ANY level from ANY starting period.</strong></p>
 </div>
 
 ---
@@ -371,14 +371,14 @@ graph LR
 
 ---
 
-# useTemporal
+# Minuta
 
 ```vue {1-16|2-7|9-14}
 <!-- App.vue -->
 <script setup lang="ts">
 import { ref } from "vue";
-import { Temporal } from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { Temporal } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 
 const adapter = createNativeAdapter({
   weekStartsOn: 1,
@@ -400,10 +400,10 @@ const date = ref(new Date("2025-03-13"));
 <!-- MonthGrid.vue -->
 <script setup lang="ts">
 import { computed } from "vue";
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-vue";
-import { divide } from "@allystudio/usetemporal/operations";
+import { useMinuta, usePeriod } from "minuta-vue";
+import { divide } from "minuta/operations";
 
-const temporal = useTemporal();
+const minuta = useMinuta();
 const month = usePeriod(temporal, "month");
 const days = computed(() => divide(temporal.adapter, month.value, "day"));
 </script>
@@ -493,7 +493,7 @@ Pads with previous/next month days. **One shape, every month.**
 </div>
 
 <div class="mt-8 text-center opacity-70">
-  <p>Use UTC for storage. Use Temporal API when it lands. Use <strong>useTemporal</strong> now.</p>
+  <p>Use UTC for storage. Use Temporal API when it lands. Use <strong>Minuta</strong> now.</p>
 </div>
 
 ---

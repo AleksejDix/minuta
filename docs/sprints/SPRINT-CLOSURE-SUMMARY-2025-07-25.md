@@ -5,10 +5,10 @@
 **Status**: ✅ COMPLETED SUCCESSFULLY
 
 ## Executive Summary
-The Calendar Units Package Sprint has been successfully completed, achieving 100% of its objectives. The team delivered a production-ready `@usetemporal/calendar-units` package featuring the highly-requested `stableMonth` unit.
+The Calendar Units Package Sprint has been successfully completed, achieving 100% of its objectives. The team delivered a production-ready `minuta/calendar` package featuring the highly-requested `stableMonth` unit.
 
 ## Key Deliverables
-1. **New NPM Package**: `@usetemporal/calendar-units` - ready for publication
+1. **New NPM Package**: `minuta/calendar` - ready for publication
 2. **StableMonth Unit**: Consistent 42-day calendar grids for all months
 3. **Full Documentation**: Migration guides, API docs, and framework examples
 4. **Multi-Adapter Support**: Verified with all existing adapters

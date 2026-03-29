@@ -2,7 +2,7 @@ import { defineConfig } from "vitepress";
 import path from "node:path";
 
 export default defineConfig({
-  title: "useTemporal",
+  title: "Minuta",
   description:
     "Revolutionary time library with unique divide() pattern for hierarchical time management",
   base: "/",
@@ -15,7 +15,7 @@ export default defineConfig({
       "meta",
       {
         property: "og:title",
-        content: "useTemporal - Revolutionary Time Library",
+        content: "Minuta - Revolutionary Time Library",
       },
     ],
     [
@@ -32,7 +32,7 @@ export default defineConfig({
     nav: [
       {
         text: "Guide",
-        link: "/guide/what-is-usetemporal",
+        link: "/guide/what-is-minuta",
         activeMatch: "/guide/",
       },
       {
@@ -46,11 +46,11 @@ export default defineConfig({
         items: [
           {
             text: "Changelog",
-            link: "https://github.com/AleksejDix/usetemporal/blob/main/CHANGELOG.md",
+            link: "https://github.com/AleksejDix/minuta/blob/main/CHANGELOG.md",
           },
           {
             text: "Contributing",
-            link: "https://github.com/AleksejDix/usetemporal/blob/main/CONTRIBUTING.md",
+            link: "https://github.com/AleksejDix/minuta/blob/main/CONTRIBUTING.md",
           },
         ],
       },
@@ -63,8 +63,8 @@ export default defineConfig({
           collapsed: false,
           items: [
             {
-              text: "What is useTemporal?",
-              link: "/guide/what-is-usetemporal",
+              text: "What is Minuta?",
+              link: "/guide/what-is-minuta",
             },
             { text: "Getting Started", link: "/guide/getting-started" },
           ],
@@ -216,17 +216,17 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: "github", link: "https://github.com/AleksejDix/usetemporal" },
+      { icon: "github", link: "https://github.com/AleksejDix/minuta" },
       { icon: "twitter", link: "https://twitter.com/aleksejdix" },
     ],
 
     footer: {
       message: "Released under the Apache 2.0 License.",
-      copyright: "Copyright © 2024-present useTemporal Contributors",
+      copyright: "Copyright © 2024-present Minuta Contributors",
     },
 
     editLink: {
-      pattern: "https://github.com/AleksejDix/usetemporal/edit/main/vitepress/:path",
+      pattern: "https://github.com/AleksejDix/minuta/edit/main/vitepress/:path",
       text: "Edit this page on GitHub",
     },
 
@@ -291,17 +291,17 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        "@allystudio/usetemporal-vue": path.resolve(
+        "minuta-vue": path.resolve(
           __dirname,
-          "../../packages/usetemporal-vue/src"
+          "../../packages/minuta-vue/src"
         ),
-        "@allystudio/usetemporal/native": path.resolve(
+        "minuta/native": path.resolve(
           __dirname,
-          "../../packages/usetemporal/src/native.ts"
+          "../../packages/minuta/src/native.ts"
         ),
-        "@allystudio/usetemporal/calendar": path.resolve(
+        "minuta/calendar": path.resolve(
           __dirname,
-          "../../packages/usetemporal/src/calendar/index.ts"
+          "../../packages/minuta/src/calendar/index.ts"
         ),
       },
     },

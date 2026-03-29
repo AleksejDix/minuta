@@ -5,8 +5,8 @@ Check if two periods represent the same time unit.
 ## Usage
 
 ```typescript
-import { period, isSame } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, isSame } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const period1 = period(adapter, new Date('2024-01-15'), 'day')
@@ -47,8 +47,8 @@ The `isSame` function compares two periods at a specific unit level. It uses the
 ### Check if Same Month
 
 ```typescript
-import { period, isSame } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, isSame } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -64,8 +64,8 @@ console.log(isSame(adapter, jan15, jan30, 'day'))    // false
 ### Check if Same Year
 
 ```typescript
-import { period, isSame } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, isSame } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -80,8 +80,8 @@ console.log(isSame(adapter, period2024_jan, period2025_jan, 'year'))  // false
 ### Practical Example: Group Events by Month
 
 ```typescript
-import { period, isSame } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, isSame } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -109,8 +109,8 @@ console.log(eventsInMonth) // Events A and B
 ### Check Current Period
 
 ```typescript
-import { period, isSame } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, isSame } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -134,9 +134,9 @@ console.log(isThisMonth(jan)) // true if current month is January 2024
 Full type safety:
 
 ```typescript
-import type { Adapter, Period, Unit } from '@allystudio/usetemporal'
-import { period, isSame } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import type { Adapter, Period, Unit } from 'minuta'
+import { period, isSame } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter: Adapter = createNativeAdapter()
 const p1: Period = period(adapter, new Date(), 'day')

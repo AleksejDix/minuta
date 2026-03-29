@@ -1,4 +1,4 @@
-import { CalendarExample } from "@allystudio/usetemporal-react/components";
+import { CalendarExample } from "minuta-react/components";
 
 export default function App() {
   return (

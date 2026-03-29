@@ -5,8 +5,8 @@ Navigate to the previous period of the same type.
 ## Usage
 
 ```typescript
-import { period, previous } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, previous } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date(), 'month')
@@ -37,8 +37,8 @@ Creates a new period that immediately precedes the given period, maintaining the
 ### Basic Usage
 
 ```typescript
-import { period, previous } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, previous } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -58,8 +58,8 @@ const lastYear = previous(adapter, year)
 ### Custom Period Navigation
 
 ```typescript
-import { period, previous } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, previous } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -77,8 +77,8 @@ const previousSprint = previous(adapter, sprint)
 ### Chaining Navigation
 
 ```typescript
-import { period, previous } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, previous } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -87,7 +87,7 @@ const month = period(adapter, new Date(), 'month')
 const twoMonthsAgo = previous(adapter, previous(adapter, month))
 
 // Or use go() for better performance
-import { go } from '@allystudio/usetemporal/operations'
+import { go } from 'minuta/operations'
 const twoMonthsAgo2 = go(adapter, month, -2)
 ```
 
@@ -96,9 +96,9 @@ const twoMonthsAgo2 = go(adapter, month, -2)
 Full type safety:
 
 ```typescript
-import type { Adapter, Period } from '@allystudio/usetemporal'
-import { period, previous } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import type { Adapter, Period } from 'minuta'
+import { period, previous } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter: Adapter = createNativeAdapter()
 const month: Period = period(adapter, new Date(), 'month')

@@ -2,7 +2,7 @@
 
 ## Epic Goal
 
-Create a separate @usetemporal/calendar-units package that provides calendar-specific time units (stableMonth, stableYear) to support fixed-layout calendar displays without polluting the core library with display concerns.
+Create a separate minuta/calendar package that provides calendar-specific time units (stableMonth, stableYear) to support fixed-layout calendar displays without polluting the core library with display concerns.
 
 ## Epic Description
 
@@ -55,8 +55,8 @@ See `/docs/architecture/decision-calendar-units-separation.md` for the rationale
 
 The package will follow the existing monorepo patterns:
 - Located at `/packages/calendar-units/`
-- Published as `@usetemporal/calendar-units`
-- Peer dependency on `@usetemporal/core`
+- Published as `minuta/calendar`
+- Peer dependency on `minuta`
 - Full TypeScript support with proper type exports
 
 Calendar units will use the unit registry's defineUnit() API:

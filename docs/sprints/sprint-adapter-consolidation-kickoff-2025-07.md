@@ -1,7 +1,7 @@
 # Sprint Kickoff: Adapter Consolidation Sprint - July 2025
 
 ## 🎯 Sprint Mission
-Transform the useTemporal developer experience by consolidating all adapters into the core package, delivering cleaner imports, better tree-shaking, and improved reliability.
+Transform the Minuta developer experience by consolidating all adapters into the core package, delivering cleaner imports, better tree-shaking, and improved reliability.
 
 ## 🚀 Why This Sprint Matters
 
@@ -34,21 +34,21 @@ Transform the useTemporal developer experience by consolidating all adapters int
 
 ### Before (Current Pain):
 ```bash
-npm install @usetemporal/core @usetemporal/adapter-native @usetemporal/adapter-temporal
+npm install minuta minuta/native /adapter-temporal
 ```
 ```typescript
-import { createTemporal } from '@usetemporal/core'
-import { createNativeAdapter } from '@usetemporal/adapter-native'
+import { createTemporal } from 'minuta'
+import { createNativeAdapter } from 'minuta/native'
 // Coverage shows 0% for adapters 😢
 ```
 
 ### After (New Joy):
 ```bash
-npm install @usetemporal/core  # That's it!
+npm install minuta  # That's it!
 ```
 ```typescript
-import { createTemporal } from '@usetemporal/core'
-import { createNativeAdapter } from '@usetemporal/core/native'
+import { createTemporal } from 'minuta'
+import { createNativeAdapter } from 'minuta/native'
 // Coverage shows real 85%+ 🎉
 ```
 
@@ -112,6 +112,6 @@ mkdir -p packages/core/src/adapters/{native,temporal,luxon,date-fns}
 
 ---
 
-Let's deliver a massive DX improvement to our users! This architectural change will make useTemporal more attractive, easier to use, and more maintainable. 
+Let's deliver a massive DX improvement to our users! This architectural change will make Minuta more attractive, easier to use, and more maintainable. 
 
 **Remember**: Every import we simplify is a developer smile we create! 😊

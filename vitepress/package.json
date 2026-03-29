@@ -12,7 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@allystudio/usetemporal": "^2.0.0-alpha.1"
+    "minuta": "^2.0.0-alpha.1"
   },
   "devDependencies": {
     "vitepress": "^1.6.3",

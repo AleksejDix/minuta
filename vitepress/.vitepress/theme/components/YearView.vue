@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Period } from "@allystudio/usetemporal";
+import type { Period } from "minuta";
 import { computed } from "vue";
-import { useTemporal } from "@allystudio/usetemporal-vue";
+import { Minuta } from "minuta-vue";
 import MonthName from "./MonthName.vue";
 import MonthGrid from "./MonthGrid.vue";
 
@@ -9,8 +9,8 @@ const props = defineProps<{
   year: Period;
 }>();
 
-const temporal = useTemporal();
-const months = computed(() => temporal.divide(props.year, "month"));
+const minuta = useMinuta();
+const months = computed(() => minuta.divide(props.year, "month"));
 </script>
 
 <template>

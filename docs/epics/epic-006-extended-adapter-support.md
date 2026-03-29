@@ -2,13 +2,13 @@
 
 ## Epic Goal
 
-Expand useTemporal's ecosystem by providing official adapters for the most popular JavaScript date libraries, enabling broader adoption and seamless integration with existing codebases.
+Expand Minuta's ecosystem by providing official adapters for the most popular JavaScript date libraries, enabling broader adoption and seamless integration with existing codebases.
 
 ## Epic Description
 
 ### Existing System Context
 
-- **Current functionality**: useTemporal provides 4 adapters (Native, date-fns, Luxon, Temporal)
+- **Current functionality**: Minuta provides 4 adapters (Native, date-fns, Luxon, Temporal)
 - **Technology stack**: TypeScript, ESM modules, Vitest testing, monorepo with Lerna
 - **Integration points**: Well-defined Adapter interface with 4 required methods
 - **Current usage**: ~2,000 weekly downloads, growing adoption
@@ -17,7 +17,7 @@ Expand useTemporal's ecosystem by providing official adapters for the most popul
 
 - **What's being added**: Official adapters for Day.js, Moment.js, and date-fns-tz
 - **How it integrates**: New packages following existing adapter patterns
-- **Success criteria**: 80% of JavaScript date library users can use useTemporal
+- **Success criteria**: 80% of JavaScript date library users can use Minuta
 
 ## Business Value
 
@@ -107,7 +107,7 @@ interface Adapter {
 - Performance within 5% of native libraries
 
 ### Ecosystem Metrics
-- 10+ frameworks using useTemporal
+- 10+ frameworks using Minuta
 - 5+ community adapters certified
 - Documentation rated 4.5+ stars
 - Active contributors from each library community
@@ -178,7 +178,7 @@ packages/
 ```
 
 ### Publishing Strategy
-- Scoped packages: `@usetemporal/adapter-*`
+- Scoped packages: `@minuta/adapter-*`
 - Independent versioning per adapter
 - Automated publishing via changesets
 - Canary releases for testing

@@ -7,7 +7,7 @@ Split a period at a specific date point into two periods.
 This is a pure utility function that doesn't require an adapter. It works the same across all API levels.
 
 ```typescript
-import { split } from '@allystudio/usetemporal/operations'
+import { split } from 'minuta/operations'
 
 // Works with any period from any API level
 const [before, after] = split(period, splitDate)
@@ -43,8 +43,8 @@ This is useful for breaking periods at arbitrary points that don't align with st
 ### Basic Split
 
 ```typescript
-import { period, split } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, split } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -64,8 +64,8 @@ console.log(secondHalf.end)   // 2024-01-31 23:59:59.999
 ### Split Custom Period
 
 ```typescript
-import { period, split } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, split } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -86,8 +86,8 @@ console.log(phase2) // Jun 1 - Dec 31
 ### Edge Cases
 
 ```typescript
-import { period, split } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, split } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date('2024-01-15'), 'month')
@@ -106,8 +106,8 @@ console.log(empty2.start === empty2.end) // true (empty period)
 ### Practical Example: Split at Event
 
 ```typescript
-import { period, split } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, split } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -148,9 +148,9 @@ console.log(result.eventAndAfter)  // Jun 15 - Dec 31
 Full type safety:
 
 ```typescript
-import type { Period } from '@allystudio/usetemporal'
-import { period, split } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import type { Period } from 'minuta'
+import { period, split } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month: Period = period(adapter, new Date(), 'month')

@@ -2,7 +2,7 @@
 
 ## Epic Goal
 
-Implement Allen's 13 fundamental temporal relations to provide a mathematically complete and mutually exclusive set of operations for determining relationships between any two time periods, enhancing useTemporal's capability as a comprehensive time manipulation library.
+Implement Allen's 13 fundamental temporal relations to provide a mathematically complete and mutually exclusive set of operations for determining relationships between any two time periods, enhancing Minuta's capability as a comprehensive time manipulation library.
 
 ## Epic Description
 
@@ -79,24 +79,24 @@ The 13 relations are:
 
 ```typescript
 // Individual operations (following existing pattern - all at top level)
-before(temporal: Temporal, periodA: Period, periodB: Period): boolean
-meets(temporal: Temporal, periodA: Period, periodB: Period): boolean
-overlaps(temporal: Temporal, periodA: Period, periodB: Period): boolean
-starts(temporal: Temporal, periodA: Period, periodB: Period): boolean
-during(temporal: Temporal, periodA: Period, periodB: Period): boolean
-finishes(temporal: Temporal, periodA: Period, periodB: Period): boolean
-equals(temporal: Temporal, periodA: Period, periodB: Period): boolean
+before(adapter: Adapter, periodA: Period, periodB: Period): boolean
+meets(adapter: Adapter, periodA: Period, periodB: Period): boolean
+overlaps(adapter: Adapter, periodA: Period, periodB: Period): boolean
+starts(adapter: Adapter, periodA: Period, periodB: Period): boolean
+during(adapter: Adapter, periodA: Period, periodB: Period): boolean
+finishes(adapter: Adapter, periodA: Period, periodB: Period): boolean
+equals(adapter: Adapter, periodA: Period, periodB: Period): boolean
 
 // Inverse relation operations
-after(temporal: Temporal, periodA: Period, periodB: Period): boolean
-metBy(temporal: Temporal, periodA: Period, periodB: Period): boolean
-overlappedBy(temporal: Temporal, periodA: Period, periodB: Period): boolean
-startedBy(temporal: Temporal, periodA: Period, periodB: Period): boolean
-contains(temporal: Temporal, periodA: Period, periodB: Period): boolean  // Note: conflicts with existing
-finishedBy(temporal: Temporal, periodA: Period, periodB: Period): boolean
+after(adapter: Adapter, periodA: Period, periodB: Period): boolean
+metBy(adapter: Adapter, periodA: Period, periodB: Period): boolean
+overlappedBy(adapter: Adapter, periodA: Period, periodB: Period): boolean
+startedBy(adapter: Adapter, periodA: Period, periodB: Period): boolean
+contains(adapter: Adapter, periodA: Period, periodB: Period): boolean  // Note: conflicts with existing
+finishedBy(adapter: Adapter, periodA: Period, periodB: Period): boolean
 
 // Unified relation operation
-relate(temporal: Temporal, periodA: Period, periodB: Period): AllenRelation
+relate(adapter: Adapter, periodA: Period, periodB: Period): AllenRelation
 
 // Type definition
 type AllenRelation = 

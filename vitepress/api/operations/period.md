@@ -5,8 +5,8 @@ Creates a period of a specific unit type from a date, or a custom period with st
 ## Usage
 
 ```typescript
-import { period } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date(), 'month')
@@ -49,8 +49,8 @@ function period(adapter: Adapter, options: { start: Date; end: Date }): Period
 ### Basic Usage
 
 ```typescript
-import { period } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -68,8 +68,8 @@ const week = period(adapter, new Date(2024, 0, 15), 'week')
 ### Custom Period
 
 ```typescript
-import { period } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -86,9 +86,9 @@ const sprint = period(adapter, {
 Full type safety across the entire API:
 
 ```typescript
-import type { Adapter, Period, Unit } from '@allystudio/usetemporal'
-import { period } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import type { Adapter, Period, Unit } from 'minuta'
+import { period } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter: Adapter = createNativeAdapter()
 const month: Period = period(adapter, new Date(), 'month')

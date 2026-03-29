@@ -1,7 +1,7 @@
 # Svelte Integration (Roadmap)
 
 Svelte support is in active development. The planned package
-`@allystudio/usetemporal-svelte` will provide:
+`minuta-svelte` will provide:
 
 - `createTemporalStore(options)` — Wraps the builder in a readable store so
   components react to `browsing`/`now` updates.

@@ -12,7 +12,7 @@ export interface ReactMinuta {
 }
 
 /**
- * Temporal builder with convenience methods wrapping operations.
+ * Minuta builder with convenience methods wrapping operations.
  * This is what useMinuta() returns to users.
  */
 export interface MinutaBuilder extends ReactMinuta {

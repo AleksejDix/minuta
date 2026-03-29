@@ -5,8 +5,8 @@ Navigate forward or backward by multiple periods at once.
 ## Usage
 
 ```typescript
-import { period, go } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, go } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date(), 'month')
@@ -42,8 +42,8 @@ Allows navigation by multiple periods in a single operation. More efficient than
 ### Basic Usage
 
 ```typescript
-import { period, go } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, go } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date(), 'month')
@@ -63,8 +63,8 @@ const sameMonth = go(adapter, month, 0)
 ### Quarters and Years
 
 ```typescript
-import { period, go } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, go } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -82,8 +82,8 @@ const decade Ago = go(adapter, year, -10)
 ### Custom Period Navigation
 
 ```typescript
-import { period, go } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, go } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -101,8 +101,8 @@ const sprintBefore = go(adapter, sprint, -1) // 1 sprint before
 ### Practical Example: Date Range Selector
 
 ```typescript
-import { period, go } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, go } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -126,9 +126,9 @@ const thirtyDaysLater = getDateRange(new Date(), 30, 'day')
 Full type safety:
 
 ```typescript
-import type { Adapter, Period } from '@allystudio/usetemporal'
-import { period, go } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import type { Adapter, Period } from 'minuta'
+import { period, go } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter: Adapter = createNativeAdapter()
 const month: Period = period(adapter, new Date(), 'month')

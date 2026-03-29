@@ -5,8 +5,8 @@ Navigate to the next period of the same type.
 ## Usage
 
 ```typescript
-import { period, next } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, next } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date(), 'month')
@@ -37,8 +37,8 @@ Creates a new period that immediately follows the given period, maintaining the 
 ### Basic Usage
 
 ```typescript
-import { period, next } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, next } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -58,8 +58,8 @@ const nextYear = next(adapter, year)
 ### Custom Period Navigation
 
 ```typescript
-import { period, next } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, next } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -77,8 +77,8 @@ const nextSprint = next(adapter, sprint)
 ### Chaining Navigation
 
 ```typescript
-import { period, next } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, next } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -87,7 +87,7 @@ const month = period(adapter, new Date(), 'month')
 const twoMonthsLater = next(adapter, next(adapter, month))
 
 // Or use go() for better performance
-import { go } from '@allystudio/usetemporal/operations'
+import { go } from 'minuta/operations'
 const twoMonthsLater2 = go(adapter, month, 2)
 ```
 
@@ -96,9 +96,9 @@ const twoMonthsLater2 = go(adapter, month, 2)
 Full type safety:
 
 ```typescript
-import type { Adapter, Period } from '@allystudio/usetemporal'
-import { period, next } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import type { Adapter, Period } from 'minuta'
+import { period, next } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter: Adapter = createNativeAdapter()
 const month: Period = period(adapter, new Date(), 'month')

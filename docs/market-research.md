@@ -1,4 +1,4 @@
-# Market Research Report: useTemporal Library & Time Manipulation Tools Market
+# Market Research Report: Minuta Library & Time Manipulation Tools Market
 
 ## Executive Summary
 
@@ -12,7 +12,7 @@ The JavaScript date/time manipulation library market represents a **$671M annual
 
 **Strategic Opportunity Assessment:**
 
-useTemporal is uniquely positioned to capture significant market share through three revolutionary differentiators:
+Minuta is uniquely positioned to capture significant market share through three revolutionary differentiators:
 
 1. **The divide() Pattern**: A paradigm shift in time manipulation that makes complex operations like calendar generation trivial
 2. **Built-in Reactivity**: First library to offer reactive time periods using framework-agnostic @vue/reactivity
@@ -43,7 +43,7 @@ useTemporal is uniquely positioned to capture significant market share through t
 - **Competitive response**: Build community moat and ecosystem lock-in quickly
 
 **Investment Requirements:**
-To capture this opportunity, useTemporal needs:
+To capture this opportunity, Minuta needs:
 - 2-3 full-time developers for core development
 - 1 developer advocate for content and community
 - $50K annual budget for marketing and conferences
@@ -55,16 +55,16 @@ To capture this opportunity, useTemporal needs:
 - Year 3: $3.2M ARR, established as top 3 date library
 - Year 5: $8.6M ARR, ready for Temporal transition
 
-The combination of technical innovation (divide pattern), unmet market needs (reactive time), and perfect timing (moment.js deprecation) creates a compelling opportunity for useTemporal to become the next leader in JavaScript date/time manipulation.
+The combination of technical innovation (divide pattern), unmet market needs (reactive time), and perfect timing (moment.js deprecation) creates a compelling opportunity for Minuta to become the next leader in JavaScript date/time manipulation.
 
 ## Research Objectives & Methodology
 
 ### Research Objectives
 
-This market research aims to provide comprehensive insights into the developer tools market for date/time manipulation, with specific focus on the useTemporal library's position and opportunities. The primary objectives are:
+This market research aims to provide comprehensive insights into the developer tools market for date/time manipulation, with specific focus on the Minuta library's position and opportunities. The primary objectives are:
 
 **What decisions will this research inform?**
-- Product positioning and differentiation strategies for useTemporal
+- Product positioning and differentiation strategies for Minuta
 - Feature prioritization based on market gaps and developer needs
 - Go-to-market strategy refinement and target segment identification
 - Pricing model optimization based on competitive landscape
@@ -89,7 +89,7 @@ This market research aims to provide comprehensive insights into the developer t
 
 **Data sources used:**
 - **Primary Sources:**
-  - Analysis of useTemporal codebase and documentation
+  - Analysis of Minuta codebase and documentation
   - GitHub stars, downloads, and engagement metrics
   - Developer forum discussions and pain points
   
@@ -144,7 +144,7 @@ Global market with no geographic restrictions. The developer tools market is inh
 - **Technical Architects**: Making technology decisions for organizations
 
 **Value chain position:**
-useTemporal and similar libraries occupy the "foundation layer" position in the software development value chain:
+Minuta and similar libraries occupy the "foundation layer" position in the software development value chain:
 - **Upstream**: Programming languages (JavaScript/TypeScript), runtime environments (Node.js, browsers)
 - **Current Position**: Core utility library layer providing fundamental date/time operations
 - **Downstream**: Application frameworks, UI component libraries, end-user applications
@@ -179,7 +179,7 @@ Alternative validation using project-based approach:
 
 #### Serviceable Addressable Market (SAM)
 
-The portion of TAM that useTemporal can realistically reach:
+The portion of TAM that Minuta can realistically reach:
 
 **Constraints Applied**:
 - Developers using modern JavaScript/TypeScript (80% of TAM)
@@ -199,7 +199,7 @@ Realistic market capture in the next 3-5 years:
 
 **Assumptions**:
 - Current market is fragmented with moment.js (legacy), date-fns, day.js, and luxon
-- useTemporal's unique "divide()" pattern provides strong differentiation
+- Minuta's unique "divide()" pattern provides strong differentiation
 - Open source model with potential premium features/support
 - Target market share: 3-5% in 3 years, 8-10% in 5 years
 
@@ -221,23 +221,23 @@ Realistic market capture in the next 3-5 years:
 
 **Trend 1: Shift to Global, Real-time Applications**
 - **Description**: Modern applications increasingly serve global audiences with real-time features requiring sophisticated timezone handling, event scheduling across regions, and complex temporal calculations
-- **Impact**: Drives demand for libraries that handle timezone complexity elegantly. Traditional Date object's limitations become more apparent. Creates opportunity for libraries like useTemporal that abstract complexity while providing powerful APIs
+- **Impact**: Drives demand for libraries that handle timezone complexity elegantly. Traditional Date object's limitations become more apparent. Creates opportunity for libraries like Minuta that abstract complexity while providing powerful APIs
 
 **Trend 2: Rise of Component-Based Architecture**
 - **Description**: Developers increasingly favor modular, tree-shakeable libraries over monolithic solutions. The shift from moment.js (16.7kb) to lighter alternatives reflects this trend
-- **Impact**: useTemporal's adapter architecture and ~6KB core size aligns perfectly with this trend. Developers can include only needed functionality, critical for performance-conscious applications
+- **Impact**: Minuta's adapter architecture and ~6KB core size aligns perfectly with this trend. Developers can include only needed functionality, critical for performance-conscious applications
 
 **Trend 3: TypeScript Adoption and Type Safety**
 - **Description**: TypeScript usage has grown from 12% (2017) to 84% (2024) among JavaScript developers, driving demand for fully typed date/time solutions
-- **Impact**: Libraries with first-class TypeScript support gain significant advantage. useTemporal's complete TypeScript implementation positions it well for this trend
+- **Impact**: Libraries with first-class TypeScript support gain significant advantage. Minuta's complete TypeScript implementation positions it well for this trend
 
 **Trend 4: TC39 Temporal API Standardization**
 - **Description**: The upcoming Temporal API promises native browser support for advanced date/time operations, currently in Stage 3 proposal
-- **Impact**: Creates both opportunity and threat - libraries that provide migration paths and polyfill support (like useTemporal's temporal adapter) can bridge the transition period
+- **Impact**: Creates both opportunity and threat - libraries that provide migration paths and polyfill support (like Minuta's temporal adapter) can bridge the transition period
 
 **Trend 5: Framework-Agnostic Solutions**
 - **Description**: Developers increasingly seek libraries that work across React, Vue, Angular, and vanilla JavaScript without framework lock-in
-- **Impact**: useTemporal's use of @vue/reactivity for framework-agnostic reactivity provides unique value proposition
+- **Impact**: Minuta's use of @vue/reactivity for framework-agnostic reactivity provides unique value proposition
 
 #### Growth Drivers
 
@@ -415,7 +415,7 @@ For primary customer segment (Mid-size Product Teams):
    - Searches Stack Overflow/Google for "JavaScript date library"
    - Discovers options through blog posts, tutorials, or GitHub trending
    - Sees comparisons mentioning bundle size and features
-   - useTemporal's unique divide() pattern catches attention
+   - Minuta's unique divide() pattern catches attention
 
 2. **Consideration:** 
    - Evaluates based on: bundle size, API design, TypeScript support, documentation quality
@@ -582,17 +582,17 @@ Current market players position themselves along these dimensions:
 1. **Bundle Size Optimization**
    - Leaders: day.js (2KB), date-fns (modular)
    - Laggards: moment.js (67KB), luxon (70KB)
-   - useTemporal opportunity: 6KB core with adapter architecture
+   - Minuta opportunity: 6KB core with adapter architecture
 
 2. **API Innovation**
    - Traditional: moment.js, day.js (familiar but dated)
    - Modern: date-fns (FP), luxon (immutable OOP)
-   - useTemporal opportunity: Revolutionary divide() pattern
+   - Minuta opportunity: Revolutionary divide() pattern
 
 3. **Developer Experience**
    - Strong: date-fns (discoverable), day.js (simple)
    - Weak: Temporal polyfill (complex), luxon (learning curve)
-   - useTemporal opportunity: Intuitive hierarchical mental model
+   - Minuta opportunity: Intuitive hierarchical mental model
 
 **Differentiation Strategies**
 
@@ -602,13 +602,13 @@ Competitors have chosen distinct positioning:
 - **luxon**: "Dates for humans" - correctness and timezones
 - **Temporal**: "Fix JavaScript dates" - comprehensive standard
 
-**useTemporal's Unique Position**: "Calculus for time" - fundamental operations that compose into complex solutions
+**Minuta's Unique Position**: "Calculus for time" - fundamental operations that compose into complex solutions
 
 **Market Gaps and Opportunities**
 
 1. **Reactive Time Management**
    - No major library offers built-in reactivity
-   - useTemporal's Vue reactivity integration fills this gap
+   - Minuta's Vue reactivity integration fills this gap
    - Enables live-updating time displays without manual refreshing
 
 2. **Hierarchical Time Navigation**
@@ -623,7 +623,7 @@ Competitors have chosen distinct positioning:
 
 4. **Adapter Pattern for Migration**
    - No library offers seamless migration between date engines
-   - useTemporal adapters enable gradual migration
+   - Minuta adapters enable gradual migration
    - Future-proof with Temporal adapter ready
 
 5. **Period-Based Mental Model**
@@ -636,7 +636,7 @@ Competitors have chosen distinct positioning:
 ```
 High Innovation
       ^
-      |  [useTemporal]
+      |  [Minuta]
       |     (divide pattern)
       |
       |  [Temporal]          [luxon]
@@ -776,13 +776,13 @@ High Innovation
 - **Risks:** Increased complexity, potential performance concerns, requires education on reactive paradigm
 
 **Opportunity 2: Calendar/Scheduling Component Ecosystem**
-- **Description:** Become the de facto foundation for calendar and scheduling UI components. The divide() pattern makes useTemporal uniquely suited for calendar generation. Partner with UI library creators.
+- **Description:** Become the de facto foundation for calendar and scheduling UI components. The divide() pattern makes Minuta uniquely suited for calendar generation. Partner with UI library creators.
 - **Size/Potential:** Calendar components market worth $200M+. As foundation layer, capture 5% value = $10M opportunity
 - **Requirements:** Component library partnerships, example implementations, UI framework adapters, design system integration guides
 - **Risks:** Dependency on partner adoption, competition from integrated solutions, support burden
 
 **Opportunity 3: Enterprise Migration Accelerator**
-- **Description:** Comprehensive migration service from moment.js to modern alternatives via useTemporal's adapter pattern. Include automated code transformation, testing, and gradual rollout.
+- **Description:** Comprehensive migration service from moment.js to modern alternatives via Minuta's adapter pattern. Include automated code transformation, testing, and gradual rollout.
 - **Size/Potential:** 100K+ enterprises using moment.js. Average migration project $50K. Target 1% = $50M total opportunity
 - **Requirements:** Migration tooling, enterprise support team, compliance certifications, SLAs, professional services capability
 - **Risks:** High support costs, long sales cycles, competition from consultancies
@@ -946,7 +946,7 @@ Based on willingness to pay analysis and competitive landscape, we recommend a *
      - Build Temporal adapter now for smooth transition
      - Position as "Temporal enhancement layer" not replacement
      - Focus on higher-level abstractions (divide pattern) that Temporal won't provide
-     - Create migration tools from useTemporal to native Temporal
+     - Create migration tools from Minuta to native Temporal
 
 2. **Risk: Slow adoption due to moment.js inertia**
    - Likelihood: High

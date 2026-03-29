@@ -176,7 +176,7 @@ describe("stableYear unit", () => {
           expect([52, 53]).toContain(weeks.length);
         });
 
-        it("should respect temporal's weekStartsOn in helper", () => {
+        it("should respect adapter's weekStartsOn in helper", () => {
           const date = new Date(2024, 0, 1);
           const stableYear = createStableYear(adapter, 2, date);
 

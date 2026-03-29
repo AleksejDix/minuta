@@ -53,7 +53,7 @@ When/if calendar units are needed:
 
 ```
 packages/
-├── @usetemporal/calendar-units/
+├── minuta/calendar/
 │   ├── units/
 │   │   ├── stableMonth.ts    # 6-week period
 │   │   ├── stableYear.ts     # consistent height year view

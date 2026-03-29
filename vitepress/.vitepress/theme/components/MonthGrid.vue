@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { Period } from "@allystudio/usetemporal";
+import type { Period } from "minuta";
 import type { Ref } from "vue";
 import { computed, unref } from "vue";
-import { useTemporal } from "@allystudio/usetemporal-vue";
-import { createStableMonth } from "../../../../packages/usetemporal/src/calendar";
+import { Minuta } from "minuta-vue";
+import { createStableMonth } from "../../../../packages/minuta/src/calendar";
 import WeekNamesView from "./WeekNamesView.vue";
 
 const props = withDefaults(
@@ -23,7 +23,7 @@ const emit = defineEmits<{
   select: [day: Period];
 }>();
 
-const temporal = useTemporal();
+const minuta = useMinuta();
 
 const targetMonth = computed(() => unref(props.month));
 const selectedDay = computed<Period | null>(() => {
@@ -34,22 +34,22 @@ const selectedDay = computed<Period | null>(() => {
 
 const stableMonth = computed(() =>
   createStableMonth(
-    temporal.adapter,
-    temporal.weekStartsOn ?? 0,
+    minuta.adapter,
+    minuta.weekStartsOn ?? 0,
     targetMonth.value.date
   )
 );
 
-const days = computed(() => temporal.divide(stableMonth.value, "day"));
+const days = computed(() => minuta.divide(stableMonth.value, "day"));
 
 const dayCells = computed(() =>
   days.value.map((period) => ({
     period,
-    isCurrentMonth: temporal.contains(targetMonth.value, period.date),
+    isCurrentMonth: minuta.contains(targetMonth.value, period.date),
     isSelected:
       selectedDay.value !== null &&
-      temporal.isSame(period, selectedDay.value, "day"),
-    isToday: temporal.isSame(period, temporal.now.value, "day"),
+      minuta.isSame(period, selectedDay.value, "day"),
+    isToday: minuta.isSame(period, minuta.now.value, "day"),
   }))
 );
 

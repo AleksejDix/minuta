@@ -1,7 +1,7 @@
 /**
  * @module minuta/date-fns-tz
  *
- * date-fns-tz adapter for useTemporal with timezone support
+ * date-fns-tz adapter for Minuta with timezone support
  */
 
 export {

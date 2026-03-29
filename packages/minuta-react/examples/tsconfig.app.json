@@ -16,8 +16,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@allystudio/usetemporal-react": ["../src"],
-      "@allystudio/usetemporal-react/components": ["../src/components/index"]
+      "minuta-react": ["../src"],
+      "minuta-react/components": ["../src/components/index"]
     },
 
     /* Linting */

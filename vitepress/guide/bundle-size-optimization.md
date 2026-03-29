@@ -1,10 +1,10 @@
 # Bundle Size Optimization
 
-Learn how to minimize your bundle size with useTemporal.
+Learn how to minimize your bundle size with Minuta.
 
 ## Understanding Tree-Shaking
 
-useTemporal v2.0 is designed for optimal tree-shaking:
+Minuta v2.0 is designed for optimal tree-shaking:
 - Only bundle operations you use
 - No side effects
 - Modular architecture
@@ -31,7 +31,7 @@ npm run build
 
 ```typescript
 // Hot path: Use pure functions
-import { contains } from '@allystudio/usetemporal/operations';
+import { contains } from 'minuta/operations';
 
 function filterItems(items, range) {
   return items.filter(item => contains(range, item.date));
@@ -44,10 +44,10 @@ function filterItems(items, range) {
 
 ```typescript
 // ✅ Good: Specific imports
-import { period, divide } from '@allystudio/usetemporal/operations';
+import { period, divide } from 'minuta/operations';
 
 // ❌ Bad: Barrel import (though still tree-shakes)
-import * as ops from '@allystudio/usetemporal/operations';
+import * as ops from 'minuta/operations';
 ```
 
 ### 3. Choose the Right Adapter
@@ -65,17 +65,17 @@ Different adapters have different bundle impacts:
 
 ```typescript
 // Minimal bundle
-import { createNativeAdapter } from '@allystudio/usetemporal/native';
+import { createNativeAdapter } from 'minuta/native';
 
 // Larger bundle but more features
-import { createLuxonAdapter } from '@allystudio/usetemporal/luxon';
+import { createLuxonAdapter } from 'minuta/luxon';
 ```
 
 ### 4. Lazy Load Calendar Features
 
 ```typescript
 // Don't import calendar unless needed
-const calendar = await import('@allystudio/usetemporal/calendar');
+const calendar = await import('minuta/calendar');
 const stable = calendar.createStableMonth(adapter, date, 1);
 ```
 
@@ -102,8 +102,8 @@ const range = period(adapter, {
 **Savings:** 83%
 
 ```typescript
-import { period, contains } from '@allystudio/usetemporal/operations';
-import { createNativeAdapter } from '@allystudio/usetemporal/native';
+import { period, contains } from 'minuta/operations';
+import { createNativeAdapter } from 'minuta/native';
 
 // Minimal bundle for date range filtering
 const adapter = createNativeAdapter();
@@ -118,8 +118,8 @@ const filtered = items.filter(item => contains(range, item.date));
 **Savings:** 60%+
 
 ```typescript
-import { period, divide, next, previous } from '@allystudio/usetemporal/operations';
-import { createNativeAdapter } from '@allystudio/usetemporal/native';
+import { period, divide, next, previous } from 'minuta/operations';
+import { createNativeAdapter } from 'minuta/native';
 
 const adapter = createNativeAdapter();
 const month = period(adapter, new Date(), 'month');
@@ -145,7 +145,7 @@ const CalendarRoute = () => import('./CalendarRoute.js');
 ```typescript
 // Only load calendar in calendar routes
 if (route === '/calendar') {
-  const { createStableMonth } = await import('@allystudio/usetemporal/calendar');
+  const { createStableMonth } = await import('minuta/calendar');
 }
 ```
 
@@ -153,7 +153,7 @@ if (route === '/calendar') {
 
 ```typescript
 // Start with native
-import { createNativeAdapter } from '@allystudio/usetemporal/native';
+import { createNativeAdapter } from 'minuta/native';
 
 // Upgrade to luxon only when needed
 const adapter = needsTimezones
@@ -181,40 +181,40 @@ npx vite-bundle-visualizer
 ### ❌ Importing Everything
 
 ```typescript
-import * as temporal from '@allystudio/usetemporal';
+import * as temporal from 'minuta';
 ```
 
 **Fix:** Import only what you need:
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations';
+import { period, divide } from 'minuta/operations';
 ```
 
 ### ❌ Using Heavy Adapters Unnecessarily
 
 ```typescript
-import { createLuxonAdapter } from '@allystudio/usetemporal/luxon';
+import { createLuxonAdapter } from 'minuta/luxon';
 // +15KB for features you might not need
 ```
 
 **Fix:** Use native adapter unless you need specific features:
 
 ```typescript
-import { createNativeAdapter } from '@allystudio/usetemporal/native';
+import { createNativeAdapter } from 'minuta/native';
 // 0KB additional
 ```
 
 ### ❌ Not Using Lazy Loading
 
 ```typescript
-import { createStableMonth } from '@allystudio/usetemporal/calendar';
+import { createStableMonth } from 'minuta/calendar';
 // Always loaded, even if not used
 ```
 
 **Fix:** Lazy load when needed:
 
 ```typescript
-const calendar = await import('@allystudio/usetemporal/calendar');
+const calendar = await import('minuta/calendar');
 ```
 
 ## Related

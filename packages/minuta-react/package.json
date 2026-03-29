@@ -1,19 +1,19 @@
 {
   "name": "minuta-react",
   "version": "1.0.0-beta.1",
-  "description": "React hooks for useTemporal",
+  "description": "React hooks for minuta",
   "author": "Aleksej Dix <git@aleksejdix.com>",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AleksejDix/minuta.git",
-    "directory": "packages/usetemporal-react"
+    "directory": "packages/minuta-react"
   },
   "bugs": {
     "url": "https://github.com/AleksejDix/minuta/issues"
   },
-  "homepage": "https://usetemporal.vercel.app",
+  "homepage": "https://github.com/AleksejDix/minuta",
   "sideEffects": false,
   "files": [
     "dist"
@@ -57,7 +57,7 @@
     "@testing-library/react": "^14.0.0",
     "@types/node": "^22.12.1",
     "@types/react": "^18.0.0",
-    "@usetemporal/tsconfig": "^2.0.0-alpha.1",
+    "@minuta/tsconfig": "^2.0.0-alpha.1",
     "@vitejs/plugin-react": "^5.1.1",
     "jsdom": "^25.0.1",
     "react": "^18.0.0",

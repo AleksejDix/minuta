@@ -1,12 +1,12 @@
-# What is useTemporal?
+# What is Minuta?
 
-useTemporal is a tiny library that treats time as a hierarchy of periods rather than a collection of loose timestamps. Instead of juggling `Date` methods, you create a period (year, month, week, day, etc.) and then subdivide it as deep as you need.
+Minuta is a tiny library that treats time as a hierarchy of periods rather than a collection of loose timestamps. Instead of juggling `Date` methods, you create a period (year, month, week, day, etc.) and then subdivide it as deep as you need.
 
 ## The Core Idea
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 })
 

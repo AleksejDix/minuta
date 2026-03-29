@@ -1,6 +1,6 @@
 # Frameworks
 
-useTemporal keeps the core strictly functional, then layers framework-specific
+Minuta keeps the core strictly functional, then layers framework-specific
 packages for idiomatic reactivity. Pick your stack to see how to wire the
 builder API into real apps.
 
@@ -16,5 +16,5 @@ builder API into real apps.
 - [Svelte](/frameworks/svelte) — Store helpers so derived periods stay reactive.
 - [Angular](/frameworks/angular) — Injectable services with signal-based values.
 
-Each package exposes the same surface area (`useTemporal`, `usePeriod`,
+Each package exposes the same surface area (`Minuta`, `usePeriod`,
 builder methods) so you can share domain logic while keeping UI code idiomatic.

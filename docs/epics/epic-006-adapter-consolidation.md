@@ -71,7 +71,7 @@ Consolidate all adapter packages into the core package to improve maintainabilit
 - **Day 3**: Update imports/tests (006.07) + Documentation (006.09)
 
 ### Key Deliverables:
-1. All adapters available from `@usetemporal/core`
+1. All adapters available from `minuta`
 2. Clean entry points for tree-shaking
 3. Accurate coverage metrics (80%+ target)
 4. Complete migration guide

@@ -8,7 +8,7 @@
 **Sprint**: Quality Enhancement Sprint (July 2025) - Closed  
 
 ## Epic Description
-As the useTemporal library evolves, we need a robust and comprehensive testing architecture that ensures quality across all adapters, provides confidence in our code, and prepares us for future JavaScript standards. This epic focuses on achieving 100% adapter coverage, improving test infrastructure, and establishing patterns for emerging web standards.
+As the Minuta library evolves, we need a robust and comprehensive testing architecture that ensures quality across all adapters, provides confidence in our code, and prepares us for future JavaScript standards. This epic focuses on achieving 100% adapter coverage, improving test infrastructure, and establishing patterns for emerging web standards.
 
 ## Business Value
 - **Quality Assurance**: Achieve 100% adapter test coverage (currently 75%)
@@ -111,4 +111,4 @@ Focus shifted to Epic 006 (Adapter Consolidation) which will naturally improve t
 | 2025-07-25 | 1.0 | Epic creation with initial stories | Mary (Analyst) |
 
 ## Notes
-This epic aligns with the broader vision of making useTemporal the most reliable and future-proof time manipulation library in the JavaScript ecosystem.
+This epic aligns with the broader vision of making Minuta the most reliable and future-proof time manipulation library in the JavaScript ecosystem.

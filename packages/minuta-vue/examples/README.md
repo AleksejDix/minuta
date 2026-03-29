@@ -1,12 +1,12 @@
 # Vue calendar demo
 
 Vue demo showcasing the `CalendarExample` component that now ships from
-`@allystudio/usetemporal-vue/components`.
+`minuta-vue/components`.
 
 ## Getting started
 
 ```bash
-npm run dev --workspace=@allystudio/usetemporal-vue
+npm run dev --workspace=minuta-vue
 ```
 
 - `npm run dev --workspace=…` – Launches the demo from the package Vite config
@@ -16,7 +16,7 @@ npm run dev --workspace=@allystudio/usetemporal-vue
 ## Project structure
 
 ```
-packages/usetemporal-vue/examples/
+packages/minuta-vue/examples/
 ├── src/
 │   ├── App.vue
 │   ├── assets/

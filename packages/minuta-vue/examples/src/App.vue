@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarExample } from '@allystudio/usetemporal-vue/components'
+import { CalendarExample } from 'minuta-vue/components'
 </script>
 
 <template>

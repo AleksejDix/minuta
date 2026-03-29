@@ -3,7 +3,7 @@
 ## Sprint Overview
 - **Sprint Name**: Calendar Units Package Sprint
 - **Sprint Duration**: 3 days (2025-07-25 to 2025-07-29)
-- **Sprint Goal**: Create @usetemporal/calendar-units package with stableMonth support
+- **Sprint Goal**: Create minuta/calendar package with stableMonth support
 - **Team**: Team B
 
 ## Mission Statement
@@ -36,9 +36,9 @@ We're creating a dedicated package for calendar-specific time units, starting wi
 - This establishes the pattern for future calendar units
 
 ### Key Technical Details
-- Package name: `@usetemporal/calendar-units`
+- Package name: `minuta/calendar`
 - Location: `/packages/calendar-units/`
-- Peer dependency on `@usetemporal/core`
+- Peer dependency on `minuta`
 - Uses core's unit registry system
 
 ## Quick Start Guide
@@ -60,7 +60,7 @@ We're creating a dedicated package for calendar-specific time units, starting wi
 ### Integration Pattern
 ```typescript
 // Using core's defineUnit API
-import { defineUnit } from '@usetemporal/core';
+import { defineUnit } from 'minuta';
 
 defineUnit('stableMonth', {
   duration: { days: 42 },

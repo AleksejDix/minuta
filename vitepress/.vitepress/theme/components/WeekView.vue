@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Period } from "@allystudio/usetemporal";
+import type { Period } from "minuta";
 import type { Ref } from "vue";
 import { computed, unref } from "vue";
-import { useTemporal } from "@allystudio/usetemporal-vue";
+import { Minuta } from "minuta-vue";
 import WeekNamesView from "./WeekNamesView.vue";
 
 const HOURS = Array.from({ length: 24 }, (_, index) => index);
@@ -11,12 +11,12 @@ const props = defineProps<{
   week: Period | Ref<Period>;
 }>();
 
-const temporal = useTemporal();
+const minuta = useMinuta();
 const targetWeek = computed(() => unref(props.week));
-const days = computed(() => temporal.divide(targetWeek.value, "day"));
+const days = computed(() => minuta.divide(targetWeek.value, "day"));
 const hourFormatter = computed(
   () =>
-    new Intl.DateTimeFormat(temporal.locale ?? "en", {
+    new Intl.DateTimeFormat(minuta.locale ?? "en", {
       hour: "numeric",
     })
 );
@@ -24,7 +24,7 @@ const hourFormatter = computed(
 const dayColumns = computed(() =>
   days.value.map((period) => ({
     period,
-    isToday: temporal.isSame(period, temporal.now.value, "day"),
+    isToday: minuta.isSame(period, minuta.now.value, "day"),
   }))
 );
 

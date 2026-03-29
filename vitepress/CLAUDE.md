@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the VitePress documentation site for useTemporal - a revolutionary time library featuring the divide() pattern for hierarchical time management. The documentation follows the library's "Calculus for Time" philosophy, focusing on fundamental operations that compose into powerful solutions.
+This is the VitePress documentation site for Minuta - a revolutionary time library featuring the divide() pattern for hierarchical time management. The documentation follows the library's "Calculus for Time" philosophy, focusing on fundamental operations that compose into powerful solutions.
 
 ## Commands
 
@@ -28,7 +28,7 @@ The documentation is organized into several main sections:
 
 ### `/guide/` - User Guide
 Progressive documentation from beginner to advanced:
-- **Introduction**: What is useTemporal, Getting Started, Installation, First App
+- **Introduction**: What is Minuta, Getting Started, Installation, First App
 - **Core Concepts**: divide() Pattern, Reactive Time Units, Adapters, Framework Agnostic
 - **Patterns & Recipes**: Common patterns for divide(), navigation, time analysis, business logic
 - **Framework Integration**: Examples for Vue, React, and other frameworks
@@ -99,11 +99,11 @@ The site is configured in `.vitepress/config.ts`:
 ::: code-group
 
 ```bash [npm]
-npm install usetemporal
+npm install minuta
 ```
 
 ```bash [yarn]
-yarn add usetemporal
+yarn add minuta
 ```
 
 :::
@@ -111,7 +111,7 @@ yarn add usetemporal
 
 ```markdown
 ::: tip
-The divide() pattern is unique to useTemporal and enables hierarchical time subdivision.
+The divide() pattern is unique to Minuta and enables hierarchical time subdivision.
 :::
 ```
 

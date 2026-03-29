@@ -14,7 +14,7 @@ if (typeof (globalThis as any).Temporal === "undefined") {
   (globalThis as any).Temporal = Temporal;
 }
 
-export function createTemporalAdapter({
+export function createMinutaAdapter({
   weekStartsOn = 1,
 }: { weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {}): Adapter {
   if (typeof (globalThis as any).Temporal === "undefined") {
@@ -33,4 +33,4 @@ export function createTemporalAdapter({
   });
 }
 
-export const temporalAdapter = createTemporalAdapter({ weekStartsOn: 1 });
+export const minutaAdapter = createMinutaAdapter({ weekStartsOn: 1 });

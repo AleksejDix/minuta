@@ -1,4 +1,4 @@
-# useTemporal Documentation Refactoring Brownfield Enhancement PRD
+# Minuta Documentation Refactoring Brownfield Enhancement PRD
 
 ## Intro Project Analysis and Context
 
@@ -14,7 +14,7 @@ This enhancement involves restructuring the existing documentation to follow BMa
 - Existing documentation structure analyzed
 
 #### Current Project State
-useTemporal is a revolutionary time library (v2.0.0-alpha.1) featuring a unique `divide()` pattern for hierarchical time management. The project is organized as a monorepo with framework-agnostic architecture. The library follows a "Calculus for Time" philosophy, providing only fundamental operations that compose into complex solutions.
+Minuta is a revolutionary time library (v2.0.0-alpha.1) featuring a unique `divide()` pattern for hierarchical time management. The project is organized as a monorepo with framework-agnostic architecture. The library follows a "Calculus for Time" philosophy, providing only fundamental operations that compose into complex solutions.
 
 ### Available Documentation Analysis
 
@@ -57,7 +57,7 @@ Refactor the entire `/docs` directory to follow BMad-Method file structure and d
 The project has reached a critical point where the lack of structured process is causing confusion and risking the integrity of existing functionality. The developer is feeling lost in the current documentation chaos, with mixed content across ARCHIVE, COMPLETED, and STORIES folders. By adopting the BMad-Method documentation structure, we will establish a professional, guided process for feature development that protects existing work while enabling systematic progress.
 
 The distinction is now clear:
-- **VitePress documentation** (`/vitepress`): For end-users of the library, explaining how to use useTemporal
+- **VitePress documentation** (`/vitepress`): For end-users of the library, explaining how to use Minuta
 - **BMad documentation structure** (`/docs`): For the development team and AI agents, providing a guided process for implementing features
 
 We will focus on organizing future stories and can archive/remove the ARCHIVE and COMPLETED folders to reduce migration effort.
@@ -76,7 +76,7 @@ We will focus on organizing future stories and can archive/remove the ARCHIVE an
 
 **FR2**: All future development stories shall follow the BMad story template structure with required sections: Status, Story (As a/I want/So that), Acceptance Criteria, Tasks/Subtasks, Dev Notes, Testing, Change Log, Dev Agent Record, and QA Results.
 
-**FR3**: A new PRD document shall be created following BMad structure to guide the documentation refactoring and future enhancements to the useTemporal library.
+**FR3**: A new PRD document shall be created following BMad structure to guide the documentation refactoring and future enhancements to the Minuta library.
 
 **FR4**: An Architecture document shall be created or updated to follow BMad patterns, focusing on the core library and adapter system as the most important components.
 
@@ -191,7 +191,7 @@ We will focus on organizing future stories and can archive/remove the ARCHIVE an
 
 ## Epic 1: BMad Documentation Structure Implementation
 
-**Epic Goal**: Transform the useTemporal project documentation from its current ad-hoc structure into a professional BMad-Method compliant system that provides clear development process, separates user and developer documentation, and enables efficient AI-agent assisted development.
+**Epic Goal**: Transform the Minuta project documentation from its current ad-hoc structure into a professional BMad-Method compliant system that provides clear development process, separates user and developer documentation, and enables efficient AI-agent assisted development.
 
 **Integration Requirements**: All documentation changes must preserve existing VitePress functionality, maintain git history where possible, and provide clear migration path for existing documentation references. The new structure must integrate seamlessly with the monorepo setup and existing CLAUDE.md guidance.
 
@@ -202,8 +202,8 @@ I want to establish foundational BMad documents (PRD and Architecture),
 so that all future development follows a structured, professional process.
 
 #### Acceptance Criteria
-1. PRD document created at `/docs/prd/usetemporal-prd.md` following BMad template
-2. Architecture document created at `/docs/architecture/usetemporal-architecture.md` with focus on core and adapters
+1. PRD document created at `/docs/prd/minuta-prd.md` following BMad template
+2. Architecture document created at `/docs/architecture/minuta-architecture.md` with focus on core and adapters
 3. Both documents reflect actual current state (not aspirational)
 4. Documents are cross-referenced and consistent
 5. CLAUDE.md updated to reference these new documents

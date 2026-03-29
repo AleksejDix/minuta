@@ -1,8 +1,8 @@
-# useTemporal Brownfield Architecture Document
+# Minuta Brownfield Architecture Document
 
 ## Introduction
 
-This document captures the CURRENT STATE of the useTemporal codebase, including technical patterns, architectural decisions, and implementation realities. It serves as a reference for AI agents and developers working on enhancements.
+This document captures the CURRENT STATE of the Minuta codebase, including technical patterns, architectural decisions, and implementation realities. It serves as a reference for AI agents and developers working on enhancements.
 
 ### Document Scope
 
@@ -37,7 +37,7 @@ For the planned documentation refactoring:
 
 ### Technical Summary
 
-useTemporal is a revolutionary time library implementing a "Calculus for Time" philosophy. It provides fundamental operations that compose into complex time manipulations, centered around a unique `divide()` pattern for hierarchical time management.
+Minuta is a revolutionary time library implementing a "Calculus for Time" philosophy. It provides fundamental operations that compose into complex time manipulations, centered around a unique `divide()` pattern for hierarchical time management.
 
 ### Actual Tech Stack (from package.json)
 
@@ -88,7 +88,7 @@ pickle/
 │   ├── adapter-date-fns/       # date-fns integration
 │   ├── adapter-luxon/          # Luxon integration
 │   ├── adapter-temporal/       # Temporal API adapter
-│   ├── usetemporal/           # Meta package (core + native)
+│   ├── minuta/           # Meta package (core + native)
 │   └── tsconfig/              # Shared TypeScript configs
 ├── vitepress/                 # VitePress documentation (user-facing)
 ├── docs/                      # Development documentation (to refactor)
@@ -247,8 +247,8 @@ Based on the documentation refactoring requirements:
 
 ### New Files/Directories Needed
 
-- `/docs/prd/usetemporal-prd.md` - Already created
-- `/docs/architecture/usetemporal-architecture.md` - This document
+- `/docs/prd/minuta-prd.md` - Already created
+- `/docs/architecture/minuta-architecture.md` - This document
 - `/docs/epics/` - Epic documentation
 - `/docs/stories/` - Migrated story files
 - `/docs/development/` - Developer guides
@@ -279,8 +279,8 @@ npm run docs:build         # Build documentation
 npm run docs:preview       # Preview built docs
 
 # Package-specific
-npm run build --workspace=@usetemporal/core
-npm test --workspace=@usetemporal/adapter-native
+npm run build --workspace=minuta
+npm test --workspace=@minuta/adapter-native
 ```
 
 ### Common Issues and Solutions

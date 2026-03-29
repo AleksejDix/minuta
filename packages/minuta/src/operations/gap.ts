@@ -1,7 +1,7 @@
 import type { Period, TimePeriod } from "../types";
 
 /**
- * Calculate the gap or span between two temporal points.
+ * Calculate the gap or span between two time points.
  *
  * - Date + Date → span between them (normalized: start <= end)
  * - Period + Period → gap between them (from end of first to start of second)

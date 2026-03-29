@@ -39,16 +39,16 @@ export function CalendarExample() {
     [weekStartsOn]
   );
 
-  const temporal = useMinuta({
+  const minuta = useMinuta({
     adapter,
     date: new Date(),
   });
 
-  const month = usePeriod(temporal, "month");
+  const month = usePeriod(minuta, "month");
 
   const weeks = useMemo<WeekWithDays[]>(
-    () => buildWeeks(temporal, month),
-    [temporal, month]
+    () => buildWeeks(minuta, month),
+    [minuta, month]
   );
   const weekdayLabels = WEEKDAY_ORDER[weekStartsOn];
 
@@ -56,7 +56,7 @@ export function CalendarExample() {
     <section className="calendar-shell" data-testid="calendar-example">
       <header className="calendar-header">
         <div>
-          <h1>useTemporal React Demo</h1>
+          <h1>Minuta React Demo</h1>
           <p className="subheading">
             Derived periods, divide() pattern, and adapter reactivity in one
             hook.
@@ -68,9 +68,9 @@ export function CalendarExample() {
         />
       </header>
 
-      <PeriodDisplay month={month} now={temporal.now} />
+      <PeriodDisplay month={month} now={minuta.now} />
 
-      <NavigationControls temporal={temporal} targetPeriod={month} />
+      <NavigationControls minuta={minuta} targetPeriod={month} />
 
       <div className="weekday-grid">
         {weekdayLabels.map((weekday) => (
@@ -82,8 +82,8 @@ export function CalendarExample() {
         {weeks.map((week) => (
           <div key={week.period.start.toISOString()} className="week-row">
             {week.days.map((day) => {
-              const isOutside = !temporal.contains(month, day.start);
-              const isToday = temporal.isSame(day, temporal.now, "day");
+              const isOutside = !minuta.contains(month, day.start);
+              const isToday = minuta.isSame(day, minuta.now, "day");
               return (
                 <button
                   type="button"
@@ -95,7 +95,7 @@ export function CalendarExample() {
                   ]
                     .filter(Boolean)
                     .join(" ")}
-                  onClick={() => temporal.go(day, 0)}
+                  onClick={() => minuta.go(day, 0)}
                   title={dayFormatter.format(day.start)}
                 >
                   <span className="date-number">{day.start.getDate()}</span>
@@ -112,21 +112,18 @@ export function CalendarExample() {
   );
 }
 
-function buildWeeks(
-  temporal: MinutaBuilder,
-  month: TimePeriod
-): WeekWithDays[] {
-  return temporal.divide(month, "week").map((week) => ({
+function buildWeeks(minuta: MinutaBuilder, month: TimePeriod): WeekWithDays[] {
+  return minuta.divide(month, "week").map((week) => ({
     period: week,
-    days: temporal.divide(week, "day"),
+    days: minuta.divide(week, "day"),
   }));
 }
 
 function NavigationControls({
-  temporal,
+  minuta,
   targetPeriod,
 }: {
-  temporal: MinutaBuilder;
+  minuta: MinutaBuilder;
   targetPeriod: TimePeriod;
 }) {
   return (
@@ -134,14 +131,14 @@ function NavigationControls({
       <button
         type="button"
         className="nav-button"
-        onClick={() => temporal.previous(targetPeriod)}
+        onClick={() => minuta.previous(targetPeriod)}
       >
         ← Previous
       </button>
       <button
         type="button"
         className="nav-button"
-        onClick={() => temporal.next(targetPeriod)}
+        onClick={() => minuta.next(targetPeriod)}
       >
         Next →
       </button>

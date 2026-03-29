@@ -11,9 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** Removed global `unitRegistry` and all related functions (`defineUnit`, `getUnitDefinition`, `hasUnit`, `getRegisteredUnits`).
   - Operations no longer rely on global state for unit definitions.
   - Custom unit registration now requires alternative patterns (e.g., custom adapters or helper functions).
-- **BREAKING:** Operation signatures changed from `(temporal: Temporal, ...)` to `(adapter: Adapter, ...)`.
+- **BREAKING:** Operation signatures changed from `(adapter: Adapter, ...)` to `(adapter: Adapter, ...)`.
   - All core operations (`period`, `divide`, `merge`, `next`, `previous`, `go`, `isSame`, `isToday`) now accept an `Adapter` instance as their first argument.
-- **BREAKING:** `createStableMonth` and `createStableYear` helper functions now accept `(adapter: Adapter, weekStartsOn: number, date: Date)` instead of `(temporal: Temporal, date: Date)`.
+- **BREAKING:** `createStableMonth` and `createStableYear` helper functions now accept `(adapter: Adapter, weekStartsOn: number, date: Date)` instead of `(adapter: Adapter, date: Date)`.
 
 ### Removed
 - `src/unit-registry.ts`
@@ -34,7 +34,7 @@ tree-shaking, reducing bundle sizes by 60-76% depending on usage patterns.
 
 **Before:**
 ```typescript
-import { defineUnit } from '@allystudio/usetemporal';
+import { defineUnit } from 'minuta';
 defineUnit('custom', { /* ... */ });
 ```
 
@@ -55,24 +55,24 @@ const month = period(adapter, new Date(), 'month');
 
 **After (Builder):**
 ```typescript
-const month = temporal.period(new Date(), 'month');
+const month = minuta.period(new Date(), 'month');
 ```
 
 #### 3. Calendar Utilities Separated
 
 **Before:**
 ```typescript
-import { createStableMonth } from '@allystudio/usetemporal';
+import { createStableMonth } from 'minuta';
 ```
 
 **After:**
 ```typescript
-import { createStableMonth } from '@allystudio/usetemporal/calendar';
+import { createStableMonth } from 'minuta/calendar';
 ```
 
 ### Added
 
-- ✨ Level 1 API: Pure functions (`@allystudio/usetemporal/operations`)
+- ✨ Level 1 API: Pure functions (`minuta/operations`)
 - ✨ Level 2 API: Builder pattern with tree-shakable methods
 - ✨ Level 3 API: Composables for reactive applications
 - ✨ Subpath exports for better tree-shaking

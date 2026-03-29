@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "useTemporal"
+  name: "Minuta"
   text: "The divide() Pattern"
   tagline: Treat time as a hierarchy of periods with a tiny set of pure functions.
   actions:
@@ -11,7 +11,7 @@ hero:
       link: /guide/getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/AleksejDix/usetemporal
+      link: https://github.com/AleksejDix/minuta
 
 features:
   - icon: ∞
@@ -35,22 +35,22 @@ features:
 ::: code-group
 
 ```bash [npm]
-npm install @allystudio/usetemporal
+npm install minuta
 ```
 
 ```bash [yarn]
-yarn add @allystudio/usetemporal
+yarn add minuta
 ```
 
 ```bash [pnpm]
-pnpm add @allystudio/usetemporal
+pnpm add minuta
 ```
 
 :::
 
 ```ts
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 })
 
@@ -59,7 +59,7 @@ const months = divide(adapter, year, 'month')
 const days = divide(adapter, months[0], 'day')
 ```
 
-## Why useTemporal?
+## Why Minuta?
 
 - **Better mental model** – think in terms of years, months, weeks, and days instead of brittle date arithmetic.
 - **Plain data structures** – everything is a simple object, so rendering in any UI is straightforward.

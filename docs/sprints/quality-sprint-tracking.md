@@ -55,13 +55,13 @@ Tests      18 failed | 414 passed (432)
 ## Quick Commands
 ```bash
 # Run tests
-npm test --workspace=@usetemporal/core
+npm test --workspace=minuta
 
 # Run specific test file
 npx vitest run src/operations/merge.multi-adapter.test.ts
 
 # Check coverage
-npm run test:coverage --workspace=@usetemporal/core
+npm run test:coverage --workspace=minuta
 
 # Build docs
 npm run docs:build

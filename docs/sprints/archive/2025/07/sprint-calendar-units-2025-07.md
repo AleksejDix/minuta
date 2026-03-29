@@ -2,7 +2,7 @@
 
 ## Sprint Information
 - **Sprint Name**: Calendar Units Package Sprint
-- **Sprint Goal**: Create @usetemporal/calendar-units package with stableMonth support
+- **Sprint Goal**: Create minuta/calendar package with stableMonth support
 - **Start Date**: 2025-07-25
 - **End Date**: 2025-07-29 (3 working days)
 - **Team Capacity**: 1 Developer Agent (Team B)
@@ -112,7 +112,7 @@ Following the removal of stableMonth from core (Story 004.04), this sprint creat
 
 ## Technical Considerations
 - Package location: `/packages/calendar-units/`
-- Peer dependency on `@usetemporal/core` 
+- Peer dependency on `minuta` 
 - Must support tree-shaking
 - TypeScript module augmentation for new units
 - Follow monorepo build patterns

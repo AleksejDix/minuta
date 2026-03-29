@@ -16,45 +16,45 @@ import type { MinutaBuilder, SvelteMinuta } from "./types";
 /**
  * Create a minuta builder with convenient method wrappers.
  */
-export function createMinutaBuilder(temporal: SvelteMinuta): MinutaBuilder {
+export function createMinutaBuilder(minuta: SvelteMinuta): MinutaBuilder {
   return {
     get adapter() {
-      return temporal.adapter;
+      return minuta.adapter;
     },
     set adapter(value) {
-      temporal.adapter = value;
+      minuta.adapter = value;
     },
 
     get weekStartsOn() {
-      return temporal.weekStartsOn;
+      return minuta.weekStartsOn;
     },
     set weekStartsOn(value: number) {
-      temporal.weekStartsOn = value;
+      minuta.weekStartsOn = value;
     },
 
     get browsing() {
-      return temporal.browsing;
+      return minuta.browsing;
     },
     set browsing(value) {
-      temporal.browsing = value;
+      minuta.browsing = value;
     },
 
     get now() {
-      return temporal.now;
+      return minuta.now;
     },
     set now(value) {
-      temporal.now = value;
+      minuta.now = value;
     },
 
     get locale() {
-      return temporal.locale;
+      return minuta.locale;
     },
     set locale(value: string) {
-      temporal.locale = value;
+      minuta.locale = value;
     },
 
     derivePeriod(date: Date, unit: AdapterUnit): TimePeriod {
-      return derivePeriod(temporal.adapter, date, unit);
+      return derivePeriod(minuta.adapter, date, unit);
     },
 
     createPeriod(start: Date, end: Date): TimePeriod {
@@ -62,36 +62,36 @@ export function createMinutaBuilder(temporal: SvelteMinuta): MinutaBuilder {
     },
 
     divide(period: TimePeriod, unit: AdapterUnit): TimePeriod[] {
-      return divide(temporal.adapter, period, unit);
+      return divide(minuta.adapter, period, unit);
     },
 
     merge(periods: TimePeriod[], targetUnit?: AdapterUnit): TimePeriod {
-      return merge(temporal.adapter, periods, targetUnit);
+      return merge(minuta.adapter, periods, targetUnit);
     },
 
     next(period: TimePeriod, count: number = 1): TimePeriod {
       const result =
         count === 1
-          ? next(temporal.adapter, period)
-          : go(temporal.adapter, period, count);
+          ? next(minuta.adapter, period)
+          : go(minuta.adapter, period, count);
 
-      temporal.browsing.set(result);
+      minuta.browsing.set(result);
       return result;
     },
 
     previous(period: TimePeriod, count: number = 1): TimePeriod {
       const result =
         count === 1
-          ? previous(temporal.adapter, period)
-          : go(temporal.adapter, period, -count);
+          ? previous(minuta.adapter, period)
+          : go(minuta.adapter, period, -count);
 
-      temporal.browsing.set(result);
+      minuta.browsing.set(result);
       return result;
     },
 
     go(period: TimePeriod, count: number): TimePeriod {
-      const result = go(temporal.adapter, period, count);
-      temporal.browsing.set(result);
+      const result = go(minuta.adapter, period, count);
+      minuta.browsing.set(result);
       return result;
     },
 
@@ -108,7 +108,7 @@ export function createMinutaBuilder(temporal: SvelteMinuta): MinutaBuilder {
       period2: Period,
       unit: AdapterUnit | "custom"
     ): boolean {
-      return isSame(temporal.adapter, period1, period2, unit);
+      return isSame(minuta.adapter, period1, period2, unit);
     },
   };
 }

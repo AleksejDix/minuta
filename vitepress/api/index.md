@@ -1,6 +1,6 @@
 # API Reference
 
-useTemporal exposes a single, pure-functional API. Once you import an adapter, everything else lives inside the operations module.
+Minuta exposes a single, pure-functional API. Once you import an adapter, everything else lives inside the operations module.
 
 ## Operations
 
@@ -22,8 +22,8 @@ useTemporal exposes a single, pure-functional API. Once you import an adapter, e
 ## Quick Start
 
 ```typescript
-import { period, divide } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 

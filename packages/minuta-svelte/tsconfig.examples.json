@@ -4,8 +4,8 @@
     "types": ["svelte"],
     "baseUrl": "examples",
     "paths": {
-      "@allystudio/usetemporal-svelte": ["src"],
-      "@allystudio/usetemporal-svelte/components": ["src/components/index"]
+      "minuta-svelte": ["src"],
+      "minuta-svelte/components": ["src/components/index"]
     }
   },
   "include": [

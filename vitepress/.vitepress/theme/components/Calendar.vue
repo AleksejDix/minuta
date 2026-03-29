@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import type { Period } from "@allystudio/usetemporal";
+import type { Period } from "minuta";
 import { ref } from "vue";
-import { createTemporal, usePeriod } from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { createTemporal, usePeriod } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 import YearView from "./YearView.vue";
 import MonthGrid from "./MonthGrid.vue";
 import WeekView from "./WeekView.vue";
 
 const initialDate = ref(new Date());
-const temporal = createTemporal({
+const minuta = createTemporal({
   adapter: createNativeAdapter({ weekStartsOn: 1 }),
   date: initialDate,
 });
 
-const month = usePeriod(temporal, "month");
+const month = usePeriod(minuta, "month");
 
 const selectedDay = ref<Period | null>(null);
 
@@ -22,13 +22,13 @@ function selectDay(day: Period) {
 }
 
 function jump(period: Period, count: number) {
-  temporal.go(period, count);
+  minuta.go(period, count);
 }
 </script>
 
 <template>
   <CalendarViewState v-slot="{ unit, viewPeriod, setUnit }">
-    <section class="vue-temporal-demo">
+    <section class="vue-minuta-demo">
       
       <div class="view-switch">
     <button

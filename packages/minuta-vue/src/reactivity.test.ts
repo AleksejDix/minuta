@@ -15,9 +15,9 @@ describe("Vue Reactivity Integration", () => {
     testDate = new Date(2024, 0, 15);
   });
 
-  describe("Temporal reactivity", () => {
+  describe("Minuta reactivity", () => {
     it("should update browsing period reactively", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
@@ -26,7 +26,7 @@ describe("Vue Reactivity Integration", () => {
       let lastPeriod: Period;
 
       effect(() => {
-        lastPeriod = temporal.browsing.value;
+        lastPeriod = minuta.browsing.value;
         effectCount++;
       });
 
@@ -34,9 +34,9 @@ describe("Vue Reactivity Integration", () => {
       expect(lastPeriod!.start).toEqual(testDate);
 
       // Navigate forward
-      const monthPeriod = usePeriod(temporal, "month");
-      const nextMonth = next(temporal.adapter, monthPeriod.value);
-      temporal.browsing.value = nextMonth;
+      const monthPeriod = usePeriod(minuta, "month");
+      const nextMonth = next(minuta.adapter, monthPeriod.value);
+      minuta.browsing.value = nextMonth;
 
       expect(effectCount).toBe(2);
       expect(lastPeriod!.start.getMonth()).toBe(1); // February
@@ -45,7 +45,7 @@ describe("Vue Reactivity Integration", () => {
     it("should handle reactive now updates", () => {
       const nowRef = ref(new Date(2024, 0, 1, 12, 0, 0));
 
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
         now: nowRef,
@@ -55,7 +55,7 @@ describe("Vue Reactivity Integration", () => {
       let lastNow: Period;
 
       effect(() => {
-        lastNow = temporal.now.value;
+        lastNow = minuta.now.value;
         nowEffectCount++;
       });
 
@@ -69,14 +69,14 @@ describe("Vue Reactivity Integration", () => {
       expect(lastNow!.start.getHours()).toBe(13);
     });
 
-    it("should support computed properties based on temporal state", () => {
-      const temporal = createMinuta({
+    it("should support computed properties based on minuta state", () => {
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
 
       const currentMonth = computed(() => {
-        return temporal.browsing.value.start.getMonth();
+        return minuta.browsing.value.start.getMonth();
       });
 
       const monthName = computed(() => {
@@ -101,8 +101,8 @@ describe("Vue Reactivity Integration", () => {
       expect(monthName.value).toBe("Jan");
 
       // Navigate to March
-      const monthPeriod = usePeriod(temporal, "month");
-      temporal.browsing.value = go(temporal.adapter, monthPeriod.value, 2);
+      const monthPeriod = usePeriod(minuta, "month");
+      minuta.browsing.value = go(minuta.adapter, monthPeriod.value, 2);
 
       expect(currentMonth.value).toBe(2);
       expect(monthName.value).toBe("Mar");
@@ -110,13 +110,13 @@ describe("Vue Reactivity Integration", () => {
   });
 
   describe("usePeriod composable reactivity", () => {
-    it("should create reactive period from temporal", () => {
-      const temporal = createMinuta({
+    it("should create reactive period from minuta", () => {
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
 
-      const yearPeriod = usePeriod(temporal, "year");
+      const yearPeriod = usePeriod(minuta, "year");
 
       expect(isRef(yearPeriod)).toBe(true);
       expect(yearPeriod.value.type).toBe("year");
@@ -132,21 +132,21 @@ describe("Vue Reactivity Integration", () => {
       expect(effectCount).toBe(1);
 
       // Navigate to next year
-      temporal.browsing.value = go(temporal.adapter, yearPeriod.value, 1);
+      minuta.browsing.value = go(minuta.adapter, yearPeriod.value, 1);
 
       expect(effectCount).toBe(2);
       expect(yearPeriod.value.start.getFullYear()).toBe(2025);
     });
 
     it("should support multiple reactive periods", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
 
-      const year = usePeriod(temporal, "year");
-      const month = usePeriod(temporal, "month");
-      const week = usePeriod(temporal, "week");
+      const year = usePeriod(minuta, "year");
+      const month = usePeriod(minuta, "month");
+      const week = usePeriod(minuta, "week");
 
       const periodInfo = computed(() => ({
         year: year.value.start.getFullYear(),
@@ -161,7 +161,7 @@ describe("Vue Reactivity Integration", () => {
       });
 
       // Navigate forward
-      temporal.browsing.value = next(temporal.adapter, month.value);
+      minuta.browsing.value = next(minuta.adapter, month.value);
 
       expect(periodInfo.value.month).toBe(1);
       expect(periodInfo.value.year).toBe(2024);
@@ -170,41 +170,41 @@ describe("Vue Reactivity Integration", () => {
 
   describe("Complex reactive workflows", () => {
     it("should handle calendar drill-down reactively", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
 
-      const currentPeriod = computed(() => temporal.browsing.value);
+      const currentPeriod = computed(() => minuta.browsing.value);
       const dividedPeriods = computed(() => {
         const period = currentPeriod.value;
         if (period.type === "year") {
-          return divide(temporal.adapter, period, "month");
+          return divide(minuta.adapter, period, "month");
         } else if (period.type === "month") {
-          return divide(temporal.adapter, period, "week");
+          return divide(minuta.adapter, period, "week");
         } else if (period.type === "week") {
-          return divide(temporal.adapter, period, "day");
+          return divide(minuta.adapter, period, "day");
         }
         return [period];
       });
 
       // Start with year
-      const yearPeriod = usePeriod(temporal, "year");
-      temporal.browsing.value = yearPeriod.value;
+      const yearPeriod = usePeriod(minuta, "year");
+      minuta.browsing.value = yearPeriod.value;
 
       expect(dividedPeriods.value.length).toBe(12); // 12 months
 
       // Drill down to month
-      temporal.browsing.value = dividedPeriods.value[0]; // January
+      minuta.browsing.value = dividedPeriods.value[0]; // January
       expect(dividedPeriods.value.length).toBeGreaterThanOrEqual(4); // weeks
 
       // Drill down to week
-      temporal.browsing.value = dividedPeriods.value[0];
+      minuta.browsing.value = dividedPeriods.value[0];
       expect(dividedPeriods.value.length).toBe(7); // 7 days
     });
 
     it("should handle reactive period selection", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
@@ -223,8 +223,8 @@ describe("Vue Reactivity Integration", () => {
       expect(selectionInfo.value.hasSelection).toBe(false);
 
       // Select some days
-      const monthPeriod = usePeriod(temporal, "month").value;
-      const days = divide(temporal.adapter, monthPeriod, "day");
+      const monthPeriod = usePeriod(minuta, "month").value;
+      const days = divide(minuta.adapter, monthPeriod, "day");
       selectedPeriods.value = days.slice(0, 7); // First week
 
       expect(selectionInfo.value.count).toBe(7);
@@ -238,7 +238,7 @@ describe("Vue Reactivity Integration", () => {
     });
 
     it("should clean up effects properly", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
@@ -247,7 +247,7 @@ describe("Vue Reactivity Integration", () => {
 
       // Create and run effect
       const runner = effect(() => {
-        temporal.browsing.value;
+        minuta.browsing.value;
         effectCount++;
       });
 
@@ -255,8 +255,8 @@ describe("Vue Reactivity Integration", () => {
       expect(initialCount).toBeGreaterThan(0);
 
       // Update should trigger effect
-      const dayPeriod = usePeriod(temporal, "day").value;
-      temporal.browsing.value = next(temporal.adapter, dayPeriod);
+      const dayPeriod = usePeriod(minuta, "day").value;
+      minuta.browsing.value = next(minuta.adapter, dayPeriod);
 
       expect(effectCount).toBeGreaterThan(initialCount);
       const countBeforeStop = effectCount;
@@ -265,14 +265,14 @@ describe("Vue Reactivity Integration", () => {
       runner.effect.stop();
 
       // Further updates should not trigger effect
-      temporal.browsing.value = next(temporal.adapter, temporal.browsing.value);
+      minuta.browsing.value = next(minuta.adapter, minuta.browsing.value);
 
       expect(effectCount).toBe(countBeforeStop);
     });
 
     it("should handle concurrent reactive updates efficiently", () => {
       const dateRef = ref(testDate);
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: dateRef,
         adapter,
       });
@@ -281,12 +281,12 @@ describe("Vue Reactivity Integration", () => {
 
       const yearPeriod = computed(() => {
         updates.push("year-computed");
-        return usePeriod(temporal, "year").value;
+        return usePeriod(minuta, "year").value;
       });
 
       const monthPeriod = computed(() => {
         updates.push("month-computed");
-        return usePeriod(temporal, "month").value;
+        return usePeriod(minuta, "month").value;
       });
 
       const combined = computed(() => {
@@ -307,7 +307,7 @@ describe("Vue Reactivity Integration", () => {
 
       // Change date
       dateRef.value = new Date(2025, 5, 15);
-      temporal.browsing.value = {
+      minuta.browsing.value = {
         start: dateRef.value,
         end: dateRef.value,
         type: "day",
@@ -327,7 +327,7 @@ describe("Vue Reactivity Integration", () => {
 
   describe("Reactive state management patterns", () => {
     it("should support reactive calendar state", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
@@ -340,12 +340,12 @@ describe("Vue Reactivity Integration", () => {
       const currentViewInfo = computed(() => {
         const period =
           calendarState.view === "year"
-            ? usePeriod(temporal, "year").value
+            ? usePeriod(minuta, "year").value
             : calendarState.view === "month"
-              ? usePeriod(temporal, "month").value
+              ? usePeriod(minuta, "month").value
               : calendarState.view === "week"
-                ? usePeriod(temporal, "week").value
-                : usePeriod(temporal, "day").value;
+                ? usePeriod(minuta, "week").value
+                : usePeriod(minuta, "day").value;
 
         const childUnit =
           calendarState.view === "year"
@@ -356,7 +356,7 @@ describe("Vue Reactivity Integration", () => {
                 ? "day"
                 : "hour";
 
-        const children = divide(temporal.adapter, period, childUnit);
+        const children = divide(minuta.adapter, period, childUnit);
 
         return {
           periodType: period.type,
@@ -381,7 +381,7 @@ describe("Vue Reactivity Integration", () => {
     });
 
     it("should handle reactive period highlighting", () => {
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
@@ -389,11 +389,7 @@ describe("Vue Reactivity Integration", () => {
       const highlightedDate = ref(new Date(2024, 0, 20));
 
       const periods = computed(() => {
-        return divide(
-          temporal.adapter,
-          usePeriod(temporal, "month").value,
-          "day"
-        );
+        return divide(minuta.adapter, usePeriod(minuta, "month").value, "day");
       });
 
       const highlightedPeriods = computed(() => {
@@ -415,23 +411,20 @@ describe("Vue Reactivity Integration", () => {
     it("all reactive tests should complete in under 100ms", () => {
       const start = performance.now();
 
-      const temporal = createMinuta({
+      const minuta = createMinuta({
         date: ref(testDate),
         adapter,
       });
 
       // Create multiple reactive computations
       for (let i = 0; i < 10; i++) {
-        const period = usePeriod(temporal, "day");
+        const period = usePeriod(minuta, "day");
         computed(() => period.value.start.getTime());
       }
 
       // Trigger multiple updates
       for (let i = 0; i < 10; i++) {
-        temporal.browsing.value = next(
-          temporal.adapter,
-          temporal.browsing.value
-        );
+        minuta.browsing.value = next(minuta.adapter, minuta.browsing.value);
       }
 
       const duration = performance.now() - start;

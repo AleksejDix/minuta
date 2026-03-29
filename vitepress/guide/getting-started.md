@@ -1,16 +1,16 @@
 # Getting Started
 
-Welcome to useTemporal! This guide provides a quick overview to get you up and running.
+Welcome to Minuta! This guide provides a quick overview to get you up and running.
 
-## What is useTemporal?
+## What is Minuta?
 
-useTemporal is a revolutionary time library featuring the unique `divide()` pattern for hierarchical time management. It provides a **single pure functional API** optimized for maximum tree-shaking and portability.
+Minuta is a revolutionary time library featuring the unique `divide()` pattern for hierarchical time management. It provides a **single pure functional API** optimized for maximum tree-shaking and portability.
 
 ## Quick Start Path
 
 Follow these steps to get started:
 
-1. **[Installation](#installation)** - Add useTemporal to your project
+1. **[Installation](#installation)** - Add Minuta to your project
 2. **[Learn the Core Operations](#core-operations)** - Understand the primitives
 3. **[Basic Example](#basic-example)** - See it in action
 4. **[Examples](/examples/)** - Explore complete implementations
@@ -20,19 +20,19 @@ Follow these steps to get started:
 ::: code-group
 
 ```bash [npm]
-npm install @allystudio/usetemporal
+npm install minuta
 ```
 
 ```bash [yarn]
-yarn add @allystudio/usetemporal
+yarn add minuta
 ```
 
 ```bash [pnpm]
-pnpm add @allystudio/usetemporal
+pnpm add minuta
 ```
 
 ```bash [bun]
-bun add @allystudio/usetemporal
+bun add minuta
 ```
 
 :::
@@ -76,8 +76,8 @@ const days = temporal.divide(month, 'day')
 Here's a quick example using the pure operations:
 
 ```typescript
-import { period, divide, next } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide, next } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month = period(adapter, new Date(), 'month')
@@ -90,8 +90,8 @@ console.log(`Next month: ${nextMonth.start.toDateString()}`)
 
 ## Framework Integrations
 
-- [Vue 3 composables](/frameworks/vue) ship today via `@allystudio/usetemporal-vue`, complete with provide/inject helpers.
-- [React hooks](/frameworks/react) live in `@allystudio/usetemporal-react`, exposing `useTemporal()` and `usePeriod()`.
+- [Vue 3 composables](/frameworks/vue) ship today via `minuta-vue`, complete with provide/inject helpers.
+- [React hooks](/frameworks/react) live in `minuta-react`, exposing `Minuta()` and `usePeriod()`.
 - [Svelte](/frameworks/svelte) and [Angular](/frameworks/angular) integrations are already scoped and will follow the same pattern so every major framework feels native.
 
 ## Learn More
@@ -105,4 +105,4 @@ console.log(`Next month: ${nextMonth.start.toDateString()}`)
 
 ## Ready to Start?
 
-→ Install `@allystudio/usetemporal`, copy the basic example above, and expand it using the divide() pattern.
+→ Install `minuta`, copy the basic example above, and expand it using the divide() pattern.

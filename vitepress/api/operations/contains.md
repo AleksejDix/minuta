@@ -7,7 +7,7 @@ Check if a period contains a date or another period.
 This is a pure utility function that doesn't require an adapter. It works the same across all API levels.
 
 ```typescript
-import { contains } from '@allystudio/usetemporal/operations'
+import { contains } from 'minuta/operations'
 
 // Works with any period from any API level
 const result = contains(period, targetDate)
@@ -39,8 +39,8 @@ The `contains` function determines whether a date or period falls within the bou
 ### Check Date Containment
 
 ```typescript
-import { period, contains } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, contains } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const january = period(adapter, new Date('2024-01-15'), 'month')
@@ -55,8 +55,8 @@ console.log(contains(january, new Date('2024-02-01')))  // false (outside)
 ### Check Period Containment
 
 ```typescript
-import { period, contains } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, contains } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -72,8 +72,8 @@ console.log(contains(january, year))   // false (year is larger)
 ### Filtering Items by Date Range
 
 ```typescript
-import { period, contains } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, contains } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -99,8 +99,8 @@ console.log(januaryEvents)
 ### Custom Period Containment
 
 ```typescript
-import { period, contains } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, contains } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -126,9 +126,9 @@ console.log(contains(q1Fiscal, new Date('2024-01-15')))  // false
 Full type safety:
 
 ```typescript
-import type { Period } from '@allystudio/usetemporal'
-import { period, contains } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import type { Period } from 'minuta'
+import { period, contains } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const month: Period = period(adapter, new Date(), 'month')

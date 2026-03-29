@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Unit } from "@allystudio/usetemporal";
+import type { Unit } from "minuta";
 import { computed } from "vue";
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
 const props = withDefaults(
   defineProps<{
@@ -12,9 +12,9 @@ const props = withDefaults(
   }
 );
 
-const temporal = useTemporal();
+const minuta = useMinuta();
 const unitRef = computed(() => props.unit);
-const targetPeriod = usePeriod(temporal, unitRef);
+const targetPeriod = usePeriod(minuta, unitRef);
 const weekLabel = computed(() => {
   const period = targetPeriod.value;
   const weekNumber = getISOWeek(period.start);
@@ -32,7 +32,7 @@ function getISOWeek(date: Date): number {
 </script>
 
 <template>
-  <span class="temporal-week-name">
+  <span class="minuta-week-name">
     Week {{ weekLabel }}
   </span>
 </template>

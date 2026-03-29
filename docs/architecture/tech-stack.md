@@ -1,6 +1,6 @@
 # Technology Stack
 
-This document provides a comprehensive overview of the technology stack used in the useTemporal project, including runtime environments, frameworks, build tools, and dependencies.
+This document provides a comprehensive overview of the technology stack used in the Minuta project, including runtime environments, frameworks, build tools, and dependencies.
 
 ## Core Technologies
 
@@ -44,7 +44,7 @@ This document provides a comprehensive overview of the technology stack used in 
 
 ## Package Architecture
 
-### Core Package (@allystudio/usetemporal)
+### Core Package (minuta)
 
 The heart of the library providing:
 - Factory function (`createTemporal`)
@@ -66,7 +66,7 @@ Adapters integrate different date libraries:
 | adapter-luxon | luxon | ^3.5.0 | Immutable date library |
 | adapter-temporal | @js-temporal/polyfill | ^0.5.1 | Future TC39 standard |
 
-### Meta Package (usetemporal)
+### Meta Package (minuta)
 
 Single consolidated package including:
 - Core functionality
@@ -88,7 +88,7 @@ For users who want to get started quickly.
 
 ### TypeScript Configuration
 
-Shared TypeScript configs via `@usetemporal/tsconfig`:
+Shared TypeScript configs via `@minuta/tsconfig`:
 - Base configuration
 - Strict type checking
 - ESM module resolution
@@ -115,7 +115,7 @@ Shared TypeScript configs via `@usetemporal/tsconfig`:
 
 | Registry | Purpose | Scope |
 |----------|---------|-------|
-| npm | Package distribution | @usetemporal/* |
+| npm | Package distribution | @minuta/* |
 
 ### Continuous Integration
 
@@ -129,9 +129,9 @@ While the core is framework-agnostic, examples exist for:
 
 | Framework | Example Location | Integration Method |
 |-----------|-----------------|-------------------|
-| Vue.js | /packages/usetemporal-vue/examples | Direct reactivity integration |
-| React | /packages/usetemporal-react/examples | Via wrapper hooks |
-| Svelte | /packages/usetemporal-svelte/examples | Via stores adapter |
+| Vue.js | /packages/minuta-vue/examples | Direct reactivity integration |
+| React | /packages/minuta-react/examples | Via wrapper hooks |
+| Svelte | /packages/minuta-svelte/examples | Via stores adapter |
 
 ## Browser Support
 
@@ -150,7 +150,7 @@ While the core is framework-agnostic, examples exist for:
 
 | Package | Target | Current | Notes |
 |---------|--------|---------|-------|
-| @usetemporal/core | <6KB | ~5KB | Minified + gzipped |
+| minuta | <6KB | ~5KB | Minified + gzipped |
 | Adapters | <2KB each | Varies | Excluding dependencies |
 
 ### Optimization Tools
@@ -210,7 +210,7 @@ VS Code with extensions:
 
 ```bash
 # Clone repository
-git clone https://github.com/AleksejDix/usetemporal.git
+git clone https://github.com/AleksejDix/minuta.git
 
 # Install dependencies
 npm install

@@ -1,19 +1,19 @@
 # Vue 3 Integration
 
-`@allystudio/usetemporal-vue` wraps the core primitives in Composition API
+`minuta-vue` wraps the core primitives in Composition API
 helpers so `browsing`, `now`, and derived periods stay reactive throughout your
 component tree.
 
-- Provides/injects automatically so nested components can call `useTemporal()`.
+- Provides/injects automatically so nested components can call `useMinuta()`.
 - Accepts `ref`/`computed` adapters for reactive configuration.
 - Ships a Vue-only bundle that keeps tree-shaking tight (<22 KB gzipped).
 
 ## Installation
 
 ```bash
-npm install @allystudio/usetemporal \
-  @allystudio/usetemporal-vue \
-  @allystudio/usetemporal/native
+npm install minuta \
+  minuta-vue \
+  minuta/native
 ```
 
 ## Usage inside `<script setup>`
@@ -21,8 +21,8 @@ npm install @allystudio/usetemporal \
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { createTemporal, usePeriod } from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { createTemporal, usePeriod } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 
 const date = ref(new Date());
 const temporal = createTemporal({
@@ -53,8 +53,8 @@ const weeks = temporal.divide(month.value, "week");
 
 ```ts
 import { computed, ref } from "vue";
-import { createTemporal } from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { createTemporal } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 
 const weekStartsOn = ref(1);
 const temporal = createTemporal({
@@ -87,8 +87,8 @@ provide, and expose a builder in one move:
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { Temporal } from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { Temporal } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 });
 const date = ref(new Date());
@@ -111,8 +111,8 @@ lets the immediate template access it without extra boilerplate.
 <!-- TemporalProvider.vue -->
 <script setup lang="ts">
 import { ref } from "vue";
-import { createTemporal } from "@allystudio/usetemporal-vue";
-import { createNativeAdapter } from "@allystudio/usetemporal/native";
+import { createTemporal } from "minuta-vue";
+import { createNativeAdapter } from "minuta/native";
 
 const date = ref(new Date());
 const temporal = createTemporal({
@@ -127,16 +127,16 @@ const temporal = createTemporal({
 ```
 
 Mount this component once (e.g., in `App.vue`). Children can now call
-`useTemporal()`—no prop drilling required.
+`useMinuta()`—no prop drilling required.
 
 ### 2. Navigation controls with `usePeriod`
 
 ```vue
 <!-- MonthHeader.vue -->
 <script setup lang="ts">
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const month = usePeriod(temporal, "month");
 </script>
 
@@ -157,9 +157,9 @@ const month = usePeriod(temporal, "month");
 <!-- MonthGrid.vue -->
 <script setup lang="ts">
 import { computed } from "vue";
-import { useTemporal, usePeriod } from "@allystudio/usetemporal-vue";
+import { useMinuta, usePeriod } from "minuta-vue";
 
-const temporal = useTemporal();
+const temporal = useMinuta();
 const month = usePeriod(temporal, "month");
 
 const weeks = computed(() =>
@@ -189,14 +189,14 @@ const weeks = computed(() =>
 
 With this structure, every component reacts to navigation changes while keeping
 concerns isolated (header, grid, detail panes, etc.). Check
-`packages/usetemporal-vue/src/components/CalendarExample.vue` (and the Vite app
-under `packages/usetemporal-vue/examples/`) for a runnable version of this pattern.
+`packages/minuta-vue/src/components/CalendarExample.vue` (and the Vite app
+under `packages/minuta-vue/examples/`) for a runnable version of this pattern.
 
 ## API surface
 
 - `createTemporal(options)` — Creates + provides the builder with reactive
   `browsing`/`now`.
-- `useTemporal()` — Injects the closest provided instance for child components.
+- `useMinuta()` — Injects the closest provided instance for child components.
 - `usePeriod(temporal, unit)` — Returns a computed period that updates with
   `browsing` or `unit` changes.
 

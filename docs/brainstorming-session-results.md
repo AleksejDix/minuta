@@ -189,14 +189,14 @@ const shorterVacation = shrink(temporal, vacation, 2, 'day', 'start');
 ```typescript
 // shift = create new period at different time
 const shift = (temporal, period, amount, unit) => {
-  const newDate = temporal.adapter.add(period.date, amount, unit);
+  const newDate = minuta.adapter.add(period.date, amount, unit);
   return period(temporal, newDate, period.type);
 };
 
 // expand = create new period with adjusted boundaries
 const expand = (temporal, period, amount, unit, direction = 'end') => {
   if (direction === 'end') {
-    const newEnd = temporal.adapter.add(period.end, amount, unit);
+    const newEnd = minuta.adapter.add(period.end, amount, unit);
     return period(temporal, { start: period.start, end: newEnd });
   }
   // ... handle other directions

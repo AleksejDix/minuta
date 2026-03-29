@@ -1,6 +1,6 @@
 # Coding Standards
 
-This document defines the coding standards and conventions for the useTemporal project. All code contributions must adhere to these standards to maintain consistency and quality across the codebase.
+This document defines the coding standards and conventions for the Minuta project. All code contributions must adhere to these standards to maintain consistency and quality across the codebase.
 
 ## Language and Framework Standards
 
@@ -40,7 +40,7 @@ This document defines the coding standards and conventions for the useTemporal p
 #### Import Organization
 
 1. External dependencies
-2. Internal packages (`@usetemporal/*`)
+2. Internal packages (`@minuta/*`)
 3. Relative imports (furthest to nearest)
 4. Type imports last
 
@@ -49,7 +49,7 @@ This document defines the coding standards and conventions for the useTemporal p
 import { ref, computed } from "@vue/reactivity";
 
 // Internal packages
-import type { Adapter } from "@usetemporal/adapter-native";
+import type { Adapter } from "@minuta/adapter-native";
 
 // Relative imports
 import { createPeriod } from "./operations/createPeriod";
@@ -70,14 +70,14 @@ import type { Period, Unit, Temporal } from "./types";
 
 ```typescript
 // ✅ Good - Pure function
-export function next(temporal: Temporal, period: Period): Period {
-  const nextDate = temporal.adapter.add(period.date, 1, period.type);
+export function next(adapter: Adapter, period: Period): Period {
+  const nextDate = minuta.adapter.add(period.date, 1, period.type);
   return createPeriod(temporal, nextDate, period.type);
 }
 
 // ❌ Bad - Mutates input
-export function next(temporal: Temporal, period: Period): Period {
-  period.date = temporal.adapter.add(period.date, 1, period.type);
+export function next(adapter: Adapter, period: Period): Period {
+  period.date = minuta.adapter.add(period.date, 1, period.type);
   return period;
 }
 ```
@@ -92,12 +92,12 @@ Following the "Calculus for Time" philosophy:
 
 ```typescript
 // ✅ Good - Fundamental operation
-export function divide(temporal: Temporal, period: Period, unit: Unit): Period[] {
+export function divide(adapter: Adapter, period: Period, unit: Unit): Period[] {
   // Core logic for breaking down periods
 }
 
 // ❌ Bad - Trivial wrapper
-export function today(temporal: Temporal, unit: Unit): Period {
+export function today(adapter: Adapter, unit: Unit): Period {
   return createPeriod(temporal, new Date(), unit);
 }
 // Users should compose: createPeriod(temporal, new Date(), unit)
@@ -123,7 +123,7 @@ export function isPeriod(value: unknown): value is Period {
   );
 }
 
-export function merge(temporal: Temporal, periods: Period[]): Period {
+export function merge(adapter: Adapter, periods: Period[]): Period {
   // Explicit return type
 }
 ```
@@ -197,7 +197,7 @@ describe("divide", () => {
   // Multi-adapter tests (separate file: divide.multi-adapter.test.ts)
   runAdapterCompliance((adapter) => {
     it("should divide year into months", () => {
-      const temporal = createTemporal({ adapter });
+      const minuta = createTemporal({ adapter });
       const year = period(temporal, new Date(2024, 0, 1), "year");
       const months = divide(temporal, year, "month");
       
@@ -291,7 +291,7 @@ export function createPeriod(
   date: Date,
   unit: Unit
 ): Period {
-  if (!temporal.adapter) {
+  if (!minuta.adapter) {
     throw new Error("Temporal instance requires an adapter");
   }
   
@@ -313,7 +313,7 @@ export function createPeriod(
 
 ```typescript
 // Using Vue reactivity for lazy evaluation
-export function usePeriod(temporal: Temporal, unit: Unit) {
+export function usePeriod(adapter: Adapter, unit: Unit) {
   const period = computed(() => 
     createPeriod(temporal, temporal.now.value.date, unit)
   );

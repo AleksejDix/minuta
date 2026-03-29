@@ -8,7 +8,7 @@ PRDs define the requirements, scope, and structure for significant enhancements 
 
 ## Structure
 
-- Main PRD: `usetemporal-prd.md` - The primary PRD for the useTemporal project
+- Main PRD: `minuta-prd.md` - The primary PRD for the Minuta project
 - Feature PRDs: Additional PRDs for major feature additions (if needed)
 
 ## Creating a New PRD

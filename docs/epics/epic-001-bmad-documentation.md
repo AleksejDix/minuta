@@ -1,7 +1,7 @@
 # Epic 001: BMad Documentation Structure Implementation
 
 ## Epic Goal
-Transform the useTemporal project documentation from its current ad-hoc structure into a professional BMad-Method compliant system that provides clear development process, separates user and developer documentation, and enables efficient AI-agent assisted development.
+Transform the Minuta project documentation from its current ad-hoc structure into a professional BMad-Method compliant system that provides clear development process, separates user and developer documentation, and enables efficient AI-agent assisted development.
 
 ## Background
 The project has reached a critical point where the lack of structured process is causing confusion and risking the integrity of existing functionality. This epic establishes professional development processes through BMad documentation structure.

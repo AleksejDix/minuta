@@ -9,27 +9,27 @@ const adapter = createNativeAdapter({ weekStartsOn: 1 });
 describe("createMinuta", () => {
   it("creates a builder wired to writable stores", () => {
     const date = writable(new Date("2024-05-01T00:00:00.000Z"));
-    const temporal = createMinuta({ adapter, date, locale: "de" });
+    const minuta = createMinuta({ adapter, date, locale: "de" });
 
-    expect(temporal.locale).toBe("de");
-    expect(get(temporal.browsing).type).toBe("day");
+    expect(minuta.locale).toBe("de");
+    expect(get(minuta.browsing).type).toBe("day");
 
-    const nextDay = temporal.next(get(temporal.browsing));
+    const nextDay = minuta.next(get(minuta.browsing));
     expect(nextDay.start.getUTCDate()).toBe(2);
-    expect(get(temporal.browsing).start.toISOString()).toBe(
+    expect(get(minuta.browsing).start.toISOString()).toBe(
       nextDay.start.toISOString()
     );
 
-    const month = usePeriod(temporal, "month");
+    const month = usePeriod(minuta, "month");
     expect(get(month).type).toBe("month");
   });
 
   it("supports reactive units via stores", () => {
     const date = writable(new Date("2024-05-01T00:00:00.000Z"));
     const unit = writable<"month" | "week">("month");
-    const temporal = createMinuta({ adapter, date });
+    const minuta = createMinuta({ adapter, date });
 
-    const period = usePeriod(temporal, unit);
+    const period = usePeriod(minuta, unit);
     expect(get(period).type).toBe("month");
 
     unit.set("week");

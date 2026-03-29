@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CalendarExample } from "@allystudio/usetemporal-svelte/components";
+  import { CalendarExample } from "minuta-svelte/components";
 </script>
 
 <main>

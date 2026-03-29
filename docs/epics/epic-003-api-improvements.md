@@ -1,7 +1,7 @@
 # Epic 003: API Improvements and Minimalism
 
 ## Epic Goal
-Improve the useTemporal API for better developer experience while maintaining the library's minimalist philosophy. Implement convenience features that don't compromise the core "Calculus for Time" approach.
+Improve the Minuta API for better developer experience while maintaining the library's minimalist philosophy. Implement convenience features that don't compromise the core "Calculus for Time" approach.
 
 ## Background
 Based on user feedback and analysis, several API improvements can enhance developer experience without adding bloat. These include better constants organization, consistent exports, and potential removal of redundant operations.

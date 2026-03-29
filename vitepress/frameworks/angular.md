@@ -1,7 +1,7 @@
 # Angular Integration (Roadmap)
 
 Angular support lands after Vue/React parity wraps. The planned package
-`@allystudio/usetemporal-angular` focuses on:
+`minuta-angular` focuses on:
 
 - An injectable `TemporalService` exposing `signal`-based `browsing` and `now`.
 - Structural directives (e.g., `*ustWeek`, `*ustDay`) for iterating divided

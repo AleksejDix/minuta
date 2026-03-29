@@ -2,7 +2,7 @@
 
 ## Guide
 
-- [What is useTemporal?](./guide/what-is-usetemporal.md)
+- [What is Minuta?](./guide/what-is-minuta.md)
 - [Getting Started](./guide/getting-started.md)
 - [divide() Pattern](./guide/divide-pattern.md)
 - [Operations Guide](./guide/operations.md)

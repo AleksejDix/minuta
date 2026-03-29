@@ -5,8 +5,8 @@ Merge multiple periods into a single larger period.
 ## Usage
 
 ```typescript
-import { period, divide, merge } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide, merge } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 const week = period(adapter, new Date(), 'week')
@@ -43,8 +43,8 @@ The `merge` function combines multiple periods into a single period. It intellig
 ### Basic Usage
 
 ```typescript
-import { period, divide, merge } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide, merge } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -62,8 +62,8 @@ console.log(mergedWeek.type) // 'week'
 ### Custom Period Merge
 
 ```typescript
-import { period, merge } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, merge } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 
@@ -80,8 +80,8 @@ console.log(merged.end) // 2024-01-20
 ### Force Target Unit
 
 ```typescript
-import { period, divide, merge } from '@allystudio/usetemporal/operations'
-import { createNativeAdapter } from '@allystudio/usetemporal/native'
+import { period, divide, merge } from 'minuta/operations'
+import { createNativeAdapter } from 'minuta/native'
 
 const adapter = createNativeAdapter()
 

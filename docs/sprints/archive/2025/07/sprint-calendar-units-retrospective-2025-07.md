@@ -3,12 +3,12 @@
 ## Sprint Summary
 - **Sprint Name**: Calendar Units Package Sprint
 - **Sprint Duration**: 3 days (2025-07-25 to 2025-07-29)
-- **Sprint Goal**: Create @usetemporal/calendar-units package with stableMonth support
+- **Sprint Goal**: Create minuta/calendar package with stableMonth support
 - **Team**: Team B (1 Developer Agent)
 - **Sprint Status**: ✅ COMPLETED SUCCESSFULLY
 
 ## Sprint Goal Achievement
-✅ **Sprint Goal Met**: Successfully created the @usetemporal/calendar-units package with full stableMonth support.
+✅ **Sprint Goal Met**: Successfully created the minuta/calendar package with full stableMonth support.
 
 ## Delivered Stories
 | Story ID | Title | Status | Notes |

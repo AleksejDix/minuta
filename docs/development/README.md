@@ -1,6 +1,6 @@
 # Development Documentation Guide
 
-This guide explains the BMad-Method documentation structure for the useTemporal project.
+This guide explains the BMad-Method documentation structure for the Minuta project.
 
 ## Documentation Structure Overview
 

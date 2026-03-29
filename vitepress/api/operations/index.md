@@ -5,7 +5,7 @@ Operations are pure functions that work with Period objects to perform time calc
 ## Time Division Operations
 
 ### [divide](/api/operations/divide)
-The signature pattern of useTemporal - divide any period into smaller units.
+The signature pattern of Minuta - divide any period into smaller units.
 
 ```typescript
 const months = divide(temporal, yearPeriod, 'month') // 12 months
