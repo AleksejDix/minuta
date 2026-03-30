@@ -68,16 +68,65 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage --passWithNoTests",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf dist node_modules",
+    "size": "size-limit"
   },
-  "dependencies": {},
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "1 kB",
+      "gzip": true
+    },
+    {
+      "path": "dist/operations.js",
+      "limit": "2 kB",
+      "gzip": true
+    },
+    {
+      "path": "dist/calendar.js",
+      "limit": "1 kB",
+      "gzip": true
+    },
+    {
+      "path": "dist/helpers.js",
+      "limit": "1 kB",
+      "gzip": true
+    },
+    {
+      "path": "dist/native.js",
+      "limit": "2 kB",
+      "gzip": true
+    },
+    {
+      "path": "dist/date-fns.js",
+      "limit": "2 kB",
+      "gzip": true
+    },
+    {
+      "path": "dist/date-fns-tz.js",
+      "limit": "2 kB",
+      "gzip": true
+    },
+    {
+      "path": "dist/luxon.js",
+      "limit": "2 kB",
+      "gzip": true
+    },
+    {
+      "path": "dist/temporal.js",
+      "limit": "2 kB",
+      "gzip": true
+    }
+  ],
   "devDependencies": {
     "@js-temporal/polyfill": "^0.5.1",
+    "@minuta/tsconfig": "2.0.0-alpha.1",
+    "@size-limit/file": "^12.0.1",
     "@types/luxon": "^3.7.1",
     "@types/node": "^22.12.1",
-    "@minuta/tsconfig": "2.0.0-alpha.1",
     "@vitest/coverage-v8": "^4.0.13",
     "jsdom": "^26.0.0",
+    "size-limit": "^12.0.1",
     "typescript": "^5.7.3",
     "vite": "^7.2.4",
     "vite-plugin-dts": "^4.4.0",
