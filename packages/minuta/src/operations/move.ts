@@ -1,4 +1,4 @@
-import type { TimePeriod } from "../types";
+import type { Period } from "../types";
 
 /**
  * Relocate a period to a target date, preserving its duration.
@@ -8,7 +8,7 @@ import type { TimePeriod } from "../types";
  * const relocated = move(appointment, new Date(2026, 3, 2, 14, 0))
  * // → { start: Apr 2 14:00, end: Apr 2 15:00, type: "custom" }
  */
-export function move(period: TimePeriod, targetDate: Date): TimePeriod {
+export function move(period: Period, targetDate: Date): Period {
   const durationMs = period.end.getTime() - period.start.getTime();
   return {
     start: targetDate,

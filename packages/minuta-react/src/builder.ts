@@ -10,7 +10,7 @@ import {
   contains,
   isSame,
 } from "minuta/operations";
-import type { AdapterUnit, Period, TimePeriod } from "minuta";
+import type { AdapterUnit, Period } from "minuta";
 import type { MinutaBuilder, ReactMinuta } from "./types";
 
 /**
@@ -38,23 +38,23 @@ export function createMinutaBuilder(
   return {
     ...minuta,
 
-    derivePeriod(date: Date, unit: AdapterUnit): TimePeriod {
+    derivePeriod(date: Date, unit: AdapterUnit): Period {
       return derivePeriod(minuta.adapter, date, unit);
     },
 
-    createPeriod(start: Date, end: Date): TimePeriod {
+    createPeriod(start: Date, end: Date): Period {
       return createPeriod(start, end);
     },
 
-    divide(period: TimePeriod, unit: AdapterUnit): TimePeriod[] {
+    divide(period: Period, unit: AdapterUnit): Period[] {
       return divide(minuta.adapter, period, unit);
     },
 
-    merge(periods: TimePeriod[], targetUnit?: AdapterUnit): TimePeriod {
+    merge(periods: Period[], targetUnit?: AdapterUnit): Period {
       return merge(minuta.adapter, periods, targetUnit);
     },
 
-    next(period: TimePeriod, count: number = 1): TimePeriod {
+    next(period: Period, count: number = 1): Period {
       const result =
         count === 1
           ? next(minuta.adapter, period)
@@ -65,7 +65,7 @@ export function createMinutaBuilder(
       return result;
     },
 
-    previous(period: TimePeriod, count: number = 1): TimePeriod {
+    previous(period: Period, count: number = 1): Period {
       const result =
         count === 1
           ? previous(minuta.adapter, period)
@@ -76,7 +76,7 @@ export function createMinutaBuilder(
       return result;
     },
 
-    go(period: TimePeriod, count: number): TimePeriod {
+    go(period: Period, count: number): Period {
       const result = go(minuta.adapter, period, count);
 
       setBrowsingDate(result.start);
@@ -84,7 +84,7 @@ export function createMinutaBuilder(
       return result;
     },
 
-    split(period: TimePeriod, date: Date): [TimePeriod, TimePeriod] {
+    split(period: Period, date: Date): [Period, Period] {
       return split(period, date);
     },
 

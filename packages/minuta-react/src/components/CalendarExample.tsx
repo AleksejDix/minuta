@@ -1,5 +1,5 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
-import type { Period, TimePeriod } from "minuta";
+import type { Period } from "minuta";
 import { createNativeAdapter } from "minuta/native";
 import { useMinuta } from "../useMinuta";
 import { usePeriod } from "../usePeriod";
@@ -24,7 +24,7 @@ const rangeFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
 });
 
-type WeekWithDays = { period: TimePeriod; days: TimePeriod[] };
+type WeekWithDays = { period: Period; days: Period[] };
 
 /**
  * Batteries-included calendar that mirrors the React example app.
@@ -112,7 +112,7 @@ export function CalendarExample() {
   );
 }
 
-function buildWeeks(minuta: MinutaBuilder, month: TimePeriod): WeekWithDays[] {
+function buildWeeks(minuta: MinutaBuilder, month: Period): WeekWithDays[] {
   return minuta.divide(month, "week").map((week) => ({
     period: week,
     days: minuta.divide(week, "day"),
@@ -124,7 +124,7 @@ function NavigationControls({
   targetPeriod,
 }: {
   minuta: MinutaBuilder;
-  targetPeriod: TimePeriod;
+  targetPeriod: Period;
 }) {
   return (
     <div className="toolbar-row">

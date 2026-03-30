@@ -27,12 +27,14 @@ describe("StableMonth Unit", () => {
 
         // Calculate days between start and end
         const days = Math.round(
-          (stableMonthPeriod.end.getTime() -
-            stableMonthPeriod.start.getTime()) /
+          (stableMonthPeriod.periods[
+            stableMonthPeriod.periods.length - 1
+          ].end.getTime() -
+            stableMonthPeriod.periods[0].start.getTime()) /
             (1000 * 60 * 60 * 24)
         );
 
-        expect(stableMonthPeriod.type).toBe("stableMonth");
+        expect(stableMonthPeriod.periods.length).toBe(42);
         expect(days).toBe(42); // 42 days total
       });
 
@@ -43,7 +45,7 @@ describe("StableMonth Unit", () => {
           const weekStartsOn = 1;
 
           const stableMonth = createStableMonth(adapter, weekStartsOn, date);
-          const days = divide(adapter, stableMonth, "day");
+          const days = stableMonth.periods;
 
           expect(days).toHaveLength(42);
           expect(days[0].type).toBe("day");
@@ -56,7 +58,15 @@ describe("StableMonth Unit", () => {
           const weekStartsOn = 1;
 
           const stableMonth = createStableMonth(adapter, weekStartsOn, date);
-          const weeks = divide(adapter, stableMonth, "week");
+          const weeks = divide(
+            adapter,
+            {
+              start: stableMonth.periods[0].start,
+              end: stableMonth.periods[stableMonth.periods.length - 1].end,
+              type: "custom" as const,
+            },
+            "week"
+          );
 
           expect(weeks).toHaveLength(6);
           weeks.forEach((week) => {
@@ -70,11 +80,11 @@ describe("StableMonth Unit", () => {
 
           // Test with Sunday start
           const sundayMonth = createStableMonth(adapter, 0, date);
-          expect(sundayMonth.start.getDay()).toBe(0); // Should start on Sunday
+          expect(sundayMonth.periods[0].start.getDay()).toBe(0); // Should start on Sunday
 
           // Test with Monday start
           const mondayMonth = createStableMonth(adapter, 1, date);
-          expect(mondayMonth.start.getDay()).toBe(1); // Should start on Monday
+          expect(mondayMonth.periods[0].start.getDay()).toBe(1); // Should start on Monday
         });
 
         it("should handle February correctly (shortest month)", () => {
@@ -83,7 +93,7 @@ describe("StableMonth Unit", () => {
           const weekStartsOn = 1;
 
           const stableMonth = createStableMonth(adapter, weekStartsOn, date);
-          const days = divide(adapter, stableMonth, "day");
+          const days = stableMonth.periods;
 
           expect(days).toHaveLength(42);
 
@@ -98,7 +108,7 @@ describe("StableMonth Unit", () => {
           const weekStartsOn = 1;
 
           const stableMonth = createStableMonth(adapter, weekStartsOn, date);
-          const days = divide(adapter, stableMonth, "day");
+          const days = stableMonth.periods;
 
           expect(days).toHaveLength(42);
 
@@ -128,16 +138,18 @@ describe("StableMonth Unit", () => {
             new Date(2024, 1, 15)
           );
 
-          expect(january.type).toBe("stableMonth");
-          expect(february.type).toBe("stableMonth");
+          expect(january.periods.length).toBe(42);
+          expect(february.periods.length).toBe(42);
 
           // Both should be 42 days
           const janDays = Math.round(
-            (january.end.getTime() - january.start.getTime()) /
+            (january.periods[january.periods.length - 1].end.getTime() -
+              january.periods[0].start.getTime()) /
               (1000 * 60 * 60 * 24)
           );
           const febDays = Math.round(
-            (february.end.getTime() - february.start.getTime()) /
+            (february.periods[february.periods.length - 1].end.getTime() -
+              february.periods[0].start.getTime()) /
               (1000 * 60 * 60 * 24)
           );
 
@@ -156,12 +168,30 @@ describe("StableMonth Unit", () => {
 
           // Date in the middle of the month
           const midMonthPeriod = period(adapter, new Date(2024, 0, 20), "day");
-          expect(contains(stableMonth, midMonthPeriod)).toBe(true);
+          expect(
+            contains(
+              {
+                start: stableMonth.periods[0].start,
+                end: stableMonth.periods[stableMonth.periods.length - 1].end,
+                type: "custom" as const,
+              },
+              midMonthPeriod
+            )
+          ).toBe(true);
 
           // Date from previous month that's included in the grid
-          const earlyDate = new Date(stableMonth.start);
+          const earlyDate = new Date(stableMonth.periods[0].start);
           const earlyPeriod = period(adapter, earlyDate, "day");
-          expect(contains(stableMonth, earlyPeriod)).toBe(true);
+          expect(
+            contains(
+              {
+                start: stableMonth.periods[0].start,
+                end: stableMonth.periods[stableMonth.periods.length - 1].end,
+                type: "custom" as const,
+              },
+              earlyPeriod
+            )
+          ).toBe(true);
         });
 
         it("should check if two stableMonths have the same boundaries", () => {
@@ -173,8 +203,12 @@ describe("StableMonth Unit", () => {
           const month2 = createStableMonth(adapter, weekStartsOn, date);
 
           // Same date should produce same boundaries
-          expect(month1.start.getTime()).toBe(month2.start.getTime());
-          expect(month1.end.getTime()).toBe(month2.end.getTime());
+          expect(month1.periods[0].start.getTime()).toBe(
+            month2.periods[0].start.getTime()
+          );
+          expect(month1.periods[month1.periods.length - 1].end.getTime()).toBe(
+            month2.periods[month2.periods.length - 1].end.getTime()
+          );
 
           // Different month should have different boundaries
           const february = createStableMonth(
@@ -182,7 +216,9 @@ describe("StableMonth Unit", () => {
             weekStartsOn,
             new Date(2024, 1, 15)
           );
-          expect(month1.start.getTime()).not.toBe(february.start.getTime());
+          expect(month1.periods[0].start.getTime()).not.toBe(
+            february.periods[0].start.getTime()
+          );
         });
       });
     });
@@ -195,7 +231,7 @@ describe("StableMonth Unit", () => {
       const weekStartsOn = 1;
 
       const stableMonth = createStableMonth(adapter, weekStartsOn, date);
-      const days = divide(adapter, stableMonth, "day");
+      const days = stableMonth.periods;
 
       expect(days).toHaveLength(42);
 
@@ -211,11 +247,12 @@ describe("StableMonth Unit", () => {
 
       weekStarts.forEach((weekStartsOn) => {
         const stableMonth = createStableMonth(adapter, weekStartsOn, date);
-        expect(stableMonth.start.getDay()).toBe(weekStartsOn);
+        expect(stableMonth.periods[0].start.getDay()).toBe(weekStartsOn);
 
         // Always 42 days
         const days = Math.round(
-          (stableMonth.end.getTime() - stableMonth.start.getTime()) /
+          (stableMonth.periods[stableMonth.periods.length - 1].end.getTime() -
+            stableMonth.periods[0].start.getTime()) /
             (1000 * 60 * 60 * 24)
         );
         expect(days).toBe(42); // 42 days total

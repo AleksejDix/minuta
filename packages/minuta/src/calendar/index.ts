@@ -7,3 +7,5 @@ export { createStableMonth } from "./stableMonth";
 export { createStableYear } from "./stableYear";
 export { createStableDay } from "./stableDay";
 export type { HourSlot, StableDay } from "./stableDay";
+export type { StableMonth } from "./stableMonth";
+export type { StableYear } from "./stableYear";

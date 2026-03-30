@@ -1,4 +1,4 @@
-import type { TimePeriod } from "../../types";
+import type { Period } from "../../types";
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -6,7 +6,7 @@ const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
  * Checks if a period falls entirely within weekdays.
  * Returns false for periods spanning more than 2 days.
  */
-export function isWeekday(p: TimePeriod): boolean {
+export function isWeekday(p: Period): boolean {
   // Weekday stretch is at most Mon-Fri (5 days). We use 2-day threshold because
   // any period crossing a day boundary into a weekend would fail the day-of-week check.
   if (p.end.getTime() - p.start.getTime() >= TWO_DAYS_MS) return false;

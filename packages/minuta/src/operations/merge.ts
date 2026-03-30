@@ -1,4 +1,4 @@
-import type { TimePeriod, Adapter, AdapterUnit } from "../types";
+import type { Period, Adapter, AdapterUnit } from "../types";
 import { derivePeriod } from "./period";
 import { validatePeriod } from "./validate";
 
@@ -10,9 +10,9 @@ const MONTHS_PER_QUARTER = 3;
  */
 export function merge(
   adapter: Adapter,
-  periods: TimePeriod[],
+  periods: Period[],
   targetUnit?: AdapterUnit
-): TimePeriod {
+): Period {
   if (periods.length === 0) {
     throw new Error("merge() requires at least one period");
   }

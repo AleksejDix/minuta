@@ -1,16 +1,23 @@
 /**
- * StableMonth unit - Always returns a 42-day (6-week) grid for consistent calendar layouts
+ * StableMonth — a 42-day (6-week) grid for consistent calendar layouts.
  */
-import type { Adapter, Period } from "../types";
+import type { Adapter, Period, Series } from "../types";
+import { divide } from "../operations/divide";
+
+export type StableMonth = Series & {
+  weekStartsOn: number;
+  monthStart: Date;
+};
 
 /**
- * Helper to calculate the stable month grid boundaries
+ * Creates a stable month grid: 42 day periods (6 weeks)
+ * starting from the week that contains the first of the month.
  */
-function getStableMonthBounds(
-  date: Date,
+export function createStableMonth(
   adapter: Adapter,
-  weekStartsOn: number = 1
-) {
+  weekStartsOn: number,
+  date: Date
+): StableMonth {
   const monthStart = adapter.startOf(date, "month");
 
   let gridStart = monthStart;
@@ -21,27 +28,9 @@ function getStableMonthBounds(
     gridStart = adapter.add(gridStart, -daysToSubtract, "day");
   }
 
-  const gridEnd = adapter.add(gridStart, 41, "day");
-  const gridEndTime = adapter.endOf(gridEnd, "day");
+  const gridEnd = adapter.endOf(adapter.add(gridStart, 41, "day"), "day");
+  const gridPeriod: Period = { start: gridStart, end: gridEnd, type: "day" };
+  const periods = divide(adapter, gridPeriod, "day");
 
-  return { start: gridStart, end: gridEndTime };
-}
-
-/**
- * Creates a "stable month" period, which is a 6-week (42-day) grid
- * that contains the given month, useful for calendar displays.
- */
-export function createStableMonth(
-  adapter: Adapter,
-  weekStartsOn: number,
-  date: Date
-): Period {
-  const bounds = getStableMonthBounds(date, adapter, weekStartsOn);
-
-  return {
-    start: bounds.start,
-    end: bounds.end,
-    type: "stableMonth",
-    meta: { weekStartsOn, monthStart: adapter.startOf(date, "month") },
-  };
+  return { periods, weekStartsOn, monthStart };
 }

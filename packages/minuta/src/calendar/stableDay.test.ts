@@ -6,14 +6,14 @@ describe("createStableDay", () => {
   describe("spring forward (23-hour day)", () => {
     const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
 
-    it("returns 24 slots on spring forward day", () => {
+    it("returns 24 periods on spring forward day", () => {
       // Mar 10 2024: 2 AM doesn't exist in New York
-      const { slots } = createStableDay(
+      const { periods } = createStableDay(
         ny,
         new Date(Date.UTC(2024, 2, 10, 5)),
         "America/New_York"
       );
-      expect(slots.length).toBe(24);
+      expect(periods.length).toBe(24);
     });
 
     it("marks the skipped hour as a gap", () => {
@@ -38,14 +38,14 @@ describe("createStableDay", () => {
   describe("fall back (25-hour day)", () => {
     const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
 
-    it("returns 24 slots on fall back day", () => {
+    it("returns 24 periods on fall back day", () => {
       // Nov 3 2024: 1 AM occurs twice in New York
-      const { slots } = createStableDay(
+      const { periods } = createStableDay(
         ny,
         new Date(Date.UTC(2024, 10, 3, 5)),
         "America/New_York"
       );
-      expect(slots.length).toBe(24);
+      expect(periods.length).toBe(24);
     });
 
     it("marks the repeated hour as ambiguous", () => {
@@ -70,14 +70,14 @@ describe("createStableDay", () => {
   describe("Europe/Zurich spring forward", () => {
     const zurich = createDateFnsTzAdapter({ timezone: "Europe/Zurich" });
 
-    it("returns 24 slots on Mar 31 2024", () => {
+    it("returns 24 periods on Mar 31 2024", () => {
       // Mar 31 2024: 2 AM → 3 AM in Zurich (last Sun of March)
-      const { slots } = createStableDay(
+      const { periods } = createStableDay(
         zurich,
         new Date(Date.UTC(2024, 2, 31)),
         "Europe/Zurich"
       );
-      expect(slots.length).toBe(24);
+      expect(periods.length).toBe(24);
     });
 
     it("marks hour 2 as gap (2 AM → 3 AM)", () => {
@@ -178,12 +178,12 @@ describe("createStableDay", () => {
     const tokyo = createDateFnsTzAdapter({ timezone: "Asia/Tokyo" });
 
     it("never has gaps or ambiguous hours", () => {
-      const { slots, gapHour, ambiguousHour } = createStableDay(
+      const { periods, gapHour, ambiguousHour } = createStableDay(
         tokyo,
         new Date(Date.UTC(2024, 2, 10)),
         "Asia/Tokyo"
       );
-      expect(slots.length).toBe(24);
+      expect(periods.length).toBe(24);
       expect(gapHour).toBeNull();
       expect(ambiguousHour).toBeNull();
     });
@@ -194,12 +194,12 @@ describe("createStableDay", () => {
 
     it("never has gaps or ambiguous hours", () => {
       // Test on US spring forward date — UTC doesn't care
-      const { slots, gapHour, ambiguousHour } = createStableDay(
+      const { periods, gapHour, ambiguousHour } = createStableDay(
         utc,
         new Date(Date.UTC(2024, 2, 10)),
         "UTC"
       );
-      expect(slots.length).toBe(24);
+      expect(periods.length).toBe(24);
       expect(gapHour).toBeNull();
       expect(ambiguousHour).toBeNull();
     });

@@ -1,4 +1,4 @@
-import type { TimePeriod } from "../types";
+import type { Period } from "../types";
 
 /**
  * Constrain a period to fit within bounds.
@@ -11,10 +11,7 @@ import type { TimePeriod } from "../types";
  * clamp(selection, allowed)
  * // → { start: Jan 10, end: Jan 20, type: "custom" }
  */
-export function clamp(
-  period: TimePeriod,
-  bounds: TimePeriod
-): TimePeriod | null {
+export function clamp(period: Period, bounds: Period): Period | null {
   const start = Math.max(period.start.getTime(), bounds.start.getTime());
   const end = Math.min(period.end.getTime(), bounds.end.getTime());
 

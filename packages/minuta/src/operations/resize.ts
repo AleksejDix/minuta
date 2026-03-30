@@ -1,4 +1,4 @@
-import type { TimePeriod } from "../types";
+import type { Period } from "../types";
 
 /**
  * Move one edge of a period while keeping the other fixed.
@@ -11,10 +11,10 @@ import type { TimePeriod } from "../types";
  * // → { start: 9:00, end: 11:30, type: "custom" }
  */
 export function resize(
-  period: TimePeriod,
+  period: Period,
   edge: "start" | "end",
   newDate: Date
-): TimePeriod | null {
+): Period | null {
   const start = edge === "start" ? newDate : period.start;
   const end = edge === "end" ? newDate : period.end;
 

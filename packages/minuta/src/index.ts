@@ -21,8 +21,7 @@ export {
 // Types
 export type {
   Period,
-  TimePeriod,
-  PeriodSeries,
+  Series,
   Unit,
   UnitRegistry,
   AdapterUnit,

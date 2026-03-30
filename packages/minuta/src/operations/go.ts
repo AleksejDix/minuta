@@ -1,12 +1,12 @@
-import type { TimePeriod, Adapter, AdapterUnit } from "../types";
+import type { Period, Adapter, AdapterUnit } from "../types";
 import { derivePeriod } from "./period";
 import { move } from "./move";
 
 /**
  * Move by a specific number of periods.
- * Only accepts TimePeriod (adapter units + custom).
+ * Only accepts Period (adapter units + custom).
  */
-export function go(adapter: Adapter, p: TimePeriod, steps: number): TimePeriod {
+export function go(adapter: Adapter, p: Period, steps: number): Period {
   if (steps === 0) return p;
 
   if (p.type === "custom") {

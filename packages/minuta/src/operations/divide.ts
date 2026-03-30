@@ -1,4 +1,4 @@
-import type { Period, TimePeriod, Adapter, AdapterUnit } from "../types";
+import type { Period, Adapter, AdapterUnit } from "../types";
 import { validatePeriod } from "./validate";
 
 const DEFAULT_MAX_PERIODS = 100_000;
@@ -16,9 +16,9 @@ export function divide(
   period: Period,
   unit: AdapterUnit,
   { maxPeriods = DEFAULT_MAX_PERIODS }: DivideOptions = {}
-): TimePeriod[] {
+): Period[] {
   validatePeriod(period);
-  const periods: TimePeriod[] = [];
+  const periods: Period[] = [];
   let current = new Date(period.start);
 
   while (current <= period.end) {
