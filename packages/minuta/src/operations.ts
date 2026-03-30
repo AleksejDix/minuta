@@ -21,5 +21,6 @@ export {
   createPeriod,
   previous,
   resize,
+  snap,
   split,
 } from "./operations/index";

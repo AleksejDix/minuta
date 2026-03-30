@@ -11,4 +11,5 @@ export { move } from "./move";
 export { next } from "./next";
 export { previous } from "./previous";
 export { resize } from "./resize";
+export { snap } from "./snap";
 export { split } from "./split";

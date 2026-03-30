@@ -14,6 +14,7 @@ export {
   next,
   previous,
   resize,
+  snap,
   split,
 } from "./operations";
 
