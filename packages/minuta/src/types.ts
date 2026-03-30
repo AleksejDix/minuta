@@ -22,8 +22,10 @@ export type Series = {
   periods: Period[];
 };
 
+// ── Units ──
+
 /**
- * Registry for unit types - extend this interface to add custom units
+ * Registry for unit types — keep as interface for module augmentation.
  */
 export interface UnitRegistry {
   year: true;
@@ -36,23 +38,8 @@ export interface UnitRegistry {
   second: true;
 }
 
-/**
- * Unified type for all time units
- * Extensible via module augmentation of UnitRegistry
- */
 export type AdapterUnit = keyof UnitRegistry;
-export type Unit = AdapterUnit | "custom";
 
-/**
- * All available time unit constants grouped for better autocomplete and imports.
- *
- * @example
- * import { UNITS } from 'minuta'
- *
- * // Better autocomplete
- * const months = divide(adapter, year, UNITS.month)
- * const days = divide(adapter, month, UNITS.day)
- */
 export const UNITS = Object.freeze({
   year: "year",
   quarter: "quarter",
@@ -65,7 +52,6 @@ export const UNITS = Object.freeze({
   custom: "custom",
 } as const);
 
-// Individual exports for convenience
 export const YEAR = "year" as const;
 export const QUARTER = "quarter" as const;
 export const MONTH = "month" as const;
@@ -76,36 +62,15 @@ export const MINUTE = "minute" as const;
 export const SECOND = "second" as const;
 export const CUSTOM = "custom" as const;
 
-/**
- * Type definition for the UNITS object
- */
-export type UnitsObject = typeof UNITS;
-
-// Adapter Types
-export type Duration = {
-  years?: number;
-  months?: number;
-  weeks?: number;
-  days?: number;
-  hours?: number;
-  minutes?: number;
-  seconds?: number;
-  milliseconds?: number;
-};
-
-export type AdapterOptions = {
-  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-};
+// ── Adapter ──
 
 /**
- * Adapter — 4 operations for date manipulation.
+ * 4 operations for date manipulation.
  *
- * Implementers must ensure:
- * - startOf returns the earliest millisecond of the unit (e.g., midnight for "day")
- * - endOf returns the latest millisecond of the unit (e.g., 23:59:59.999 for "day")
+ * - startOf: earliest millisecond of the unit (e.g., midnight for "day")
+ * - endOf: latest millisecond of the unit (e.g., 23:59:59.999 for "day")
  * - add(date, N, unit) followed by add(result, -N, unit) returns the original date
  * - diff(a, b, unit) returns the number of complete units between a and b
- * - All methods preserve millisecond precision
  */
 export type Adapter = {
   startOf(date: Date, unit: AdapterUnit): Date;
@@ -115,8 +80,7 @@ export type Adapter = {
 };
 
 /**
- * Unit handler for functional adapters.
- * Each unit has its own implementation.
+ * Per-unit handler — internal to adapter implementations.
  */
 export type UnitHandler = {
   startOf(date: Date): Date;

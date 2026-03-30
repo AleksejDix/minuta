@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UNITS, type Unit, type UnitsObject } from "./types";
+import { UNITS, type AdapterUnit } from "./types";
 
 describe("UNITS constant", () => {
   it("should contain all core units", () => {
@@ -51,7 +51,7 @@ describe("UNITS constant", () => {
   });
 
   it("should work with type guards", () => {
-    const isValidUnit = (unit: string): unit is Unit => {
+    const isValidUnit = (unit: string): unit is AdapterUnit => {
       return Object.values(UNITS).includes(unit as any);
     };
 
@@ -97,7 +97,7 @@ describe("UNITS constant", () => {
     expect(dropdownOptions).toHaveLength(9);
 
     // Simulate unit validation function
-    const validateUnit = (input: unknown): input is Unit => {
+    const validateUnit = (input: unknown): input is AdapterUnit => {
       return (
         typeof input === "string" && Object.values(UNITS).includes(input as any)
       );
@@ -111,16 +111,12 @@ describe("UNITS constant", () => {
 
   it("should have proper TypeScript types", () => {
     // Type tests - these compile-time checks ensure proper typing
-    const testUnit: Unit = UNITS.year;
+    const testUnit: AdapterUnit = UNITS.year;
     expect(testUnit).toBe("year");
 
-    // Test that UNITS values can be assigned to Unit type
-    const unitFromObject: Unit = UNITS.month;
+    // Test that UNITS values can be assigned to AdapterUnit type
+    const unitFromObject: AdapterUnit = UNITS.month;
     expect(unitFromObject).toBe("month");
-
-    // Test UnitsObject type
-    const unitsObj: UnitsObject = UNITS;
-    expect(unitsObj).toBe(UNITS);
 
     // Test that all keys are valid units
     type UnitsKeys = keyof typeof UNITS;
@@ -143,7 +139,7 @@ describe("UNITS constant", () => {
   });
 
   it("should work with switch statements", () => {
-    const getUnitLabel = (unit: Unit): string => {
+    const getUnitLabel = (unit: AdapterUnit): string => {
       switch (unit) {
         case UNITS.year:
           return "Year";
@@ -161,8 +157,6 @@ describe("UNITS constant", () => {
           return "Second";
         case UNITS.quarter:
           return "Quarter";
-        case UNITS.custom:
-          return "Custom";
         default:
           return "Unknown";
       }
@@ -170,7 +164,6 @@ describe("UNITS constant", () => {
 
     expect(getUnitLabel("year")).toBe("Year");
     expect(getUnitLabel("month")).toBe("Month");
-    expect(getUnitLabel("custom")).toBe("Custom");
   });
 
   it("should be useful for autocomplete scenarios", () => {
@@ -179,7 +172,7 @@ describe("UNITS constant", () => {
     expect(selectedUnit).toBe("month");
 
     // Can be used in function calls with autocomplete
-    const mockDivide = (unit: Unit) => unit;
+    const mockDivide = (unit: AdapterUnit) => unit;
     expect(mockDivide(UNITS.day)).toBe("day");
   });
 });

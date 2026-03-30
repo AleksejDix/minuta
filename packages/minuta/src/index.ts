@@ -19,18 +19,7 @@ export {
 } from "./operations";
 
 // Types
-export type {
-  Period,
-  Series,
-  Unit,
-  UnitRegistry,
-  AdapterUnit,
-  Adapter,
-  UnitHandler,
-  AdapterOptions,
-  Duration,
-  UnitsObject,
-} from "./types";
+export type { Period, Series, Adapter, AdapterUnit } from "./types";
 
 // Unit constants
 export {
