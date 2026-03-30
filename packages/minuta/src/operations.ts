@@ -7,7 +7,9 @@
  * Tree-shakable - only import what you need.
  */
 export {
+  clamp,
   contains,
+  duration,
   gap,
   divide,
   go,
@@ -17,5 +19,6 @@ export {
   derivePeriod,
   createPeriod,
   previous,
+  resize,
   split,
 } from "./operations/index";

@@ -1,16 +1,19 @@
 // Operations - pure functions
 export {
+  clamp,
+  contains,
+  createPeriod,
+  derivePeriod,
   divide,
+  duration,
+  gap,
+  go,
+  isSame,
+  merge,
   next,
   previous,
-  go,
-  contains,
-  derivePeriod,
-  createPeriod,
+  resize,
   split,
-  merge,
-  isSame,
-  gap,
 } from "./operations";
 
 // Types

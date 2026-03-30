@@ -1,5 +1,7 @@
+export { clamp } from "./clamp";
 export { contains } from "./contains";
 export { derivePeriod, createPeriod } from "./period";
+export { duration } from "./duration";
 export { gap } from "./gap";
 export { divide } from "./divide";
 export { go } from "./go";
@@ -7,4 +9,5 @@ export { isSame } from "./isSame";
 export { merge } from "./merge";
 export { next } from "./next";
 export { previous } from "./previous";
+export { resize } from "./resize";
 export { split } from "./split";

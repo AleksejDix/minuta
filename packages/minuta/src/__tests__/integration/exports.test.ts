@@ -20,15 +20,18 @@ describe("Export Verification Tests", () => {
 
     it("should export all expected operation functions", () => {
       const expectedOperations = [
+        "clamp",
         "contains",
         "derivePeriod",
         "createPeriod",
         "divide",
+        "duration",
         "go",
         "isSame",
         "merge",
         "next",
         "previous",
+        "resize",
         "split",
       ];
 
@@ -54,6 +57,10 @@ describe("Export Verification Tests", () => {
         "split",
         "merge",
         "isSame",
+        "gap",
+        "clamp",
+        "duration",
+        "resize",
       ];
 
       expectedOperations.forEach((op) => {
@@ -126,6 +133,10 @@ describe("Export Verification Tests", () => {
         "split",
         "merge",
         "isSame",
+        "gap",
+        "clamp",
+        "duration",
+        "resize",
       ];
 
       operationNames.forEach((op) => {
