@@ -2,7 +2,7 @@ import {
   derivePeriod,
   createPeriod,
   divide,
-  merge,
+  merge as mergeOp,
   next,
   previous,
   go,
@@ -66,7 +66,7 @@ export function createMinutaBuilder(minuta: SvelteMinuta): MinutaBuilder {
     },
 
     merge(periods: Period[], targetUnit?: AdapterUnit): Period {
-      return merge(minuta.adapter, periods, targetUnit);
+      return mergeOp(periods, targetUnit);
     },
 
     next(period: Period, count: number = 1): Period {

@@ -11,27 +11,18 @@ describe("regression tests for critical bugs", () => {
 
   describe("merge() regression tests", () => {
     it("should throw on empty array (bug #1)", () => {
-      expect(() => merge(adapter, [], "day")).toThrow(
+      expect(() => merge([], "day")).toThrow(
         "merge() requires at least one period"
       );
     });
 
-    it("should promote single period to target unit (bug #2)", () => {
-      // Previously returned the original period unchanged
+    it("should set target unit type on single period", () => {
       const day = period(adapter, new Date(2024, 0, 15), "day");
 
-      const promotedWeek = merge(adapter, [day], "week");
-      expect(promotedWeek.type).toBe("week");
-      expect(promotedWeek.start.getTime()).toBeLessThanOrEqual(
-        day.start.getTime()
-      );
-      expect(promotedWeek.end.getTime()).toBeGreaterThanOrEqual(
-        day.end.getTime()
-      );
-
-      const promotedMonth = merge(adapter, [day], "month");
-      expect(promotedMonth.type).toBe("month");
-      expect(promotedMonth.start.getDate()).toBe(1);
+      const asWeek = merge([day], "week");
+      expect(asWeek.type).toBe("week");
+      expect(asWeek.start.getTime()).toBe(day.start.getTime());
+      expect(asWeek.end.getTime()).toBe(day.end.getTime());
     });
 
     it("should preserve exact start/end times for partial period merges", () => {
@@ -41,7 +32,7 @@ describe("regression tests for critical bugs", () => {
 
       // Merge morning hours only (0-11)
       const morningHours = hours.slice(0, 12);
-      const merged = merge(adapter, morningHours, "day");
+      const merged = merge(morningHours, "day");
 
       expect(merged.type).toBe("day");
       expect(merged.start.getHours()).toBe(0);
@@ -57,7 +48,7 @@ describe("regression tests for critical bugs", () => {
         period(adapter, new Date(2024, 0, 12), "day"),
       ];
 
-      const merged = merge(adapter, periods, "week");
+      const merged = merge(periods, "week");
       expect(merged.start.getTime()).toBe(periods[0].start.getTime());
     });
   });
