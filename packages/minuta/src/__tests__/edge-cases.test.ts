@@ -203,23 +203,23 @@ describe("isSame edge cases", () => {
 describe("merge edge cases", () => {
   it("merge single period returns itself", () => {
     const jan = derivePeriod(adapter, new Date(2024, 0, 15), "month");
-    const merged = merge(adapter, [jan]);
+    const merged = merge([jan]);
     expect(merged.start.getTime()).toBe(jan.start.getTime());
   });
 
-  it("merge Q1 months produces quarter", () => {
+  it("merge Q1 months produces custom period", () => {
     const jan = derivePeriod(adapter, new Date(2024, 0, 15), "month");
     const feb = derivePeriod(adapter, new Date(2024, 1, 15), "month");
     const mar = derivePeriod(adapter, new Date(2024, 2, 15), "month");
-    const q1 = merge(adapter, [jan, feb, mar]);
-    expect(q1.type).toBe("quarter");
+    const q1 = merge([jan, feb, mar]);
+    expect(q1.type).toBe("custom");
   });
 
   it("merge Q2 months does not produce quarter if not Q boundary", () => {
     const feb = derivePeriod(adapter, new Date(2024, 1, 15), "month");
     const mar = derivePeriod(adapter, new Date(2024, 2, 15), "month");
     const apr = derivePeriod(adapter, new Date(2024, 3, 15), "month");
-    const merged = merge(adapter, [feb, mar, apr]);
+    const merged = merge([feb, mar, apr]);
     expect(merged.type).toBe("custom");
   });
 });
