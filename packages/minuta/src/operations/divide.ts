@@ -1,5 +1,4 @@
 import type { Period, Adapter, AdapterUnit } from "../types";
-import { validatePeriod } from "./validate";
 
 const DEFAULT_MAX_PERIODS = 100_000;
 
@@ -40,7 +39,6 @@ export function divide(
     maxPeriods = options.maxPeriods ?? DEFAULT_MAX_PERIODS;
   }
 
-  validatePeriod(period);
   const periods: Period[] = [];
   let current = new Date(period.start);
 

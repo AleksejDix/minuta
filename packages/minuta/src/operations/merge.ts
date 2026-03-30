@@ -1,6 +1,5 @@
 import type { Period, Adapter, AdapterUnit } from "../types";
 import { derivePeriod } from "./period";
-import { validatePeriod } from "./validate";
 
 const DAYS_PER_WEEK = 7;
 const MONTHS_PER_QUARTER = 3;
@@ -18,7 +17,6 @@ export function merge(
   }
 
   for (const p of periods) {
-    validatePeriod(p);
   }
   if (periods.length === 1) {
     if (targetUnit && targetUnit !== periods[0].type) {

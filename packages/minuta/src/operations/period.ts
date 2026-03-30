@@ -1,4 +1,5 @@
 import type { Period, Adapter, AdapterUnit } from "../types";
+import { validatePeriod } from "./validate";
 
 /**
  * Derive a period's boundaries from the adapter for a given date and unit.
@@ -14,8 +15,9 @@ export function derivePeriod(
 ): Period {
   const start = adapter.startOf(date, unit);
   const end = adapter.endOf(date, unit);
-
-  return { start, end, type: unit };
+  const p = { start, end, type: unit };
+  validatePeriod(p);
+  return p;
 }
 
 /**
@@ -27,5 +29,7 @@ export function derivePeriod(
  * // { start: Jan 1, end: Mar 31, type: "custom" }
  */
 export function createPeriod(start: Date, end: Date): Period {
-  return { start, end, type: "custom" };
+  const p = { start, end, type: "custom" as const };
+  validatePeriod(p);
+  return p;
 }
