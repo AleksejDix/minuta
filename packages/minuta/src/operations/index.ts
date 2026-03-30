@@ -7,7 +7,7 @@ export { divide } from "./divide";
 export { go } from "./go";
 export { isSame } from "./isSame";
 export { merge } from "./merge";
-export { moveTo } from "./moveTo";
+export { move } from "./move";
 export { next } from "./next";
 export { previous } from "./previous";
 export { resize } from "./resize";

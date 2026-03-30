@@ -15,7 +15,7 @@ export {
   go,
   isSame,
   merge,
-  moveTo,
+  move,
   next,
   derivePeriod,
   createPeriod,

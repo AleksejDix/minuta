@@ -10,7 +10,7 @@ export {
   go,
   isSame,
   merge,
-  moveTo,
+  move,
   next,
   previous,
   resize,
