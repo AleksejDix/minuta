@@ -40,28 +40,6 @@ export interface UnitRegistry {
 
 export type AdapterUnit = keyof UnitRegistry;
 
-export const UNITS = Object.freeze({
-  year: "year",
-  quarter: "quarter",
-  month: "month",
-  week: "week",
-  day: "day",
-  hour: "hour",
-  minute: "minute",
-  second: "second",
-  custom: "custom",
-} as const);
-
-export const YEAR = "year" as const;
-export const QUARTER = "quarter" as const;
-export const MONTH = "month" as const;
-export const WEEK = "week" as const;
-export const DAY = "day" as const;
-export const HOUR = "hour" as const;
-export const MINUTE = "minute" as const;
-export const SECOND = "second" as const;
-export const CUSTOM = "custom" as const;
-
 // ── Adapter ──
 
 /**

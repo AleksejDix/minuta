@@ -20,17 +20,3 @@ export {
 
 // Types
 export type { Period, Series, Adapter, AdapterUnit } from "./types";
-
-// Unit constants
-export {
-  UNITS,
-  YEAR,
-  QUARTER,
-  MONTH,
-  WEEK,
-  DAY,
-  HOUR,
-  MINUTE,
-  SECOND,
-  CUSTOM,
-} from "./types";
