@@ -2,6 +2,9 @@
 import { computed, ref, watch } from "vue";
 import type { Period } from "minuta";
 import { createNativeAdapter } from "minuta/native";
+import { createStableMonth } from "minuta/calendar";
+import { contains, isSame, go } from "minuta/operations";
+import { isWeekend } from "minuta/helpers";
 import { createMinuta } from "../createMinuta";
 import { usePeriod } from "../usePeriod";
 
@@ -40,13 +43,25 @@ watch(weekStartsOn, (value) => {
 });
 
 const month = usePeriod(minuta, "month");
-const weeks = computed(() =>
-  minuta.divide(month.value, "week").map((week) => ({
-    key: `${week.start.toISOString()}-${week.end.toISOString()}`,
-    period: week,
-    days: minuta.divide(week, "day"),
-  }))
+const grid = computed(() =>
+  createStableMonth(
+    adapter.value,
+    weekStartsOn.value,
+    minuta.browsing.value.start
+  )
 );
+const weeks = computed(() => {
+  const days = grid.value.periods;
+  const rows = [];
+  for (let i = 0; i < days.length; i += 7) {
+    const weekDays = days.slice(i, i + 7);
+    rows.push({
+      key: weekDays[0].start.toISOString(),
+      days: weekDays,
+    });
+  }
+  return rows;
+});
 const weekdayLabels = computed(() => WEEKDAY_ORDER[weekStartsOn.value]);
 
 const isCurrentMonth = computed(() => {
@@ -72,11 +87,11 @@ function goToDay(day: Period) {
 }
 
 function isOutside(day: Period) {
-  return !minuta.contains(month.value, day.start);
+  return !contains(month.value, day.start);
 }
 
 function isToday(day: Period) {
-  return minuta.isSame(day, minuta.now.value, "day");
+  return isSame(adapter.value, day, minuta.now.value, "day");
 }
 </script>
 
@@ -150,7 +165,11 @@ function isToday(day: Period) {
           :key="day.start.toISOString()"
           type="button"
           class="day-cell"
-          :class="{ 'is-outside': isOutside(day), 'is-today': isToday(day) }"
+          :class="{
+            'is-outside': isOutside(day),
+            'is-today': isToday(day),
+            'is-weekend': isWeekend(day),
+          }"
           @click="goToDay(day)"
           :title="dayFormatter.format(day.start)"
         >
@@ -167,7 +186,7 @@ function isToday(day: Period) {
 <style scoped>
 .calendar-shell {
   background: white;
-  border-radius: 24px;
+  border-radius: 0;
   padding: 2rem;
   width: min(960px, 100%);
   box-shadow:
@@ -208,7 +227,7 @@ function isToday(day: Period) {
 .toggle-group {
   display: inline-flex;
   background: #f1f5f9;
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.25rem;
   gap: 0.25rem;
 }
@@ -217,7 +236,7 @@ function isToday(day: Period) {
   border: none;
   background: transparent;
   padding: 0.4rem 0.9rem;
-  border-radius: 999px;
+  border-radius: 0;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
@@ -279,7 +298,7 @@ function isToday(day: Period) {
   border: none;
   background: #0f172a;
   color: white;
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.6rem 1.2rem;
   font-weight: 600;
   cursor: pointer;
@@ -314,7 +333,7 @@ function isToday(day: Period) {
 
 .day-cell {
   border: none;
-  border-radius: 16px;
+  border-radius: 0;
   background: #f8fafc;
   min-height: 84px;
   display: flex;
@@ -343,6 +362,15 @@ function isToday(day: Period) {
 .day-cell.is-today {
   border: 2px solid #6366f1;
   background: #eef2ff;
+}
+
+.day-cell.is-weekend {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.day-cell.is-weekend .weekday-label {
+  color: #dc2626;
 }
 
 .date-number {
