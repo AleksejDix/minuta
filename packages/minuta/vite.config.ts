@@ -21,6 +21,7 @@ export default defineConfig({
         "date-fns": resolve(__dirname, "src/date-fns.ts"),
         "date-fns-tz": resolve(__dirname, "src/date-fns-tz.ts"),
         luxon: resolve(__dirname, "src/luxon.ts"),
+        moment: resolve(__dirname, "src/moment.ts"),
         temporal: resolve(__dirname, "src/temporal.ts"),
       },
       formats: ["es"],
@@ -32,6 +33,7 @@ export default defineConfig({
         "date-fns",
         "date-fns-tz",
         "luxon",
+        "moment",
         "@js-temporal/polyfill",
       ],
       output: {

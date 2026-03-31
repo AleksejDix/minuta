@@ -4,6 +4,7 @@ import { createNativeAdapter } from "../adapters/native";
 import { createDateFnsAdapter } from "../adapters/date-fns";
 import { createDayjsAdapter } from "../adapters/dayjs";
 import { createLuxonAdapter } from "../adapters/luxon";
+import { createMomentAdapter } from "../adapters/moment";
 import { createMinutaAdapter } from "../adapters/temporal";
 
 // Define adapter configurations
@@ -30,6 +31,10 @@ export const testAdapters: AdapterConfig[] = [
   {
     name: "Luxon",
     createAdapter: () => createLuxonAdapter({ weekStartsOn: 1 }),
+  },
+  {
+    name: "Moment.js",
+    createAdapter: () => createMomentAdapter({ weekStartsOn: 1 }),
   },
   {
     name: "Temporal",

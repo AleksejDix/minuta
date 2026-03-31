@@ -1,0 +1,1 @@
+export { createMomentAdapter } from "./adapter";
