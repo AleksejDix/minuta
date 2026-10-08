@@ -77,6 +77,11 @@
               "InputEvent",
               "KeyboardEvent"
             ]
+          },
+          {
+            "from": "package",
+            "package": "@vue/reactivity",
+            "name": ["ComputedRef", "Ref", "ShallowRef"]
           }
         ]
       }
