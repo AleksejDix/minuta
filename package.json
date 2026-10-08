@@ -52,10 +52,6 @@
     "oxlint-tsgolint": "^7.0.2002",
     "vitest": "^4.0.13"
   },
-  "optionalDependencies": {
-    "@oxlint/linux-x64-gnu": "^1.85.0",
-    "@oxlint/wasm32-wasi": "^1.85.0"
-  },
   "engines": {
     "node": ">=20.19.0"
   }
