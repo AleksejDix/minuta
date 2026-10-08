@@ -2,4 +2,4 @@
 // Modular functional adapter using date-fns library
 
 // Re-export the main adapter functionality
-export { createDateFnsAdapter, dateFnsAdapter } from "./adapter";
+export { dateFnsUnits } from "./adapter";

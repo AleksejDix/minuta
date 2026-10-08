@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>input-dom — vanilla demo</title>
+    <style>
+      :root {
+        font-family: system-ui, sans-serif;
+        color: #0f172a;
+        background: #f8fafc;
+      }
+      body {
+        margin: 0;
+        padding: 2rem 1rem;
+      }
+      main {
+        display: grid;
+        gap: 1.5rem;
+        max-width: 40rem;
+        margin: 0 auto;
+      }
+      section {
+        display: grid;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+      }
+      h2 {
+        margin: 0;
+        font-size: 1rem;
+      }
+      input {
+        font:
+          1.4rem ui-monospace,
+          monospace;
+        padding: 0.4rem 0.6rem;
+      }
+      output {
+        font:
+          0.85rem ui-monospace,
+          monospace;
+        color: #475569;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>input-dom — one stack, many inputs</h1>
+      <p>
+        text-buffer → input-state (mask + mode) → input-dom. Click into a field,
+        type, correct single digits, paste. ↑/↓ rotates date segments; Insert
+        toggles the mode of the free-text field.
+      </p>
+
+      <section>
+        <h2>Date</h2>
+        <select id="locale" aria-label="Locale">
+          <option>de-CH</option>
+          <option>en-US</option>
+          <option>en-GB</option>
+          <option>ja-JP</option>
+          <option>ko-KR</option>
+          <option>fr-FR</option>
+        </select>
+        <input id="date" inputmode="numeric" aria-label="Date" />
+        <output id="date-out"></output>
+      </section>
+
+      <section>
+        <h2>OTP code — mask 999999</h2>
+        <input id="otp" inputmode="numeric" aria-label="One-time code" />
+        <output id="otp-out"></output>
+      </section>
+
+      <section>
+        <h2>Phone — mask +99 99 999 99 99</h2>
+        <input id="phone" inputmode="tel" aria-label="Phone" />
+        <output id="phone-out"></output>
+      </section>
+
+      <section>
+        <h2>IBAN (CH) — mask AA99 9999 9999 9999 9999 9</h2>
+        <input id="iban" aria-label="IBAN" />
+        <output id="iban-out"></output>
+      </section>
+
+      <section>
+        <h2>Free text — no mask, Insert toggles the mode</h2>
+        <input id="text" aria-label="Free text" />
+        <output id="text-out"></output>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

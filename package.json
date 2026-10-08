@@ -1,6 +1,7 @@
 {
   "name": "minuta-monorepo",
   "private": true,
+  "type": "module",
   "description": "Minuta — divide time into pieces",
   "author": "Aleksej Dix <git@aleksejdix.com>",
   "license": "Apache-2.0",
@@ -16,28 +17,25 @@
     "packages/*"
   ],
   "scripts": {
-    "prepare": "husky",
+    "prepare": "lefthook install",
     "build": "npm run build --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "docs:dev": "cd docs && npm run docs:dev",
-    "docs:build": "cd docs && npm run docs:build",
-    "docs:preview": "cd docs && npm run docs:preview",
     "test:workspaces": "npm run test --workspaces --if-present",
     "test:vue": "npm run build --workspace=minuta && TZ=UTC npm run test --workspace=minuta-vue",
     "dev": "npm run dev --workspace=minuta",
     "dev:react": "npm run dev --workspace=minuta-react",
     "dev:vue": "npm run dev --workspace=minuta-vue",
-    "dev:svelte": "npm run dev --workspace=minuta-svelte",
+    "dev:inputs": "npm run build -w text-buffer -w input-state -w datefield -w input-dom && npm run dev --workspace=input-dom",
     "demo:build:react": "npm run demo:build --workspace=minuta-react",
     "demo:build:vue": "npm run demo:build --workspace=minuta-vue",
-    "demo:build:svelte": "npm run demo:build --workspace=minuta-svelte",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
+    "knip": "knip",
     "lint:workspaces": "npm run lint --workspaces --if-present",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "type-check": "npm run type-check --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
     "release": "npm run build && changeset publish"
@@ -45,20 +43,16 @@
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
     "@js-temporal/polyfill": "^0.5.1",
-    "@tsconfig/svelte": "^5.0.6",
     "@vitest/coverage-v8": "^4.0.13",
-    "husky": "^9.1.7",
     "jsdom": "^25.0.1",
-    "oxlint": "^1.29.0",
-    "prettier": "^3.6.2",
-    "vite": "^7.2.4",
+    "knip": "^6.38.0",
+    "lefthook": "^2.1.14",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0",
+    "oxlint-tsgolint": "^7.0.2002",
     "vitest": "^4.0.13"
   },
-  "optionalDependencies": {
-    "@oxlint/linux-x64-gnu": "^1.29.0",
-    "@oxlint/wasm32-wasi": "^1.29.0"
-  },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.19.0"
   }
 }

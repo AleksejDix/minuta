@@ -1,54 +1,54 @@
-import type { UnitHandler } from "../../../types";
-import { plainDateToLocal } from "../toLocalDate";
+import { plainDateToLocal, timeOf } from "#src/adapters/temporal/to-local-date";
+import type { UnitSpec } from "#src/types";
+import { toPlainDate } from "#src/adapters/temporal/temporal-api";
 
-export const yearHandler: UnitHandler = {
-  startOf(date: Date): Date {
-    const result = new Date(date.getFullYear(), 0, 1, 0, 0, 0, 0);
-    return result;
+const JANUARY = 0;
+const DECEMBER = 12;
+const FIRST_DAY = 1;
+const LAST_DAY_OF_DECEMBER = 31;
+const START_HOUR = 0;
+const START_MINUTE = 0;
+const START_SECOND = 0;
+const START_MS = 0;
+const END_OF_DAY = {
+  hour: 23,
+  millisecond: 999,
+  minute: 59,
+  second: 59,
+} as const;
+
+const yearHandler: UnitSpec = {
+  add(date: Readonly<Date>, amount: number): Date {
+    const result = toPlainDate(date).add({ years: amount });
+    return plainDateToLocal(result, timeOf(date));
   },
 
-  endOf(date: Date): Date {
-    const temporal = (globalThis as any).Temporal;
-    const plainDate = temporal.PlainDate.from({
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate(),
+  diff(from: Readonly<Date>, to: Readonly<Date>): number {
+    const duration = toPlainDate(from).until(toPlainDate(to), {
+      largestUnit: "year",
     });
-    const endOfYear = plainDate.with({ month: 12, day: 31 });
-    const endDate = plainDateToLocal(endOfYear, 23, 59, 59, 999);
-    return endDate;
-  },
-
-  add(date: Date, amount: number): Date {
-    const temporal = (globalThis as any).Temporal;
-    const plainDate = temporal.PlainDate.from({
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate(),
-    });
-    const result = plainDate.add({ years: amount });
-    return plainDateToLocal(
-      result,
-      date.getHours(),
-      date.getMinutes(),
-      date.getSeconds(),
-      date.getMilliseconds()
-    );
-  },
-
-  diff(from: Date, to: Date): number {
-    const temporal = (globalThis as any).Temporal;
-    const fromPlain = temporal.PlainDate.from({
-      year: from.getFullYear(),
-      month: from.getMonth() + 1,
-      day: from.getDate(),
-    });
-    const toPlain = temporal.PlainDate.from({
-      year: to.getFullYear(),
-      month: to.getMonth() + 1,
-      day: to.getDate(),
-    });
-    const duration = fromPlain.until(toPlain, { largestUnit: "year" });
     return duration.years;
   },
+
+  endOf(date: Readonly<Date>): Date {
+    const endOfYear = toPlainDate(date).with({
+      day: LAST_DAY_OF_DECEMBER,
+      month: DECEMBER,
+    });
+    return plainDateToLocal(endOfYear, END_OF_DAY);
+  },
+
+  startOf(date: Readonly<Date>): Date {
+    return new Date(
+      date.getFullYear(),
+      JANUARY,
+      FIRST_DAY,
+      START_HOUR,
+      START_MINUTE,
+      START_SECOND,
+      START_MS
+    );
+  },
 };
+
+export { yearHandler };

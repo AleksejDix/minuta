@@ -1,114 +1,184 @@
-import type { UnitHandler } from "../../types";
 import {
-  startOfYear,
-  endOfYear,
-  startOfQuarter,
-  endOfQuarter,
-  startOfMonth,
-  endOfMonth,
-  startOfDay,
-  endOfDay,
-  startOfHour,
-  endOfHour,
-  startOfMinute,
-  endOfMinute,
-  startOfSecond,
-  endOfSecond,
   add,
-  differenceInYears,
-  differenceInQuarters,
-  differenceInMonths,
   differenceInDays,
+  differenceInMonths,
+  differenceInQuarters,
+  differenceInYears,
+  endOfDay,
+  endOfHour,
+  endOfMinute,
+  endOfMonth,
+  endOfQuarter,
+  endOfSecond,
+  endOfYear,
+  startOfDay,
+  startOfHour,
+  startOfMinute,
+  startOfMonth,
+  startOfQuarter,
+  startOfSecond,
+  startOfYear,
 } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import type { Duration } from "date-fns";
+import type { UnitSpec } from "#src/types";
 
-function handler(
-  timezone: string,
-  startOfFn: (d: Date) => Date,
-  endOfFn: (d: Date) => Date,
-  addKey: string,
-  diffFn: (a: Date, b: Date) => number
-): UnitHandler {
+const MONTHS_PER_QUARTER = 3;
+
+type DateTransform = (date: Readonly<Date>) => Date;
+
+type HandlerParts = Readonly<{
+  timezone: string;
+  startOfFn: DateTransform;
+  endOfFn: DateTransform;
+  addKey: keyof Duration;
+  diffFn: (later: Readonly<Date>, earlier: Readonly<Date>) => number;
+}>;
+
+type SubDayHandlerParts = Readonly<{
+  timezone: string;
+  startOfFn: DateTransform;
+  endOfFn: DateTransform;
+  unitMs: number;
+}>;
+
+function handler(parts: HandlerParts): UnitSpec {
+  const { timezone } = parts;
   return {
-    startOf: (date) =>
-      fromZonedTime(startOfFn(toZonedTime(date, timezone)), timezone),
-    endOf: (date) =>
-      fromZonedTime(endOfFn(toZonedTime(date, timezone)), timezone),
-    add: (date, amount) =>
+    add: (date: Readonly<Date>, amount: number): Date =>
       fromZonedTime(
-        add(toZonedTime(date, timezone), { [addKey]: amount }),
+        add(toZonedTime(date, timezone), { [parts.addKey]: amount }),
         timezone
       ),
-    diff: (from, to) =>
-      diffFn(toZonedTime(to, timezone), toZonedTime(from, timezone)),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      parts.diffFn(toZonedTime(to, timezone), toZonedTime(from, timezone)),
+    endOf: (date: Readonly<Date>): Date =>
+      fromZonedTime(parts.endOfFn(toZonedTime(date, timezone)), timezone),
+    startOf: (date: Readonly<Date>): Date =>
+      fromZonedTime(parts.startOfFn(toZonedTime(date, timezone)), timezone),
   };
 }
 
-export function createYearHandler(tz: string) {
-  return handler(tz, startOfYear, endOfYear, "years", differenceInYears);
+function createYearHandler(tz: string): UnitSpec {
+  return handler({
+    addKey: "years",
+    diffFn: differenceInYears,
+    endOfFn: endOfYear,
+    startOfFn: startOfYear,
+    timezone: tz,
+  });
 }
-export function createQuarterHandler(tz: string): UnitHandler {
+function createQuarterHandler(tz: string): UnitSpec {
   return {
-    startOf: (date) => fromZonedTime(startOfQuarter(toZonedTime(date, tz)), tz),
-    endOf: (date) => fromZonedTime(endOfQuarter(toZonedTime(date, tz)), tz),
-    add: (date, amount) =>
-      fromZonedTime(add(toZonedTime(date, tz), { months: amount * 3 }), tz),
-    diff: (from, to) =>
+    add: (date: Readonly<Date>, amount: number): Date =>
+      fromZonedTime(
+        add(toZonedTime(date, tz), { months: amount * MONTHS_PER_QUARTER }),
+        tz
+      ),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
       differenceInQuarters(toZonedTime(to, tz), toZonedTime(from, tz)),
+    endOf: (date: Readonly<Date>): Date =>
+      fromZonedTime(endOfQuarter(toZonedTime(date, tz)), tz),
+    startOf: (date: Readonly<Date>): Date =>
+      fromZonedTime(startOfQuarter(toZonedTime(date, tz)), tz),
   };
 }
-export function createMonthHandler(tz: string) {
-  return handler(tz, startOfMonth, endOfMonth, "months", differenceInMonths);
+function createMonthHandler(tz: string): UnitSpec {
+  return handler({
+    addKey: "months",
+    diffFn: differenceInMonths,
+    endOfFn: endOfMonth,
+    startOfFn: startOfMonth,
+    timezone: tz,
+  });
 }
-export function createDayHandler(tz: string) {
-  return handler(tz, startOfDay, endOfDay, "days", differenceInDays);
+function createDayHandler(tz: string): UnitSpec {
+  return handler({
+    addKey: "days",
+    diffFn: differenceInDays,
+    endOfFn: endOfDay,
+    startOfFn: startOfDay,
+    timezone: tz,
+  });
 }
-// Sub-day units have fixed duration, so add/diff use UTC arithmetic.
-// The toZonedTime/fromZonedTime round-trip is system-TZ-dependent for
-// non-existent/ambiguous local times (DST transitions), but UTC arithmetic
-// is always correct because hours/minutes/seconds are absolute units.
+/*
+ * Sub-day units have fixed duration, so add/diff use UTC arithmetic.
+ * The toZonedTime/fromZonedTime round-trip is system-TZ-dependent for
+ * non-existent/ambiguous local times (DST transitions), but UTC arithmetic
+ * is always correct because hours/minutes/seconds are absolute units.
+ */
 
 const HOUR_MS = 3_600_000;
 const MINUTE_MS = 60_000;
-const SECOND_MS = 1_000;
+const SECOND_MS = 1000;
 
-function subDayHandler(
-  timezone: string,
-  startOfFn: (d: Date) => Date,
-  endOfFn: (d: Date) => Date,
-  unitMs: number
-): UnitHandler {
+function subDayHandler(parts: SubDayHandlerParts): UnitSpec {
+  const { timezone, unitMs } = parts;
   return {
-    startOf: (date) => {
+    add: (date: Readonly<Date>, amount: number): Date =>
+      new Date(date.getTime() + amount * unitMs),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      Math.trunc((to.getTime() - from.getTime()) / unitMs),
+    endOf: (date: Readonly<Date>): Date => {
       const zoned = toZonedTime(date, timezone);
-      const floored = startOfFn(zoned);
-      // If already at a boundary, preserve the original UTC instant.
-      // The fromZonedTime round-trip can shift ambiguous times (fall back)
-      // to the wrong occurrence.
-      if (floored.getTime() === zoned.getTime()) return date;
-      return fromZonedTime(floored, timezone);
-    },
-    endOf: (date) => {
-      const zoned = toZonedTime(date, timezone);
-      const ceiled = endOfFn(zoned);
+      const ceiled = parts.endOfFn(zoned);
       const result = fromZonedTime(ceiled, timezone);
-      // If the result is before the input, the round-trip shifted to
-      // an earlier occurrence. Compensate by adding the unit duration.
-      if (result.getTime() < date.getTime())
+      /*
+       * If the result is before the input, the round-trip shifted to
+       * an earlier occurrence. Compensate by adding the unit duration.
+       */
+      if (result.getTime() < date.getTime()) {
         return new Date(result.getTime() + unitMs);
+      }
       return result;
     },
-    add: (date, amount) => new Date(date.getTime() + amount * unitMs),
-    diff: (from, to) => Math.trunc((to.getTime() - from.getTime()) / unitMs),
+    startOf: (date: Readonly<Date>): Date => {
+      const zoned = toZonedTime(date, timezone);
+      const floored = parts.startOfFn(zoned);
+      /*
+       * If already at a boundary, preserve the original UTC instant.
+       * The fromZonedTime round-trip can shift ambiguous times (fall back)
+       * to the wrong occurrence.
+       */
+      if (floored.getTime() === zoned.getTime()) {
+        return date;
+      }
+      return fromZonedTime(floored, timezone);
+    },
   };
 }
 
-export function createHourHandler(tz: string) {
-  return subDayHandler(tz, startOfHour, endOfHour, HOUR_MS);
+function createHourHandler(tz: string): UnitSpec {
+  return subDayHandler({
+    endOfFn: endOfHour,
+    startOfFn: startOfHour,
+    timezone: tz,
+    unitMs: HOUR_MS,
+  });
 }
-export function createMinuteHandler(tz: string) {
-  return subDayHandler(tz, startOfMinute, endOfMinute, MINUTE_MS);
+function createMinuteHandler(tz: string): UnitSpec {
+  return subDayHandler({
+    endOfFn: endOfMinute,
+    startOfFn: startOfMinute,
+    timezone: tz,
+    unitMs: MINUTE_MS,
+  });
 }
-export function createSecondHandler(tz: string) {
-  return subDayHandler(tz, startOfSecond, endOfSecond, SECOND_MS);
+function createSecondHandler(tz: string): UnitSpec {
+  return subDayHandler({
+    endOfFn: endOfSecond,
+    startOfFn: startOfSecond,
+    timezone: tz,
+    unitMs: SECOND_MS,
+  });
 }
+
+export {
+  createDayHandler,
+  createHourHandler,
+  createMinuteHandler,
+  createMonthHandler,
+  createQuarterHandler,
+  createSecondHandler,
+  createYearHandler,
+};

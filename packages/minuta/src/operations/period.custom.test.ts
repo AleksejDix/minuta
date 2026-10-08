@@ -1,70 +1,92 @@
-import { describe, it, expect } from "vitest";
-import { derivePeriod, createPeriod } from "./period";
-import { createNativeAdapter } from "../adapters/native";
+import { describe, expect, it } from "vitest";
+import { periodWith, range } from "./period";
+import { nativeUnits } from "#src/adapters/native/index";
 
-describe("derivePeriod", () => {
-  const adapter = createNativeAdapter();
+const JANUARY = 0;
+const FEBRUARY = 1;
+const FIRST_DAY = 1;
+const NINE_AM = 9;
+const FIVE_PM = 17;
+const YEAR_2023 = 2023;
+const YEAR_2024 = 2024;
 
-  it("should create a month period", () => {
-    const date = new Date(2024, 0, 15);
-    const monthPeriod = derivePeriod(adapter, date, "month");
-    expect(monthPeriod.type).toBe("month");
-    expect(monthPeriod.start.getMonth()).toBe(0);
-    expect(monthPeriod.start.getDate()).toBe(1);
+const units = nativeUnits();
+
+describe("periodWith()", () => {
+  it("should create a month period", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const date = new Date("2024-01-15T00:00:00");
+    const monthPeriod = periodWith(units, date, "month");
+    expect(monthPeriod.unit).toBe("month");
+    expect(monthPeriod.start.getMonth()).toBe(JANUARY);
+    expect(monthPeriod.start.getDate()).toBe(FIRST_DAY);
   });
 
-  // Non-adapter units ("custom", "stableMonth", "stableYear") are prevented
-  // by the type system — derivePeriod only accepts AdapterUnit.
+  /*
+   * Non-unit values such as "custom" are prevented
+   * by the type system — periodWith only accepts Unit.
+   */
 });
 
-describe("createPeriod", () => {
-  it("should create custom period with correct properties", () => {
-    const start = new Date(2024, 0, 1);
-    const end = new Date(2024, 0, 14, 23, 59, 59, 999);
+describe("range() boundaries", () => {
+  it(
+    "should create custom period with correct properties",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const start = new Date("2024-01-01T00:00:00");
+      const end = new Date("2024-01-14T23:59:59.999");
 
-    const customPeriod = createPeriod(start, end);
+      const customPeriod = range(start, end);
 
-    expect(customPeriod.type).toBe("custom");
-    expect(customPeriod.start).toEqual(start);
-    expect(customPeriod.end).toEqual(end);
+      expect(customPeriod.unit).toBe("custom");
+      expect(customPeriod.start).toStrictEqual(start);
+      expect(customPeriod.end).toStrictEqual(end);
+    }
+  );
+
+  it("should handle same start and end dates", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const date = new Date("2024-01-15T12:00:00");
+
+    const customPeriod = range(date, date);
+
+    expect(customPeriod.start).toStrictEqual(date);
+    expect(customPeriod.end).toStrictEqual(date);
   });
 
-  it("should handle same start and end dates", () => {
-    const date = new Date(2024, 0, 15, 12, 0, 0);
+  it("should handle time components", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const start = new Date("2024-01-01T09:00:00");
+    const end = new Date("2024-01-01T17:00:00");
 
-    const customPeriod = createPeriod(date, date);
+    const customPeriod = range(start, end);
 
-    expect(customPeriod.start).toEqual(date);
-    expect(customPeriod.end).toEqual(date);
+    expect(customPeriod.start.getHours()).toBe(NINE_AM);
+    expect(customPeriod.end.getHours()).toBe(FIVE_PM);
+  });
+});
+
+describe("range() spanning calendar units", () => {
+  it("should handle cross-month periods", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const start = new Date("2024-01-15T00:00:00");
+    const end = new Date("2024-02-15T00:00:00");
+
+    const customPeriod = range(start, end);
+
+    expect(customPeriod.start.getMonth()).toBe(JANUARY);
+    expect(customPeriod.end.getMonth()).toBe(FEBRUARY);
   });
 
-  it("should handle time components", () => {
-    const start = new Date(2024, 0, 1, 9, 0, 0);
-    const end = new Date(2024, 0, 1, 17, 0, 0);
+  it("should handle cross-year periods", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const start = new Date("2023-12-15T00:00:00");
+    const end = new Date("2024-01-15T00:00:00");
 
-    const customPeriod = createPeriod(start, end);
+    const customPeriod = range(start, end);
 
-    expect(customPeriod.start.getHours()).toBe(9);
-    expect(customPeriod.end.getHours()).toBe(17);
-  });
-
-  it("should handle cross-month periods", () => {
-    const start = new Date(2024, 0, 15);
-    const end = new Date(2024, 1, 15);
-
-    const customPeriod = createPeriod(start, end);
-
-    expect(customPeriod.start.getMonth()).toBe(0);
-    expect(customPeriod.end.getMonth()).toBe(1);
-  });
-
-  it("should handle cross-year periods", () => {
-    const start = new Date(2023, 11, 15);
-    const end = new Date(2024, 0, 15);
-
-    const customPeriod = createPeriod(start, end);
-
-    expect(customPeriod.start.getFullYear()).toBe(2023);
-    expect(customPeriod.end.getFullYear()).toBe(2024);
+    expect(customPeriod.start.getFullYear()).toBe(YEAR_2023);
+    expect(customPeriod.end.getFullYear()).toBe(YEAR_2024);
   });
 });

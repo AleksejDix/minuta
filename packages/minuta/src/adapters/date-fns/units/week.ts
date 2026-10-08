@@ -1,24 +1,27 @@
-import type { UnitHandler } from "../../../types";
-import { startOfWeek, endOfWeek, add, differenceInWeeks } from "date-fns";
+import { add, differenceInWeeks, endOfWeek, startOfWeek } from "date-fns";
+import type { Day } from "date-fns";
+import type { UnitSpec } from "#src/types";
 
-export function createWeekHandler(
-  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1
-): UnitHandler {
+const MONDAY = 1;
+
+function createWeekHandler(weekStartsOn: Day = MONDAY): UnitSpec {
   return {
-    startOf(date: Date): Date {
-      return startOfWeek(date, { weekStartsOn });
-    },
-
-    endOf(date: Date): Date {
-      return endOfWeek(date, { weekStartsOn });
-    },
-
-    add(date: Date, amount: number): Date {
+    add(date: Readonly<Date>, amount: number): Date {
       return add(date, { weeks: amount });
     },
 
-    diff(from: Date, to: Date): number {
+    diff(from: Readonly<Date>, to: Readonly<Date>): number {
       return differenceInWeeks(to, from);
+    },
+
+    endOf(date: Readonly<Date>): Date {
+      return endOfWeek(date, { weekStartsOn });
+    },
+
+    startOf(date: Readonly<Date>): Date {
+      return startOfWeek(date, { weekStartsOn });
     },
   };
 }
+
+export { createWeekHandler };

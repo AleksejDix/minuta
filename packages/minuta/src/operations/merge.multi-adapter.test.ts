@@ -1,123 +1,191 @@
-import { describe, it, expect } from "vitest";
+import type { Period, Unit } from "#src/types";
+import { describe, expect, it } from "vitest";
+import { divideWith } from "./divide";
+import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
 import { merge } from "./merge";
-import { divide } from "./divide";
-import { derivePeriod as period } from "./period";
-import { withAllAdapters } from "../test/shared-adapter-tests";
+import { periodWith as period } from "./period";
 
-withAllAdapters("merge", (adapter) => {
-  describe("period merging", () => {
-    it("should merge days into a week", () => {
-      const week = period(adapter, new Date(2024, 0, 15), "week");
-      const days = divide(adapter, week, "day");
+const YEAR_2024 = 2024;
+const JANUARY = 0;
+const DECEMBER = 11;
+const DAY_15 = 15;
+const MIDNIGHT = 0;
+const LAST_HOUR = 23;
+const NOON = 12;
+const LAST_MORNING_HOUR = 11;
+const TWO_PM = 14;
+const ZERO = 0;
+const HALF_HOUR_MINUTE = 30;
+const LAST_MINUTE = 59;
+const LAST_SECOND = 59;
 
-      const mergedWeek = merge(days, "week");
-      expect(mergedWeek.type).toBe("week");
+const adapters = getUnitsTestCases();
+
+/**
+ * Merge periods that are known to be non-empty.
+ *
+ * @param periods - Periods to merge, at least one
+ * @param targetUnit - Unit of the merged period
+ * @returns The merged period
+ */
+function mergeOrFail(periods: readonly Period[], targetUnit?: Unit): Period {
+  const merged = merge(periods, targetUnit);
+  if (merged === undefined) {
+    throw new Error("merge() returned undefined for non-empty input");
+  }
+  return merged;
+}
+
+describe.each(adapters)(
+  "merge() days, months and hours with %s adapter",
+  (_name, units) => {
+    it("should merge days into a week", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const week = period(units, new Date("2024-01-15T00:00:00"), "week");
+      const days = divideWith(units, week, "day");
+
+      const mergedWeek = mergeOrFail(days, "week");
+      expect(mergedWeek.unit).toBe("week");
       expect(mergedWeek.start.getTime()).toBe(week.start.getTime());
       expect(mergedWeek.end.getTime()).toBe(week.end.getTime());
     });
 
-    it("should merge months into a year", () => {
-      const year = period(adapter, new Date(2024, 5, 15), "year");
-      const months = divide(adapter, year, "month");
+    it("should merge months into a year", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const year = period(units, new Date("2024-06-15T00:00:00"), "year");
+      const months = divideWith(units, year, "month");
 
-      const mergedYear = merge(months, "year");
-      expect(mergedYear.type).toBe("year");
-      expect(mergedYear.start.getFullYear()).toBe(2024);
-      expect(mergedYear.start.getMonth()).toBe(0);
-      expect(mergedYear.end.getMonth()).toBe(11);
+      const mergedYear = mergeOrFail(months, "year");
+      expect(mergedYear.unit).toBe("year");
+      expect(mergedYear.start.getFullYear()).toBe(YEAR_2024);
+      expect(mergedYear.start.getMonth()).toBe(JANUARY);
+      expect(mergedYear.end.getMonth()).toBe(DECEMBER);
     });
 
-    it("should merge hours into a day", () => {
-      const day = period(adapter, new Date(2024, 0, 15), "day");
-      const hours = divide(adapter, day, "hour");
+    it("should merge hours into a day", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const day = period(units, new Date("2024-01-15T00:00:00"), "day");
+      const hours = divideWith(units, day, "hour");
 
-      const mergedDay = merge(hours, "day");
-      expect(mergedDay.type).toBe("day");
-      expect(mergedDay.start.getDate()).toBe(15);
-      expect(mergedDay.start.getHours()).toBe(0);
-      expect(mergedDay.end.getHours()).toBe(23);
+      const mergedDay = mergeOrFail(hours, "day");
+      expect(mergedDay.unit).toBe("day");
+      expect(mergedDay.start.getDate()).toBe(DAY_15);
+      expect(mergedDay.start.getHours()).toBe(MIDNIGHT);
+      expect(mergedDay.end.getHours()).toBe(LAST_HOUR);
     });
+  }
+);
 
-    it("should merge partial periods", () => {
-      const day = period(adapter, new Date(2024, 0, 15), "day");
-      const hours = divide(adapter, day, "hour");
+describe.each(adapters)(
+  "merge() partial and non-contiguous periods with %s adapter",
+  (_name, units) => {
+    it("should merge partial periods", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const day = period(units, new Date("2024-01-15T00:00:00"), "day");
+      const hours = divideWith(units, day, "hour");
 
       // Take only morning hours (0-11)
-      const morningHours = hours.slice(0, 12);
-      const mergedMorning = merge(morningHours, "day");
+      const morningHours = hours.slice(MIDNIGHT, NOON);
+      const mergedMorning = mergeOrFail(morningHours, "day");
 
-      expect(mergedMorning.type).toBe("day");
-      expect(mergedMorning.start.getHours()).toBe(0);
-      expect(mergedMorning.end.getHours()).toBe(11);
-      expect(mergedMorning.end.getMinutes()).toBe(59);
+      expect(mergedMorning.unit).toBe("day");
+      expect(mergedMorning.start.getHours()).toBe(MIDNIGHT);
+      expect(mergedMorning.end.getHours()).toBe(LAST_MORNING_HOUR);
+      expect(mergedMorning.end.getMinutes()).toBe(LAST_MINUTE);
     });
 
-    it("should handle non-contiguous periods", () => {
+    it("should handle non-contiguous periods", { timeout: 5000 }, () => {
+      expect.hasAssertions();
       // Create periods for Monday, Wednesday, Friday
-      const monday = period(adapter, new Date(2024, 0, 8), "day");
-      const wednesday = period(adapter, new Date(2024, 0, 10), "day");
-      const friday = period(adapter, new Date(2024, 0, 12), "day");
+      const monday = period(units, new Date("2024-01-08T00:00:00"), "day");
+      const wednesday = period(units, new Date("2024-01-10T00:00:00"), "day");
+      const friday = period(units, new Date("2024-01-12T00:00:00"), "day");
 
-      const merged = merge([monday, wednesday, friday], "week");
+      const merged = mergeOrFail([monday, wednesday, friday], "week");
 
-      expect(merged.type).toBe("week");
+      expect(merged.unit).toBe("week");
       // Should span from Monday to Friday's week
       expect(merged.start.getTime()).toBeLessThanOrEqual(
         monday.start.getTime()
       );
       expect(merged.end.getTime()).toBeGreaterThanOrEqual(friday.end.getTime());
     });
+  }
+);
 
-    it("should merge minutes into an hour", () => {
-      const hour = period(adapter, new Date(2024, 0, 15, 14), "hour");
-      const minutes = divide(adapter, hour, "minute");
+describe.each(adapters)(
+  "merge() minutes, seconds and trivial input with %s adapter",
+  (_name, units) => {
+    it("should merge minutes into an hour", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const hour = period(units, new Date("2024-01-15T14:00:00"), "hour");
+      const minutes = divideWith(units, hour, "minute");
 
-      const mergedHour = merge(minutes, "hour");
-      expect(mergedHour.type).toBe("hour");
-      expect(mergedHour.start.getHours()).toBe(14);
-      expect(mergedHour.start.getMinutes()).toBe(0);
-      expect(mergedHour.end.getMinutes()).toBe(59);
+      const mergedHour = mergeOrFail(minutes, "hour");
+      expect(mergedHour.unit).toBe("hour");
+      expect(mergedHour.start.getHours()).toBe(TWO_PM);
+      expect(mergedHour.start.getMinutes()).toBe(ZERO);
+      expect(mergedHour.end.getMinutes()).toBe(LAST_MINUTE);
     });
 
-    it("should merge seconds into a minute", () => {
-      const minute = period(adapter, new Date(2024, 0, 15, 14, 30), "minute");
-      const seconds = divide(adapter, minute, "second");
+    it("should merge seconds into a minute", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const minute = period(units, new Date("2024-01-15T14:30:00"), "minute");
+      const seconds = divideWith(units, minute, "second");
 
-      const mergedMinute = merge(seconds, "minute");
-      expect(mergedMinute.type).toBe("minute");
-      expect(mergedMinute.start.getMinutes()).toBe(30);
-      expect(mergedMinute.start.getSeconds()).toBe(0);
-      expect(mergedMinute.end.getSeconds()).toBe(59);
+      const mergedMinute = mergeOrFail(seconds, "minute");
+      expect(mergedMinute.unit).toBe("minute");
+      expect(mergedMinute.start.getMinutes()).toBe(HALF_HOUR_MINUTE);
+      expect(mergedMinute.start.getSeconds()).toBe(ZERO);
+      expect(mergedMinute.end.getSeconds()).toBe(LAST_SECOND);
     });
 
-    it("should handle single period merge", () => {
-      const day = period(adapter, new Date(2024, 0, 15), "day");
+    it("should handle single period merge", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const day = period(units, new Date("2024-01-15T00:00:00"), "day");
 
-      const mergedWeek = merge([day], "week");
-      expect(mergedWeek.type).toBe("week");
+      const mergedWeek = mergeOrFail([day], "week");
+      expect(mergedWeek.unit).toBe("week");
       expect(mergedWeek.start.getTime()).toBe(day.start.getTime());
       expect(mergedWeek.end.getTime()).toBe(day.end.getTime());
     });
 
-    it("should throw on empty array", () => {
-      expect(() => merge([], "day")).toThrow(
-        "merge() requires at least one period"
-      );
+    it("should return undefined for an empty array", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      expect(merge([], "day")).toBeUndefined();
     });
+  }
+);
 
-    it("should merge across boundaries", () => {
+describe.each(adapters)(
+  "merge() across boundaries with %s adapter",
+  (_name, units) => {
+    it("should merge across boundaries", { timeout: 5000 }, () => {
+      expect.hasAssertions();
       // Create days spanning month boundary
-      const lastDayOfJan = period(adapter, new Date(2024, 0, 31), "day");
-      const firstDayOfFeb = period(adapter, new Date(2024, 1, 1), "day");
-      const secondDayOfFeb = period(adapter, new Date(2024, 1, 2), "day");
+      const lastDayOfJan = period(
+        units,
+        new Date("2024-01-31T00:00:00"),
+        "day"
+      );
+      const firstDayOfFeb = period(
+        units,
+        new Date("2024-02-01T00:00:00"),
+        "day"
+      );
+      const secondDayOfFeb = period(
+        units,
+        new Date("2024-02-02T00:00:00"),
+        "day"
+      );
 
-      const merged = merge(
+      const merged = mergeOrFail(
         [lastDayOfJan, firstDayOfFeb, secondDayOfFeb],
         "month"
       );
 
       // Should create a month period that contains all days
-      expect(merged.type).toBe("month");
+      expect(merged.unit).toBe("month");
       // The exact month depends on the merge algorithm
       expect(merged.start.getTime()).toBeLessThanOrEqual(
         lastDayOfJan.start.getTime()
@@ -126,56 +194,100 @@ withAllAdapters("merge", (adapter) => {
         secondDayOfFeb.end.getTime()
       );
     });
+  }
+);
 
-    it("should not detect week from 7 non-consecutive days", () => {
-      // 6 consecutive days + 1 day from a different week
-      const days = [
-        period(adapter, new Date(2024, 0, 8), "day"), // Mon
-        period(adapter, new Date(2024, 0, 9), "day"), // Tue
-        period(adapter, new Date(2024, 0, 10), "day"), // Wed
-        period(adapter, new Date(2024, 0, 11), "day"), // Thu
-        period(adapter, new Date(2024, 0, 12), "day"), // Fri
-        period(adapter, new Date(2024, 0, 13), "day"), // Sat
-        period(adapter, new Date(2024, 0, 21), "day"), // Next Sun (gap!)
-      ];
+describe.each(adapters)(
+  "merge() without auto-detection with %s adapter",
+  (_name, units) => {
+    it(
+      "should not detect week from 7 non-consecutive days",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        // 6 consecutive days + 1 day from a different week
+        const days = [
+          // Mon
+          period(units, new Date("2024-01-08T00:00:00"), "day"),
+          // Tue
+          period(units, new Date("2024-01-09T00:00:00"), "day"),
+          // Wed
+          period(units, new Date("2024-01-10T00:00:00"), "day"),
+          // Thu
+          period(units, new Date("2024-01-11T00:00:00"), "day"),
+          // Fri
+          period(units, new Date("2024-01-12T00:00:00"), "day"),
+          // Sat
+          period(units, new Date("2024-01-13T00:00:00"), "day"),
+          // Next Sun (gap!)
+          period(units, new Date("2024-01-21T00:00:00"), "day"),
+        ];
 
-      const merged = merge(days);
-      expect(merged.type).toBe("custom");
-    });
+        const merged = mergeOrFail(days);
+        expect(merged.unit).toBe("custom");
+      }
+    );
 
-    it("should not detect quarter from 3 months in different years", () => {
-      const months = [
-        period(adapter, new Date(2023, 0, 15), "month"), // Jan 2023
-        period(adapter, new Date(2024, 1, 15), "month"), // Feb 2024
-        period(adapter, new Date(2025, 2, 15), "month"), // Mar 2025
-      ];
+    it(
+      "should not detect quarter from 3 months in different years",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        const months = [
+          // Jan 2023
+          period(units, new Date("2023-01-15T00:00:00"), "month"),
+          // Feb 2024
+          period(units, new Date("2024-02-15T00:00:00"), "month"),
+          // Mar 2025
+          period(units, new Date("2025-03-15T00:00:00"), "month"),
+        ];
 
-      const merged = merge(months);
-      expect(merged.type).toBe("custom");
-    });
+        const merged = mergeOrFail(months);
+        expect(merged.unit).toBe("custom");
+      }
+    );
+  }
+);
 
-    it("should not auto-promote 3 consecutive months to quarter", () => {
-      const months = [
-        period(adapter, new Date(2024, 0, 15), "month"), // Jan 2024
-        period(adapter, new Date(2024, 1, 15), "month"), // Feb 2024
-        period(adapter, new Date(2024, 2, 15), "month"), // Mar 2024
-      ];
+describe.each(adapters)(
+  "merge() type and reference date with %s adapter",
+  (_name, units) => {
+    it(
+      "should not auto-promote 3 consecutive months to quarter",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        const months = [
+          // Jan 2024
+          period(units, new Date("2024-01-15T00:00:00"), "month"),
+          // Feb 2024
+          period(units, new Date("2024-02-15T00:00:00"), "month"),
+          // Mar 2024
+          period(units, new Date("2024-03-15T00:00:00"), "month"),
+        ];
 
-      const merged = merge(months);
-      expect(merged.type).toBe("custom");
-    });
+        const merged = mergeOrFail(months);
+        expect(merged.unit).toBe("custom");
+      }
+    );
 
-    it("should preserve reference date from first period", () => {
-      const periods = [
-        period(adapter, new Date(2024, 0, 10), "day"),
-        period(adapter, new Date(2024, 0, 11), "day"),
-        period(adapter, new Date(2024, 0, 12), "day"),
-      ];
+    it(
+      "should preserve reference date from first period",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        const first = period(units, new Date("2024-01-10T00:00:00"), "day");
+        const periods = [
+          first,
+          period(units, new Date("2024-01-11T00:00:00"), "day"),
+          period(units, new Date("2024-01-12T00:00:00"), "day"),
+        ];
 
-      const merged = merge(periods, "week");
+        const merged = mergeOrFail(periods, "week");
 
-      // Reference date should come from the first period
-      expect(merged.start.getTime()).toBe(periods[0].start.getTime());
-    });
-  });
-});
+        // Reference date should come from the first period
+        expect(merged.start.getTime()).toBe(first.start.getTime());
+      }
+    );
+  }
+);

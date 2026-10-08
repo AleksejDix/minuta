@@ -1,29 +1,53 @@
+import type { AllUnits } from "#src/types";
+import type { ComplianceOptions } from "./compliance/context";
+import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
+import { dateFnsUnits } from "#src/adapters/date-fns/index";
 import { describe } from "vitest";
+import { luxonUnits } from "#src/adapters/luxon/index";
+import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 import { testAdapterCompliance } from "./adapter-compliance";
-import { createNativeAdapter } from "../adapters/native";
-import { createDateFnsAdapter } from "../adapters/date-fns";
-import { createDateFnsTzAdapter } from "../adapters/date-fns-tz";
-import { createLuxonAdapter } from "../adapters/luxon";
-import { createMinutaAdapter } from "../adapters/temporal";
+
+type ComplianceCase = Readonly<{
+  name: string;
+  units: AllUnits;
+  options: ComplianceOptions | undefined;
+}>;
+
+const complianceCases: readonly ComplianceCase[] = [
+  {
+    name: "Native",
+    options: undefined,
+    units: nativeUnits({ weekStartsOn: 1 }),
+  },
+  {
+    name: "date-fns",
+    options: undefined,
+    units: dateFnsUnits({ weekStartsOn: 1 }),
+  },
+  {
+    name: "date-fns-tz",
+    options: { timezone: "UTC" },
+    units: dateFnsTzUnits({ timezone: "UTC", weekStartsOn: 1 }),
+  },
+  {
+    name: "Luxon",
+    options: undefined,
+    units: luxonUnits({ weekStartsOn: 1 }),
+  },
+  // Temporal adapter - now includes polyfill automatically
+  {
+    name: "Temporal",
+    options: undefined,
+    units: temporalUnits({ weekStartsOn: 1 }),
+  },
+];
 
 // Run compliance tests for all adapters
-describe("Adapter Compliance Tests", () => {
-  // Native adapter
-  testAdapterCompliance("Native", createNativeAdapter({ weekStartsOn: 1 }));
-
-  // date-fns adapter
-  testAdapterCompliance("date-fns", createDateFnsAdapter({ weekStartsOn: 1 }));
-
-  // date-fns-tz adapter
-  testAdapterCompliance(
-    "date-fns-tz",
-    createDateFnsTzAdapter({ timezone: "UTC", weekStartsOn: 1 }),
-    { timezone: "UTC" }
-  );
-
-  // Luxon adapter
-  testAdapterCompliance("Luxon", createLuxonAdapter({ weekStartsOn: 1 }));
-
-  // Temporal adapter - now includes polyfill automatically
-  testAdapterCompliance("Temporal", createMinutaAdapter({ weekStartsOn: 1 }));
-});
+describe.each(complianceCases)(
+  "adapter compliance tests",
+  ({ name, options, units }: ComplianceCase) => {
+    // oxlint-disable-next-line vitest/require-hook -- testAdapterCompliance registers suites, which must happen synchronously at collection time
+    testAdapterCompliance(name, units, options);
+  }
+);

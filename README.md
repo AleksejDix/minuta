@@ -28,9 +28,13 @@ const hours = divide(adapter, days[0], "hour"); // 24 periods
 | `minuta/temporal`    | TC39 Temporal adapter                |
 | `minuta/calendar`    | Calendar grid utilities              |
 | `minuta/helpers`     | UI helpers (isWeekend, isToday, ...) |
+| `minuta/format`      | Locale-aware period labels           |
 | `minuta-vue`         | Vue 3 integration                    |
 | `minuta-react`       | React 18+ integration                |
-| `minuta-svelte`      | Svelte 4/5 integration               |
+| `datefield`          | Headless segmented date input        |
+| `text-buffer`        | Immutable text + selection model     |
+| `input-state`        | Masks + insert/overwrite modes       |
+| `input-dom`          | Vanilla DOM binding for inputs       |
 
 ## Documentation
 

@@ -1,3 +1,3 @@
 // Entry point for Moment.js adapter
-// Allows: import { createMomentAdapter } from 'minuta/moment'
-export { createMomentAdapter } from "./adapters/moment";
+// Allows: import { momentUnits } from 'minuta/moment'
+export { momentUnits } from "./adapters/moment";

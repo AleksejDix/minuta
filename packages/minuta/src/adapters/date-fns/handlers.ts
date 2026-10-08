@@ -1,82 +1,101 @@
-import type { UnitHandler } from "../../types";
 import {
-  startOfYear,
-  endOfYear,
-  startOfQuarter,
-  endOfQuarter,
-  startOfMonth,
-  endOfMonth,
-  startOfDay,
-  endOfDay,
-  startOfHour,
-  endOfHour,
-  startOfMinute,
-  endOfMinute,
-  startOfSecond,
-  endOfSecond,
   add,
-  differenceInYears,
-  differenceInQuarters,
-  differenceInMonths,
   differenceInDays,
   differenceInHours,
   differenceInMinutes,
+  differenceInMonths,
+  differenceInQuarters,
   differenceInSeconds,
+  differenceInYears,
+  endOfDay,
+  endOfHour,
+  endOfMinute,
+  endOfMonth,
+  endOfQuarter,
+  endOfSecond,
+  endOfYear,
+  startOfDay,
+  startOfHour,
+  startOfMinute,
+  startOfMonth,
+  startOfQuarter,
+  startOfSecond,
+  startOfYear,
 } from "date-fns";
+import type { Duration } from "date-fns";
+import type { UnitSpec } from "#src/types";
 
-function handler(
-  startOf: (d: Date) => Date,
-  endOf: (d: Date) => Date,
-  addKey: string,
-  diffFn: (a: Date, b: Date) => number
-): UnitHandler {
+const MONTHS_PER_QUARTER = 3;
+
+type HandlerParts = Readonly<{
+  startOf: (date: Readonly<Date>) => Date;
+  endOf: (date: Readonly<Date>) => Date;
+  addKey: keyof Duration;
+  diffFn: (later: Readonly<Date>, earlier: Readonly<Date>) => number;
+}>;
+
+function handler(parts: HandlerParts): UnitSpec {
   return {
-    startOf: (date) => startOf(date),
-    endOf: (date) => endOf(date),
-    add: (date, amount) => add(date, { [addKey]: amount }),
-    diff: (from, to) => diffFn(to, from),
+    add: (date: Readonly<Date>, amount: number): Date =>
+      add(date, { [parts.addKey]: amount }),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      parts.diffFn(to, from),
+    endOf: (date: Readonly<Date>): Date => parts.endOf(date),
+    startOf: (date: Readonly<Date>): Date => parts.startOf(date),
   };
 }
 
-export const yearHandler = handler(
-  startOfYear,
-  endOfYear,
-  "years",
-  differenceInYears
-);
-export const quarterHandler: UnitHandler = {
-  startOf: (date) => startOfQuarter(date),
-  endOf: (date) => endOfQuarter(date),
-  add: (date, amount) => add(date, { months: amount * 3 }),
-  diff: (from, to) => differenceInQuarters(to, from),
+const yearHandler: UnitSpec = handler({
+  addKey: "years",
+  diffFn: differenceInYears,
+  endOf: endOfYear,
+  startOf: startOfYear,
+});
+const quarterHandler: UnitSpec = {
+  add: (date: Readonly<Date>, amount: number): Date =>
+    add(date, { months: amount * MONTHS_PER_QUARTER }),
+  diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+    differenceInQuarters(to, from),
+  endOf: (date: Readonly<Date>): Date => endOfQuarter(date),
+  startOf: (date: Readonly<Date>): Date => startOfQuarter(date),
 };
-export const monthHandler = handler(
-  startOfMonth,
-  endOfMonth,
-  "months",
-  differenceInMonths
-);
-export const dayHandler = handler(
-  startOfDay,
-  endOfDay,
-  "days",
-  differenceInDays
-);
-export const hourHandler = handler(
-  startOfHour,
-  endOfHour,
-  "hours",
-  differenceInHours
-);
-export const minuteHandler = handler(
-  startOfMinute,
-  endOfMinute,
-  "minutes",
-  differenceInMinutes
-);
-export const secondHandler = handler(
-  startOfSecond,
-  endOfSecond,
-  "seconds",
-  differenceInSeconds
-);
+const monthHandler: UnitSpec = handler({
+  addKey: "months",
+  diffFn: differenceInMonths,
+  endOf: endOfMonth,
+  startOf: startOfMonth,
+});
+const dayHandler: UnitSpec = handler({
+  addKey: "days",
+  diffFn: differenceInDays,
+  endOf: endOfDay,
+  startOf: startOfDay,
+});
+const hourHandler: UnitSpec = handler({
+  addKey: "hours",
+  diffFn: differenceInHours,
+  endOf: endOfHour,
+  startOf: startOfHour,
+});
+const minuteHandler: UnitSpec = handler({
+  addKey: "minutes",
+  diffFn: differenceInMinutes,
+  endOf: endOfMinute,
+  startOf: startOfMinute,
+});
+const secondHandler: UnitSpec = handler({
+  addKey: "seconds",
+  diffFn: differenceInSeconds,
+  endOf: endOfSecond,
+  startOf: startOfSecond,
+});
+
+export {
+  dayHandler,
+  hourHandler,
+  minuteHandler,
+  monthHandler,
+  quarterHandler,
+  secondHandler,
+  yearHandler,
+};

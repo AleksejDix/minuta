@@ -1,52 +1,52 @@
-import { resolve } from "node:path";
+import type { ConfigEnv, UserConfig } from "vite";
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
+import path from "node:path";
+import react from "@vitejs/plugin-react";
 
-const demoRoot = resolve(__dirname, "examples");
+const EXTERNAL = [/^minuta/u, /^react(?:\/.*)?$/u];
 
-export default defineConfig(({ command, mode }) => {
-  const isDemo = command === "serve" || mode === "demo";
+function fromRoot(file: string): string {
+  return path.resolve(import.meta.dirname, file);
+}
 
-  if (isDemo) {
-    return {
-      root: demoRoot,
-      plugins: [react()],
-      resolve: {
-        alias: {
-          "minuta-react": resolve(__dirname, "src"),
-        },
-      },
-      build: {
-        outDir: "dist",
-      },
-    };
+function fileName(_format: string, entryName: string): string {
+  if (entryName === "index") {
+    return "index.js";
   }
+  return `${entryName}/index.js`;
+}
 
-  return {
-    build: {
-      lib: {
-        entry: {
-          index: resolve(__dirname, "src/index.ts"),
-          components: resolve(__dirname, "src/components/index.ts"),
-        },
-        formats: ["es"],
-        fileName: (_format, entryName) =>
-          entryName === "index" ? "index.js" : `${entryName}/index.js`,
+const demoConfig: UserConfig = {
+  build: { outDir: "dist" },
+  plugins: [react()],
+  resolve: { alias: { "minuta-react": fromRoot("src") } },
+  root: fromRoot("examples"),
+};
+
+const libraryConfig: UserConfig = {
+  build: {
+    lib: {
+      entry: {
+        components: fromRoot("src/components/index.ts"),
+        index: fromRoot("src/index.ts"),
       },
-      rollupOptions: {
-        external: [/^minuta/, "react"],
-      },
+      fileName,
+      formats: ["es"],
     },
-    plugins: [
-      dts({
-        include: ["src/**/*.ts", "src/**/*.tsx"],
-        exclude: ["src/**/*.test.ts", "src/**/*.test.tsx"],
-      }),
-    ],
-    test: {
-      environment: "jsdom",
-      setupFiles: resolve(__dirname, "../../vitest.setup.ts"),
-    },
-  };
+    rollupOptions: { external: EXTERNAL },
+  },
+  plugins: [
+    dts({
+      exclude: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+      include: ["src/**/*.ts", "src/**/*.tsx"],
+    }),
+  ],
+};
+
+export default defineConfig(({ command, mode }: Readonly<ConfigEnv>) => {
+  if (command === "serve" || mode === "demo") {
+    return demoConfig;
+  }
+  return libraryConfig;
 });

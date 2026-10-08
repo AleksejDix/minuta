@@ -1,30 +1,29 @@
-import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
-import viteConfig from "./vite.config";
+import path from "node:path";
+import vue from "@vitejs/plugin-vue";
 
-const coreRoot = resolve(__dirname, "../minuta/src");
-const alias = {
-  minuta: resolve(coreRoot, "index.ts"),
-  "minuta/native": resolve(coreRoot, "native.ts"),
-  "minuta/types": resolve(coreRoot, "types.ts"),
-  "minuta/temporal": resolve(coreRoot, "temporal.ts"),
-  "minuta/operations": resolve(coreRoot, "operations.ts"),
-};
-const baseResolve = viteConfig.resolve ?? {};
-const baseAlias = baseResolve.alias ?? {};
+const CORE_SOURCE = path.resolve(import.meta.dirname, "../minuta/src");
 
+function core(file: string): string {
+  return path.resolve(CORE_SOURCE, file);
+}
+
+// Tests run against the core's source, not its build
 export default defineConfig({
-  ...viteConfig,
+  plugins: [vue()],
   resolve: {
-    ...baseResolve,
-    alias: {
-      ...baseAlias,
-      ...alias,
-    },
+    alias: [
+      { find: /^minuta$/u, replacement: core("index.ts") },
+      { find: /^minuta\/calendar$/u, replacement: core("calendar.ts") },
+      { find: /^minuta\/core$/u, replacement: core("core.ts") },
+      { find: /^minuta\/format$/u, replacement: core("format.ts") },
+      { find: /^minuta\/native$/u, replacement: core("native.ts") },
+    ],
   },
   test: {
-    ...viteConfig.test,
+    environment: "jsdom",
     globals: false,
     include: ["src/**/*.test.ts"],
+    setupFiles: path.resolve(import.meta.dirname, "../../vitest.setup.ts"),
   },
 });

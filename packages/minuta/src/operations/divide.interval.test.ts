@@ -1,91 +1,133 @@
-import { describe, it, expect } from "vitest";
-import { divide } from "./divide";
-import { derivePeriod as period } from "./period";
-import { createNativeAdapter } from "../adapters/native";
+import { describe, expect, it } from "vitest";
+import type { Period } from "#src/types";
+import { divideWith } from "./divide";
+import { nativeUnits } from "#src/adapters/native/index";
+import { periodWith } from "./period";
 
-const adapter = createNativeAdapter();
+const ONE_MS = 1;
+const SINGLE = 1;
+const TWO = 2;
+const THREE = 3;
+const FOUR = 4;
+const TWELVE = 12;
+const FIFTEEN = 15;
+const TWENTY = 20;
+const THIRTY = 30;
+const FORTY_EIGHT = 48;
+const MIN_BIWEEKLY = 26;
+const MAX_BIWEEKLY = 27;
 
-describe("divide with count (intervals)", () => {
-  it("divides an hour into 15-minute slots", () => {
-    const hour = period(adapter, new Date(2024, 0, 1, 10), "hour");
-    const slots = divide(adapter, hour, "minute", 15);
+const units = nativeUnits();
 
-    expect(slots).toHaveLength(4);
-    expect(slots[0].start.getMinutes()).toBe(0);
-    expect(slots[1].start.getMinutes()).toBe(15);
-    expect(slots[2].start.getMinutes()).toBe(30);
-    expect(slots[3].start.getMinutes()).toBe(45);
+function required(slot: Period | undefined): Period {
+  if (slot === undefined) {
+    throw new Error("Expected a slot");
+  }
+  return slot;
+}
+
+describe("divideWith() with minute counts", () => {
+  it("divides an hour into 15-minute slots", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const hour = periodWith(units, new Date("2024-01-01T10:00"), "hour");
+    const slots = divideWith(units, hour, "minute", { step: FIFTEEN });
+    const [first, second, third, fourth] = slots;
+
+    expect(slots).toHaveLength(FOUR);
+    expect(required(first).start).toStrictEqual(new Date("2024-01-01T10:00"));
+    expect(required(second).start).toStrictEqual(new Date("2024-01-01T10:15"));
+    expect(required(third).start).toStrictEqual(new Date("2024-01-01T10:30"));
+    expect(required(fourth).start).toStrictEqual(new Date("2024-01-01T10:45"));
   });
 
-  it("divides a day into 30-minute slots", () => {
-    const day = period(adapter, new Date(2024, 0, 1), "day");
-    const slots = divide(adapter, day, "minute", 30);
+  it("divides a day into 30-minute slots", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day = periodWith(units, new Date("2024-01-01T00:00"), "day");
+    const slots = divideWith(units, day, "minute", { step: THIRTY });
 
-    expect(slots).toHaveLength(48);
+    expect(slots).toHaveLength(FORTY_EIGHT);
   });
 
-  it("divides a day into 2-hour slots", () => {
-    const day = period(adapter, new Date(2024, 0, 1), "day");
-    const slots = divide(adapter, day, "hour", 2);
+  it("divides an hour into 20-minute slots (uneven)", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const hour = periodWith(units, new Date("2024-01-01T10:00"), "hour");
+    const slots = divideWith(units, hour, "minute", { step: TWENTY });
+    const [first, second, third] = slots;
 
-    expect(slots).toHaveLength(12);
-    expect(slots[0].start.getHours()).toBe(0);
-    expect(slots[1].start.getHours()).toBe(2);
-    expect(slots[11].start.getHours()).toBe(22);
+    expect(slots).toHaveLength(THREE);
+    expect(required(first).start).toStrictEqual(new Date("2024-01-01T10:00"));
+    expect(required(second).start).toStrictEqual(new Date("2024-01-01T10:20"));
+    expect(required(third).start).toStrictEqual(new Date("2024-01-01T10:40"));
+  });
+});
+
+describe("divideWith() with hour and month counts", () => {
+  it("divides a day into 2-hour slots", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day = periodWith(units, new Date("2024-01-01T00:00"), "day");
+    const slots = divideWith(units, day, "hour", { step: TWO });
+    const [first, second] = slots;
+
+    expect(slots).toHaveLength(TWELVE);
+    expect(required(first).start).toStrictEqual(new Date("2024-01-01T00:00"));
+    expect(required(second).start).toStrictEqual(new Date("2024-01-01T02:00"));
+    expect(required(slots.at(-SINGLE)).start).toStrictEqual(
+      new Date("2024-01-01T22:00")
+    );
   });
 
-  it("divides a year into quarters (3-month chunks)", () => {
-    const year = period(adapter, new Date(2024, 0, 1), "year");
-    const quarters = divide(adapter, year, "month", 3);
+  it("divides a year into quarters (3-month chunks)", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const year = periodWith(units, new Date("2024-01-01T00:00"), "year");
+    const quarters = divideWith(units, year, "month", { step: THREE });
+    const [jan, apr, jul, oct] = quarters;
 
-    expect(quarters).toHaveLength(4);
-    expect(quarters[0].start.getMonth()).toBe(0); // Jan
-    expect(quarters[1].start.getMonth()).toBe(3); // Apr
-    expect(quarters[2].start.getMonth()).toBe(6); // Jul
-    expect(quarters[3].start.getMonth()).toBe(9); // Oct
+    expect(quarters).toHaveLength(FOUR);
+    expect(required(jan).start).toStrictEqual(new Date("2024-01-01T00:00"));
+    expect(required(apr).start).toStrictEqual(new Date("2024-04-01T00:00"));
+    expect(required(jul).start).toStrictEqual(new Date("2024-07-01T00:00"));
+    expect(required(oct).start).toStrictEqual(new Date("2024-10-01T00:00"));
   });
 
-  it("divides a year into 2-week chunks", () => {
-    const year = period(adapter, new Date(2024, 0, 1), "year");
-    const biweekly = divide(adapter, year, "week", 2);
+  it("divides a year into 2-week chunks", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const year = periodWith(units, new Date("2024-01-01T00:00"), "year");
+    const biweekly = divideWith(units, year, "week", { step: TWO });
 
-    expect(biweekly.length).toBeGreaterThanOrEqual(26);
-    expect(biweekly.length).toBeLessThanOrEqual(27);
+    expect(biweekly.length).toBeGreaterThanOrEqual(MIN_BIWEEKLY);
+    expect(biweekly.length).toBeLessThanOrEqual(MAX_BIWEEKLY);
   });
+});
 
-  it("slots are contiguous (no gaps)", () => {
-    const hour = period(adapter, new Date(2024, 0, 1, 10), "hour");
-    const slots = divide(adapter, hour, "minute", 15);
+describe("divideWith() slot properties", () => {
+  it("slots are contiguous (no gaps)", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const hour = periodWith(units, new Date("2024-01-01T10:00"), "hour");
+    const slots = divideWith(units, hour, "minute", { step: FIFTEEN });
 
-    for (let i = 1; i < slots.length; i++) {
-      expect(slots[i].start.getTime()).toBe(slots[i - 1].end.getTime() + 1);
+    for (const [index, slot] of slots.slice(SINGLE).entries()) {
+      const previous = required(slots[index]);
+      expect(slot.start.getTime()).toBe(previous.end.getTime() + ONE_MS);
     }
   });
 
-  it("slots have type custom when count > 1", () => {
-    const hour = period(adapter, new Date(2024, 0, 1, 10), "hour");
-    const slots = divide(adapter, hour, "minute", 15);
+  it("slots have unit custom when step > 1", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const hour = periodWith(units, new Date("2024-01-01T10:00"), "hour");
+    const slots = divideWith(units, hour, "minute", { step: FIFTEEN });
 
-    slots.forEach((slot) => {
-      expect(slot.type).toBe("custom");
-    });
+    for (const slot of slots) {
+      expect(slot.unit).toBe("custom");
+    }
   });
 
-  it("count=1 behaves like original divide", () => {
-    const year = period(adapter, new Date(2024, 0, 1), "year");
-    const months = divide(adapter, year, "month", 1);
+  it("step=1 behaves like plain divide", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const year = periodWith(units, new Date("2024-01-01T00:00"), "year");
+    const months = divideWith(units, year, "month", { step: SINGLE });
+    const [first] = months;
 
-    expect(months).toHaveLength(12);
-    expect(months[0].type).toBe("month");
-  });
-
-  it("divides an hour into 20-minute slots (uneven)", () => {
-    const hour = period(adapter, new Date(2024, 0, 1, 10), "hour");
-    const slots = divide(adapter, hour, "minute", 20);
-
-    expect(slots).toHaveLength(3);
-    expect(slots[0].start.getMinutes()).toBe(0);
-    expect(slots[1].start.getMinutes()).toBe(20);
-    expect(slots[2].start.getMinutes()).toBe(40);
+    expect(months).toHaveLength(TWELVE);
+    expect(required(first).unit).toBe("month");
   });
 });

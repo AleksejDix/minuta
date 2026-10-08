@@ -1,5 +1,5 @@
-import type { UnitHandler } from "../../types";
 import { DateTime } from "luxon";
+import type { UnitSpec } from "#src/types";
 
 type LuxonUnit =
   | "years"
@@ -22,26 +22,38 @@ function handler(
   unit: LuxonStartOf,
   addKey: LuxonUnit,
   diffKey: LuxonUnit
-): UnitHandler {
+): UnitSpec {
   return {
-    startOf: (date) => DateTime.fromJSDate(date).startOf(unit).toJSDate(),
-    endOf: (date) => DateTime.fromJSDate(date).endOf(unit).toJSDate(),
-    add: (date, amount) =>
+    add: (date: Readonly<Date>, amount: number): Date =>
       DateTime.fromJSDate(date)
         .plus({ [addKey]: amount })
         .toJSDate(),
-    diff: (from, to) => {
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number => {
       const start = DateTime.fromJSDate(from);
       const end = DateTime.fromJSDate(to);
       return Math.floor(end.diff(start, diffKey)[diffKey]);
     },
+    endOf: (date: Readonly<Date>): Date =>
+      DateTime.fromJSDate(date).endOf(unit).toJSDate(),
+    startOf: (date: Readonly<Date>): Date =>
+      DateTime.fromJSDate(date).startOf(unit).toJSDate(),
   };
 }
 
-export const yearHandler = handler("year", "years", "years");
-export const quarterHandler = handler("quarter", "quarters", "quarters");
-export const monthHandler = handler("month", "months", "months");
-export const dayHandler = handler("day", "days", "days");
-export const hourHandler = handler("hour", "hours", "hours");
-export const minuteHandler = handler("minute", "minutes", "minutes");
-export const secondHandler = handler("second", "seconds", "seconds");
+const yearHandler: UnitSpec = handler("year", "years", "years");
+const quarterHandler: UnitSpec = handler("quarter", "quarters", "quarters");
+const monthHandler: UnitSpec = handler("month", "months", "months");
+const dayHandler: UnitSpec = handler("day", "days", "days");
+const hourHandler: UnitSpec = handler("hour", "hours", "hours");
+const minuteHandler: UnitSpec = handler("minute", "minutes", "minutes");
+const secondHandler: UnitSpec = handler("second", "seconds", "seconds");
+
+export {
+  dayHandler,
+  hourHandler,
+  minuteHandler,
+  monthHandler,
+  quarterHandler,
+  secondHandler,
+  yearHandler,
+};

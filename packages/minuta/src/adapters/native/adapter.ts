@@ -1,27 +1,29 @@
-import type { Adapter } from "../../types";
-import { createAdapter } from "../createAdapter";
-import { yearHandler } from "./units/year";
-import { monthHandler } from "./units/month";
+import type { AllUnits } from "#src/types";
+import type { WeekStartsOn } from "./units/week";
 import { createWeekHandler } from "./units/week";
 import { dayHandler } from "./units/day";
 import { hourHandler } from "./units/hour";
 import { minuteHandler } from "./units/minute";
-import { secondHandler } from "./units/second";
+import { monthHandler } from "./units/month";
 import { quarterHandler } from "./units/quarter";
+import { secondHandler } from "./units/second";
+import { yearHandler } from "./units/year";
 
-export function createNativeAdapter({
-  weekStartsOn = 1,
-}: { weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {}): Adapter {
-  return createAdapter({
-    year: yearHandler,
-    month: monthHandler,
-    week: createWeekHandler(weekStartsOn),
+const MONDAY = 1;
+
+function nativeUnits({
+  weekStartsOn = MONDAY,
+}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits {
+  return {
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
-    second: secondHandler,
+    month: monthHandler,
     quarter: quarterHandler,
-  });
+    second: secondHandler,
+    week: createWeekHandler(weekStartsOn),
+    year: yearHandler,
+  };
 }
 
-export const nativeFunctionalAdapter = createNativeAdapter({ weekStartsOn: 1 });
+export { nativeUnits };

@@ -1,4 +1,4 @@
 // Temporal adapter entry point
-// Allows: import { createMinutaAdapter } from 'minuta/temporal'
+// Allows: import { temporalUnits } from 'minuta/temporal'
 
 export * from "./adapters/temporal";

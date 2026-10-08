@@ -1,11 +1,6 @@
-/**
- * Calendar-specific utilities
- *
- * Import from 'minuta/calendar'
- */
-export { createStableMonth } from "./stableMonth";
-export { createStableYear } from "./stableYear";
-export { createStableDay } from "./stableDay";
-export type { HourSlot, StableDay } from "./stableDay";
-export type { StableMonth } from "./stableMonth";
-export type { StableYear } from "./stableYear";
+export { dayGridWith } from "./day-grid";
+export { monthGridWith } from "./month-grid";
+export { yearGridWith } from "./year-grid";
+export type { DayGrid, HourSlot } from "./day-grid";
+export type { MonthGrid } from "./month-grid";
+export type { YearGrid } from "./year-grid";

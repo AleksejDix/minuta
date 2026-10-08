@@ -29,8 +29,13 @@
     },
     "./types": "./dist/types.d.ts"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "imports": {
+    "#src/*": {
+      "source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
   "types": "./dist/index.d.ts",
   "keywords": [
     "react",
@@ -45,20 +50,23 @@
     "demo:build": "vite build --mode demo",
     "test": "vitest run",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc -p tsconfig.check.json && tsc -p examples/tsconfig.app.json",
     "clean": "rm -rf dist node_modules",
-    "lint": "oxlint --config ../../oxlint.vite.json .",
-    "lint:fix": "oxlint --config ../../oxlint.vite.json --fix ."
+    "lint": "oxlint -c ../../.oxlintrc.json .",
+    "lint:fix": "oxlint -c ../../.oxlintrc.json --fix ."
   },
   "dependencies": {
     "minuta": "^1.0.0-beta.1"
   },
   "devDependencies": {
+    "@minuta/tsconfig": "^2.0.0-alpha.1",
     "@testing-library/react": "^14.0.0",
     "@types/node": "^22.12.1",
     "@types/react": "^18.0.0",
-    "@minuta/tsconfig": "^2.0.0-alpha.1",
     "@vitejs/plugin-react": "^5.1.1",
+    "datefield": "^0.1.0",
+    "input-dom": "^0.1.0",
+    "input-state": "^0.1.0",
     "jsdom": "^25.0.1",
     "react": "^18.0.0",
     "react-dom": "^18.3.1",

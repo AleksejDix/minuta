@@ -1,45 +1,34 @@
-import type { Adapter, AdapterUnit, Period } from "minuta";
+import type { Minuta, Period, Unit, Units } from "minuta/core";
 
 /**
- * Base React minuta instance with reactive state.
- * This is the internal state container, similar to VueMinuta.
+ * Options of `useMinuta()` and the props of `MinutaRoot`.
  */
-export interface ReactMinuta {
-  adapter: Adapter;
-  weekStartsOn: number;
-  browsing: Period;
-  now: Period;
-}
+type MinutaOptions = Readonly<{
+  /** Initially browsed date, default: now */
+  date?: Readonly<Date> | undefined;
+  /** The moment that counts as "now", default: `new Date()` */
+  now?: Readonly<Date> | undefined;
+  /** Unit of the browsed period, default: `"month"` */
+  unit?: Unit | undefined;
+  /** Unit specs, default: `nativeUnits()` (weeks start on Monday) */
+  units?: Units | undefined;
+}>;
 
 /**
- * Minuta builder with convenience methods wrapping operations.
- * This is what useMinuta() returns to users.
+ * What `useMinuta()` returns and `MinutaRoot` provides: every operation of
+ * `withUnits(units)` plus the browsing state.
  */
-export interface MinutaBuilder extends ReactMinuta {
-  derivePeriod(date: Date, unit: AdapterUnit): Period;
-  createPeriod(start: Date, end: Date): Period;
-  divide(period: Period, unit: AdapterUnit): Period[];
-  merge(periods: Period[], targetUnit?: AdapterUnit): Period;
-  next(period: Period, count?: number): Period;
-  previous(period: Period, count?: number): Period;
-  go(period: Period, count: number): Period;
-  split(period: Period, date: Date): [Period, Period];
-  contains(period: Period, dateOrPeriod: Date | Period): boolean;
-  isSame(
-    period1: Period,
-    period2: Period,
-    unit: AdapterUnit | "custom"
-  ): boolean;
-}
+type MinutaState = Minuta &
+  Readonly<{
+    /** Browse to the period of the browsing unit containing `period.start` */
+    browse: (period: Period) => void;
+    /** The browsed period */
+    browsing: Period;
+    /** The second containing the `now` date */
+    now: Period;
+    /** The units every operation is bound to */
+    units: Units;
+  }>;
 
-/**
- * Options for creating a React minuta instance.
- */
-export interface UseMinutaOptions {
-  adapter: Adapter;
-  date?: Date;
-  now?: Date;
-  weekStartsOn?: number;
-}
-
-export type { Adapter, AdapterUnit, Period } from "minuta";
+export type { MinutaOptions, MinutaState };
+export type { Minuta, Period, Unit, Units } from "minuta/core";

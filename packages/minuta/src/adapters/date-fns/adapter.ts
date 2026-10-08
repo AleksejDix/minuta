@@ -1,29 +1,31 @@
-import type { Adapter } from "../../types";
-import { createAdapter } from "../createAdapter";
 import {
-  yearHandler,
-  quarterHandler,
-  monthHandler,
   dayHandler,
   hourHandler,
   minuteHandler,
+  monthHandler,
+  quarterHandler,
   secondHandler,
+  yearHandler,
 } from "./handlers";
+import type { AllUnits } from "#src/types";
+import type { Day } from "date-fns";
 import { createWeekHandler } from "./units/week";
 
-export function createDateFnsAdapter({
-  weekStartsOn = 1,
-}: { weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {}): Adapter {
-  return createAdapter({
-    year: yearHandler,
-    quarter: quarterHandler,
-    month: monthHandler,
-    week: createWeekHandler(weekStartsOn),
+const MONDAY = 1;
+
+function dateFnsUnits({
+  weekStartsOn = MONDAY,
+}: Readonly<{ weekStartsOn?: Day }> = {}): AllUnits {
+  return {
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
+    month: monthHandler,
+    quarter: quarterHandler,
     second: secondHandler,
-  });
+    week: createWeekHandler(weekStartsOn),
+    year: yearHandler,
+  };
 }
 
-export const dateFnsAdapter = createDateFnsAdapter({ weekStartsOn: 1 });
+export { dateFnsUnits };

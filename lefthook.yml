@@ -1,0 +1,36 @@
+# Fast checks on the staged files only; the whole-project checks run on push.
+# CI runs everything again and stays the source of truth.
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      glob: "*.{ts,tsx,js,mjs,vue,json,md,css,html,yml,yaml}"
+      exclude:
+        - "package-lock.json"
+        - "CHANGELOG.md"
+      run: npx oxfmt --check {staged_files}
+
+    - name: lint
+      glob: "*.{ts,tsx,js,mjs,vue}"
+      run: npx oxlint {staged_files}
+
+    # CI installs from the public registry only; a lockfile written through a
+    # private mirror (e.g. Artifactory) would fail there
+    - name: lockfile-registry
+      glob: "package-lock.json"
+      run: >-
+        sh -c 'if grep -o "\"resolved\": \"https://[^\"]*" package-lock.json | grep -qv "https://registry.npmjs.org/";
+        then echo "package-lock.json has non-npmjs resolved URLs; rewrite them to https://registry.npmjs.org/ (npm keeps using your mirror via replace-registry-host)"; exit 1; fi'
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: type-check
+      run: npm run type-check
+
+    - name: knip
+      run: npm run knip
+
+    - name: test
+      run: npm test

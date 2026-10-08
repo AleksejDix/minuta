@@ -1,184 +1,179 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useMinuta } from "./useMinuta";
-import { usePeriod } from "./usePeriod";
-import { createNativeAdapter } from "minuta/native";
-import type { Adapter } from "minuta";
+import type { JSX, ReactNode } from "react";
+import type { MinutaState, Period, Unit } from "./types";
+import { describe, expect, it } from "vitest";
+import { MinutaRoot } from "./minuta-root";
+import type { RenderHookResult } from "@testing-library/react";
+import { act } from "react";
+import { renderHook } from "@testing-library/react";
+import { useMinutaContext } from "./minuta-context";
+import { usePeriod } from "./use-period";
 
-describe("React reactivity", () => {
-  let adapter: Adapter;
-  let testDate: Date;
+type Hooks = Readonly<{
+  minuta: MinutaState;
+  period: Period;
+}>;
 
-  beforeEach(() => {
-    testDate = new Date(2024, 0, 15);
-    adapter = createNativeAdapter();
+type MinutaRef = Readonly<{ current: Hooks }>;
+
+const JANUARY = 0;
+const FEBRUARY = 1;
+const MARCH = 2;
+const DECEMBER = 11;
+const FIRST_DAY = 1;
+const PREVIOUS_YEAR = 2023;
+const TEST_YEAR = 2024;
+const NEXT_YEAR = 2025;
+const DAYS_TO_FEBRUARY = 31;
+const DAYS_TO_DECEMBER = -31;
+const DAYS_TO_NEXT_YEAR = 365;
+const DAYS_TO_MARCH = 60;
+const NO_WEEKS = 0;
+
+function firstOf<Item>(items: readonly Item[]): Item {
+  const [first] = items;
+  if (first === undefined) {
+    throw new Error("Expected at least one item");
+  }
+  return first;
+}
+
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- ReactNode contains ReactElement<any>, which cannot be deeply readonly
+function DayRoot({ children }: Readonly<{ children: ReactNode }>): JSX.Element {
+  return (
+    <MinutaRoot date={new Date("2024-01-15T00:00:00")} unit="day">
+      {children}
+    </MinutaRoot>
+  );
+}
+
+function renderPeriod(unit: Unit): RenderHookResult<Hooks, unknown> {
+  return renderHook(
+    () => ({ minuta: useMinutaContext(), period: usePeriod(unit) }),
+    { wrapper: DayRoot }
+  );
+}
+
+function shiftBrowsing(hooks: MinutaRef, days: number): void {
+  act(() => {
+    const { minuta } = hooks.current;
+    minuta.browse(minuta.shift(minuta.browsing, days));
+  });
+}
+
+describe("usePeriod() derivation", () => {
+  it("should derive a month period from browsing", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result } = renderPeriod("month");
+
+    expect(result.current.period.unit).toBe("month");
+    expect(result.current.period.start.getMonth()).toBe(JANUARY);
+    expect(result.current.period.start.getDate()).toBe(FIRST_DAY);
   });
 
-  describe("usePeriod", () => {
-    it("should derive a month period from browsing", () => {
-      const { result: minuta } = renderHook(() =>
-        useMinuta({ date: testDate, adapter })
-      );
+  it("should update when browsing changes", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result } = renderPeriod("month");
+    const january = result.current.period;
 
-      const { result: month } = renderHook(() =>
-        usePeriod(minuta.current, "month")
-      );
-
-      expect(month.current.type).toBe("month");
-      expect(month.current.start.getMonth()).toBe(0); // January
-      expect(month.current.start.getDate()).toBe(1); // Start of month
+    act(() => {
+      const { minuta } = result.current;
+      minuta.browse(minuta.next(minuta.browsing));
     });
 
-    it("should update when browsing changes", () => {
-      const { result: minuta } = renderHook(() =>
-        useMinuta({ date: testDate, adapter })
-      );
-
-      const { result: month, rerender } = renderHook(() =>
-        usePeriod(minuta.current, "month")
-      );
-
-      const january = month.current;
-      expect(january.start.getMonth()).toBe(0);
-
-      act(() => {
-        minuta.current.next(minuta.current.browsing);
-      });
-      rerender();
-
-      // Browsing moved 1 day — still January
-      expect(month.current.start.getMonth()).toBe(0);
-    });
-
-    it("should memoize when dependencies unchanged", () => {
-      const { result: minuta } = renderHook(() =>
-        useMinuta({ date: testDate, adapter })
-      );
-
-      const { result: month, rerender } = renderHook(() =>
-        usePeriod(minuta.current, "month")
-      );
-
-      const first = month.current;
-      rerender();
-      expect(month.current).toBe(first);
-    });
+    // Browsing moved 1 day, still January
+    expect(result.current.period).toStrictEqual(january);
   });
 
-  describe("navigation", () => {
-    it("should navigate to next month", () => {
-      const { result: minuta } = renderHook(() =>
-        useMinuta({ date: testDate, adapter })
-      );
+  it("should memoize when dependencies unchanged", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result, rerender } = renderPeriod("month");
+    const first = result.current.period;
 
-      const { result: month, rerender } = renderHook(() =>
-        usePeriod(minuta.current, "month")
-      );
+    rerender();
 
-      expect(month.current.start.getMonth()).toBe(0); // January
+    expect(result.current.period).toBe(first);
+  });
+});
 
-      act(() => {
-        // Navigate browsing forward by 31 days to reach February
-        minuta.current.go(minuta.current.browsing, 31);
-      });
-      rerender();
+describe("usePeriod() navigation", () => {
+  it("should navigate to next month", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result } = renderPeriod("month");
 
-      expect(month.current.start.getMonth()).toBe(1); // February
-    });
+    shiftBrowsing(result, DAYS_TO_FEBRUARY);
 
-    it("should navigate to previous month", () => {
-      const { result: minuta } = renderHook(() =>
-        useMinuta({ date: testDate, adapter })
-      );
-
-      const { result: month, rerender } = renderHook(() =>
-        usePeriod(minuta.current, "month")
-      );
-
-      act(() => {
-        minuta.current.go(minuta.current.browsing, -31);
-      });
-      rerender();
-
-      expect(month.current.start.getMonth()).toBe(11); // December 2023
-      expect(month.current.start.getFullYear()).toBe(2023);
-    });
-
-    it("should update year period when browsing crosses year boundary", () => {
-      const { result: minuta } = renderHook(() =>
-        useMinuta({ date: testDate, adapter })
-      );
-
-      const { result: year, rerender } = renderHook(() =>
-        usePeriod(minuta.current, "year")
-      );
-
-      expect(year.current.start.getFullYear()).toBe(2024);
-
-      act(() => {
-        // Navigate forward 365 days to cross into 2025
-        minuta.current.go(minuta.current.browsing, 365);
-      });
-      rerender();
-
-      // 2024 is leap year, 365 days from Jan 15 = Jan 14, 2025? Dec 2024?
-      // The exact date depends, but year should still be derivable
-      expect(year.current.type).toBe("year");
-    });
+    expect(result.current.period.start.getMonth()).toBe(FEBRUARY);
   });
 
-  describe("divide reactivity", () => {
-    it("should divide month into weeks", () => {
-      const { result: minuta } = renderHook(() =>
-        useMinuta({ date: testDate, adapter })
-      );
+  it("should navigate to previous month", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result } = renderPeriod("month");
 
-      const { result: month, rerender } = renderHook(() =>
-        usePeriod(minuta.current, "month")
-      );
+    shiftBrowsing(result, DAYS_TO_DECEMBER);
 
-      const janWeeks = minuta.current.divide(month.current, "week");
-      expect(janWeeks.length).toBeGreaterThan(0);
-
-      act(() => {
-        minuta.current.go(minuta.current.browsing, 31);
-      });
-      rerender();
-
-      const febWeeks = minuta.current.divide(month.current, "week");
-      expect(febWeeks[0].start).not.toEqual(janWeeks[0].start);
-    });
+    expect(result.current.period.start.getMonth()).toBe(DECEMBER);
+    expect(result.current.period.start.getFullYear()).toBe(PREVIOUS_YEAR);
   });
 
-  describe("multiple hooks", () => {
-    it("should coordinate year, month, week periods", () => {
-      const { result: minuta } = renderHook(() =>
-        useMinuta({ date: testDate, adapter })
-      );
+  it(
+    "should update year period when browsing crosses year boundary",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const { result } = renderPeriod("year");
+      expect(result.current.period.start.getFullYear()).toBe(TEST_YEAR);
 
-      const { result: year, rerender: rYear } = renderHook(() =>
-        usePeriod(minuta.current, "year")
-      );
-      const { result: month, rerender: rMonth } = renderHook(() =>
-        usePeriod(minuta.current, "month")
-      );
-      const { result: week, rerender: rWeek } = renderHook(() =>
-        usePeriod(minuta.current, "week")
-      );
+      shiftBrowsing(result, DAYS_TO_NEXT_YEAR);
 
-      expect(year.current.type).toBe("year");
-      expect(month.current.type).toBe("month");
-      expect(week.current.type).toBe("week");
+      expect(result.current.period.start.getFullYear()).toBe(NEXT_YEAR);
+    }
+  );
+});
 
-      act(() => {
-        minuta.current.go(minuta.current.browsing, 60);
-      });
-      rYear();
-      rMonth();
-      rWeek();
+describe("usePeriod() divide reactivity", () => {
+  it("should divide month into weeks", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result } = renderPeriod("month");
+    const janWeeks = result.current.minuta.divide(
+      result.current.period,
+      "week"
+    );
+    expect(janWeeks.length).toBeGreaterThan(NO_WEEKS);
 
-      // Month should have changed (60 days from Jan 15 = March)
-      expect(month.current.start.getMonth()).toBe(2); // March
+    shiftBrowsing(result, DAYS_TO_FEBRUARY);
+
+    const febWeeks = result.current.minuta.divide(
+      result.current.period,
+      "week"
+    );
+    expect(firstOf(febWeeks).start.getTime()).not.toBe(
+      firstOf(janWeeks).start.getTime()
+    );
+  });
+});
+
+describe("usePeriod() multiple hooks", () => {
+  it("should coordinate year, month, week periods", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result } = renderHook(
+      () => ({
+        minuta: useMinutaContext(),
+        month: usePeriod("month"),
+        week: usePeriod("week"),
+        year: usePeriod("year"),
+      }),
+      { wrapper: DayRoot }
+    );
+    expect(result.current.year.unit).toBe("year");
+    expect(result.current.month.unit).toBe("month");
+    expect(result.current.week.unit).toBe("week");
+
+    act(() => {
+      const { minuta } = result.current;
+      minuta.browse(minuta.shift(minuta.browsing, DAYS_TO_MARCH));
     });
+
+    // 60 days from Jan 15 = March
+    expect(result.current.month.start.getMonth()).toBe(MARCH);
   });
 });

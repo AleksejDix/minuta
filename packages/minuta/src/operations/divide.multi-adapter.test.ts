@@ -1,167 +1,278 @@
-import { describe, it, expect } from "vitest";
-import { divide } from "./divide";
-import { derivePeriod as period } from "./period";
-import { withAllAdapters } from "../test/shared-adapter-tests";
+import { describe, expect, it } from "vitest";
+import type { Period } from "#src/types";
+import { divideWith } from "./divide";
+import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
+import { periodWith } from "./period";
 
-withAllAdapters("divide", (adapter) => {
-  describe("period division", () => {
-    it("should divide year into months", () => {
-      const year = period(adapter, new Date(2024, 5, 15), "year");
-      const months = divide(adapter, year, "month");
+const JANUARY = 0;
+const FEBRUARY = 1;
+const DECEMBER = 11;
+const MONTHS_PER_YEAR = 12;
+const DAYS_IN_LEAP_FEBRUARY = 29;
+const DAYS_PER_WEEK = 7;
+const HOURS_PER_DAY = 24;
+const DST_SHORT_DAY_HOURS = 23;
+const LAST_HOUR = 23;
+const MINUTES_PER_HOUR = 60;
+const SECONDS_PER_MINUTE = 60;
+const LAST_MINUTE = 59;
+const LAST_SECOND = 59;
+const FIRST_DAY = 1;
+const MIDNIGHT = 0;
+const ZERO = 0;
+const DAY_15 = 15;
+const HOUR_14 = 14;
+const MINUTE_30 = 30;
+const YEAR_2023 = 2023;
+const YEAR_2024 = 2024;
 
-      expect(months).toHaveLength(12);
-      expect(months[0].type).toBe("month");
-      expect(months[0].start.getMonth()).toBe(0); // January
-      expect(months[11].start.getMonth()).toBe(11); // December
+function required(slot: Period | undefined): Period {
+  if (slot === undefined) {
+    throw new Error("Expected a period");
+  }
+  return slot;
+}
+
+function adjacentPairs(list: readonly Period[]): (readonly [Period, Period])[] {
+  return list
+    .slice(FIRST_DAY)
+    .map((current, index) => [required(list[index]), current] as const);
+}
+
+function expectedNextDate(previous: Period, current: Period): number {
+  // Handle month boundary
+  if (current.start.getMonth() === previous.start.getMonth()) {
+    return previous.start.getDate() + FIRST_DAY;
+  }
+  return FIRST_DAY;
+}
+
+const unitsCases = getUnitsTestCases();
+
+describe.each(unitsCases)(
+  "divideWith() calendar division with %s adapter",
+  (_name, units) => {
+    it("should divide year into months", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const year = periodWith(units, new Date("2024-06-15T00:00"), "year");
+      const months = divideWith(units, year, "month");
+      const [january] = months;
+
+      expect(months).toHaveLength(MONTHS_PER_YEAR);
+      expect(required(january).unit).toBe("month");
+      // January
+      expect(required(january).start.getMonth()).toBe(JANUARY);
+      // December
+      expect(required(months.at(DECEMBER)).start.getMonth()).toBe(DECEMBER);
 
       // Check continuity
-      for (let i = 1; i < months.length; i++) {
-        const prevEnd = months[i - 1].end.getTime();
-        const currentStart = months[i].start.getTime();
-        expect(currentStart).toBeGreaterThan(prevEnd);
+      for (const [previous, current] of adjacentPairs(months)) {
+        expect(current.start.getTime()).toBeGreaterThan(previous.end.getTime());
       }
     });
 
-    it("should divide month into days", () => {
-      const february2024 = period(adapter, new Date(2024, 1, 15), "month");
-      const days = divide(adapter, february2024, "day");
+    it("should divide month into days", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const february2024 = periodWith(
+        units,
+        new Date("2024-02-15T00:00"),
+        "month"
+      );
+      const days = divideWith(units, february2024, "day");
+      const [first] = days;
 
-      expect(days).toHaveLength(29); // Leap year
-      expect(days[0].start.getDate()).toBe(1);
-      expect(days[28].start.getDate()).toBe(29);
+      // Leap year
+      expect(days).toHaveLength(DAYS_IN_LEAP_FEBRUARY);
+      expect(required(first).start.getDate()).toBe(FIRST_DAY);
+      expect(required(days.at(-FIRST_DAY)).start.getDate()).toBe(
+        DAYS_IN_LEAP_FEBRUARY
+      );
 
       // All days should be in February
-      days.forEach((day) => {
-        expect(day.start.getMonth()).toBe(1);
-        expect(day.type).toBe("day");
-      });
-    });
-
-    it("should divide week into days", () => {
-      const week = period(adapter, new Date(2024, 0, 15), "week");
-      const days = divide(adapter, week, "day");
-
-      expect(days).toHaveLength(7);
-
-      // Check days are consecutive
-      for (let i = 1; i < days.length; i++) {
-        const prevDate = days[i - 1].start.getDate();
-        const currentDate = days[i].start.getDate();
-        const expectedDate = prevDate + 1;
-
-        // Handle month boundary
-        if (days[i].start.getMonth() !== days[i - 1].start.getMonth()) {
-          expect(currentDate).toBe(1);
-        } else {
-          expect(currentDate).toBe(expectedDate);
-        }
+      for (const day of days) {
+        expect(day.start.getMonth()).toBe(FEBRUARY);
+        expect(day.unit).toBe("day");
       }
     });
+  }
+);
 
-    it("should divide day into hours", () => {
-      const day = period(adapter, new Date(2024, 0, 15), "day");
-      const hours = divide(adapter, day, "hour");
+describe.each(unitsCases)(
+  "divideWith() week division with %s adapter",
+  (_name, units) => {
+    it("should divide week into days", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const week = periodWith(units, new Date("2024-01-15T00:00"), "week");
+      const days = divideWith(units, week, "day");
 
-      expect(hours).toHaveLength(24);
-      expect(hours[0].start.getHours()).toBe(0);
-      expect(hours[23].start.getHours()).toBe(23);
+      expect(days).toHaveLength(DAYS_PER_WEEK);
 
-      // All hours should be on the same day
-      hours.forEach((hour) => {
-        expect(hour.start.getDate()).toBe(15);
-        expect(hour.type).toBe("hour");
-      });
-    });
-
-    it("should divide hour into minutes", () => {
-      const hour = period(adapter, new Date(2024, 0, 15, 14), "hour");
-      const minutes = divide(adapter, hour, "minute");
-
-      expect(minutes).toHaveLength(60);
-      expect(minutes[0].start.getMinutes()).toBe(0);
-      expect(minutes[59].start.getMinutes()).toBe(59);
-
-      // All minutes should be in the same hour
-      minutes.forEach((minute) => {
-        expect(minute.start.getHours()).toBe(14);
-        expect(minute.type).toBe("minute");
-      });
-    });
-
-    it("should divide minute into seconds", () => {
-      const minute = period(adapter, new Date(2024, 0, 15, 14, 30), "minute");
-      const seconds = divide(adapter, minute, "second");
-
-      expect(seconds).toHaveLength(60);
-      expect(seconds[0].start.getSeconds()).toBe(0);
-      expect(seconds[59].start.getSeconds()).toBe(59);
-
-      // All seconds should be in the same minute
-      seconds.forEach((second) => {
-        expect(second.start.getMinutes()).toBe(30);
-        expect(second.type).toBe("second");
-      });
-    });
-
-    it("should handle month boundaries when dividing", () => {
-      // Create a week that spans month boundary
-      const lastWeekOfJan = period(adapter, new Date(2024, 0, 29), "week");
-      const days = divide(adapter, lastWeekOfJan, "day");
-
-      const januaryDays = days.filter((d) => d.start.getMonth() === 0);
-      const februaryDays = days.filter((d) => d.start.getMonth() === 1);
-
-      expect(januaryDays.length + februaryDays.length).toBe(7);
-      expect(januaryDays.length).toBeGreaterThan(0);
-      expect(februaryDays.length).toBeGreaterThan(0);
-    });
-
-    it("should handle year boundaries when dividing", () => {
-      // Create a week that spans year boundary
-      const lastWeekOf2023 = period(adapter, new Date(2023, 11, 30), "week");
-      const days = divide(adapter, lastWeekOf2023, "day");
-
-      const days2023 = days.filter((d) => d.start.getFullYear() === 2023);
-      const days2024 = days.filter((d) => d.start.getFullYear() === 2024);
-
-      expect(days2023.length + days2024.length).toBe(7);
-    });
-
-    it("should handle daylight saving time transitions", () => {
-      // Test spring forward (in US, typically March)
-      const marchDay = period(adapter, new Date(2024, 2, 10), "day");
-      const hours = divide(adapter, marchDay, "hour");
-
-      // DST spring-forward days have 23 hours in affected timezones, 24 otherwise
-      expect(hours.length).toBeGreaterThanOrEqual(23);
-      expect(hours.length).toBeLessThanOrEqual(24);
-
-      // Hours should be continuous regardless of DST
-      for (let i = 1; i < hours.length; i++) {
-        expect(hours[i].start.getTime()).toBeGreaterThan(
-          hours[i - 1].start.getTime()
+      // Check days are consecutive
+      for (const [previous, current] of adjacentPairs(days)) {
+        expect(current.start.getDate()).toBe(
+          expectedNextDate(previous, current)
         );
       }
     });
 
-    it("should handle partial periods correctly", () => {
+    it("should divide day into hours", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const day = periodWith(units, new Date("2024-01-15T00:00"), "day");
+      const hours = divideWith(units, day, "hour");
+      const [first] = hours;
+
+      expect(hours).toHaveLength(HOURS_PER_DAY);
+      expect(required(first).start.getHours()).toBe(MIDNIGHT);
+      expect(required(hours.at(-FIRST_DAY)).start.getHours()).toBe(LAST_HOUR);
+
+      // All hours should be on the same day
+      for (const hour of hours) {
+        expect(hour.start.getDate()).toBe(DAY_15);
+        expect(hour.unit).toBe("hour");
+      }
+    });
+  }
+);
+
+describe.each(unitsCases)(
+  "divideWith() time division with %s adapter",
+  (_name, units) => {
+    it("should divide hour into minutes", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const hour = periodWith(units, new Date("2024-01-15T14:00"), "hour");
+      const minutes = divideWith(units, hour, "minute");
+      const [first] = minutes;
+
+      expect(minutes).toHaveLength(MINUTES_PER_HOUR);
+      expect(required(first).start.getMinutes()).toBe(ZERO);
+      expect(required(minutes.at(-FIRST_DAY)).start.getMinutes()).toBe(
+        LAST_MINUTE
+      );
+
+      // All minutes should be in the same hour
+      for (const minute of minutes) {
+        expect(minute.start.getHours()).toBe(HOUR_14);
+        expect(minute.unit).toBe("minute");
+      }
+    });
+
+    it("should divide minute into seconds", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const minute = periodWith(units, new Date("2024-01-15T14:30"), "minute");
+      const seconds = divideWith(units, minute, "second");
+      const [first] = seconds;
+
+      expect(seconds).toHaveLength(SECONDS_PER_MINUTE);
+      expect(required(first).start.getSeconds()).toBe(ZERO);
+      expect(required(seconds.at(-FIRST_DAY)).start.getSeconds()).toBe(
+        LAST_SECOND
+      );
+
+      // All seconds should be in the same minute
+      for (const second of seconds) {
+        expect(second.start.getMinutes()).toBe(MINUTE_30);
+        expect(second.unit).toBe("second");
+      }
+    });
+  }
+);
+
+describe.each(unitsCases)(
+  "divideWith() boundary division with %s adapter",
+  (_name, units) => {
+    it(
+      "should handle month boundaries when dividing",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        // Create a week that spans month boundary
+        const lastWeekOfJan = periodWith(
+          units,
+          new Date("2024-01-29T00:00"),
+          "week"
+        );
+        const days = divideWith(units, lastWeekOfJan, "day");
+
+        const januaryDays = days.filter(
+          (day: Period) => day.start.getMonth() === JANUARY
+        );
+        const februaryDays = days.filter(
+          (day: Period) => day.start.getMonth() === FEBRUARY
+        );
+
+        expect(januaryDays.length + februaryDays.length).toBe(DAYS_PER_WEEK);
+        expect(januaryDays.length).toBeGreaterThan(ZERO);
+        expect(februaryDays.length).toBeGreaterThan(ZERO);
+      }
+    );
+
+    it("should handle year boundaries when dividing", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      // Create a week that spans year boundary
+      const lastWeekOf2023 = periodWith(
+        units,
+        new Date("2023-12-30T00:00"),
+        "week"
+      );
+      const days = divideWith(units, lastWeekOf2023, "day");
+
+      const days2023 = days.filter(
+        (day: Period) => day.start.getFullYear() === YEAR_2023
+      );
+      const days2024 = days.filter(
+        (day: Period) => day.start.getFullYear() === YEAR_2024
+      );
+
+      expect(days2023.length + days2024.length).toBe(DAYS_PER_WEEK);
+    });
+  }
+);
+
+describe.each(unitsCases)(
+  "divideWith() irregular division with %s adapter",
+  (_name, units) => {
+    it(
+      "should handle daylight saving time transitions",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        // Test spring forward (in US, typically March)
+        const marchDay = periodWith(units, new Date("2024-03-10T00:00"), "day");
+        const hours = divideWith(units, marchDay, "hour");
+
+        // DST spring-forward days have 23 hours in affected timezones, 24 otherwise
+        expect(hours.length).toBeGreaterThanOrEqual(DST_SHORT_DAY_HOURS);
+        expect(hours.length).toBeLessThanOrEqual(HOURS_PER_DAY);
+
+        // Hours should be continuous regardless of DST
+        for (const [previous, current] of adjacentPairs(hours)) {
+          expect(current.start.getTime()).toBeGreaterThan(
+            previous.start.getTime()
+          );
+        }
+      }
+    );
+
+    it("should handle partial periods correctly", { timeout: 5000 }, () => {
+      expect.hasAssertions();
       // Create a custom period that doesn't align with standard boundaries
       const customPeriod = {
-        start: new Date(2024, 0, 15, 14, 30),
-        end: new Date(2024, 0, 16, 10, 45),
-        type: "custom" as const,
+        end: new Date("2024-01-16T10:45"),
+        start: new Date("2024-01-15T14:30"),
+        unit: "custom" as const,
       };
 
-      const hours = divide(adapter, customPeriod, "hour");
+      const hours = divideWith(units, customPeriod, "hour");
+      const [first] = hours;
 
       // Should include partial hours at boundaries
-      expect(hours.length).toBeGreaterThan(0);
-      expect(hours[0].start.getTime()).toBeGreaterThanOrEqual(
+      expect(hours.length).toBeGreaterThan(ZERO);
+      expect(required(first).start.getTime()).toBeGreaterThanOrEqual(
         customPeriod.start.getTime()
       );
-      expect(hours[hours.length - 1].end.getTime()).toBeLessThanOrEqual(
+      expect(required(hours.at(-FIRST_DAY)).end.getTime()).toBeLessThanOrEqual(
         customPeriod.end.getTime()
       );
     });
-  });
-});
+  }
+);

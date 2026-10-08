@@ -1,29 +1,31 @@
-import type { Adapter } from "../../types";
-import { createAdapter } from "../createAdapter";
 import {
-  yearHandler,
-  quarterHandler,
-  monthHandler,
   dayHandler,
   hourHandler,
   minuteHandler,
+  monthHandler,
+  quarterHandler,
   secondHandler,
+  yearHandler,
 } from "./handlers";
+import type { AllUnits } from "#src/types";
+import type { WeekStartsOn } from "./units/week";
 import { createWeekHandler } from "./units/week";
 
-export function createLuxonAdapter({
-  weekStartsOn = 1,
-}: { weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {}): Adapter {
-  return createAdapter({
-    year: yearHandler,
-    quarter: quarterHandler,
-    month: monthHandler,
-    week: createWeekHandler(weekStartsOn),
+const MONDAY = 1;
+
+function luxonUnits({
+  weekStartsOn = MONDAY,
+}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits {
+  return {
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
+    month: monthHandler,
+    quarter: quarterHandler,
     second: secondHandler,
-  });
+    week: createWeekHandler(weekStartsOn),
+    year: yearHandler,
+  };
 }
 
-export const luxonAdapter = createLuxonAdapter({ weekStartsOn: 1 });
+export { luxonUnits };

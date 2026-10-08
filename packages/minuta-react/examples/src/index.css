@@ -37,6 +37,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
 .calendar-shell {
@@ -57,11 +59,6 @@ body {
   justify-content: space-between;
   gap: 1.5rem;
   align-items: center;
-}
-
-.subheading {
-  color: #475569;
-  margin: 0.25rem 0 0;
 }
 
 .toolbar-section {
@@ -104,49 +101,16 @@ body {
   color: #0f172a;
 }
 
-.period-display {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.period-display h2 {
-  margin: 0;
-  font-size: 1.75rem;
-}
-
-.period-display dl {
-  display: flex;
-  gap: 1rem;
-  margin: 0;
-}
-
-.period-display dt {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: #94a3b8;
-  letter-spacing: 0.08em;
-}
-
-.period-display dd {
-  margin: 0.25rem 0 0;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.eyebrow {
-  margin: 0;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #a0aec0;
-}
-
 .toolbar-row {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
+}
+
+.toolbar-row h2 {
+  margin: 0;
+  font-size: 1.75rem;
 }
 
 .nav-button {
@@ -217,6 +181,11 @@ body {
 .day-cell.is-today {
   border: 2px solid #6366f1;
   background: #eef2ff;
+}
+
+.day-cell.is-selected {
+  background: #6366f1;
+  color: white;
 }
 
 .date-number {

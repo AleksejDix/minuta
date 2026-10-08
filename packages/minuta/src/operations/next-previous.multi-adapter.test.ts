@@ -1,181 +1,217 @@
-import { describe, it, expect } from "vitest";
-import { next, previous } from "./index";
-import { derivePeriod as period } from "./period";
-import { withAllAdapters } from "../test/shared-adapter-tests";
+import { describe, expect, it } from "vitest";
+import { nextWith as nextOf, previousWith as previous } from "./shift";
+import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
+import { periodWith as period } from "./period";
 
-withAllAdapters("next/previous", (adapter) => {
-  describe("next operation", () => {
-    it("should get next day", () => {
-      const day = period(adapter, new Date(2024, 0, 15), "day");
-      const nextDay = next(adapter, day);
+const ONE_MS = 1;
+const DAYS_PER_WEEK = 7;
+const MS_PER_DAY = 86_400_000;
+const NAVIGABLE_UNITS = [
+  "year",
+  "month",
+  "week",
+  "day",
+  "hour",
+  "minute",
+  "second",
+] as const;
 
-      expect(nextDay.type).toBe("day");
-      expect(nextDay.start.getDate()).toBe(16);
-      expect(nextDay.start.getMonth()).toBe(0);
-    });
+const adapters = getUnitsTestCases();
 
-    it("should get next month", () => {
-      const month = period(adapter, new Date(2024, 0, 15), "month");
-      const nextMonth = next(adapter, month);
+describe.each(adapters)("next() by unit with %s adapter", (_name, units) => {
+  it("should get next day", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day = period(units, new Date("2024-01-15T00:00:00"), "day");
+    const nextDay = nextOf(units, day);
 
-      expect(nextMonth.type).toBe("month");
-      expect(nextMonth.start.getMonth()).toBe(1); // February
-      expect(nextMonth.start.getFullYear()).toBe(2024);
-    });
-
-    it("should get next year", () => {
-      const year = period(adapter, new Date(2024, 5, 15), "year");
-      const nextYear = next(adapter, year);
-
-      expect(nextYear.type).toBe("year");
-      expect(nextYear.start.getFullYear()).toBe(2025);
-    });
-
-    it("should handle month boundaries", () => {
-      const lastDayOfMonth = period(adapter, new Date(2024, 0, 31), "day");
-      const nextDay = next(adapter, lastDayOfMonth);
-
-      expect(nextDay.start.getMonth()).toBe(1); // February
-      expect(nextDay.start.getDate()).toBe(1);
-    });
-
-    it("should handle year boundaries", () => {
-      const december = period(adapter, new Date(2023, 11, 15), "month");
-      const january = next(adapter, december);
-
-      expect(january.start.getFullYear()).toBe(2024);
-      expect(january.start.getMonth()).toBe(0);
-    });
-
-    it("should get next hour", () => {
-      const hour = period(adapter, new Date(2024, 0, 15, 14), "hour");
-      const nextHour = next(adapter, hour);
-
-      expect(nextHour.type).toBe("hour");
-      expect(nextHour.start.getHours()).toBe(15);
-    });
-
-    it("should handle day boundary for hours", () => {
-      const lastHour = period(adapter, new Date(2024, 0, 15, 23), "hour");
-      const nextHour = next(adapter, lastHour);
-
-      expect(nextHour.start.getDate()).toBe(16);
-      expect(nextHour.start.getHours()).toBe(0);
-    });
+    expect(nextDay.unit).toBe("day");
+    expect(nextDay.start).toStrictEqual(new Date("2024-01-16T00:00:00"));
   });
 
-  describe("previous operation", () => {
-    it("should get previous day", () => {
-      const day = period(adapter, new Date(2024, 0, 15), "day");
-      const prevDay = previous(adapter, day);
+  it("should get next month", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const month = period(units, new Date("2024-01-15T00:00:00"), "month");
+    const nextMonth = nextOf(units, month);
 
-      expect(prevDay.type).toBe("day");
-      expect(prevDay.start.getDate()).toBe(14);
-      expect(prevDay.start.getMonth()).toBe(0);
+    expect(nextMonth.unit).toBe("month");
+    // February
+    expect(nextMonth.start).toStrictEqual(new Date("2024-02-01T00:00:00"));
+  });
+
+  it("should get next year", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const year = period(units, new Date("2024-06-15T00:00:00"), "year");
+    const nextYear = nextOf(units, year);
+
+    expect(nextYear.unit).toBe("year");
+    expect(nextYear.start).toStrictEqual(new Date("2025-01-01T00:00:00"));
+  });
+
+  it("should get next hour", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const hour = period(units, new Date("2024-01-15T14:00:00"), "hour");
+    const nextHour = nextOf(units, hour);
+
+    expect(nextHour.unit).toBe("hour");
+    expect(nextHour.start).toStrictEqual(new Date("2024-01-15T15:00:00"));
+  });
+});
+
+describe.each(adapters)(
+  "next() across boundaries with %s adapter",
+  (_name, units) => {
+    it("should handle month boundaries", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const lastDayOfMonth = period(
+        units,
+        new Date("2024-01-31T00:00:00"),
+        "day"
+      );
+      const nextDay = nextOf(units, lastDayOfMonth);
+
+      // February
+      expect(nextDay.start).toStrictEqual(new Date("2024-02-01T00:00:00"));
     });
 
-    it("should get previous month", () => {
-      const month = period(adapter, new Date(2024, 1, 15), "month");
-      const prevMonth = previous(adapter, month);
+    it("should handle year boundaries", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const december = period(units, new Date("2023-12-15T00:00:00"), "month");
+      const january = nextOf(units, december);
 
-      expect(prevMonth.type).toBe("month");
-      expect(prevMonth.start.getMonth()).toBe(0); // January
-      expect(prevMonth.start.getFullYear()).toBe(2024);
+      expect(january.start).toStrictEqual(new Date("2024-01-01T00:00:00"));
     });
 
-    it("should get previous year", () => {
-      const year = period(adapter, new Date(2024, 5, 15), "year");
-      const prevYear = previous(adapter, year);
+    it("should handle day boundary for hours", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const lastHour = period(units, new Date("2024-01-15T23:00:00"), "hour");
+      const nextHour = nextOf(units, lastHour);
 
-      expect(prevYear.type).toBe("year");
-      expect(prevYear.start.getFullYear()).toBe(2023);
+      expect(nextHour.start).toStrictEqual(new Date("2024-01-16T00:00:00"));
+    });
+  }
+);
+
+describe.each(adapters)(
+  "previous() by unit with %s adapter",
+  (_name, units) => {
+    it("should get previous day", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const day = period(units, new Date("2024-01-15T00:00:00"), "day");
+      const prevDay = previous(units, day);
+
+      expect(prevDay.unit).toBe("day");
+      expect(prevDay.start).toStrictEqual(new Date("2024-01-14T00:00:00"));
     });
 
-    it("should handle month boundaries", () => {
-      const firstDayOfMonth = period(adapter, new Date(2024, 1, 1), "day");
-      const prevDay = previous(adapter, firstDayOfMonth);
+    it("should get previous month", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const month = period(units, new Date("2024-02-15T00:00:00"), "month");
+      const prevMonth = previous(units, month);
 
-      expect(prevDay.start.getMonth()).toBe(0); // January
-      expect(prevDay.start.getDate()).toBe(31);
+      expect(prevMonth.unit).toBe("month");
+      // January
+      expect(prevMonth.start).toStrictEqual(new Date("2024-01-01T00:00:00"));
     });
 
-    it("should handle year boundaries", () => {
-      const january = period(adapter, new Date(2024, 0, 15), "month");
-      const december = previous(adapter, january);
+    it("should get previous year", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const year = period(units, new Date("2024-06-15T00:00:00"), "year");
+      const prevYear = previous(units, year);
 
-      expect(december.start.getFullYear()).toBe(2023);
-      expect(december.start.getMonth()).toBe(11);
+      expect(prevYear.unit).toBe("year");
+      expect(prevYear.start).toStrictEqual(new Date("2023-01-01T00:00:00"));
     });
 
-    it("should get previous minute", () => {
-      const minute = period(adapter, new Date(2024, 0, 15, 14, 30), "minute");
-      const prevMinute = previous(adapter, minute);
+    it("should get previous minute", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const minute = period(units, new Date("2024-01-15T14:30:00"), "minute");
+      const prevMinute = previous(units, minute);
 
-      expect(prevMinute.type).toBe("minute");
-      expect(prevMinute.start.getMinutes()).toBe(29);
+      expect(prevMinute.unit).toBe("minute");
+      expect(prevMinute.start).toStrictEqual(new Date("2024-01-15T14:29:00"));
+    });
+  }
+);
+
+describe.each(adapters)(
+  "previous() across boundaries with %s adapter",
+  (_name, units) => {
+    it("should handle month boundaries", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const firstDayOfMonth = period(
+        units,
+        new Date("2024-02-01T00:00:00"),
+        "day"
+      );
+      const prevDay = previous(units, firstDayOfMonth);
+
+      // January
+      expect(prevDay.start).toStrictEqual(new Date("2024-01-31T00:00:00"));
     });
 
-    it("should handle hour boundary for minutes", () => {
+    it("should handle year boundaries", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const january = period(units, new Date("2024-01-15T00:00:00"), "month");
+      const december = previous(units, january);
+
+      expect(december.start).toStrictEqual(new Date("2023-12-01T00:00:00"));
+    });
+
+    it("should handle hour boundary for minutes", { timeout: 5000 }, () => {
+      expect.hasAssertions();
       const firstMinute = period(
-        adapter,
-        new Date(2024, 0, 15, 14, 0),
+        units,
+        new Date("2024-01-15T14:00:00"),
         "minute"
       );
-      const prevMinute = previous(adapter, firstMinute);
+      const prevMinute = previous(units, firstMinute);
 
-      expect(prevMinute.start.getHours()).toBe(13);
-      expect(prevMinute.start.getMinutes()).toBe(59);
+      expect(prevMinute.start).toStrictEqual(new Date("2024-01-15T13:59:00"));
     });
-  });
+  }
+);
 
-  describe("next/previous consistency", () => {
-    it("should be reversible operations", () => {
-      const units = [
-        "year",
-        "month",
-        "week",
-        "day",
-        "hour",
-        "minute",
-        "second",
-      ] as const;
-      const date = new Date(2024, 5, 15, 14, 30, 45);
+describe.each(adapters)(
+  "next()/previous() consistency with %s adapter",
+  (_name, units) => {
+    it.each(NAVIGABLE_UNITS)(
+      "should be reversible operations for %s",
+      { timeout: 5000 },
+      (unit) => {
+        expect.hasAssertions();
+        const original = period(units, new Date("2024-06-15T14:30:45"), unit);
+        const backToPeriod = previous(units, nextOf(units, original));
 
-      units.forEach((unit) => {
-        const p = period(adapter, date, unit);
-        const nextPeriod = next(adapter, p);
-        const backToPeriod = previous(adapter, nextPeriod);
+        expect(backToPeriod.unit).toBe(original.unit);
+        expect(backToPeriod.start.getTime()).toBe(original.start.getTime());
+        expect(backToPeriod.end.getTime()).toBe(original.end.getTime());
+      }
+    );
 
-        expect(backToPeriod.type).toBe(p.type);
-        expect(backToPeriod.start.getTime()).toBe(p.start.getTime());
-        expect(backToPeriod.end.getTime()).toBe(p.end.getTime());
-      });
-    });
-
-    it("should maintain period continuity", () => {
-      const day = period(adapter, new Date(2024, 0, 15), "day");
-      const nextDay = next(adapter, day);
+    it("should maintain period continuity", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const day = period(units, new Date("2024-01-15T00:00:00"), "day");
+      const nextDay = nextOf(units, day);
 
       // End of current day should be just before start of next day
       const msBetween = nextDay.start.getTime() - day.end.getTime();
-      expect(msBetween).toBe(1);
+      expect(msBetween).toBe(ONE_MS);
     });
 
-    it("should handle week navigation correctly", () => {
-      const week = period(adapter, new Date(2024, 0, 15), "week");
-      const nextWeek = next(adapter, week);
-      const prevWeek = previous(adapter, week);
+    it("should handle week navigation correctly", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const week = period(units, new Date("2024-01-15T00:00:00"), "week");
+      const nextWeek = nextOf(units, week);
+      const prevWeek = previous(units, week);
 
       // Weeks should be exactly 7 days apart
       const nextDiff =
-        (nextWeek.start.getTime() - week.start.getTime()) /
-        (24 * 60 * 60 * 1000);
+        (nextWeek.start.getTime() - week.start.getTime()) / MS_PER_DAY;
       const prevDiff =
-        (week.start.getTime() - prevWeek.start.getTime()) /
-        (24 * 60 * 60 * 1000);
+        (week.start.getTime() - prevWeek.start.getTime()) / MS_PER_DAY;
 
-      expect(nextDiff).toBe(7);
-      expect(prevDiff).toBe(7);
+      expect(nextDiff).toBe(DAYS_PER_WEEK);
+      expect(prevDiff).toBe(DAYS_PER_WEEK);
     });
-  });
-});
+  }
+);

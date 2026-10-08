@@ -1,0 +1,53 @@
+import type { MinutaOptions, MinutaState } from "./types";
+import type { Period, Units } from "minuta/core";
+import { useCallback, useMemo, useState } from "react";
+import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
+
+const DEFAULT_UNITS: Units = nativeUnits();
+
+function currentDate(): Date {
+  return new Date();
+}
+
+/**
+ * Reactive minuta state: every operation bound to `units` (memoised on
+ * `units`), the browsed period and the period of "now".
+ *
+ * @example
+ * const minuta = useMinuta({ unit: "month" });
+ * minuta.browse(minuta.next(minuta.browsing));
+ *
+ * @param options - Units, initially browsed date, now and browsing unit
+ * @returns The bound operations with `units`, `browsing`, `now` and `browse`
+ */
+function useMinuta(options: MinutaOptions = {}): MinutaState {
+  const {
+    date,
+    now: nowOption,
+    unit = "month",
+    units = DEFAULT_UNITS,
+  } = options;
+  const [browsedDate, setBrowsedDate] = useState<Readonly<Date>>(
+    date ?? currentDate
+  );
+  const fallbackNow = useMemo(() => new Date(), []);
+  const nowDate = nowOption ?? fallbackNow;
+
+  const ops = useMemo(() => withUnits(units), [units]);
+  const browsing = useMemo(
+    () => ops.period(browsedDate, unit),
+    [ops, browsedDate, unit]
+  );
+  const now = useMemo(() => ops.period(nowDate, "second"), [ops, nowDate]);
+  const browse = useCallback((period: Period) => {
+    setBrowsedDate(period.start);
+  }, []);
+
+  return useMemo(() => {
+    const state = { browse, browsing, now, units };
+    return Object.assign(state, ops);
+  }, [browse, browsing, now, ops, units]);
+}
+
+export { useMinuta };

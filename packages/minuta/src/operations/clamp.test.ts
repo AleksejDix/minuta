@@ -1,51 +1,73 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { Period } from "#src/types";
 import { clamp } from "./clamp";
-import { createPeriod } from "./period";
+import { range } from "./period";
 
-describe("clamp", () => {
-  const bounds = createPeriod(new Date(2024, 0, 10), new Date(2024, 0, 20));
+function clampOrFail(period: Period, bounds: Period): Period {
+  const result = clamp(period, bounds);
+  if (result === undefined) {
+    throw new Error("Expected clamp to return a period");
+  }
+  return result;
+}
 
-  it("truncates period that extends past bounds", () => {
-    const wide = createPeriod(new Date(2024, 0, 5), new Date(2024, 0, 25));
-    const result = clamp(wide, bounds)!;
-    expect(result.start).toEqual(new Date(2024, 0, 10));
-    expect(result.end).toEqual(new Date(2024, 0, 20));
+function jan(day: string): Date {
+  return new Date(`2024-01-${day}T00:00`);
+}
+
+const bounds = range(jan("10"), jan("20"));
+
+describe("clamp() truncation", () => {
+  it("truncates period that extends past bounds", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const wide = range(jan("05"), jan("25"));
+    const result = clampOrFail(wide, bounds);
+    expect(result.start).toStrictEqual(jan("10"));
+    expect(result.end).toStrictEqual(jan("20"));
   });
 
-  it("returns as-is when fully within bounds", () => {
-    const inner = createPeriod(new Date(2024, 0, 12), new Date(2024, 0, 18));
-    const result = clamp(inner, bounds)!;
-    expect(result.start).toEqual(new Date(2024, 0, 12));
-    expect(result.end).toEqual(new Date(2024, 0, 18));
+  it("returns as-is when fully within bounds", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const inner = range(jan("12"), jan("18"));
+    const result = clampOrFail(inner, bounds);
+    expect(result.start).toStrictEqual(jan("12"));
+    expect(result.end).toStrictEqual(jan("18"));
   });
 
-  it("truncates start only", () => {
-    const earlyStart = createPeriod(
-      new Date(2024, 0, 5),
-      new Date(2024, 0, 15)
-    );
-    const result = clamp(earlyStart, bounds)!;
-    expect(result.start).toEqual(new Date(2024, 0, 10));
-    expect(result.end).toEqual(new Date(2024, 0, 15));
+  it("truncates start only", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const earlyStart = range(jan("05"), jan("15"));
+    const result = clampOrFail(earlyStart, bounds);
+    expect(result.start).toStrictEqual(jan("10"));
+    expect(result.end).toStrictEqual(jan("15"));
   });
 
-  it("truncates end only", () => {
-    const lateEnd = createPeriod(new Date(2024, 0, 15), new Date(2024, 0, 25));
-    const result = clamp(lateEnd, bounds)!;
-    expect(result.start).toEqual(new Date(2024, 0, 15));
-    expect(result.end).toEqual(new Date(2024, 0, 20));
+  it("truncates end only", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const lateEnd = range(jan("15"), jan("25"));
+    const result = clampOrFail(lateEnd, bounds);
+    expect(result.start).toStrictEqual(jan("15"));
+    expect(result.end).toStrictEqual(jan("20"));
   });
+});
 
-  it("returns null when entirely outside bounds", () => {
-    const before = createPeriod(new Date(2024, 0, 1), new Date(2024, 0, 5));
-    expect(clamp(before, bounds)).toBeNull();
+describe("clamp() result", () => {
+  it(
+    "returns undefined when entirely outside bounds",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const before = range(jan("01"), jan("05"));
+      expect(clamp(before, bounds)).toBeUndefined();
 
-    const after = createPeriod(new Date(2024, 0, 25), new Date(2024, 0, 30));
-    expect(clamp(after, bounds)).toBeNull();
-  });
+      const after = range(jan("25"), jan("30"));
+      expect(clamp(after, bounds)).toBeUndefined();
+    }
+  );
 
-  it("returns type custom", () => {
-    const inner = createPeriod(new Date(2024, 0, 12), new Date(2024, 0, 18));
-    expect(clamp(inner, bounds)!.type).toBe("custom");
+  it("returns unit custom", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const inner = range(jan("12"), jan("18"));
+    expect(clampOrFail(inner, bounds).unit).toBe("custom");
   });
 });

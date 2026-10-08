@@ -1,0 +1,62 @@
+{
+  "name": "input-dom",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Vanilla DOM binding for input-state: wires an <input> to keyboard, paste and selection events.",
+  "license": "Apache-2.0",
+  "author": "Aleksej Dix <git@aleksejdix.com>",
+  "homepage": "https://github.com/AleksejDix/minuta/tree/master/packages/input-dom",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleksejDix/minuta.git",
+    "directory": "packages/input-dom"
+  },
+  "bugs": {
+    "url": "https://github.com/AleksejDix/minuta/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "imports": {
+    "#src/*": {
+      "source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --mode demo",
+    "test": "vitest run",
+    "type-check": "tsc -p tsconfig.check.json && tsc -p examples/tsconfig.json",
+    "clean": "rm -rf dist node_modules",
+    "demo:build": "vite build --mode demo"
+  },
+  "devDependencies": {
+    "@minuta/tsconfig": "2.0.0-alpha.1",
+    "datefield": "^0.1.0",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.7.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.4.0",
+    "vitest": "^4.0.13"
+  },
+  "keywords": [
+    "input",
+    "dom",
+    "vanilla",
+    "mask",
+    "beforeinput",
+    "headless"
+  ],
+  "dependencies": {
+    "input-state": "^0.1.0"
+  }
+}

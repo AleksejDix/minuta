@@ -1,81 +1,118 @@
-import { describe, it, expect } from "vitest";
-import { createNativeAdapter } from "../adapters/native";
-import { createStableMonth } from "./stableMonth";
-import { createStableYear } from "./stableYear";
+import { describe, expect, it } from "vitest";
+import { firstOf, lastOf } from "./grid-test-helpers";
+import { monthGridWith } from "./month-grid";
+import { nativeUnits } from "#src/adapters/native/index";
+import { yearGridWith } from "./year-grid";
 
-const adapter = createNativeAdapter({ weekStartsOn: 1 });
+const SUNDAY = 0;
+const MONDAY = 1;
+const JANUARY = 0;
+const FEBRUARY = 1;
+const NEXT = 1;
+const PREVIOUS = -1;
+const ONE_MS = 1;
+const GRID_DAYS = 42;
+const YEAR_2024 = 2024;
+const YEAR_2025 = 2025;
+const MIN_WEEKS = 52;
+const MAX_WEEKS = 54;
 
-describe("stableMonth navigation via createStableMonth", () => {
-  const jan2024 = createStableMonth(adapter, 1, new Date(2024, 0, 15));
+const units = nativeUnits({ weekStartsOn: MONDAY });
+const sundayUnits = nativeUnits({ weekStartsOn: SUNDAY });
 
-  it("should create correct 42-day grid", () => {
-    expect(jan2024.periods.length).toBe(42);
+const jan2024 = monthGridWith(units, new Date("2024-01-15T00:00:00"));
+
+describe("monthGridWith() navigation forward", () => {
+  it("should create correct 42-day grid", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(jan2024.periods).toHaveLength(GRID_DAYS);
   });
 
-  it("should navigate to next month by creating new stableMonth", () => {
-    const nextMonthDate = adapter.add(jan2024.monthStart, 1, "month");
-    const feb = createStableMonth(adapter, jan2024.weekStartsOn, nextMonthDate);
+  it(
+    "should navigate to next month by creating new stableMonth",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const nextMonthDate = units.month.add(jan2024.monthStart, NEXT);
+      const feb = monthGridWith(units, nextMonthDate);
 
-    expect(feb.periods.length).toBe(42);
-    expect(feb.monthStart.getMonth()).toBe(1);
-    expect(feb.monthStart.getFullYear()).toBe(2024);
-  });
+      expect(feb.periods).toHaveLength(GRID_DAYS);
+      expect(feb.monthStart.getMonth()).toBe(FEBRUARY);
+      expect(feb.monthStart.getFullYear()).toBe(YEAR_2024);
+    }
+  );
 
-  it("should not just shift by duration when navigating", () => {
-    const nextMonthDate = adapter.add(jan2024.monthStart, 1, "month");
-    const feb = createStableMonth(adapter, jan2024.weekStartsOn, nextMonthDate);
+  it(
+    "should not just shift by duration when navigating",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const nextMonthDate = units.month.add(jan2024.monthStart, NEXT);
+      const feb = monthGridWith(units, nextMonthDate);
 
-    const janStart = jan2024.periods[0].start;
-    const janEnd = jan2024.periods[jan2024.periods.length - 1].end;
-    const shiftedStart = new Date(
-      janStart.getTime() + (janEnd.getTime() - janStart.getTime() + 1)
+      const janStart = firstOf(jan2024.periods).start;
+      const janEnd = lastOf(jan2024.periods).end;
+      const shiftedStart = new Date(
+        janStart.getTime() + (janEnd.getTime() - janStart.getTime() + ONE_MS)
+      );
+      expect(firstOf(feb.periods).start.getTime()).not.toBe(
+        shiftedStart.getTime()
+      );
+    }
+  );
+});
+
+describe("monthGridWith() navigation consistency", () => {
+  it("should preserve weekStartsOn", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const sundayGrid = monthGridWith(
+      sundayUnits,
+      new Date("2024-01-15T00:00:00")
     );
-    expect(feb.periods[0].start.getTime()).not.toBe(shiftedStart.getTime());
+    expect(firstOf(sundayGrid.periods).start.getDay()).toBe(SUNDAY);
+
+    const nextMonthDate = sundayUnits.month.add(sundayGrid.monthStart, NEXT);
+    const febSunday = monthGridWith(sundayUnits, nextMonthDate);
+    expect(firstOf(febSunday.periods).start.getDay()).toBe(SUNDAY);
+    expect(febSunday.weekStartsOn).toBe(SUNDAY);
   });
 
-  it("should preserve weekStartsOn", () => {
-    const sundayGrid = createStableMonth(adapter, 0, new Date(2024, 0, 15));
-    expect(sundayGrid.periods[0].start.getDay()).toBe(0);
+  it("should round-trip correctly", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const nextDate = units.month.add(jan2024.monthStart, NEXT);
+    const feb = monthGridWith(units, nextDate);
 
-    const nextMonthDate = adapter.add(sundayGrid.monthStart, 1, "month");
-    const febSunday = createStableMonth(adapter, 0, nextMonthDate);
-    expect(febSunday.periods[0].start.getDay()).toBe(0);
-    expect(febSunday.weekStartsOn).toBe(0);
-  });
+    const prevDate = units.month.add(feb.monthStart, PREVIOUS);
+    const janAgain = monthGridWith(units, prevDate);
 
-  it("should round-trip correctly", () => {
-    const nextDate = adapter.add(jan2024.monthStart, 1, "month");
-    const feb = createStableMonth(adapter, 1, nextDate);
-
-    const prevDate = adapter.add(feb.monthStart, -1, "month");
-    const janAgain = createStableMonth(adapter, 1, prevDate);
-
-    expect(janAgain.periods[0].start.getTime()).toBe(
-      jan2024.periods[0].start.getTime()
+    expect(firstOf(janAgain.periods).start.getTime()).toBe(
+      firstOf(jan2024.periods).start.getTime()
     );
   });
 
-  it("should handle year boundary crossing", () => {
-    const dec2024 = createStableMonth(adapter, 1, new Date(2024, 11, 15));
+  it("should handle year boundary crossing", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const dec2024 = monthGridWith(units, new Date("2024-12-15T00:00:00"));
 
-    const nextDate = adapter.add(dec2024.monthStart, 1, "month");
-    const jan2025 = createStableMonth(adapter, 1, nextDate);
+    const nextDate = units.month.add(dec2024.monthStart, NEXT);
+    const jan2025 = monthGridWith(units, nextDate);
 
-    expect(jan2025.periods.length).toBe(42);
-    expect(jan2025.monthStart.getMonth()).toBe(0);
-    expect(jan2025.monthStart.getFullYear()).toBe(2025);
+    expect(jan2025.periods).toHaveLength(GRID_DAYS);
+    expect(jan2025.monthStart.getMonth()).toBe(JANUARY);
+    expect(jan2025.monthStart.getFullYear()).toBe(YEAR_2025);
   });
 });
 
-describe("stableYear navigation via createStableYear", () => {
-  const year2024 = createStableYear(adapter, 1, new Date(2024, 5, 15));
+describe("yearGridWith() navigation", () => {
+  const year2024 = yearGridWith(units, new Date("2024-06-15T00:00:00"));
 
-  it("should navigate to next year", () => {
-    const nextDate = adapter.add(year2024.yearStart, 1, "year");
-    const year2025 = createStableYear(adapter, 1, nextDate);
+  it("should navigate to next year", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const nextDate = units.year.add(year2024.yearStart, NEXT);
+    const year2025 = yearGridWith(units, nextDate);
 
-    expect(year2025.yearStart.getFullYear()).toBe(2025);
-    expect(year2025.periods.length).toBeGreaterThanOrEqual(52);
-    expect(year2025.periods.length).toBeLessThanOrEqual(54);
+    expect(year2025.yearStart.getFullYear()).toBe(YEAR_2025);
+    expect(year2025.periods.length).toBeGreaterThanOrEqual(MIN_WEEKS);
+    expect(year2025.periods.length).toBeLessThanOrEqual(MAX_WEEKS);
   });
 });

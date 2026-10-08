@@ -1,36 +1,37 @@
-import type { UnitHandler } from "../../../types";
-import { plainDateTimeToLocal } from "../toLocalDate";
+import type { UnitSpec } from "#src/types";
+import { plainDateTimeToLocal } from "#src/adapters/temporal/to-local-date";
+import { toPlainDateTime } from "#src/adapters/temporal/temporal-api";
 
-export const hourHandler: UnitHandler = {
-  startOf(date: Date): Date {
-    const result = new Date(date);
-    result.setMinutes(0, 0, 0);
-    return result;
-  },
+const START_MINUTE = 0;
+const START_SECOND = 0;
+const START_MS = 0;
+const LAST_MINUTE = 59;
+const LAST_SECOND = 59;
+const LAST_MS = 999;
+const MS_PER_HOUR = 3_600_000;
 
-  endOf(date: Date): Date {
-    const result = new Date(date);
-    result.setMinutes(59, 59, 999);
-    return result;
-  },
-
-  add(date: Date, amount: number): Date {
-    const temporal = (globalThis as any).Temporal;
-    const plainDateTime = temporal.PlainDateTime.from({
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate(),
-      hour: date.getHours(),
-      minute: date.getMinutes(),
-      second: date.getSeconds(),
-      millisecond: date.getMilliseconds(),
-    });
-    const result = plainDateTime.add({ hours: amount });
+const hourHandler: UnitSpec = {
+  add(date: Readonly<Date>, amount: number): Date {
+    const result = toPlainDateTime(date).add({ hours: amount });
     return plainDateTimeToLocal(result);
   },
 
-  diff(from: Date, to: Date): number {
+  diff(from: Readonly<Date>, to: Readonly<Date>): number {
     const diffInMs = to.getTime() - from.getTime();
-    return Math.floor(diffInMs / (1000 * 60 * 60));
+    return Math.floor(diffInMs / MS_PER_HOUR);
+  },
+
+  endOf(date: Readonly<Date>): Date {
+    const result = new Date(date);
+    result.setMinutes(LAST_MINUTE, LAST_SECOND, LAST_MS);
+    return result;
+  },
+
+  startOf(date: Readonly<Date>): Date {
+    const result = new Date(date);
+    result.setMinutes(START_MINUTE, START_SECOND, START_MS);
+    return result;
   },
 };
+
+export { hourHandler };

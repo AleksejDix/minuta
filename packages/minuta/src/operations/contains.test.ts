@@ -1,200 +1,242 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { Period } from "#src/types";
 import { contains } from "./contains";
-import type { Period } from "../types";
 
-describe("contains", () => {
-  describe("Period contains Date", () => {
-    it("should check if year contains dates", () => {
-      const year: Period = {
-        start: new Date(2024, 0, 1, 0, 0, 0, 0),
-        end: new Date(2024, 11, 31, 23, 59, 59, 999),
-        type: "year",
-      };
+describe("contains() with a date in long periods", () => {
+  it("should check if year contains dates", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const year: Period = {
+      end: new Date("2024-12-31T23:59:59.999"),
+      start: new Date("2024-01-01T00:00"),
+      unit: "year",
+    };
 
-      expect(contains(year, new Date(2024, 0, 1))).toBe(true); // First day
-      expect(contains(year, new Date(2024, 11, 31))).toBe(true); // Last day
-      expect(contains(year, new Date(2024, 6, 15))).toBe(true); // Mid-year
-      expect(contains(year, new Date(2023, 11, 31))).toBe(false); // Previous year
-      expect(contains(year, new Date(2025, 0, 1))).toBe(false); // Next year
-    });
-
-    it("should check if month contains dates", () => {
-      const february: Period = {
-        start: new Date(2024, 1, 1, 0, 0, 0, 0),
-        end: new Date(2024, 1, 29, 23, 59, 59, 999), // Leap year
-        type: "month",
-      };
-
-      expect(contains(february, new Date(2024, 1, 1))).toBe(true); // First day
-      expect(contains(february, new Date(2024, 1, 29))).toBe(true); // Last day (leap year)
-      expect(contains(february, new Date(2024, 1, 15))).toBe(true); // Mid-month
-      expect(contains(february, new Date(2024, 0, 31))).toBe(false); // Previous month
-      expect(contains(february, new Date(2024, 2, 1))).toBe(false); // Next month
-    });
-
-    it("should check if week contains dates", () => {
-      const week: Period = {
-        start: new Date(2024, 0, 8, 0, 0, 0, 0), // Monday
-        end: new Date(2024, 0, 14, 23, 59, 59, 999), // Sunday
-        type: "week",
-      };
-
-      expect(contains(week, new Date(2024, 0, 8))).toBe(true); // Monday
-      expect(contains(week, new Date(2024, 0, 14))).toBe(true); // Sunday
-      expect(contains(week, new Date(2024, 0, 10))).toBe(true); // Wednesday
-      expect(contains(week, new Date(2024, 0, 7))).toBe(false); // Previous Sunday
-      expect(contains(week, new Date(2024, 0, 15))).toBe(false); // Next Monday
-    });
-
-    it("should check if day contains times", () => {
-      const day: Period = {
-        start: new Date(2024, 0, 15, 0, 0, 0, 0),
-        end: new Date(2024, 0, 15, 23, 59, 59, 999),
-        type: "day",
-      };
-
-      expect(contains(day, new Date(2024, 0, 15, 0, 0, 0))).toBe(true); // Start
-      expect(contains(day, new Date(2024, 0, 15, 23, 59, 59))).toBe(true); // End
-      expect(contains(day, new Date(2024, 0, 15, 12, 30))).toBe(true); // Noon
-      expect(contains(day, new Date(2024, 0, 16, 0, 0, 0))).toBe(false); // Next day
-    });
-
-    it("should check if hour contains minutes", () => {
-      const hour: Period = {
-        start: new Date(2024, 0, 15, 14, 0, 0, 0),
-        end: new Date(2024, 0, 15, 14, 59, 59, 999),
-        type: "hour",
-      };
-
-      expect(contains(hour, new Date(2024, 0, 15, 14, 0))).toBe(true); // Start
-      expect(contains(hour, new Date(2024, 0, 15, 14, 59, 59))).toBe(true); // End
-      expect(contains(hour, new Date(2024, 0, 15, 14, 30))).toBe(true); // Middle
-      expect(contains(hour, new Date(2024, 0, 15, 15, 0))).toBe(false); // Next hour
-      expect(contains(hour, new Date(2024, 0, 15, 13, 59, 59))).toBe(false); // Previous hour
-    });
+    // First day
+    expect(contains(year, new Date("2024-01-01T00:00"))).toBe(true);
+    // Last day
+    expect(contains(year, new Date("2024-12-31T00:00"))).toBe(true);
+    // Mid-year
+    expect(contains(year, new Date("2024-07-15T00:00"))).toBe(true);
+    // Previous year
+    expect(contains(year, new Date("2023-12-31T00:00"))).toBe(false);
+    // Next year
+    expect(contains(year, new Date("2025-01-01T00:00"))).toBe(false);
   });
 
-  describe("Period contains Period", () => {
-    it("should check if year contains month", () => {
-      const year: Period = {
-        start: new Date(2024, 0, 1),
-        end: new Date(2024, 11, 31, 23, 59, 59, 999),
-        type: "year",
-      };
+  it("should check if month contains dates", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const february: Period = {
+      // Leap year
+      end: new Date("2024-02-29T23:59:59.999"),
+      start: new Date("2024-02-01T00:00"),
+      unit: "month",
+    };
 
-      const june2024: Period = {
-        start: new Date(2024, 5, 1),
-        end: new Date(2024, 5, 30, 23, 59, 59, 999),
-        type: "month",
-      };
+    // First day
+    expect(contains(february, new Date("2024-02-01T00:00"))).toBe(true);
+    // Last day (leap year)
+    expect(contains(february, new Date("2024-02-29T00:00"))).toBe(true);
+    // Mid-month
+    expect(contains(february, new Date("2024-02-15T00:00"))).toBe(true);
+    // Previous month
+    expect(contains(february, new Date("2024-01-31T00:00"))).toBe(false);
+    // Next month
+    expect(contains(february, new Date("2024-03-01T00:00"))).toBe(false);
+  });
+});
 
-      const jan2025: Period = {
-        start: new Date(2025, 0, 1),
-        end: new Date(2025, 0, 31, 23, 59, 59, 999),
-        type: "month",
-      };
+describe("contains() with a date in short periods", () => {
+  it("should check if week contains dates", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const week: Period = {
+      // Sunday
+      end: new Date("2024-01-14T23:59:59.999"),
+      // Monday
+      start: new Date("2024-01-08T00:00"),
+      unit: "week",
+    };
 
-      expect(contains(year, june2024)).toBe(true);
-      expect(contains(year, jan2025)).toBe(false);
-    });
-
-    it("should check if month contains day", () => {
-      const month: Period = {
-        start: new Date(2024, 1, 1),
-        end: new Date(2024, 1, 29, 23, 59, 59, 999),
-        type: "month",
-      };
-
-      const dayInMonth: Period = {
-        start: new Date(2024, 1, 15, 0, 0, 0),
-        end: new Date(2024, 1, 15, 23, 59, 59, 999),
-        type: "day",
-      };
-
-      const dayOutsideMonth: Period = {
-        start: new Date(2024, 2, 1, 0, 0, 0),
-        end: new Date(2024, 2, 1, 23, 59, 59, 999),
-        type: "day",
-      };
-
-      expect(contains(month, dayInMonth)).toBe(true);
-      expect(contains(month, dayOutsideMonth)).toBe(false);
-    });
-
-    it("should check if week contains day", () => {
-      const week: Period = {
-        start: new Date(2024, 0, 8),
-        end: new Date(2024, 0, 14, 23, 59, 59, 999),
-        type: "week",
-      };
-
-      const monday: Period = {
-        start: new Date(2024, 0, 8, 0, 0, 0),
-        end: new Date(2024, 0, 8, 23, 59, 59, 999),
-        type: "day",
-      };
-
-      const nextMonday: Period = {
-        start: new Date(2024, 0, 15, 0, 0, 0),
-        end: new Date(2024, 0, 15, 23, 59, 59, 999),
-        type: "day",
-      };
-
-      expect(contains(week, monday)).toBe(true);
-      expect(contains(week, nextMonday)).toBe(false);
-    });
-
-    it("should check if day contains hour", () => {
-      const day: Period = {
-        start: new Date(2024, 0, 15, 0, 0, 0),
-        end: new Date(2024, 0, 15, 23, 59, 59, 999),
-        type: "day",
-      };
-
-      const morningHour: Period = {
-        start: new Date(2024, 0, 15, 8, 0, 0),
-        end: new Date(2024, 0, 15, 8, 59, 59, 999),
-        type: "hour",
-      };
-
-      const nextDayHour: Period = {
-        start: new Date(2024, 0, 16, 0, 0, 0),
-        end: new Date(2024, 0, 16, 0, 59, 59, 999),
-        type: "hour",
-      };
-
-      expect(contains(day, morningHour)).toBe(true);
-      expect(contains(day, nextDayHour)).toBe(false);
-    });
+    // Monday
+    expect(contains(week, new Date("2024-01-08T00:00"))).toBe(true);
+    // Sunday
+    expect(contains(week, new Date("2024-01-14T00:00"))).toBe(true);
+    // Wednesday
+    expect(contains(week, new Date("2024-01-10T00:00"))).toBe(true);
+    // Previous Sunday
+    expect(contains(week, new Date("2024-01-07T00:00"))).toBe(false);
+    // Next Monday
+    expect(contains(week, new Date("2024-01-15T00:00"))).toBe(false);
   });
 
-  describe("Edge cases", () => {
-    it("should handle boundary times correctly", () => {
-      const day: Period = {
-        start: new Date(2024, 0, 15, 0, 0, 0, 0),
-        end: new Date(2024, 0, 15, 23, 59, 59, 999),
-        type: "day",
-      };
+  it("should check if day contains times", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day: Period = {
+      end: new Date("2024-01-15T23:59:59.999"),
+      start: new Date("2024-01-15T00:00"),
+      unit: "day",
+    };
 
-      const startOfDay = new Date(2024, 0, 15, 0, 0, 0, 0);
-      const endOfDay = new Date(2024, 0, 15, 23, 59, 59, 999);
+    // Start
+    expect(contains(day, new Date("2024-01-15T00:00"))).toBe(true);
+    // End
+    expect(contains(day, new Date("2024-01-15T23:59:59"))).toBe(true);
+    // Noon
+    expect(contains(day, new Date("2024-01-15T12:30"))).toBe(true);
+    // Next day
+    expect(contains(day, new Date("2024-01-16T00:00"))).toBe(false);
+  });
+});
 
-      expect(contains(day, startOfDay)).toBe(true);
-      expect(contains(day, endOfDay)).toBe(true);
-    });
+describe("contains() with a date in an hour", () => {
+  it("should check if hour contains minutes", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const hour: Period = {
+      end: new Date("2024-01-15T14:59:59.999"),
+      start: new Date("2024-01-15T14:00"),
+      unit: "hour",
+    };
 
-    it("should handle cross-month boundaries", () => {
-      const january: Period = {
-        start: new Date(2024, 0, 1, 0, 0, 0),
-        end: new Date(2024, 0, 31, 23, 59, 59, 999),
-        type: "month",
-      };
+    // Start
+    expect(contains(hour, new Date("2024-01-15T14:00"))).toBe(true);
+    // End
+    expect(contains(hour, new Date("2024-01-15T14:59:59"))).toBe(true);
+    // Middle
+    expect(contains(hour, new Date("2024-01-15T14:30"))).toBe(true);
+    // Next hour
+    expect(contains(hour, new Date("2024-01-15T15:00"))).toBe(false);
+    // Previous hour
+    expect(contains(hour, new Date("2024-01-15T13:59:59"))).toBe(false);
+  });
+});
 
-      const lastDayJan = new Date(2024, 0, 31, 23, 59, 59);
-      const firstDayFeb = new Date(2024, 1, 1, 0, 0, 0);
+describe("contains() with a period in long periods", () => {
+  it("should check if year contains month", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const year: Period = {
+      end: new Date("2024-12-31T23:59:59.999"),
+      start: new Date("2024-01-01T00:00"),
+      unit: "year",
+    };
 
-      expect(contains(january, lastDayJan)).toBe(true);
-      expect(contains(january, firstDayFeb)).toBe(false);
-    });
+    const june2024: Period = {
+      end: new Date("2024-06-30T23:59:59.999"),
+      start: new Date("2024-06-01T00:00"),
+      unit: "month",
+    };
+
+    const jan2025: Period = {
+      end: new Date("2025-01-31T23:59:59.999"),
+      start: new Date("2025-01-01T00:00"),
+      unit: "month",
+    };
+
+    expect(contains(year, june2024)).toBe(true);
+    expect(contains(year, jan2025)).toBe(false);
+  });
+
+  it("should check if month contains day", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const month: Period = {
+      end: new Date("2024-02-29T23:59:59.999"),
+      start: new Date("2024-02-01T00:00"),
+      unit: "month",
+    };
+
+    const dayInMonth: Period = {
+      end: new Date("2024-02-15T23:59:59.999"),
+      start: new Date("2024-02-15T00:00"),
+      unit: "day",
+    };
+
+    const dayOutsideMonth: Period = {
+      end: new Date("2024-03-01T23:59:59.999"),
+      start: new Date("2024-03-01T00:00"),
+      unit: "day",
+    };
+
+    expect(contains(month, dayInMonth)).toBe(true);
+    expect(contains(month, dayOutsideMonth)).toBe(false);
+  });
+});
+
+describe("contains() with a period in short periods", () => {
+  it("should check if week contains day", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const week: Period = {
+      end: new Date("2024-01-14T23:59:59.999"),
+      start: new Date("2024-01-08T00:00"),
+      unit: "week",
+    };
+
+    const monday: Period = {
+      end: new Date("2024-01-08T23:59:59.999"),
+      start: new Date("2024-01-08T00:00"),
+      unit: "day",
+    };
+
+    const nextMonday: Period = {
+      end: new Date("2024-01-15T23:59:59.999"),
+      start: new Date("2024-01-15T00:00"),
+      unit: "day",
+    };
+
+    expect(contains(week, monday)).toBe(true);
+    expect(contains(week, nextMonday)).toBe(false);
+  });
+
+  it("should check if day contains hour", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day: Period = {
+      end: new Date("2024-01-15T23:59:59.999"),
+      start: new Date("2024-01-15T00:00"),
+      unit: "day",
+    };
+
+    const morningHour: Period = {
+      end: new Date("2024-01-15T08:59:59.999"),
+      start: new Date("2024-01-15T08:00"),
+      unit: "hour",
+    };
+
+    const nextDayHour: Period = {
+      end: new Date("2024-01-16T00:59:59.999"),
+      start: new Date("2024-01-16T00:00"),
+      unit: "hour",
+    };
+
+    expect(contains(day, morningHour)).toBe(true);
+    expect(contains(day, nextDayHour)).toBe(false);
+  });
+});
+
+describe("contains() edge cases", () => {
+  it("should handle boundary times correctly", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day: Period = {
+      end: new Date("2024-01-15T23:59:59.999"),
+      start: new Date("2024-01-15T00:00"),
+      unit: "day",
+    };
+
+    const startOfDay = new Date("2024-01-15T00:00");
+    const endOfDay = new Date("2024-01-15T23:59:59.999");
+
+    expect(contains(day, startOfDay)).toBe(true);
+    expect(contains(day, endOfDay)).toBe(true);
+  });
+
+  it("should handle cross-month boundaries", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const january: Period = {
+      end: new Date("2024-01-31T23:59:59.999"),
+      start: new Date("2024-01-01T00:00"),
+      unit: "month",
+    };
+
+    const lastDayJan = new Date("2024-01-31T23:59:59");
+    const firstDayFeb = new Date("2024-02-01T00:00");
+
+    expect(contains(january, lastDayJan)).toBe(true);
+    expect(contains(january, firstDayFeb)).toBe(false);
   });
 });

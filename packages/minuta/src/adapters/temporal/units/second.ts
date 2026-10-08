@@ -1,36 +1,33 @@
-import type { UnitHandler } from "../../../types";
-import { plainDateTimeToLocal } from "../toLocalDate";
+import type { UnitSpec } from "#src/types";
+import { plainDateTimeToLocal } from "#src/adapters/temporal/to-local-date";
+import { toPlainDateTime } from "#src/adapters/temporal/temporal-api";
 
-export const secondHandler: UnitHandler = {
-  startOf(date: Date): Date {
-    const result = new Date(date);
-    result.setMilliseconds(0);
-    return result;
-  },
+const START_MS = 0;
+const LAST_MS = 999;
+const MS_PER_SECOND = 1000;
 
-  endOf(date: Date): Date {
-    const result = new Date(date);
-    result.setMilliseconds(999);
-    return result;
-  },
-
-  add(date: Date, amount: number): Date {
-    const temporal = (globalThis as any).Temporal;
-    const plainDateTime = temporal.PlainDateTime.from({
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate(),
-      hour: date.getHours(),
-      minute: date.getMinutes(),
-      second: date.getSeconds(),
-      millisecond: date.getMilliseconds(),
-    });
-    const result = plainDateTime.add({ seconds: amount });
+const secondHandler: UnitSpec = {
+  add(date: Readonly<Date>, amount: number): Date {
+    const result = toPlainDateTime(date).add({ seconds: amount });
     return plainDateTimeToLocal(result);
   },
 
-  diff(from: Date, to: Date): number {
+  diff(from: Readonly<Date>, to: Readonly<Date>): number {
     const diffInMs = to.getTime() - from.getTime();
-    return Math.floor(diffInMs / 1000);
+    return Math.floor(diffInMs / MS_PER_SECOND);
+  },
+
+  endOf(date: Readonly<Date>): Date {
+    const result = new Date(date);
+    result.setMilliseconds(LAST_MS);
+    return result;
+  },
+
+  startOf(date: Readonly<Date>): Date {
+    const result = new Date(date);
+    result.setMilliseconds(START_MS);
+    return result;
   },
 };
+
+export { secondHandler };
