@@ -1,41 +1,49 @@
-import type { UnitHandler } from "../../../types";
+import type { UnitHandler } from "#src/types";
+
+const START_MINUTE = 0;
+const START_SECOND = 0;
+const START_MS = 0;
+const LAST_MINUTE = 59;
+const LAST_SECOND = 59;
+const LAST_MS = 999;
+const MS_PER_HOUR = 3_600_000;
 
 /**
  * Hour unit handler - pure functional implementation
  */
-export const hourHandler: UnitHandler = {
-  startOf: (date: Date): Date => {
-    return new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      date.getHours(),
-      0,
-      0,
-      0
-    );
+const hourHandler: UnitHandler = {
+  add: (date: Readonly<Date>, amount: number): Date => {
+    const result = new Date(date);
+    result.setHours(result.getHours() + amount);
+    return result;
   },
 
-  endOf: (date: Date): Date => {
-    return new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      date.getHours(),
-      59,
-      59,
-      999
-    );
-  },
-
-  add: (date: Date, amount: number): Date => {
-    const d = new Date(date);
-    d.setHours(d.getHours() + amount);
-    return d;
-  },
-
-  diff: (from: Date, to: Date): number => {
+  diff: (from: Readonly<Date>, to: Readonly<Date>): number => {
     const diffMs = to.getTime() - from.getTime();
-    return Math.floor(diffMs / (60 * 60 * 1000));
+    return Math.floor(diffMs / MS_PER_HOUR);
   },
+
+  endOf: (date: Readonly<Date>): Date =>
+    new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      LAST_MINUTE,
+      LAST_SECOND,
+      LAST_MS
+    ),
+
+  startOf: (date: Readonly<Date>): Date =>
+    new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      START_MINUTE,
+      START_SECOND,
+      START_MS
+    ),
 };
+
+export { hourHandler };

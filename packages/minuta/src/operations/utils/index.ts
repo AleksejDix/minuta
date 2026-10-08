@@ -1,4 +1,3 @@
-export { isWeekend } from "./isWeekend";
-export { isWeekday } from "./isWeekday";
-export { isToday } from "./isToday";
-export { isOverlapping } from "./isOverlapping";
+export { isWeekend } from "./is-weekend";
+export { isWeekday } from "./is-weekday";
+export { isToday } from "./is-today";

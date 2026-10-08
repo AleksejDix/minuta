@@ -1,21 +1,28 @@
-import type { Period } from "../types";
+import type { ReadonlyPeriod } from "#src/types";
 
 /**
- * Check if a period contains a date or another period
+ * Check if a period contains a date or another period.
+ *
+ * @param period - The containing period
+ * @param target - The date or period to test
+ * @returns True when the target lies fully within the period
  */
-export function contains(p: Period, target: Date | Period): boolean {
-  if (target instanceof Date) {
-    const targetTime = target.getTime();
-    const startTime = p.start.getTime();
-    const endTime = p.end.getTime();
-    return targetTime >= startTime && targetTime <= endTime;
-  } else {
-    // Check if target period is fully contained
-    const targetStart = target.start.getTime();
-    const targetEnd = target.end.getTime();
-    const thisStart = p.start.getTime();
-    const thisEnd = p.end.getTime();
+function contains(
+  period: ReadonlyPeriod,
+  target: Readonly<Date> | ReadonlyPeriod
+): boolean {
+  const startTime = period.start.getTime();
+  const endTime = period.end.getTime();
 
-    return targetStart >= thisStart && targetEnd <= thisEnd;
+  if ("start" in target) {
+    // Check if target period is fully contained
+    return (
+      target.start.getTime() >= startTime && target.end.getTime() <= endTime
+    );
   }
+
+  const targetTime = target.getTime();
+  return targetTime >= startTime && targetTime <= endTime;
 }
+
+export { contains };

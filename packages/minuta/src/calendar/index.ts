@@ -3,9 +3,9 @@
  *
  * Import from 'minuta/calendar'
  */
-export { createStableMonth } from "./stableMonth";
-export { createStableYear } from "./stableYear";
-export { createStableDay } from "./stableDay";
-export type { HourSlot, StableDay } from "./stableDay";
-export type { StableMonth } from "./stableMonth";
-export type { StableYear } from "./stableYear";
+export { createStableDay } from "./stable-day";
+export { createStableMonth } from "./stable-month";
+export { createStableYear } from "./stable-year";
+export type { HourSlot, StableDay } from "./stable-day";
+export type { StableMonth } from "./stable-month";
+export type { StableYear } from "./stable-year";

@@ -1,249 +1,283 @@
-import { describe, it, expect } from "vitest";
-import { createNativeAdapter } from "../adapters/native/adapter";
+import type { AdapterUnit, Period, ReadonlyPeriod } from "#src/types";
 import {
-  derivePeriod,
-  createPeriod,
-  go,
-  next,
-  previous,
-  divide,
-  merge,
-  split,
-  contains,
-  isSame,
   clamp,
-  snap,
-  move,
+  contains,
+  createPeriod,
+  derivePeriod,
+  divide,
   gap,
-} from "..";
-import { format, formatAsRange } from "../test/format";
+  go,
+  isSame,
+  merge,
+  move,
+  next as nextPeriod,
+  previous,
+  snap,
+  split,
+} from "#src/index";
+import { describe, expect, it } from "vitest";
+import { format, formatAsRange } from "#src/test/format";
+import { createNativeAdapter } from "#src/adapters/native/adapter";
+
+const FORWARD_TWO = 2;
+const BACKWARD_THREE = -3;
+const FORWARD_ONE = 1;
+const QUARTERS_PER_YEAR = 4;
+const LAST_QUARTER_INDEX = 3;
+const MIN_WEEKS_IN_MONTH = 4;
+const MAX_WEEKS_IN_MONTH = 6;
+const DAYS_PER_WEEK = 7;
+const SNAP_MINUTES = 15;
+const FIFTEEN_MINUTES_MS = 900_000;
+const NO_REMAINDER = 0;
 
 const adapter = createNativeAdapter();
-const p = (date: Date, unit: Parameters<typeof derivePeriod>[2]) =>
-  derivePeriod(adapter, date, unit);
 
-describe("dogfood: all operations with formatPeriod assertions", () => {
-  // ── go ──
+/**
+ * Derive a period from a local calendar date.
+ *
+ * @param isoDate - Local date as YYYY-MM-DD
+ * @param unit - Unit of the period
+ * @returns The period containing the date
+ */
+function period(isoDate: string, unit: AdapterUnit): Period {
+  return derivePeriod(adapter, new Date(`${isoDate}T00:00:00`), unit);
+}
 
-  describe("go", () => {
-    it("forward 2 months from June", () => {
-      expect(format(go(adapter, p(new Date(2024, 5, 15), "month"), 2))).toBe(
-        "August 2024"
-      );
-    });
+/**
+ * Narrow away null and undefined, failing the test otherwise.
+ *
+ * @param value - Value expected to be present
+ * @returns The value
+ */
+function required<TValue>(value: TValue | null | undefined): TValue {
+  if (value === null || value === undefined) {
+    throw new Error("Expected a value");
+  }
+  return value;
+}
 
-    it("backward across year boundary", () => {
-      expect(format(go(adapter, p(new Date(2024, 1, 15), "month"), -3))).toBe(
-        "November 2023"
-      );
-    });
-
-    it("forward 1 day from Jan 31", () => {
-      expect(format(go(adapter, p(new Date(2024, 0, 31), "day"), 1))).toBe(
-        "February 1, 2024"
-      );
-    });
-
-    it("forward 1 year", () => {
-      expect(format(go(adapter, p(new Date(2024, 5, 15), "year"), 1))).toBe(
-        "2025"
-      );
-    });
+describe("dogfood go()", () => {
+  it("forward 2 months from June", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = go(adapter, period("2024-06-15", "month"), FORWARD_TWO);
+    expect(format(result)).toBe("August 2024");
   });
 
-  // ── next / previous ──
-
-  describe("next", () => {
-    it("next month from December crosses year", () => {
-      expect(format(next(adapter, p(new Date(2024, 11, 15), "month")))).toBe(
-        "January 2025"
-      );
-    });
-
-    it("next day from Feb 28 in leap year", () => {
-      expect(format(next(adapter, p(new Date(2024, 1, 28), "day")))).toBe(
-        "February 29, 2024"
-      );
-    });
-
-    it("next day from Feb 28 in non-leap year", () => {
-      expect(format(next(adapter, p(new Date(2025, 1, 28), "day")))).toBe(
-        "March 1, 2025"
-      );
-    });
+  it("backward across year boundary", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = go(adapter, period("2024-02-15", "month"), BACKWARD_THREE);
+    expect(format(result)).toBe("November 2023");
   });
 
-  describe("previous", () => {
-    it("previous month from January crosses year", () => {
-      expect(format(previous(adapter, p(new Date(2024, 0, 15), "month")))).toBe(
-        "December 2023"
-      );
-    });
-
-    it("previous day from March 1", () => {
-      expect(format(previous(adapter, p(new Date(2024, 2, 1), "day")))).toBe(
-        "February 29, 2024"
-      );
-    });
+  it("forward 1 day from Jan 31", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = go(adapter, period("2024-01-31", "day"), FORWARD_ONE);
+    expect(format(result)).toBe("February 1, 2024");
   });
 
-  // ── divide ──
+  it("forward 1 year", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = go(adapter, period("2024-06-15", "year"), FORWARD_ONE);
+    expect(format(result)).toBe("2025");
+  });
+});
 
-  describe("divide", () => {
-    it("Q1 into months", () => {
-      const q1 = p(new Date(2024, 0, 15), "quarter");
-      expect(
-        divide(adapter, q1, "month").map((period) => format(period))
-      ).toEqual(["January 2024", "February 2024", "March 2024"]);
-    });
-
-    it("year into quarters (by month count)", () => {
-      const year = p(new Date(2024, 0, 1), "year");
-      const quarters = divide(adapter, year, "quarter");
-      expect(quarters.length).toBe(4);
-      expect(format(quarters[0])).toContain("Jan");
-      expect(format(quarters[0])).toContain("2024");
-      expect(format(quarters[3])).toContain("Oct");
-      expect(format(quarters[3])).toContain("2024");
-    });
-
-    it("month into weeks", () => {
-      const march = p(new Date(2026, 2, 1), "month");
-      const weeks = divide(adapter, march, "week");
-      expect(weeks.length).toBeGreaterThanOrEqual(4);
-      expect(weeks.length).toBeLessThanOrEqual(6);
-    });
-
-    it("week into days", () => {
-      const week = p(new Date(2026, 2, 11), "week");
-      const days = divide(adapter, week, "day");
-      expect(days.length).toBe(7);
-    });
+describe("dogfood next()", () => {
+  it("next month from December crosses year", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = nextPeriod(adapter, period("2024-12-15", "month"));
+    expect(format(result)).toBe("January 2025");
   });
 
-  // ── merge ──
-
-  describe("merge", () => {
-    it("merges 3 consecutive months into a quarter", () => {
-      const jan = p(new Date(2024, 0, 1), "month");
-      const feb = p(new Date(2024, 1, 1), "month");
-      const mar = p(new Date(2024, 2, 1), "month");
-      const merged = merge([jan, feb, mar], "quarter");
-      expect(formatAsRange(merged)).toContain("Jan");
-      expect(formatAsRange(merged)).toContain("Mar");
-      expect(formatAsRange(merged)).toContain("2024");
-    });
+  it("next day from Feb 28 in leap year", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = nextPeriod(adapter, period("2024-02-28", "day"));
+    expect(format(result)).toBe("February 29, 2024");
   });
 
-  // ── split ──
+  it("next day from Feb 28 in non-leap year", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = nextPeriod(adapter, period("2025-02-28", "day"));
+    expect(format(result)).toBe("March 1, 2025");
+  });
+});
 
-  describe("split", () => {
-    it("splits March at the 15th", () => {
-      const march = p(new Date(2026, 2, 1), "month");
-      const [first, second] = split(march, new Date(2026, 2, 15));
-      expect(formatAsRange(first)).toContain("Mar");
-      expect(formatAsRange(second)).toContain("Mar");
-    });
+describe("dogfood previous()", () => {
+  it("previous month from January crosses year", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = previous(adapter, period("2024-01-15", "month"));
+    expect(format(result)).toBe("December 2023");
   });
 
-  // ── contains ──
+  it("previous day from March 1", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const result = previous(adapter, period("2024-03-01", "day"));
+    expect(format(result)).toBe("February 29, 2024");
+  });
+});
 
-  describe("contains", () => {
-    it("March contains March 15", () => {
-      const march = p(new Date(2026, 2, 1), "month");
-      expect(contains(march, new Date(2026, 2, 15))).toBe(true);
-    });
-
-    it("March does not contain April 1", () => {
-      const march = p(new Date(2026, 2, 1), "month");
-      expect(contains(march, new Date(2026, 3, 1))).toBe(false);
-    });
-
-    it("Q1 contains February", () => {
-      const q1 = p(new Date(2024, 0, 1), "quarter");
-      const feb = p(new Date(2024, 1, 1), "month");
-      expect(contains(q1, feb)).toBe(true);
-    });
+describe("dogfood divide()", () => {
+  it("q1 into months", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const q1 = period("2024-01-15", "quarter");
+    expect(
+      divide(adapter, q1, "month").map((month: ReadonlyPeriod) => format(month))
+    ).toStrictEqual(["January 2024", "February 2024", "March 2024"]);
   });
 
-  // ── isSame ──
-
-  describe("isSame", () => {
-    it("two days in same month", () => {
-      const day1 = p(new Date(2024, 2, 5), "day");
-      const day2 = p(new Date(2024, 2, 20), "day");
-      expect(isSame(adapter, day1, day2, "month")).toBe(true);
-    });
-
-    it("two days in different months", () => {
-      const day1 = p(new Date(2024, 2, 31), "day");
-      const day2 = p(new Date(2024, 3, 1), "day");
-      expect(isSame(adapter, day1, day2, "month")).toBe(false);
-    });
+  it("year into quarters (by month count)", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const year = period("2024-01-01", "year");
+    const quarters = divide(adapter, year, "quarter");
+    expect(quarters).toHaveLength(QUARTERS_PER_YEAR);
+    const [first] = quarters;
+    const last = quarters[LAST_QUARTER_INDEX];
+    expect(format(required(first))).toContain("Jan");
+    expect(format(required(first))).toContain("2024");
+    expect(format(required(last))).toContain("Oct");
+    expect(format(required(last))).toContain("2024");
   });
 
-  // ── clamp ──
-
-  describe("clamp", () => {
-    it("clamps a wide period to bounds", () => {
-      const wide = createPeriod(new Date(2024, 0, 1), new Date(2024, 11, 31));
-      const bounds = createPeriod(new Date(2024, 2, 1), new Date(2024, 5, 30));
-      const result = clamp(wide, bounds)!;
-      expect(formatAsRange(result)).toContain("Mar");
-      expect(formatAsRange(result)).toContain("Jun");
-    });
+  it("month into weeks", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const march = period("2026-03-01", "month");
+    const weeks = divide(adapter, march, "week");
+    expect(weeks.length).toBeGreaterThanOrEqual(MIN_WEEKS_IN_MONTH);
+    expect(weeks.length).toBeLessThanOrEqual(MAX_WEEKS_IN_MONTH);
   });
 
-  // ── snap ──
+  it("week into days", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const week = period("2026-03-11", "week");
+    const days = divide(adapter, week, "day");
+    expect(days).toHaveLength(DAYS_PER_WEEK);
+  });
+});
 
-  describe("snap", () => {
-    it("snaps a date to nearest 15-minute interval", () => {
-      const date = new Date(2024, 2, 15, 10, 38);
-      const snapped = snap(date, 15 * 60000);
-      // Should round to nearest 15-min boundary
-      expect(snapped.getMinutes() % 15).toBe(0);
-    });
-
-    it("floor snaps to earlier boundary", () => {
-      const date = new Date(2024, 2, 15, 10, 37);
-      const snapped = snap(date, 15 * 60000, "floor");
-      expect(snapped.getTime()).toBeLessThanOrEqual(date.getTime());
-    });
-
-    it("ceil snaps to later boundary", () => {
-      const date = new Date(2024, 2, 15, 10, 37);
-      const snapped = snap(date, 15 * 60000, "ceil");
-      expect(snapped.getTime()).toBeGreaterThanOrEqual(date.getTime());
-    });
+describe("dogfood merge() and split()", () => {
+  it("merges 3 consecutive months into a quarter", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const jan = period("2024-01-01", "month");
+    const feb = period("2024-02-01", "month");
+    const mar = period("2024-03-01", "month");
+    const merged = merge([jan, feb, mar], "quarter");
+    expect(formatAsRange(merged)).toContain("Jan");
+    expect(formatAsRange(merged)).toContain("Mar");
+    expect(formatAsRange(merged)).toContain("2024");
   });
 
-  // ── move ──
+  it("splits March at the 15th", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const march = period("2026-03-01", "month");
+    const [first, second] = split(march, new Date("2026-03-15T00:00:00"));
+    expect(formatAsRange(first)).toContain("Mar");
+    expect(formatAsRange(second)).toContain("Mar");
+  });
+});
 
-  describe("move", () => {
-    it("moves a period to a new anchor date", () => {
-      const week = createPeriod(new Date(2024, 0, 1), new Date(2024, 0, 7));
-      const moved = move(week, new Date(2024, 5, 1));
-      expect(formatAsRange(moved)).toContain("Jun");
-    });
+describe("dogfood contains()", () => {
+  it("march contains March 15", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const march = period("2026-03-01", "month");
+    expect(contains(march, new Date("2026-03-15T00:00:00"))).toBe(true);
   });
 
-  // ── gap ──
+  it("march does not contain April 1", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const march = period("2026-03-01", "month");
+    expect(contains(march, new Date("2026-04-01T00:00:00"))).toBe(false);
+  });
 
-  describe("gap", () => {
-    it("finds gap between two periods", () => {
-      const jan = p(new Date(2024, 0, 1), "month");
-      const mar = p(new Date(2024, 2, 1), "month");
-      const g = gap(jan, mar);
-      expect(g).not.toBeUndefined();
-      expect(formatAsRange(g!)).toContain("Feb");
-    });
+  it("q1 contains February", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const q1 = period("2024-01-01", "quarter");
+    const feb = period("2024-02-01", "month");
+    expect(contains(q1, feb)).toBe(true);
+  });
+});
 
-    it("returns zero-duration for adjacent periods", () => {
-      const jan = p(new Date(2024, 0, 1), "month");
-      const feb = p(new Date(2024, 1, 1), "month");
-      const g = gap(jan, feb);
-      // Adjacent months: gap is zero-duration (start === end)
-      expect(g.start.getTime()).toBe(g.end.getTime());
-    });
+describe("dogfood isSame() and clamp()", () => {
+  it("two days in same month", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day1 = period("2024-03-05", "day");
+    const day2 = period("2024-03-20", "day");
+    expect(isSame(adapter, day1, day2, "month")).toBe(true);
+  });
+
+  it("two days in different months", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day1 = period("2024-03-31", "day");
+    const day2 = period("2024-04-01", "day");
+    expect(isSame(adapter, day1, day2, "month")).toBe(false);
+  });
+
+  it("clamps a wide period to bounds", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const wide = createPeriod(
+      new Date("2024-01-01T00:00:00"),
+      new Date("2024-12-31T00:00:00")
+    );
+    const bounds = createPeriod(
+      new Date("2024-03-01T00:00:00"),
+      new Date("2024-06-30T00:00:00")
+    );
+    const result = required(clamp(wide, bounds));
+    expect(formatAsRange(result)).toContain("Mar");
+    expect(formatAsRange(result)).toContain("Jun");
+  });
+});
+
+describe("dogfood snap()", () => {
+  it("snaps a date to nearest 15-minute interval", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const date = new Date("2024-03-15T10:38:00");
+    const snapped = snap(date, FIFTEEN_MINUTES_MS);
+    // Should round to nearest 15-min boundary
+    expect(snapped.getMinutes() % SNAP_MINUTES).toBe(NO_REMAINDER);
+  });
+
+  it("floor snaps to earlier boundary", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const date = new Date("2024-03-15T10:37:00");
+    const snapped = snap(date, FIFTEEN_MINUTES_MS, "floor");
+    expect(snapped.getTime()).toBeLessThanOrEqual(date.getTime());
+  });
+
+  it("ceil snaps to later boundary", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const date = new Date("2024-03-15T10:37:00");
+    const snapped = snap(date, FIFTEEN_MINUTES_MS, "ceil");
+    expect(snapped.getTime()).toBeGreaterThanOrEqual(date.getTime());
+  });
+});
+
+describe("dogfood move() and gap()", () => {
+  it("moves a period to a new anchor date", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const week = createPeriod(
+      new Date("2024-01-01T00:00:00"),
+      new Date("2024-01-07T00:00:00")
+    );
+    const moved = move(week, new Date("2024-06-01T00:00:00"));
+    expect(formatAsRange(moved)).toContain("Jun");
+  });
+
+  it("finds gap between two periods", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const jan = period("2024-01-01", "month");
+    const mar = period("2024-03-01", "month");
+    const between = gap(jan, mar);
+    expect(between).toBeDefined();
+    expect(formatAsRange(between)).toContain("Feb");
+  });
+
+  it("returns zero-duration for adjacent periods", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const jan = period("2024-01-01", "month");
+    const feb = period("2024-02-01", "month");
+    const between = gap(jan, feb);
+    // Adjacent months: gap is zero-duration (start === end)
+    expect(between.start.getTime()).toBe(between.end.getTime());
   });
 });

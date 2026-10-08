@@ -1,15 +1,18 @@
-import type { Adapter, AdapterUnit } from "../types";
+import type { Adapter, AdapterUnit } from "#src/types";
 import type { DateFormat, Segment } from "./types";
-import { toDate, fromDate } from "./convert";
+import { fromDate, toDate } from "./convert";
+
+const INCREMENT = 1;
+const DECREMENT = -1;
 
 /** Map editable segment types to adapter units */
-const UNIT_MAP: Record<string, AdapterUnit> = {
+const UNIT_MAP: Partial<Record<string, AdapterUnit>> = {
   day: "day",
-  month: "month",
-  year: "year",
   hour: "hour",
   minute: "minute",
+  month: "month",
   second: "second",
+  year: "year",
 };
 
 /**
@@ -27,24 +30,38 @@ const UNIT_MAP: Record<string, AdapterUnit> = {
  * If no valid date can be derived from the current segments
  * (e.g. empty input), returns today's date as segments.
  *
+ * @param adapter - Adapter used for date arithmetic
+ * @param segments - Current segments
+ * @param index - Index of the segment to change
  * @param direction - 1 for increment, -1 for decrement
+ * @param format - Format of the resulting segments
+ * @param locale - Locale for derived segments
+ * @returns The new segments, or the same array when the segment is not editable
  */
-export function incrementSegment(
+// oxlint-disable-next-line eslint/max-params -- Public API signature; an options object would break callers
+function incrementSegment(
   adapter: Adapter,
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Returned by identity when unchanged; readonly would change the public return type
   segments: Segment[],
   index: number,
-  direction: 1 | -1,
-  format: DateFormat,
+  direction: typeof INCREMENT | typeof DECREMENT,
+  format: Readonly<DateFormat>,
   locale?: string
 ): Segment[] {
   const seg = segments[index];
-  if (!seg || seg.type === "literal") return segments;
+  if (seg === undefined || seg.type === "literal") {
+    return segments;
+  }
 
   const unit = UNIT_MAP[seg.type];
-  if (!unit) return segments;
+  if (unit === undefined) {
+    return segments;
+  }
 
   const date = toDate(adapter, segments) ?? new Date();
   const newDate = adapter.add(date, direction, unit);
 
   return fromDate(adapter, newDate, format, locale);
 }
+
+export { incrementSegment };

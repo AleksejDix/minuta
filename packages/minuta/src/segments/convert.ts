@@ -1,16 +1,32 @@
-import type { Adapter } from "../types";
-import type { DateFormat, EditableSegmentType, Segment } from "./types";
+import type {
+  DateFormat,
+  EditableSegmentType,
+  FormatToken,
+  Segment,
+} from "./types";
+import type { Adapter } from "#src/types";
+import { extractDerivedPart } from "./derived-part";
 
-const EDITABLE_TYPES = new Set<string>([
-  "day",
-  "month",
-  "year",
-  "hour",
-  "minute",
-  "second",
-]);
+const DEFAULT_TIME_PART = 0;
+const MONTH_OFFSET = 1;
+const ZERO_PAD = "0";
+const DIGITS = /^\d+$/u;
 
-const DERIVED_TYPES = new Set<string>([
+type DateParts = Partial<Record<EditableSegmentType, number>>;
+
+type DatePartGetter = (date: Readonly<Date>) => number;
+
+const EDITABLE_GETTERS: Readonly<Record<EditableSegmentType, DatePartGetter>> =
+  {
+    day: (date) => date.getDate(),
+    hour: (date) => date.getHours(),
+    minute: (date) => date.getMinutes(),
+    month: (date) => date.getMonth() + MONTH_OFFSET,
+    second: (date) => date.getSeconds(),
+    year: (date) => date.getFullYear(),
+  };
+
+const DERIVED_TYPES: ReadonlySet<string> = new Set<string>([
   "era",
   "weekday",
   "dayPeriod",
@@ -18,62 +34,131 @@ const DERIVED_TYPES = new Set<string>([
   "timeZoneName",
 ]);
 
+function isEditableType(type: string): type is EditableSegmentType {
+  return Object.hasOwn(EDITABLE_GETTERS, type);
+}
+
+/**
+ * Collect the numeric value of every editable segment.
+ *
+ * @param segments - Segments to read
+ * @returns The parts, or undefined if an editable segment is not all digits
+ */
+function collectParts(segments: readonly Segment[]): DateParts | undefined {
+  const parts: DateParts = {};
+  for (const seg of segments) {
+    if (isEditableType(seg.type)) {
+      if (!DIGITS.test(seg.value)) {
+        return undefined;
+      }
+      parts[seg.type] = Number(seg.value);
+    }
+  }
+  return parts;
+}
+
+/**
+ * Check that the date did not roll over (e.g. Feb 30 → Mar 2).
+ *
+ * @param candidate - Date built from the parts
+ * @param parts - Parts the date was built from
+ * @returns True if every present part matches the date
+ */
+function matchesParts(
+  candidate: Readonly<Date>,
+  parts: Readonly<DateParts>
+): boolean {
+  const keys: readonly EditableSegmentType[] = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "second",
+  ];
+  return keys.every((key) => {
+    const expected = parts[key];
+    return (
+      expected === undefined || EDITABLE_GETTERS[key](candidate) === expected
+    );
+  });
+}
+
+function buildDate(parts: Readonly<DateParts>): Date | undefined {
+  const { day, month, year } = parts;
+  if (day === undefined || month === undefined || year === undefined) {
+    return undefined;
+  }
+  const candidate = new Date(
+    year,
+    month - MONTH_OFFSET,
+    day,
+    parts.hour ?? DEFAULT_TIME_PART,
+    parts.minute ?? DEFAULT_TIME_PART,
+    parts.second ?? DEFAULT_TIME_PART
+  );
+  if (!matchesParts(candidate, parts)) {
+    return undefined;
+  }
+  return candidate;
+}
+
 /**
  * Convert segments to a Date using the adapter.
  * Returns undefined if the segments don't form a valid date.
  *
  * Editable segments (day, month, year, hour, minute, second) are parsed.
  * Derived segments (era, weekday, dayPeriod, etc.) are ignored — they're computed from the date.
+ *
+ * @param _adapter - Adapter (reserved, currently unused)
+ * @param segments - Segments to convert
+ * @returns The date, or undefined if the segments are incomplete or invalid
  */
-export function toDate(
+function toDate(
   _adapter: Adapter,
-  segments: Segment[]
+  segments: readonly Segment[]
 ): Date | undefined {
-  const parts: Record<string, number> = {};
-
-  for (const seg of segments) {
-    if (seg.type === "literal" || DERIVED_TYPES.has(seg.type)) continue;
-    if (!/^\d+$/.test(seg.value)) return undefined;
-    const n = parseInt(seg.value, 10);
-    parts[seg.type] = n;
-  }
-
-  if (
-    parts.day === undefined ||
-    parts.month === undefined ||
-    parts.year === undefined
-  ) {
+  const parts = collectParts(segments);
+  if (parts === undefined) {
     return undefined;
   }
+  return buildDate(parts);
+}
 
-  const candidate = new Date(
-    parts.year,
-    parts.month - 1,
-    parts.day,
-    parts.hour ?? 0,
-    parts.minute ?? 0,
-    parts.second ?? 0
-  );
+type TokenInput = {
+  readonly date: Readonly<Date>;
+  readonly locale: string | undefined;
+  readonly pos: number;
+  readonly token: Readonly<FormatToken>;
+};
 
-  // Validate: if the date rolled over (e.g. Feb 30 → Mar 2), it's invalid
-  if (
-    candidate.getFullYear() !== parts.year ||
-    candidate.getMonth() !== parts.month - 1 ||
-    candidate.getDate() !== parts.day
-  ) {
-    return undefined;
+function tokenToSegment(input: TokenInput): Segment | undefined {
+  const { date, locale, pos, token } = input;
+  if (token.type === "literal") {
+    return {
+      end: pos + token.char.length,
+      start: pos,
+      type: "literal",
+      value: token.char,
+    };
   }
-
-  // Validate time parts if present
-  if (
-    (parts.hour !== undefined && candidate.getHours() !== parts.hour) ||
-    (parts.minute !== undefined && candidate.getMinutes() !== parts.minute) ||
-    (parts.second !== undefined && candidate.getSeconds() !== parts.second)
-  ) {
-    return undefined;
+  if (isEditableType(token.type)) {
+    const value = String(EDITABLE_GETTERS[token.type](date)).padStart(
+      token.length,
+      ZERO_PAD
+    );
+    return { end: pos + token.length, start: pos, type: token.type, value };
   }
-
-  return candidate;
+  if (DERIVED_TYPES.has(token.type)) {
+    const value = extractDerivedPart({
+      date,
+      length: token.length,
+      locale,
+      type: token.type,
+    });
+    return { end: pos + value.length, start: pos, type: token.type, value };
+  }
+  return undefined;
 }
 
 /**
@@ -81,109 +166,42 @@ export function toDate(
  *
  * Handles editable segments (day, month, year, hour, minute, second)
  * and derived segments (era, weekday, dayPeriod, fractionalSecond, timeZoneName).
+ *
+ * @param _adapter - Adapter (reserved, currently unused)
+ * @param date - Date to convert
+ * @param format - Format of the segments
+ * @param locale - Locale for derived segments (defaults to en-US)
+ * @returns The segments
  */
-export function fromDate(
+// oxlint-disable-next-line eslint/max-params -- Public API signature; an options object would break callers
+function fromDate(
   _adapter: Adapter,
-  date: Date,
-  format: DateFormat,
+  date: Readonly<Date>,
+  format: Readonly<DateFormat>,
   locale?: string
 ): Segment[] {
   let pos = 0;
   const segments: Segment[] = [];
 
   for (const token of format) {
-    if (token.type === "literal") {
-      segments.push({
-        type: "literal",
-        value: token.char,
-        start: pos,
-        end: pos + token.char.length,
-      });
-      pos += token.char.length;
-    } else if (EDITABLE_TYPES.has(token.type)) {
-      const value = extractEditablePart(
-        date,
-        token.type as EditableSegmentType,
-        token.length
-      );
-      segments.push({
-        type: token.type,
-        value,
-        start: pos,
-        end: pos + token.length,
-      });
-      pos += token.length;
-    } else if (DERIVED_TYPES.has(token.type)) {
-      const value = extractDerivedPart(date, token.type, token.length, locale);
-      segments.push({
-        type: token.type,
-        value,
-        start: pos,
-        end: pos + value.length,
-      });
-      pos += value.length;
+    const segment = tokenToSegment({ date, locale, pos, token });
+    if (segment !== undefined) {
+      segments.push(segment);
+      pos = segment.end;
     }
   }
 
   return segments;
 }
 
-function extractEditablePart(
-  date: Date,
-  type: EditableSegmentType,
-  length: number
-): string {
-  switch (type) {
-    case "day":
-      return String(date.getDate()).padStart(length, "0");
-    case "month":
-      return String(date.getMonth() + 1).padStart(length, "0");
-    case "year":
-      return String(date.getFullYear()).padStart(length, "0");
-    case "hour":
-      return String(date.getHours()).padStart(length, "0");
-    case "minute":
-      return String(date.getMinutes()).padStart(length, "0");
-    case "second":
-      return String(date.getSeconds()).padStart(length, "0");
-  }
-}
-
-function extractDerivedPart(
-  date: Date,
-  type: string,
-  length: number,
-  locale?: string
-): string {
-  const loc = locale ?? "en-US";
-  const optionMap: Record<string, Intl.DateTimeFormatOptions> = {
-    era: { era: length <= 2 ? "narrow" : length <= 3 ? "short" : "long" },
-    weekday: {
-      weekday: length <= 2 ? "narrow" : length <= 3 ? "short" : "long",
-    },
-    dayPeriod: {
-      hour: "numeric",
-      hour12: true,
-      dayPeriod: length <= 2 ? "narrow" : length <= 4 ? "short" : "long",
-    },
-    fractionalSecond: { fractionalSecondDigits: length as 1 | 2 | 3 },
-    timeZoneName: {
-      timeZoneName: length <= 4 ? "short" : "long",
-    },
-  };
-
-  const opts = optionMap[type];
-  if (!opts) return "";
-
-  const fmt = new Intl.DateTimeFormat(loc, opts);
-  const parts = fmt.formatToParts(date);
-  const part = parts.find((p) => p.type === type);
-  return part?.value ?? "";
-}
-
 /**
  * Concatenate segment values into a display string.
+ *
+ * @param segments - Segments to join
+ * @returns The display string
  */
-export function segmentsToString(segments: Segment[]): string {
-  return segments.map((s) => s.value).join("");
+function segmentsToString(segments: readonly Segment[]): string {
+  return segments.map((seg) => seg.value).join("");
 }
+
+export { fromDate, segmentsToString, toDate };

@@ -1,36 +1,44 @@
-import type { Adapter } from "../../types";
-import { createAdapter } from "../createAdapter";
+import {
+  createWeekHandler,
+  dayHandler,
+  hourHandler,
+  minuteHandler,
+  monthHandler,
+  quarterHandler,
+  secondHandler,
+  yearHandler,
+} from "./units/index";
+import type { Adapter } from "#src/types";
 import { Temporal } from "@js-temporal/polyfill";
-import { yearHandler } from "./units/year";
-import { quarterHandler } from "./units/quarter";
-import { monthHandler } from "./units/month";
-import { createWeekHandler } from "./units/week";
-import { dayHandler } from "./units/day";
-import { hourHandler } from "./units/hour";
-import { minuteHandler } from "./units/minute";
-import { secondHandler } from "./units/second";
+import type { WeekStartsOn } from "./units/index";
+import { createAdapter } from "#src/adapters/create-adapter";
+import { hasTemporal } from "./temporal-api";
 
-if (typeof (globalThis as any).Temporal === "undefined") {
-  (globalThis as any).Temporal = Temporal;
+const MONDAY = 1;
+
+if (!hasTemporal(globalThis)) {
+  Object.assign(globalThis, { Temporal });
 }
 
-export function createMinutaAdapter({
-  weekStartsOn = 1,
-}: { weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {}): Adapter {
-  if (typeof (globalThis as any).Temporal === "undefined") {
+function createMinutaAdapter({
+  weekStartsOn = MONDAY,
+}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): Adapter {
+  if (!hasTemporal(globalThis)) {
     throw new Error("Temporal API is not available in this environment.");
   }
 
   return createAdapter({
-    year: yearHandler,
-    quarter: quarterHandler,
-    month: monthHandler,
-    week: createWeekHandler(weekStartsOn),
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
+    month: monthHandler,
+    quarter: quarterHandler,
     second: secondHandler,
+    week: createWeekHandler(weekStartsOn),
+    year: yearHandler,
   });
 }
 
-export const minutaAdapter = createMinutaAdapter({ weekStartsOn: 1 });
+const minutaAdapter: Adapter = createMinutaAdapter({ weekStartsOn: MONDAY });
+
+export { createMinutaAdapter, minutaAdapter };

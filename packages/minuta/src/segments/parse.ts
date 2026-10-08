@@ -1,28 +1,72 @@
-import type { DateFormat, Segment, SegmentType } from "./types";
+import type { DateFormat, FormatToken, Segment, SegmentType } from "./types";
+
+const PLACEHOLDER = "_";
+const REFERENCE_YEAR = 2026;
+/** Zero-based: 10 is November */
+const REFERENCE_MONTH_INDEX = 10;
+const REFERENCE_DAY = 13;
+const REFERENCE_HOUR = 14;
+const REFERENCE_MINUTE = 35;
+const REFERENCE_SECOND = 47;
+const REFERENCE_MILLISECOND = 123;
 
 /**
  * Intl part types mapped to our SegmentType.
  */
-const INTL_TYPE_MAP: Record<string, SegmentType> = {
+const INTL_TYPE_MAP: Readonly<Partial<Record<string, SegmentType>>> = {
   day: "day",
-  month: "month",
-  year: "year",
-  hour: "hour",
-  minute: "minute",
-  second: "second",
-  era: "era",
-  weekday: "weekday",
   dayPeriod: "dayPeriod",
+  era: "era",
   fractionalSecond: "fractionalSecond",
-  timeZoneName: "timeZoneName",
+  hour: "hour",
   literal: "literal",
+  minute: "minute",
+  month: "month",
+  second: "second",
+  timeZoneName: "timeZoneName",
+  weekday: "weekday",
+  year: "year",
 };
 
 /**
  * A reference date that produces unambiguous parts:
  * day=13, month=11, year=2026, hour=14, minute=35, second=47 — no single-digit ambiguity.
  */
-const REFERENCE_DATE = new Date(2026, 10, 13, 14, 35, 47, 123);
+const REFERENCE_DATE = new Date(
+  REFERENCE_YEAR,
+  REFERENCE_MONTH_INDEX,
+  REFERENCE_DAY,
+  REFERENCE_HOUR,
+  REFERENCE_MINUTE,
+  REFERENCE_SECOND,
+  REFERENCE_MILLISECOND
+);
+
+const DEFAULT_OPTIONS: Readonly<Intl.DateTimeFormatOptions> = {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+};
+
+function partToToken(
+  part: Readonly<Intl.DateTimeFormatPart>
+): FormatToken | undefined {
+  const type = INTL_TYPE_MAP[part.type];
+  if (type === undefined) {
+    return undefined;
+  }
+  if (type === "literal") {
+    return { char: part.value, type: "literal" };
+  }
+  return { length: part.value.length, type };
+}
+
+function tokenLength(token: Readonly<FormatToken>): number {
+  if (token.type === "literal") {
+    return token.char.length;
+  }
+  return token.length;
+}
 
 /**
  * Derive a DateFormat from a locale using Intl.DateTimeFormat.formatToParts().
@@ -38,34 +82,29 @@ const REFERENCE_DATE = new Date(2026, 10, 13, 14, 35, 47, 123);
  * deriveFormat("en-US")  // MM/DD/YYYY (month/day/year)
  * deriveFormat("en-US", { hour: "2-digit", minute: "2-digit" })
  * deriveFormat("en-US", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" })
+ * @param locale - BCP 47 locale
+ * @param options - Intl options selecting the parts
+ * @returns The format tokens
  */
-export function deriveFormat(
+function deriveFormat(
   locale: string,
-  options?: Intl.DateTimeFormatOptions
+  options?: Readonly<Intl.DateTimeFormatOptions>
 ): DateFormat {
   const intlLocale = new Intl.Locale(locale, {
     calendar: "gregory",
     numberingSystem: "latn",
   });
 
-  const opts: Intl.DateTimeFormatOptions = options ?? {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  };
-
-  const fmt = new Intl.DateTimeFormat(intlLocale.toString(), opts);
-  const parts = fmt.formatToParts(REFERENCE_DATE);
+  const fmt = new Intl.DateTimeFormat(
+    intlLocale.toString(),
+    options ?? DEFAULT_OPTIONS
+  );
   const tokens: DateFormat = [];
 
-  for (const part of parts) {
-    const type = INTL_TYPE_MAP[part.type];
-    if (!type) continue;
-
-    if (type === "literal") {
-      tokens.push({ type: "literal", char: part.value });
-    } else {
-      tokens.push({ type, length: part.value.length });
+  for (const part of fmt.formatToParts(REFERENCE_DATE)) {
+    const token = partToToken(part);
+    if (token !== undefined) {
+      tokens.push(token);
     }
   }
 
@@ -85,22 +124,22 @@ export function deriveFormat(
  * //   { type: "literal", value: ".", start: 5, end: 6 },
  * //   { type: "year", value: "2026", start: 6, end: 10 },
  * // ]
+ * @param format - Format to parse with
+ * @param text - Date string
+ * @returns The segments
  */
-export function parseSegments(format: DateFormat, text: string): Segment[] {
+function parseSegments(format: Readonly<DateFormat>, text: string): Segment[] {
   const segments: Segment[] = [];
   let pos = 0;
 
   for (const token of format) {
-    const length = token.type === "literal" ? token.char.length : token.length;
-    const value = text.slice(pos, pos + length);
-
+    const length = tokenLength(token);
     segments.push({
-      type: token.type === "literal" ? "literal" : token.type,
-      value,
-      start: pos,
       end: pos + length,
+      start: pos,
+      type: token.type,
+      value: text.slice(pos, pos + length),
     });
-
     pos += length;
   }
 
@@ -109,22 +148,33 @@ export function parseSegments(format: DateFormat, text: string): Segment[] {
 
 /**
  * Build a placeholder string from a format (e.g. "__.__.____").
+ *
+ * @param format - Format to describe
+ * @returns The placeholder string
  */
-export function placeholder(format: DateFormat): string {
+function placeholder(format: Readonly<DateFormat>): string {
   return format
-    .map((token) =>
-      token.type === "literal" ? token.char : "_".repeat(token.length)
-    )
+    .map((token) => {
+      if (token.type === "literal") {
+        return token.char;
+      }
+      return PLACEHOLDER.repeat(token.length);
+    })
     .join("");
 }
 
 /**
  * Get the expected total length of a formatted string.
+ *
+ * @param format - Format to measure
+ * @returns The total length
  */
-export function formatLength(format: DateFormat): number {
-  return format.reduce(
-    (sum, token) =>
-      sum + (token.type === "literal" ? token.char.length : token.length),
-    0
-  );
+function formatLength(format: Readonly<DateFormat>): number {
+  let total = 0;
+  for (const token of format) {
+    total += tokenLength(token);
+  }
+  return total;
 }
+
+export { deriveFormat, formatLength, parseSegments, placeholder };

@@ -1,50 +1,82 @@
-import { describe, it, expect } from "vitest";
-import { resize } from "./resize";
+import { describe, expect, it } from "vitest";
 import { createPeriod } from "./period";
+import { resize } from "./resize";
 
-describe("resize", () => {
-  const meeting = createPeriod(
-    new Date(2024, 0, 1, 9, 0),
-    new Date(2024, 0, 1, 10, 0)
-  );
+const meeting = createPeriod(
+  new Date("2024-01-01T09:00:00"),
+  new Date("2024-01-01T10:00:00")
+);
 
-  it("extends end", () => {
-    const result = resize(meeting, "end", new Date(2024, 0, 1, 11, 30))!;
-    expect(result.start).toEqual(new Date(2024, 0, 1, 9, 0));
-    expect(result.end).toEqual(new Date(2024, 0, 1, 11, 30));
+describe("resize() growing and shrinking", () => {
+  it("extends end", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      resize(meeting, "end", new Date("2024-01-01T11:30:00"))
+    ).toStrictEqual({
+      end: new Date("2024-01-01T11:30:00"),
+      start: new Date("2024-01-01T09:00:00"),
+      type: "custom",
+    });
   });
 
-  it("moves start earlier", () => {
-    const result = resize(meeting, "start", new Date(2024, 0, 1, 8, 0))!;
-    expect(result.start).toEqual(new Date(2024, 0, 1, 8, 0));
-    expect(result.end).toEqual(new Date(2024, 0, 1, 10, 0));
+  it("moves start earlier", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      resize(meeting, "start", new Date("2024-01-01T08:00:00"))
+    ).toStrictEqual({
+      end: new Date("2024-01-01T10:00:00"),
+      start: new Date("2024-01-01T08:00:00"),
+      type: "custom",
+    });
   });
 
-  it("shrinks from end", () => {
-    const result = resize(meeting, "end", new Date(2024, 0, 1, 9, 30))!;
-    expect(result.start).toEqual(new Date(2024, 0, 1, 9, 0));
-    expect(result.end).toEqual(new Date(2024, 0, 1, 9, 30));
+  it("shrinks from end", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      resize(meeting, "end", new Date("2024-01-01T09:30:00"))
+    ).toStrictEqual({
+      end: new Date("2024-01-01T09:30:00"),
+      start: new Date("2024-01-01T09:00:00"),
+      type: "custom",
+    });
   });
 
-  it("shrinks from start", () => {
-    const result = resize(meeting, "start", new Date(2024, 0, 1, 9, 45))!;
-    expect(result.start).toEqual(new Date(2024, 0, 1, 9, 45));
-    expect(result.end).toEqual(new Date(2024, 0, 1, 10, 0));
+  it("shrinks from start", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      resize(meeting, "start", new Date("2024-01-01T09:45:00"))
+    ).toStrictEqual({
+      end: new Date("2024-01-01T10:00:00"),
+      start: new Date("2024-01-01T09:45:00"),
+      type: "custom",
+    });
+  });
+});
+
+describe("resize() edge cases", () => {
+  it("returns null when edges cross", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      resize(meeting, "start", new Date("2024-01-01T11:00:00"))
+    ).toBeNull();
+    expect(resize(meeting, "end", new Date("2024-01-01T08:00:00"))).toBeNull();
   });
 
-  it("returns null when edges cross", () => {
-    expect(resize(meeting, "start", new Date(2024, 0, 1, 11, 0))).toBeNull();
-    expect(resize(meeting, "end", new Date(2024, 0, 1, 8, 0))).toBeNull();
+  it("allows zero-width result", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      resize(meeting, "end", new Date("2024-01-01T09:00:00"))
+    ).toStrictEqual({
+      end: new Date("2024-01-01T09:00:00"),
+      start: new Date("2024-01-01T09:00:00"),
+      type: "custom",
+    });
   });
 
-  it("allows zero-width result", () => {
-    const result = resize(meeting, "end", new Date(2024, 0, 1, 9, 0))!;
-    expect(result.start.getTime()).toBe(result.end.getTime());
-  });
-
-  it("returns type custom", () => {
-    expect(resize(meeting, "end", new Date(2024, 0, 1, 11, 0))!.type).toBe(
-      "custom"
-    );
+  it("returns type custom", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      resize(meeting, "end", new Date("2024-01-01T11:00:00"))
+    ).toHaveProperty("type", "custom");
   });
 });

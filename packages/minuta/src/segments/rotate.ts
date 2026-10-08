@@ -1,43 +1,101 @@
 import type { Segment, SegmentType } from "./types";
 
-type Range = { min: number; max: number };
+const UP = 1;
+const DOWN = -1;
+const RADIX = 10;
+const FIRST_MONTH = 1;
+const LAST_MONTH = 12;
+const FIRST_DAY = 1;
+const MAX_DAYS_IN_MONTH = 31;
+const FIRST_YEAR = 1;
+/** 10^n - 1 is the largest n-digit number */
+const LARGEST_DIGITS_OFFSET = 1;
+const LAST_HOUR = 23;
+const LAST_MINUTE = 59;
+const LAST_SECOND = 59;
+const MIDNIGHT = 0;
+/** A leap year, so an unknown year allows February 29 */
+const LEAP_YEAR = 2000;
+/** Day 0 of the next month is the last day of this month */
+const LAST_DAY_OF_PREVIOUS_MONTH = 0;
+const ZERO_PAD = "0";
 
-const FIXED_RANGES: Partial<Record<SegmentType, Range>> = {
-  month: { min: 1, max: 12 },
-  hour: { min: 0, max: 23 },
-  minute: { min: 0, max: 59 },
-  second: { min: 0, max: 59 },
+type Range = { readonly min: number; readonly max: number };
+
+type Direction = typeof UP | typeof DOWN;
+
+const FIXED_RANGES: Readonly<Partial<Record<SegmentType, Range>>> = {
+  hour: { max: LAST_HOUR, min: MIDNIGHT },
+  minute: { max: LAST_MINUTE, min: MIDNIGHT },
+  month: { max: LAST_MONTH, min: FIRST_MONTH },
+  second: { max: LAST_SECOND, min: MIDNIGHT },
 };
 
-/** Parse a segment value; undefined while it still contains a gap. */
+/**
+ * Parse a segment value; undefined while it still contains a gap.
+ *
+ * @param seg - Segment to parse
+ * @returns The numeric value, or undefined
+ */
 function numberOf(seg: Segment | undefined): number | undefined {
-  if (!seg || !/^\d+$/.test(seg.value)) return undefined;
-  return parseInt(seg.value, 10);
+  if (seg === undefined || !/^\d+$/u.test(seg.value)) {
+    return undefined;
+  }
+  return Number.parseInt(seg.value, RADIX);
 }
 
 /**
  * Days in the month described by the segments. While month or year is
  * unknown, assume the widest possible range (31, or 29 for February).
+ *
+ * @param segments - Current segments
+ * @returns The number of days in the month
  */
-function daysInMonth(segments: Segment[]): number {
-  const month = numberOf(segments.find((s) => s.type === "month"));
-  if (month === undefined || month < 1 || month > 12) return 31;
-  const year = numberOf(segments.find((s) => s.type === "year")) ?? 2000; // leap year
-  return new Date(year, month, 0).getDate();
+function daysInMonth(segments: readonly Segment[]): number {
+  const month = numberOf(segments.find((seg) => seg.type === "month"));
+  if (month === undefined || month < FIRST_MONTH || month > LAST_MONTH) {
+    return MAX_DAYS_IN_MONTH;
+  }
+  const year =
+    numberOf(segments.find((seg) => seg.type === "year")) ?? LEAP_YEAR;
+  return new Date(year, month, LAST_DAY_OF_PREVIOUS_MONTH).getDate();
 }
 
-function rangeOf(segments: Segment[], seg: Segment): Range | undefined {
-  if (seg.type === "day") return { min: 1, max: daysInMonth(segments) };
+function rangeOf(
+  segments: readonly Segment[],
+  seg: Segment | undefined
+): Range | undefined {
+  if (seg === undefined) {
+    return undefined;
+  }
+  if (seg.type === "day") {
+    return { max: daysInMonth(segments), min: FIRST_DAY };
+  }
   if (seg.type === "year") {
-    return { min: 1, max: 10 ** (seg.end - seg.start) - 1 };
+    return {
+      max: RADIX ** (seg.end - seg.start) - LARGEST_DIGITS_OFFSET,
+      min: FIRST_YEAR,
+    };
   }
   return FIXED_RANGES[seg.type];
 }
 
-function withValue(segments: Segment[], index: number, n: number): Segment[] {
-  return segments.map((s, i) =>
-    i === index ? { ...s, value: String(n).padStart(s.end - s.start, "0") } : s
-  );
+function withValue(
+  segments: readonly Segment[],
+  index: number,
+  num: number
+): Segment[] {
+  return segments.map((seg, idx) => {
+    if (idx !== index) {
+      return seg;
+    }
+    return {
+      end: seg.end,
+      start: seg.start,
+      type: seg.type,
+      value: String(num).padStart(seg.end - seg.start, ZERO_PAD),
+    };
+  });
 }
 
 /**
@@ -46,13 +104,61 @@ function withValue(segments: Segment[], index: number, n: number): Segment[] {
  * Call after any month or year change (rotation or typing) so the
  * date stays valid — e.g. 31.02.2026 → 28.02.2026.
  * Returns the same array when nothing changes.
+ *
+ * @param segments - Current segments
+ * @returns The segments with a valid day
  */
-export function clampDay(segments: Segment[]): Segment[] {
-  const index = segments.findIndex((s) => s.type === "day");
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Returned by identity when unchanged; readonly would change the public return type
+function clampDay(segments: Segment[]): Segment[] {
+  const index = segments.findIndex((seg) => seg.type === "day");
   const day = numberOf(segments[index]);
   const max = daysInMonth(segments);
-  if (day === undefined || day <= max) return segments;
+  if (day === undefined || day <= max) {
+    return segments;
+  }
   return withValue(segments, index, max);
+}
+
+function boundFor(direction: Direction, range: Range): number {
+  if (direction === UP) {
+    return range.min;
+  }
+  return range.max;
+}
+
+function wrap(value: number, range: Range): number {
+  if (value > range.max) {
+    return range.min;
+  }
+  if (value < range.min) {
+    return range.max;
+  }
+  return value;
+}
+
+type RotateInput = {
+  readonly current: number | undefined;
+  readonly direction: Direction;
+  readonly range: Range;
+  readonly today: Readonly<Date>;
+  readonly type: SegmentType;
+};
+
+function nextValue(input: RotateInput): number {
+  const { current, direction, range, today, type } = input;
+  if (current === undefined) {
+    if (type === "year") {
+      return today.getFullYear();
+    }
+    return boundFor(direction, range);
+  }
+  if (type === "year") {
+    return Math.min(Math.max(current + direction, range.min), range.max);
+  }
+  if (current > range.max || current < range.min) {
+    return boundFor(direction, range);
+  }
+  return wrap(current + direction, range);
 }
 
 /**
@@ -66,36 +172,38 @@ export function clampDay(segments: Segment[]): Segment[] {
  * An empty segment starts like a native date input: ↑ at the minimum,
  * ↓ at the maximum, and the year at the current year.
  *
+ * @param segments - Current segments
+ * @param index - Index of the segment to rotate
  * @param direction - 1 for up, -1 for down
  * @param today - reference for an empty year segment
+ * @returns The rotated segments, or the same array when the segment has no range
  */
-export function rotateSegment(
+// oxlint-disable-next-line eslint/max-params -- Public API signature; an options object would break callers
+function rotateSegment(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Returned by identity when unchanged; readonly would change the public return type
   segments: Segment[],
   index: number,
-  direction: 1 | -1,
-  today: Date = new Date()
+  direction: Direction,
+  today: Readonly<Date> = new Date()
 ): Segment[] {
   const seg = segments[index];
-  const range = seg && rangeOf(segments, seg);
-  if (!range) return segments;
-
-  const { min, max } = range;
-  const current = numberOf(seg);
-  let next: number;
-
-  if (current === undefined) {
-    next =
-      seg.type === "year" ? today.getFullYear() : direction === 1 ? min : max;
-  } else if (seg.type === "year") {
-    next = Math.min(Math.max(current + direction, min), max);
-  } else if (current > max || current < min) {
-    next = direction === 1 ? min : max;
-  } else {
-    next = current + direction;
-    if (next > max) next = min;
-    if (next < min) next = max;
+  const range = rangeOf(segments, seg);
+  if (seg === undefined || range === undefined) {
+    return segments;
   }
 
+  const next = nextValue({
+    current: numberOf(seg),
+    direction,
+    range,
+    today,
+    type: seg.type,
+  });
   const rotated = withValue(segments, index, next);
-  return seg.type === "day" ? rotated : clampDay(rotated);
+  if (seg.type === "day") {
+    return rotated;
+  }
+  return clampDay(rotated);
 }
+
+export { clampDay, rotateSegment };

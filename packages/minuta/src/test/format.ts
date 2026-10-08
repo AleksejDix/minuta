@@ -1,5 +1,5 @@
-import type { Period } from "../types";
-import { formatPeriod, formatRange } from "../segments/format";
+import { formatPeriod, formatRange } from "#src/segments/format";
+import type { ReadonlyPeriod } from "#src/types";
 
 /**
  * Default test locale — en-US for readable English assertions.
@@ -12,8 +12,11 @@ const TEST_LOCALE = "en-US";
  * ```ts
  * expect(format(result)).toBe("April 2024");
  * ```
+ * @param period - The period to format
+ * @param locale - The locale to format with
+ * @returns The formatted period
  */
-export function format(period: Period, locale: string = TEST_LOCALE): string {
+function format(period: ReadonlyPeriod, locale: string = TEST_LOCALE): string {
   return formatPeriod(period, locale);
 }
 
@@ -23,10 +26,15 @@ export function format(period: Period, locale: string = TEST_LOCALE): string {
  * ```ts
  * expect(formatAsRange(week)).toBe("Mar 9 – 15, 2026");
  * ```
+ * @param period - The period to format
+ * @param locale - The locale to format with
+ * @returns The formatted range
  */
-export function formatAsRange(
-  period: Period,
+function formatAsRange(
+  period: ReadonlyPeriod,
   locale: string = TEST_LOCALE
 ): string {
   return formatRange(period, locale);
 }
+
+export { format, formatAsRange };

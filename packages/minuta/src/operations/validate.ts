@@ -1,19 +1,25 @@
-import type { Period } from "../types";
+import type { ReadonlyPeriod } from "#src/types";
 
 /**
  * Validate that a period has valid dates and start <= end.
  * Only used at entry points where invalid input causes catastrophic behavior
  * (infinite loops, silent corruption).
+ *
+ * @param period - The period to validate
  */
-export function validatePeriod(p: Period): void {
-  if (isNaN(p.start.getTime()) || isNaN(p.end.getTime())) {
+function validatePeriod(period: ReadonlyPeriod): void {
+  const hasInvalidDate =
+    Number.isNaN(period.start.getTime()) || Number.isNaN(period.end.getTime());
+  if (hasInvalidDate) {
     throw new Error(
-      `Period contains invalid date: start=${p.start}, end=${p.end}`
+      `Period contains invalid date: start=${String(period.start)}, end=${String(period.end)}`
     );
   }
-  if (p.start.getTime() > p.end.getTime()) {
+  if (period.start.getTime() > period.end.getTime()) {
     throw new Error(
-      `Period start (${p.start.toISOString()}) must be before or equal to end (${p.end.toISOString()})`
+      `Period start (${period.start.toISOString()}) must be before or equal to end (${period.end.toISOString()})`
     );
   }
 }
+
+export { validatePeriod };

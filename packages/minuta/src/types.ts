@@ -6,7 +6,7 @@
  *
  * All operations work on Period.
  */
-export type Period = {
+type Period = {
   start: Date;
   end: Date;
   type: AdapterUnit | "custom";
@@ -18,7 +18,7 @@ export type Period = {
  * Stable grids (StableMonth, StableYear, StableDay) join this
  * with grid-specific metadata.
  */
-export type Series = {
+type Series = {
   periods: Period[];
 };
 
@@ -27,7 +27,8 @@ export type Series = {
 /**
  * Registry for unit types — keep as interface for module augmentation.
  */
-export interface UnitRegistry {
+// oxlint-disable-next-line typescript/consistent-type-definitions -- Module augmentation requires an interface
+interface UnitRegistry {
   year: true;
   quarter: true;
   month: true;
@@ -38,7 +39,7 @@ export interface UnitRegistry {
   second: true;
 }
 
-export type AdapterUnit = keyof UnitRegistry;
+type AdapterUnit = keyof UnitRegistry;
 
 // ── Adapter ──
 
@@ -50,19 +51,47 @@ export type AdapterUnit = keyof UnitRegistry;
  * - add(date, N, unit) followed by add(result, -N, unit) returns the original date
  * - diff(a, b, unit) returns the number of complete units between a and b
  */
-export type Adapter = {
-  startOf(date: Date, unit: AdapterUnit): Date;
-  endOf(date: Date, unit: AdapterUnit): Date;
-  add(date: Date, amount: number, unit: AdapterUnit): Date;
-  diff(from: Date, to: Date, unit: AdapterUnit): number;
+type Adapter = {
+  readonly startOf: (date: Readonly<Date>, unit: AdapterUnit) => Date;
+  readonly endOf: (date: Readonly<Date>, unit: AdapterUnit) => Date;
+  readonly add: (
+    date: Readonly<Date>,
+    amount: number,
+    unit: AdapterUnit
+  ) => Date;
+  readonly diff: (
+    from: Readonly<Date>,
+    to: Readonly<Date>,
+    unit: AdapterUnit
+  ) => number;
 };
 
 /**
  * Per-unit handler — internal to adapter implementations.
  */
-export type UnitHandler = {
-  startOf(date: Date): Date;
-  endOf(date: Date): Date;
-  add(date: Date, amount: number): Date;
-  diff(from: Date, to: Date): number;
+type UnitHandler = {
+  readonly startOf: (date: Readonly<Date>) => Date;
+  readonly endOf: (date: Readonly<Date>) => Date;
+  readonly add: (date: Readonly<Date>, amount: number) => Date;
+  readonly diff: (from: Readonly<Date>, to: Readonly<Date>) => number;
+};
+
+/**
+ * Deeply readonly view of a Period, accepted by functions that never mutate
+ * their input. Every Period is assignable to it.
+ */
+type ReadonlyPeriod = Readonly<{
+  end: Readonly<Date>;
+  start: Readonly<Date>;
+  type: Period["type"];
+}>;
+
+export type {
+  Adapter,
+  AdapterUnit,
+  Period,
+  ReadonlyPeriod,
+  Series,
+  UnitHandler,
+  UnitRegistry,
 };

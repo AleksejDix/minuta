@@ -1,5 +1,9 @@
-import type { UnitHandler } from "../../types";
-import moment, { type unitOfTime } from "moment";
+import type { UnitHandler } from "#src/types";
+import moment from "moment";
+import type { unitOfTime } from "moment";
+
+const DAYS_PER_WEEK = 7;
+const LAST_DAY_OF_WEEK_OFFSET = 6;
 
 function handler(
   startEndUnit: unitOfTime.StartOf,
@@ -7,37 +11,57 @@ function handler(
   diffUnit: unitOfTime.Diff
 ): UnitHandler {
   return {
-    startOf: (date) => moment(date).startOf(startEndUnit).toDate(),
-    endOf: (date) => moment(date).endOf(startEndUnit).toDate(),
-    add: (date, amount) => moment(date).add(amount, addUnit).toDate(),
-    diff: (from, to) => moment(to).diff(moment(from), diffUnit),
+    add: (date: Readonly<Date>, amount: number): Date =>
+      moment(date).add(amount, addUnit).toDate(),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      moment(to).diff(moment(from), diffUnit),
+    endOf: (date: Readonly<Date>): Date =>
+      moment(date).endOf(startEndUnit).toDate(),
+    startOf: (date: Readonly<Date>): Date =>
+      moment(date).startOf(startEndUnit).toDate(),
   };
 }
 
-export function createWeekHandler(weekStartsOn: number): UnitHandler {
+function createWeekHandler(weekStartsOn: number): UnitHandler {
   const base = handler("week", "weeks", "weeks");
   return {
-    startOf: (date) => {
-      const m = moment(date);
-      const day = m.day();
-      const diff = (day - weekStartsOn + 7) % 7;
-      return m.subtract(diff, "days").startOf("day").toDate();
+    add: (date: Readonly<Date>, amount: number): Date => base.add(date, amount),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      base.diff(from, to),
+    endOf: (date: Readonly<Date>): Date => {
+      const current = moment(date);
+      const diff =
+        (current.day() - weekStartsOn + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+      return current
+        .subtract(diff, "days")
+        .add(LAST_DAY_OF_WEEK_OFFSET, "days")
+        .endOf("day")
+        .toDate();
     },
-    endOf: (date) => {
-      const m = moment(date);
-      const day = m.day();
-      const diff = (day - weekStartsOn + 7) % 7;
-      return m.subtract(diff, "days").add(6, "days").endOf("day").toDate();
+    startOf: (date: Readonly<Date>): Date => {
+      const current = moment(date);
+      const diff =
+        (current.day() - weekStartsOn + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+      return current.subtract(diff, "days").startOf("day").toDate();
     },
-    add: base.add,
-    diff: base.diff,
   };
 }
 
-export const yearHandler = handler("year", "years", "years");
-export const quarterHandler = handler("quarter", "quarters", "quarters");
-export const monthHandler = handler("month", "months", "months");
-export const dayHandler = handler("day", "days", "days");
-export const hourHandler = handler("hour", "hours", "hours");
-export const minuteHandler = handler("minute", "minutes", "minutes");
-export const secondHandler = handler("second", "seconds", "seconds");
+const yearHandler: UnitHandler = handler("year", "years", "years");
+const quarterHandler: UnitHandler = handler("quarter", "quarters", "quarters");
+const monthHandler: UnitHandler = handler("month", "months", "months");
+const dayHandler: UnitHandler = handler("day", "days", "days");
+const hourHandler: UnitHandler = handler("hour", "hours", "hours");
+const minuteHandler: UnitHandler = handler("minute", "minutes", "minutes");
+const secondHandler: UnitHandler = handler("second", "seconds", "seconds");
+
+export {
+  createWeekHandler,
+  dayHandler,
+  hourHandler,
+  minuteHandler,
+  monthHandler,
+  quarterHandler,
+  secondHandler,
+  yearHandler,
+};

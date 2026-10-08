@@ -1,38 +1,71 @@
-import type { UnitHandler } from "../../../types";
+import type { UnitHandler } from "#src/types";
 
-export function createWeekHandler(
-  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1
-): UnitHandler {
+const DAYS_PER_WEEK = 7;
+const LAST_DAY_OF_WEEK_OFFSET = 6;
+const START_HOUR = 0;
+const START_MINUTE = 0;
+const START_SECOND = 0;
+const START_MS = 0;
+const LAST_HOUR = 23;
+const LAST_MINUTE = 59;
+const LAST_SECOND = 59;
+const LAST_MS = 999;
+const MS_PER_DAY = 86_400_000;
+
+const SUNDAY = 0;
+const MONDAY = 1;
+const TUESDAY = 2;
+const WEDNESDAY = 3;
+const THURSDAY = 4;
+const FRIDAY = 5;
+const SATURDAY = 6;
+
+type WeekStartsOn =
+  | typeof SUNDAY
+  | typeof MONDAY
+  | typeof TUESDAY
+  | typeof WEDNESDAY
+  | typeof THURSDAY
+  | typeof FRIDAY
+  | typeof SATURDAY;
+
+function createWeekHandler(weekStartsOn: WeekStartsOn = MONDAY): UnitHandler {
   return {
-    startOf(date: Date): Date {
-      const dayOfWeek = date.getDay();
-      const daysToSubtract = (dayOfWeek - weekStartsOn + 7) % 7;
+    add(date: Readonly<Date>, amount: number): Date {
       const result = new Date(date);
-      result.setDate(date.getDate() - daysToSubtract);
-      result.setHours(0, 0, 0, 0);
+      result.setDate(date.getDate() + amount * DAYS_PER_WEEK);
       return result;
     },
 
-    endOf(date: Date): Date {
+    diff(from: Readonly<Date>, to: Readonly<Date>): number {
+      const diffInDays = Math.floor(
+        (to.getTime() - from.getTime()) / MS_PER_DAY
+      );
+      return Math.floor(diffInDays / DAYS_PER_WEEK);
+    },
+
+    endOf(date: Readonly<Date>): Date {
       const dayOfWeek = date.getDay();
-      const daysToAdd = (weekStartsOn + 6 - dayOfWeek + 7) % 7;
+      const daysToAdd =
+        (weekStartsOn + LAST_DAY_OF_WEEK_OFFSET - dayOfWeek + DAYS_PER_WEEK) %
+        DAYS_PER_WEEK;
       const result = new Date(date);
       result.setDate(date.getDate() + daysToAdd);
-      result.setHours(23, 59, 59, 999);
+      result.setHours(LAST_HOUR, LAST_MINUTE, LAST_SECOND, LAST_MS);
       return result;
     },
 
-    add(date: Date, amount: number): Date {
+    startOf(date: Readonly<Date>): Date {
+      const dayOfWeek = date.getDay();
+      const daysToSubtract =
+        (dayOfWeek - weekStartsOn + DAYS_PER_WEEK) % DAYS_PER_WEEK;
       const result = new Date(date);
-      result.setDate(date.getDate() + amount * 7);
+      result.setDate(date.getDate() - daysToSubtract);
+      result.setHours(START_HOUR, START_MINUTE, START_SECOND, START_MS);
       return result;
-    },
-
-    diff(from: Date, to: Date): number {
-      const diffInDays = Math.floor(
-        (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      return Math.floor(diffInDays / 7);
     },
   };
 }
+
+export { createWeekHandler };
+export type { WeekStartsOn };

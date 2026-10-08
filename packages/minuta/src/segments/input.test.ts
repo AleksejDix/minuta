@@ -1,73 +1,128 @@
-import { describe, it, expect } from "vitest";
+import { clearSegment, inputDigit } from "./input";
 import { deriveFormat, parseSegments } from "./parse";
-import { inputDigit, clearSegment } from "./input";
+import { describe, expect, it } from "vitest";
+import type { Segment } from "./types";
 import { segmentsToString } from "./convert";
+
+const DAY_INDEX = 0;
+const LITERAL_INDEX = 1;
+const MONTH_INDEX = 2;
+const YEAR_INDEX = 4;
 
 const format = deriveFormat("de-CH");
 
-describe("inputDigit", () => {
-  it("types first digit into day segment", () => {
+function valueAt(
+  segments: readonly Segment[],
+  index: number
+): string | undefined {
+  const seg = segments[index];
+  if (seg === undefined) {
+    return undefined;
+  }
+  return seg.value;
+}
+
+describe("inputDigit() within a segment", () => {
+  it("types first digit into day segment", { timeout: 5000 }, () => {
+    expect.hasAssertions();
     const segments = parseSegments(format, "__.__.____");
-    const { segments: result, activeIndex } = inputDigit(segments, 0, "3");
-    expect(result[0].value).toBe("_3");
-    expect(activeIndex).toBe(0); // not full yet
+    const { segments: result, activeIndex } = inputDigit(
+      segments,
+      DAY_INDEX,
+      "3"
+    );
+    expect(valueAt(result, DAY_INDEX)).toBe("_3");
+    // Not full yet
+    expect(activeIndex).toBe(DAY_INDEX);
   });
 
-  it("types second digit and advances to month", () => {
+  it("types second digit and advances to month", { timeout: 5000 }, () => {
+    expect.hasAssertions();
     const segments = parseSegments(format, "_3.__.____");
-    const { segments: result, activeIndex } = inputDigit(segments, 0, "1");
-    expect(result[0].value).toBe("31");
-    expect(activeIndex).toBe(2); // advanced to month
+    const { segments: result, activeIndex } = inputDigit(
+      segments,
+      DAY_INDEX,
+      "1"
+    );
+    expect(valueAt(result, DAY_INDEX)).toBe("31");
+    // Advanced to month
+    expect(activeIndex).toBe(MONTH_INDEX);
   });
 
-  it("types into month segment", () => {
+  it("types into month segment", { timeout: 5000 }, () => {
+    expect.hasAssertions();
     const segments = parseSegments(format, "31.__.____");
-    const { segments: result, activeIndex } = inputDigit(segments, 2, "0");
-    expect(result[2].value).toBe("_0");
-    expect(activeIndex).toBe(2);
-  });
-
-  it("completes month and advances to year", () => {
-    const segments = parseSegments(format, "31._0.____");
-    const { segments: result, activeIndex } = inputDigit(segments, 2, "3");
-    expect(result[2].value).toBe("03");
-    expect(segmentsToString(result)).toBe("31.03.____");
-    expect(activeIndex).toBe(4); // advanced to year
-  });
-
-  it("ignores non-digit characters", () => {
-    const segments = parseSegments(format, "__.__.____");
-    const { segments: result, activeIndex } = inputDigit(segments, 0, "a");
-    expect(result[0].value).toBe("__");
-    expect(activeIndex).toBe(0);
-  });
-
-  it("ignores input on literal segments", () => {
-    const segments = parseSegments(format, "31.03.2026");
-    const { segments: result, activeIndex } = inputDigit(segments, 1, "5");
-    expect(segmentsToString(result)).toBe("31.03.2026");
-    expect(activeIndex).toBe(1);
+    const { segments: result, activeIndex } = inputDigit(
+      segments,
+      MONTH_INDEX,
+      "0"
+    );
+    expect(valueAt(result, MONTH_INDEX)).toBe("_0");
+    expect(activeIndex).toBe(MONTH_INDEX);
   });
 });
 
-describe("clearSegment", () => {
-  it("clears the day segment", () => {
+describe("inputDigit() across segments", () => {
+  it("completes month and advances to year", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const segments = parseSegments(format, "31._0.____");
+    const { segments: result, activeIndex } = inputDigit(
+      segments,
+      MONTH_INDEX,
+      "3"
+    );
+    expect(valueAt(result, MONTH_INDEX)).toBe("03");
+    expect(segmentsToString(result)).toBe("31.03.____");
+    // Advanced to year
+    expect(activeIndex).toBe(YEAR_INDEX);
+  });
+
+  it("ignores non-digit characters", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const segments = parseSegments(format, "__.__.____");
+    const { segments: result, activeIndex } = inputDigit(
+      segments,
+      DAY_INDEX,
+      "a"
+    );
+    expect(valueAt(result, DAY_INDEX)).toBe("__");
+    expect(activeIndex).toBe(DAY_INDEX);
+  });
+
+  it("ignores input on literal segments", { timeout: 5000 }, () => {
+    expect.hasAssertions();
     const segments = parseSegments(format, "31.03.2026");
-    const result = clearSegment(segments, 0);
-    expect(result[0].value).toBe("__");
+    const { segments: result, activeIndex } = inputDigit(
+      segments,
+      LITERAL_INDEX,
+      "5"
+    );
+    expect(segmentsToString(result)).toBe("31.03.2026");
+    expect(activeIndex).toBe(LITERAL_INDEX);
+  });
+});
+
+describe("clearSegment()", () => {
+  it("clears the day segment", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const segments = parseSegments(format, "31.03.2026");
+    const result = clearSegment(segments, DAY_INDEX);
+    expect(valueAt(result, DAY_INDEX)).toBe("__");
     expect(segmentsToString(result)).toBe("__.03.2026");
   });
 
-  it("clears the year segment", () => {
+  it("clears the year segment", { timeout: 5000 }, () => {
+    expect.hasAssertions();
     const segments = parseSegments(format, "31.03.2026");
-    const result = clearSegment(segments, 4);
-    expect(result[4].value).toBe("____");
+    const result = clearSegment(segments, YEAR_INDEX);
+    expect(valueAt(result, YEAR_INDEX)).toBe("____");
     expect(segmentsToString(result)).toBe("31.03.____");
   });
 
-  it("ignores literal segments", () => {
+  it("ignores literal segments", { timeout: 5000 }, () => {
+    expect.hasAssertions();
     const segments = parseSegments(format, "31.03.2026");
-    const result = clearSegment(segments, 1);
+    const result = clearSegment(segments, LITERAL_INDEX);
     expect(segmentsToString(result)).toBe("31.03.2026");
   });
 });

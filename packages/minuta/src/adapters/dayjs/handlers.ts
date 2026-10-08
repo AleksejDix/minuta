@@ -1,53 +1,81 @@
-import type { UnitHandler } from "../../types";
-import dayjs, { type ManipulateType, type OpUnitType } from "dayjs";
+import type { ManipulateType, OpUnitType } from "dayjs";
+import type { UnitHandler } from "#src/types";
+import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
 
+// oxlint-disable-next-line vitest/require-hook -- Plugin registration must run at module load; this is not a test file
 dayjs.extend(quarterOfYear);
+
+const DAYS_PER_WEEK = 7;
+const LAST_DAY_OF_WEEK_OFFSET = 6;
+const MONTHS_PER_QUARTER = 3;
 
 function handler(
   startEndUnit: OpUnitType,
   addUnit: ManipulateType
 ): UnitHandler {
   return {
-    startOf: (date) => dayjs(date).startOf(startEndUnit).toDate(),
-    endOf: (date) => dayjs(date).endOf(startEndUnit).toDate(),
-    add: (date, amount) => dayjs(date).add(amount, addUnit).toDate(),
-    diff: (from, to) => dayjs(to).diff(dayjs(from), startEndUnit),
+    add: (date: Readonly<Date>, amount: number): Date =>
+      dayjs(date).add(amount, addUnit).toDate(),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      dayjs(to).diff(dayjs(from), startEndUnit),
+    endOf: (date: Readonly<Date>): Date =>
+      dayjs(date).endOf(startEndUnit).toDate(),
+    startOf: (date: Readonly<Date>): Date =>
+      dayjs(date).startOf(startEndUnit).toDate(),
   };
 }
 
-export function createWeekHandler(weekStartsOn: number): UnitHandler {
+function createWeekHandler(weekStartsOn: number): UnitHandler {
   const base = handler("week", "week");
   return {
-    startOf: (date) => {
-      const d = dayjs(date);
-      const day = d.day();
-      const diff = (day - weekStartsOn + 7) % 7;
-      return d.subtract(diff, "day").startOf("day").toDate();
+    add: (date: Readonly<Date>, amount: number): Date => base.add(date, amount),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      base.diff(from, to),
+    endOf: (date: Readonly<Date>): Date => {
+      const current = dayjs(date);
+      const diff =
+        (current.day() - weekStartsOn + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+      return current
+        .subtract(diff, "day")
+        .add(LAST_DAY_OF_WEEK_OFFSET, "day")
+        .endOf("day")
+        .toDate();
     },
-    endOf: (date) => {
-      const d = dayjs(date);
-      const day = d.day();
-      const diff = (day - weekStartsOn + 7) % 7;
-      return d.subtract(diff, "day").add(6, "day").endOf("day").toDate();
+    startOf: (date: Readonly<Date>): Date => {
+      const current = dayjs(date);
+      const diff =
+        (current.day() - weekStartsOn + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+      return current.subtract(diff, "day").startOf("day").toDate();
     },
-    add: base.add,
-    diff: base.diff,
   };
 }
 
-export const yearHandler = handler("year", "year");
-export const quarterHandler: UnitHandler = {
-  startOf: (date) => dayjs(date).startOf("quarter").toDate(),
-  endOf: (date) => dayjs(date).endOf("quarter").toDate(),
-  add: (date, amount) =>
+const yearHandler: UnitHandler = handler("year", "year");
+const quarterHandler: UnitHandler = {
+  add: (date: Readonly<Date>, amount: number): Date =>
     dayjs(date)
-      .add(amount * 3, "month")
+      .add(amount * MONTHS_PER_QUARTER, "month")
       .toDate(),
-  diff: (from, to) => dayjs(to).diff(dayjs(from), "quarter"),
+  diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+    dayjs(to).diff(dayjs(from), "quarter"),
+  endOf: (date: Readonly<Date>): Date => dayjs(date).endOf("quarter").toDate(),
+  startOf: (date: Readonly<Date>): Date =>
+    dayjs(date).startOf("quarter").toDate(),
 };
-export const monthHandler = handler("month", "month");
-export const dayHandler = handler("day", "day");
-export const hourHandler = handler("hour", "hour");
-export const minuteHandler = handler("minute", "minute");
-export const secondHandler = handler("second", "second");
+const monthHandler: UnitHandler = handler("month", "month");
+const dayHandler: UnitHandler = handler("day", "day");
+const hourHandler: UnitHandler = handler("hour", "hour");
+const minuteHandler: UnitHandler = handler("minute", "minute");
+const secondHandler: UnitHandler = handler("second", "second");
+
+export {
+  createWeekHandler,
+  dayHandler,
+  hourHandler,
+  minuteHandler,
+  monthHandler,
+  quarterHandler,
+  secondHandler,
+  yearHandler,
+};

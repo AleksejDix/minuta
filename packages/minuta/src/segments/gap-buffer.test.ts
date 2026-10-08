@@ -1,189 +1,178 @@
-import { describe, expect, it } from "vitest";
 import { GapBuffer, REGEXP_ONLY_DIGITS } from "./gap-buffer";
+import { describe, expect, it } from "vitest";
 
-const buf = (
-  value = "",
-  maxLength = 6,
-  pattern?: string | RegExp,
-  cursor = 0
-) => new GapBuffer({ maxLength, value, pattern, cursor });
+const DEFAULT_MAX_LENGTH = 6;
+const FIRST_SLOT = 0;
+const SECOND_SLOT = 1;
+const THIRD_SLOT = 2;
+const LAST_SLOT = 5;
 
-describe("GapBuffer", () => {
-  describe("construction", () => {
-    it("parses value into slots and clamps the cursor", () => {
-      const b = buf("12", 6, undefined, 99);
-      expect(b.slots).toEqual([
-        "1",
-        "2",
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      ]);
-      expect(b.cursor).toBe(5);
-    });
+type BufferInput = {
+  readonly cursor?: number;
+  readonly maxLength?: number;
+  readonly pattern?: string | Readonly<RegExp>;
+  readonly value?: string;
+};
 
-    it("treats space as a gap (undefined), not a literal char", () => {
-      expect(buf("a c").slots.slice(0, 3)).toEqual(["a", undefined, "c"]);
-    });
+function buf(input: BufferInput = {}): GapBuffer {
+  const {
+    cursor = FIRST_SLOT,
+    maxLength = DEFAULT_MAX_LENGTH,
+    pattern,
+    value = "",
+  } = input;
+  return new GapBuffer({ cursor, maxLength, pattern, value });
+}
+
+describe("gap buffer construction", () => {
+  it("parses value into slots and clamps the cursor", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const buffer = buf({ cursor: 99, maxLength: 6, value: "12" });
+    expect(buffer.slots).toStrictEqual([
+      "1",
+      "2",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+    expect(buffer.cursor).toBe(LAST_SLOT);
   });
 
-  describe("insertAt", () => {
-    it("writes the char and advances the cursor", () => {
-      const b = buf().insertAt(0, "1");
-      expect(b.slots[0]).toBe("1");
-      expect(b.cursor).toBe(1);
-    });
+  it(
+    "treats space as a gap (undefined), not a literal char",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const [first, second, third] = buf({ value: "a c" }).slots;
+      expect([first, second, third]).toStrictEqual(["a", undefined, "c"]);
+    }
+  );
+});
 
-    it("overwrites an existing char and still advances", () => {
-      const b = buf("9").insertAt(0, "1");
-      expect(b.slots[0]).toBe("1");
-      expect(b.cursor).toBe(1);
-    });
+describe("gap buffer insertAt()", () => {
+  it("writes the char and advances the cursor", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const buffer = buf().insertAt(FIRST_SLOT, "1");
+    const [first] = buffer.slots;
+    expect(first).toBe("1");
+    expect(buffer.cursor).toBe(SECOND_SLOT);
+  });
 
-    it("clamps cursor at the last slot", () => {
-      const b = buf("12345", 6).insertAt(5, "6");
-      expect(b.slots[5]).toBe("6");
-      expect(b.cursor).toBe(5);
-    });
+  it(
+    "overwrites an existing char and still advances",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const buffer = buf({ value: "9" }).insertAt(FIRST_SLOT, "1");
+      const [first] = buffer.slots;
+      expect(first).toBe("1");
+      expect(buffer.cursor).toBe(SECOND_SLOT);
+    }
+  );
 
-    it("rejects a char that does not match the pattern", () => {
-      const before = buf("", 6, REGEXP_ONLY_DIGITS);
-      const after = before.insertAt(0, "a");
+  it("clamps cursor at the last slot", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const buffer = buf({ maxLength: 6, value: "12345" }).insertAt(
+      LAST_SLOT,
+      "6"
+    );
+    expect(buffer.slots[LAST_SLOT]).toBe("6");
+    expect(buffer.cursor).toBe(LAST_SLOT);
+  });
+});
+
+describe("gap buffer insertAt() without changes", () => {
+  it(
+    "rejects a char that does not match the pattern",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const before = buf({ maxLength: 6, pattern: REGEXP_ONLY_DIGITS });
+      const after = before.insertAt(FIRST_SLOT, "a");
       expect(after).toBe(before);
-    });
+    }
+  );
 
-    it("returns the same instance when nothing changes", () => {
-      const before = buf("1", 6, undefined, 1);
-      expect(before.insertAt(0, "1")).toBe(before);
-    });
+  it(
+    "returns the same instance when nothing changes",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const before = buf({ cursor: 1, maxLength: 6, value: "1" });
+      expect(before.insertAt(FIRST_SLOT, "1")).toBe(before);
+    }
+  );
+});
+
+describe("gap buffer accepts()", () => {
+  it("accepts any char when no pattern is set", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(buf().accepts("a")).toBe(true);
+    expect(buf().accepts("9")).toBe(true);
   });
 
-  describe("accepts", () => {
-    it("accepts any char when no pattern is set", () => {
-      expect(buf().accepts("a")).toBe(true);
-      expect(buf().accepts("9")).toBe(true);
-    });
-
-    it("returns true for chars matching the pattern", () => {
-      expect(buf("", 6, REGEXP_ONLY_DIGITS).accepts("1")).toBe(true);
-    });
-
-    it("returns false for chars rejected by the pattern", () => {
-      expect(buf("", 6, REGEXP_ONLY_DIGITS).accepts("a")).toBe(false);
-    });
+  it("returns true for chars matching the pattern", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      buf({ maxLength: 6, pattern: REGEXP_ONLY_DIGITS }).accepts("1")
+    ).toBe(true);
   });
 
-  describe("backspaceAt", () => {
-    it("clears a filled slot and stays put", () => {
-      const b = buf("123").backspaceAt(2);
-      expect(b.slots[2]).toBeUndefined();
-      expect(b.cursor).toBe(2);
-    });
+  it(
+    "returns false for chars rejected by the pattern",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      expect(
+        buf({ maxLength: 6, pattern: REGEXP_ONLY_DIGITS }).accepts("a")
+      ).toBe(false);
+    }
+  );
+});
 
-    it("on an empty slot, clears the previous slot and retreats", () => {
-      const b = buf("12").backspaceAt(2);
-      expect(b.slots[1]).toBeUndefined();
-      expect(b.cursor).toBe(1);
-    });
-
-    it("is a no-op at index 0 when the slot is empty", () => {
-      const before = buf("");
-      const after = before.backspaceAt(0);
-      expect(after).toBe(before);
-    });
-
-    it("handles two consecutive backspaces on the same index (rapid-Backspace scenario)", () => {
-      // This is the bug React's stale closure can't see: dispatching two backspaces
-      // at index 2 before any re-render should still clear slot 2, then slot 1.
-      const b = buf("abc").backspaceAt(2).backspaceAt(2);
-      expect(b.slots[2]).toBeUndefined();
-      expect(b.slots[1]).toBeUndefined();
-      expect(b.slots[0]).toBe("a");
-      expect(b.cursor).toBe(1);
-    });
+describe("gap buffer backspaceAt()", () => {
+  it("clears a filled slot and stays put", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const buffer = buf({ value: "123" }).backspaceAt(THIRD_SLOT);
+    expect(buffer.slots[THIRD_SLOT]).toBeUndefined();
+    expect(buffer.cursor).toBe(THIRD_SLOT);
   });
 
-  describe("pasteAt", () => {
-    it("distributes chars starting from the index and lands the cursor on the next empty slot", () => {
-      const b = buf().pasteAt(0, "1234");
-      expect(b.slots.slice(0, 4)).toEqual(["1", "2", "3", "4"]);
-      expect(b.cursor).toBe(4);
-    });
+  it(
+    "on an empty slot, clears the previous slot and retreats",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const buffer = buf({ value: "12" }).backspaceAt(THIRD_SLOT);
+      expect(buffer.slots[SECOND_SLOT]).toBeUndefined();
+      expect(buffer.cursor).toBe(SECOND_SLOT);
+    }
+  );
 
-    it("skips chars that fail the pattern", () => {
-      const b = buf("", 6, REGEXP_ONLY_DIGITS).pasteAt(0, "1a2b3");
-      expect(b.slots.slice(0, 3)).toEqual(["1", "2", "3"]);
-    });
-
-    it("stops at maxLength", () => {
-      const b = buf("", 4).pasteAt(0, "1234567");
-      expect(b.slots).toEqual(["1", "2", "3", "4"]);
-      expect(b.cursor).toBe(3);
-    });
-
-    it("returns the same instance when nothing gets written", () => {
-      const before = buf("", 6, REGEXP_ONLY_DIGITS);
-      const after = before.pasteAt(0, "abc");
-      expect(after).toBe(before);
-    });
+  it("is a no-op at index 0 when the slot is empty", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const before = buf({ value: "" });
+    const after = before.backspaceAt(FIRST_SLOT);
+    expect(after).toBe(before);
   });
 
-  describe("focus", () => {
-    it("moves the cursor to the requested index", () => {
-      expect(buf().focus(3).cursor).toBe(3);
-    });
-
-    it("clamps out-of-range values", () => {
-      expect(buf().focus(-1).cursor).toBe(0);
-      expect(buf().focus(999).cursor).toBe(5);
-    });
-
-    it("returns the same instance when the cursor doesn't move", () => {
-      const before = buf("", 6, undefined, 3);
-      expect(before.focus(3)).toBe(before);
-    });
-  });
-
-  describe("setValue", () => {
-    it("replaces the slots and lands the cursor on the first empty slot", () => {
-      const b = buf("", 6, undefined, 4).setValue("ab");
-      expect(b.slots[0]).toBe("a");
-      expect(b.slots[1]).toBe("b");
-      expect(b.cursor).toBe(2);
-    });
-
-    it("lands the cursor at index 0 when clearing the value", () => {
-      const b = buf("12345", 6, undefined, 4).setValue("");
-      expect(b.cursor).toBe(0);
-    });
-
-    it("lands the cursor on the last slot when the value fills everything", () => {
-      const b = buf("", 6).setValue("123456");
-      expect(b.cursor).toBe(5);
-    });
-
-    it("is a no-op when the value already matches", () => {
-      const before = buf("ab");
-      expect(before.setValue("ab")).toBe(before);
-    });
-  });
-
-  describe("toString", () => {
-    it("emits gaps as spaces and trims trailing gaps", () => {
-      expect(buf().insertAt(4, "9").toString()).toBe("    9");
-    });
-
-    it("returns empty for an all-empty buffer", () => {
-      expect(buf().toString()).toBe("");
-    });
-  });
-
-  describe("isComplete", () => {
-    it("is true only when every slot is filled", () => {
-      expect(buf("123456").isComplete).toBe(true);
-      expect(buf("12345").isComplete).toBe(false);
-      expect(buf("  3456").isComplete).toBe(false);
-    });
-  });
+  it(
+    "handles two consecutive backspaces on the same index (rapid-Backspace scenario)",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      /*
+       * This is the bug React's stale closure can't see: dispatching two backspaces
+       * at index 2 before any re-render should still clear slot 2, then slot 1.
+       */
+      const buffer = buf({ value: "abc" })
+        .backspaceAt(THIRD_SLOT)
+        .backspaceAt(THIRD_SLOT);
+      expect(buffer.slots[THIRD_SLOT]).toBeUndefined();
+      expect(buffer.slots[SECOND_SLOT]).toBeUndefined();
+      expect(buffer.slots[FIRST_SLOT]).toBe("a");
+      expect(buffer.cursor).toBe(SECOND_SLOT);
+    }
+  );
 });

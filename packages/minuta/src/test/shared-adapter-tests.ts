@@ -1,73 +1,59 @@
-import { describe } from "vitest";
-import type { Adapter } from "../types";
-import { createNativeAdapter } from "../adapters/native";
-import { createDateFnsAdapter } from "../adapters/date-fns";
-import { createDayjsAdapter } from "../adapters/dayjs";
-import { createLuxonAdapter } from "../adapters/luxon";
-import { createMomentAdapter } from "../adapters/moment";
-import { createMinutaAdapter } from "../adapters/temporal";
+import type { Adapter } from "#src/types";
+import { createDateFnsAdapter } from "#src/adapters/date-fns/index";
+import { createDayjsAdapter } from "#src/adapters/dayjs/index";
+import { createLuxonAdapter } from "#src/adapters/luxon/index";
+import { createMinutaAdapter } from "#src/adapters/temporal/index";
+import { createMomentAdapter } from "#src/adapters/moment/index";
+import { createNativeAdapter } from "#src/adapters/native/index";
 
 // Define adapter configurations
-export interface AdapterConfig {
+type AdapterConfig = {
   name: string;
   createAdapter: () => Adapter;
-  skip?: boolean; // Allow skipping certain adapters during development
-}
+  // Allow skipping certain adapters during development
+  skip?: boolean;
+};
 
 // List of adapters to test
-export const testAdapters: AdapterConfig[] = [
+const testAdapters: AdapterConfig[] = [
   {
+    createAdapter: (): Adapter => createNativeAdapter({ weekStartsOn: 1 }),
     name: "Native",
-    createAdapter: () => createNativeAdapter({ weekStartsOn: 1 }),
   },
   {
+    createAdapter: (): Adapter => createDateFnsAdapter({ weekStartsOn: 1 }),
     name: "date-fns",
-    createAdapter: () => createDateFnsAdapter({ weekStartsOn: 1 }),
   },
   {
+    createAdapter: (): Adapter => createDayjsAdapter({ weekStartsOn: 1 }),
     name: "Day.js",
-    createAdapter: () => createDayjsAdapter({ weekStartsOn: 1 }),
   },
   {
+    createAdapter: (): Adapter => createLuxonAdapter({ weekStartsOn: 1 }),
     name: "Luxon",
-    createAdapter: () => createLuxonAdapter({ weekStartsOn: 1 }),
   },
   {
+    createAdapter: (): Adapter => createMomentAdapter({ weekStartsOn: 1 }),
     name: "Moment.js",
-    createAdapter: () => createMomentAdapter({ weekStartsOn: 1 }),
   },
   {
+    createAdapter: (): Adapter => createMinutaAdapter({ weekStartsOn: 1 }),
     name: "Temporal",
-    createAdapter: () => createMinutaAdapter({ weekStartsOn: 1 }),
   },
 ];
 
 /**
- * Run a test suite with all configured adapters
- * @param suiteName - Name of the test suite
- * @param testFn - Function containing the tests, receives adapter as parameter
- */
-export function withAllAdapters(
-  suiteName: string,
-  testFn: (adapter: Adapter, adapterName: string) => void
-) {
-  describe(suiteName, () => {
-    testAdapters.forEach(({ name, createAdapter, skip }) => {
-      const describeFn = skip ? describe.skip : describe;
-      describeFn(`with ${name} adapter`, () => {
-        const adapter = createAdapter();
-        testFn(adapter, name);
-      });
-    });
-  });
-}
-
-/**
  * Run a test suite with specific adapters using describe.each
  * This is useful when you want to use Vitest's parameterized tests
+ * @returns One `[name, adapter]` tuple per enabled adapter
  */
-export function getAdapterTestCases() {
+function getAdapterTestCases(): (readonly [string, Adapter])[] {
   return testAdapters
-    .filter((config) => !config.skip)
-    .map(({ name, createAdapter }) => [name, createAdapter()] as const);
+    .filter((config: Readonly<AdapterConfig>) => config.skip !== true)
+    .map(
+      ({ name, createAdapter }: Readonly<AdapterConfig>) =>
+        [name, createAdapter()] as const
+    );
 }
+
+export { getAdapterTestCases };

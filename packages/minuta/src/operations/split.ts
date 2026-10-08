@@ -1,34 +1,45 @@
-import type { Period } from "../types";
+import type { Period, ReadonlyPeriod } from "#src/types";
+
+const ONE_MS = 1;
+
+function withBounds(
+  period: ReadonlyPeriod,
+  start: Readonly<Date>,
+  end: Readonly<Date>
+): Period {
+  const bounded: Period = { end, start, type: period.type };
+  return Object.assign(bounded, period, { end, start });
+}
 
 /**
  * Split a period at a specific date
+ *
+ * @param period - The period to split
+ * @param splitDate - The date at which the second half starts
+ * @returns The part before the split date and the part from the split date on
  */
-export function split(period: Period, splitDate: Date): [Period, Period] {
+function split(
+  period: ReadonlyPeriod,
+  splitDate: Readonly<Date>
+): [Period, Period] {
   const splitTime = splitDate.getTime();
-  const startTime = period.start.getTime();
-  const endTime = period.end.getTime();
 
-  if (splitTime <= startTime) {
-    return [{ ...period, start: period.start, end: period.start }, period];
+  if (splitTime <= period.start.getTime()) {
+    return [withBounds(period, period.start, period.start), period];
   }
 
-  if (splitTime >= endTime) {
-    return [period, { ...period, start: period.end, end: period.end }];
+  if (splitTime >= period.end.getTime()) {
+    return [period, withBounds(period, period.end, period.end)];
   }
 
-  // Inclusive-inclusive boundaries: before ends 1ms before the split point,
-  // after starts at the split point. Every millisecond belongs to exactly one half.
-  const before: Period = {
-    ...period,
-    start: period.start,
-    end: new Date(splitTime - 1),
-  };
-
-  const after: Period = {
-    ...period,
-    start: splitDate,
-    end: period.end,
-  };
+  /*
+   * Inclusive-inclusive boundaries: before ends 1ms before the split point,
+   * after starts at the split point. Every millisecond belongs to exactly one half.
+   */
+  const before = withBounds(period, period.start, new Date(splitTime - ONE_MS));
+  const after = withBounds(period, splitDate, period.end);
 
   return [before, after];
 }
+
+export { split };

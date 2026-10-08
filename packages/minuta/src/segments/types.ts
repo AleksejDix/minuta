@@ -2,7 +2,7 @@
  * Editable segment types that map to adapter units.
  * These can be incremented, decremented, and typed into.
  */
-export type EditableSegmentType =
+type EditableSegmentType =
   | "day"
   | "month"
   | "year"
@@ -14,7 +14,7 @@ export type EditableSegmentType =
  * Derived segment types from Intl.DateTimeFormat.
  * These are display-only — computed from the date, not directly editable.
  */
-export type DerivedSegmentType =
+type DerivedSegmentType =
   | "era"
   | "weekday"
   | "dayPeriod"
@@ -24,7 +24,7 @@ export type DerivedSegmentType =
 /**
  * All segment types: editable, derived, or literal separators.
  */
-export type SegmentType = EditableSegmentType | DerivedSegmentType | "literal";
+type SegmentType = EditableSegmentType | DerivedSegmentType | "literal";
 
 /**
  * A single segment of a formatted date string.
@@ -33,35 +33,50 @@ export type SegmentType = EditableSegmentType | DerivedSegmentType | "literal";
  * // The "31" in "31.03.2026"
  * { type: "day", value: "31", start: 0, end: 2 }
  */
-export type Segment = {
-  type: SegmentType;
-  value: string;
+type Segment = {
+  readonly type: SegmentType;
+  readonly value: string;
   /** Character index where this segment starts in the full string */
-  start: number;
+  readonly start: number;
   /** Character index where this segment ends (exclusive) */
-  end: number;
+  readonly end: number;
 };
 
 /**
  * A date format token.
  *
  * @example
- * { type: "day", length: 2 }   // DD
- * { type: "literal", char: "." } // .
+ * // DD
+ * { type: "day", length: 2 }
+ * // .
+ * { type: "literal", char: "." }
  */
-export type FormatToken =
-  | { type: EditableSegmentType | DerivedSegmentType; length: number }
-  | { type: "literal"; char: string };
+type FormatToken =
+  | {
+      readonly type: EditableSegmentType | DerivedSegmentType;
+      readonly length: number;
+    }
+  | { readonly type: "literal"; readonly char: string };
 
 /**
  * Parsed format definition — an ordered list of tokens.
  */
-export type DateFormat = FormatToken[];
+type DateFormat = FormatToken[];
 
 /**
  * The full state of a segmented date input.
  */
-export type SegmentedDate = {
+type SegmentedDate = {
   segments: Segment[];
   activeIndex: number;
+};
+
+export type {
+  DateFormat,
+  DerivedSegmentType,
+  EditableSegmentType,
+  FormatToken,
+  Segment,
+  SegmentedDate,
+  SegmentType,
 };

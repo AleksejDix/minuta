@@ -1,27 +1,47 @@
-import type { Adapter } from "../../types";
-import { createAdapter } from "../createAdapter";
 import {
-  yearHandler,
-  quarterHandler,
-  monthHandler,
   createWeekHandler,
   dayHandler,
   hourHandler,
   minuteHandler,
+  monthHandler,
+  quarterHandler,
   secondHandler,
+  yearHandler,
 } from "./handlers";
+import type { Adapter } from "#src/types";
+import { createAdapter } from "#src/adapters/create-adapter";
 
-export function createDayjsAdapter({
-  weekStartsOn = 1,
-}: { weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {}): Adapter {
+const MONDAY = 1;
+
+const SUNDAY = 0;
+const TUESDAY = 2;
+const WEDNESDAY = 3;
+const THURSDAY = 4;
+const FRIDAY = 5;
+const SATURDAY = 6;
+
+type WeekStartsOn =
+  | typeof SUNDAY
+  | typeof MONDAY
+  | typeof TUESDAY
+  | typeof WEDNESDAY
+  | typeof THURSDAY
+  | typeof FRIDAY
+  | typeof SATURDAY;
+
+function createDayjsAdapter({
+  weekStartsOn = MONDAY,
+}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): Adapter {
   return createAdapter({
-    year: yearHandler,
-    quarter: quarterHandler,
-    month: monthHandler,
-    week: createWeekHandler(weekStartsOn),
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
+    month: monthHandler,
+    quarter: quarterHandler,
     second: secondHandler,
+    week: createWeekHandler(weekStartsOn),
+    year: yearHandler,
   });
 }
+
+export { createDayjsAdapter };

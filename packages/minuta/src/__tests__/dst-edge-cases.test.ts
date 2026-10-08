@@ -1,163 +1,253 @@
-import { describe, it, expect } from "vitest";
-import { createDateFnsTzAdapter } from "../adapters/date-fns-tz";
-import { derivePeriod, createPeriod } from "../operations/period";
-import { divide } from "../operations/divide";
-import { contains } from "../operations/contains";
-import { isOverlapping } from "../operations/utils/isOverlapping";
+import { createPeriod, derivePeriod } from "#src/operations/period";
+import { describe, expect, it } from "vitest";
+import type { ReadonlyPeriod } from "#src/types";
+import { contains } from "#src/operations/contains";
+import { createDateFnsTzAdapter } from "#src/adapters/date-fns-tz/index";
+import { divide } from "#src/operations/divide";
+import { isOverlapping } from "#src/operations/utils/is-overlapping";
 
-// ── Ambiguous times during fall back (034) ──
-// During fall back, 1:00-2:00 AM repeats. date-fns-tz resolves to the earlier offset.
+const HOURS_PER_DAY = 24;
+const SHORT_DAY_HOURS = 23;
+const MONTHS_PER_YEAR = 12;
+const DAYS_IN_LEAP_YEAR = 366;
+const INDIA_DAY_START_UTC_HOUR = 18;
+const INDIA_DAY_START_UTC_MINUTE = 30;
+const NEPAL_DAY_START_UTC_HOUR = 18;
+const NEPAL_DAY_START_UTC_MINUTE = 15;
 
-describe("DST: ambiguous times during fall back", () => {
+function startTimes(periods: readonly ReadonlyPeriod[]): number[] {
+  return periods.map((period: ReadonlyPeriod) => period.start.getTime());
+}
+
+function isStrictlyIncreasing(values: readonly number[]): boolean {
+  let previous = Number.NEGATIVE_INFINITY;
+  for (const value of values) {
+    if (value <= previous) {
+      return false;
+    }
+    previous = value;
+  }
+  return true;
+}
+
+function consecutivePairs(
+  periods: readonly ReadonlyPeriod[]
+): (readonly [ReadonlyPeriod, ReadonlyPeriod])[] {
+  const pairs: (readonly [ReadonlyPeriod, ReadonlyPeriod])[] = [];
+  let previous: ReadonlyPeriod | undefined = undefined;
+  for (const period of periods) {
+    if (previous !== undefined) {
+      pairs.push([previous, period]);
+    }
+    previous = period;
+  }
+  return pairs;
+}
+
+/*
+ * ── Ambiguous times during fall back (034) ──
+ * During fall back, 1:00-2:00 AM repeats. date-fns-tz resolves to the earlier offset.
+ */
+
+describe("dst: ambiguous times during fall back", () => {
   const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
 
-  it("period created during ambiguous hour is valid", () => {
+  it("period created during ambiguous hour is valid", { timeout: 5000 }, () => {
+    expect.hasAssertions();
     // Nov 3 2024: 1:30 AM occurs twice in New York
-    const ambiguous = new Date(Date.UTC(2024, 10, 3, 6, 30)); // 1:30 AM EDT (first occurrence)
+    // 1:30 AM EDT (first occurrence)
+    const ambiguous = new Date("2024-11-03T06:30:00Z");
     const day = derivePeriod(ny, ambiguous, "day");
     expect(day.start.getTime()).toBeLessThan(day.end.getTime());
   });
 
-  it("hour periods during fall back don't overlap", () => {
-    const day = derivePeriod(ny, new Date(Date.UTC(2024, 10, 3, 5)), "day");
+  it("hour periods during fall back don't overlap", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day = derivePeriod(ny, new Date("2024-11-03T05:00:00Z"), "day");
     const hours = divide(ny, day, "hour");
 
-    for (let i = 1; i < hours.length; i++) {
-      expect(hours[i].start.getTime()).toBeGreaterThan(
-        hours[i - 1].start.getTime()
-      );
-    }
+    // Each hour should start after the previous one
+    expect(isStrictlyIncreasing(startTimes(hours))).toBe(true);
   });
 });
 
-// ── Gap times during spring forward (035) ──
-// During spring forward, 2:00-3:00 AM doesn't exist. JS Date adjusts forward.
+/*
+ * ── Gap times during spring forward (035) ──
+ * During spring forward, 2:00-3:00 AM doesn't exist. JS Date adjusts forward.
+ */
 
-describe("DST: gap times during spring forward", () => {
+describe("dst: gap times during spring forward", () => {
   const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
 
-  it("period created with gap time adjusts forward", () => {
+  it("period created with gap time adjusts forward", { timeout: 5000 }, () => {
+    expect.hasAssertions();
     // Mar 10 2024: 2:30 AM doesn't exist in New York (clocks jump 2:00 → 3:00)
-    const gapTime = new Date(Date.UTC(2024, 2, 10, 7, 30)); // 2:30 AM EST → adjusted
+    // 2:30 AM EST → adjusted
+    const gapTime = new Date("2024-03-10T07:30:00Z");
     const hour = derivePeriod(ny, gapTime, "hour");
     // The period should be valid (start <= end)
     expect(hour.start.getTime()).toBeLessThanOrEqual(hour.end.getTime());
   });
 
-  it("dividing spring forward day produces no overlapping hours", () => {
-    const day = derivePeriod(ny, new Date(Date.UTC(2024, 2, 10, 5)), "day");
-    const hours = divide(ny, day, "hour");
+  it(
+    "dividing spring forward day produces no overlapping hours",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const day = derivePeriod(ny, new Date("2024-03-10T05:00:00Z"), "day");
+      const hours = divide(ny, day, "hour");
 
-    // Each hour should start after the previous one
-    for (let i = 1; i < hours.length; i++) {
-      expect(hours[i].start.getTime()).toBeGreaterThan(
-        hours[i - 1].start.getTime()
-      );
+      // Each hour should start after the previous one
+      expect(isStrictlyIncreasing(startTimes(hours))).toBe(true);
     }
-  });
+  );
 });
 
-// ── Fractional timezone offsets (039) ──
-// India +5:30, Nepal +5:45, Chatham +12:45, Lord Howe +10:30 with 30-min DST
+/*
+ * ── Fractional timezone offsets (039) ──
+ * India +5:30, Nepal +5:45, Chatham +12:45, Lord Howe +10:30 with 30-min DST
+ */
 
-describe("DST: fractional timezone offsets", () => {
+describe("dst: fractional timezone offsets", () => {
   const india = createDateFnsTzAdapter({ timezone: "Asia/Kolkata" });
   const nepal = createDateFnsTzAdapter({ timezone: "Asia/Kathmandu" });
 
-  it("India (+5:30): day has 24 hours", () => {
-    const day = derivePeriod(india, new Date(Date.UTC(2024, 0, 15, 0)), "day");
+  it("india (+5:30): day has 24 hours", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day = derivePeriod(india, new Date("2024-01-15T00:00:00Z"), "day");
     const hours = divide(india, day, "hour");
-    expect(hours.length).toBe(24);
+    expect(hours).toHaveLength(HOURS_PER_DAY);
   });
 
-  it("India (+5:30): startOf day is at 18:30 UTC (previous day)", () => {
-    const day = derivePeriod(india, new Date(Date.UTC(2024, 0, 15, 0)), "day");
-    // Jan 15 in India starts at Jan 14 18:30 UTC
-    expect(day.start.getUTCHours()).toBe(18);
-    expect(day.start.getUTCMinutes()).toBe(30);
-  });
+  it(
+    "india (+5:30): startOf day is at 18:30 UTC (previous day)",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const day = derivePeriod(india, new Date("2024-01-15T00:00:00Z"), "day");
+      // Jan 15 in India starts at Jan 14 18:30 UTC
+      expect(day.start.getUTCHours()).toBe(INDIA_DAY_START_UTC_HOUR);
+      expect(day.start.getUTCMinutes()).toBe(INDIA_DAY_START_UTC_MINUTE);
+    }
+  );
 
-  it("Nepal (+5:45): day has 24 hours", () => {
-    const day = derivePeriod(nepal, new Date(Date.UTC(2024, 0, 15, 0)), "day");
+  it("nepal (+5:45): day has 24 hours", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day = derivePeriod(nepal, new Date("2024-01-15T00:00:00Z"), "day");
     const hours = divide(nepal, day, "hour");
-    expect(hours.length).toBe(24);
+    expect(hours).toHaveLength(HOURS_PER_DAY);
   });
 
-  it("Nepal (+5:45): startOf day is at 18:15 UTC (previous day)", () => {
-    const day = derivePeriod(nepal, new Date(Date.UTC(2024, 0, 15, 0)), "day");
-    // Jan 15 in Nepal starts at Jan 14 18:15 UTC
-    expect(day.start.getUTCHours()).toBe(18);
-    expect(day.start.getUTCMinutes()).toBe(15);
-  });
+  it(
+    "nepal (+5:45): startOf day is at 18:15 UTC (previous day)",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const day = derivePeriod(nepal, new Date("2024-01-15T00:00:00Z"), "day");
+      // Jan 15 in Nepal starts at Jan 14 18:15 UTC
+      expect(day.start.getUTCHours()).toBe(NEPAL_DAY_START_UTC_HOUR);
+      expect(day.start.getUTCMinutes()).toBe(NEPAL_DAY_START_UTC_MINUTE);
+    }
+  );
 });
 
 // ── Lord Howe Island: 30-minute DST shift ──
 
-describe("DST: Lord Howe Island (30-minute DST shift)", () => {
+describe("dst: Lord Howe Island (30-minute DST shift)", () => {
   const lordHowe = createDateFnsTzAdapter({ timezone: "Australia/Lord_Howe" });
 
-  it("normal day has 24 hours", () => {
-    const day = derivePeriod(lordHowe, new Date(Date.UTC(2024, 0, 15)), "day");
+  it("normal day has 24 hours", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const day = derivePeriod(lordHowe, new Date("2024-01-15T00:00:00Z"), "day");
     const hours = divide(lordHowe, day, "hour");
-    expect(hours.length).toBe(24);
+    expect(hours).toHaveLength(HOURS_PER_DAY);
   });
 
-  it("spring forward day has 23 or 24 hours (30-min shift)", () => {
-    // Lord Howe springs forward first Sunday of October
-    // Oct 6 2024 — clocks go from +10:30 to +11:00 (only 30 min shift)
-    const day = derivePeriod(
-      lordHowe,
-      new Date(Date.UTC(2024, 9, 5, 14)),
-      "day"
-    );
-    const hours = divide(lordHowe, day, "hour");
-    // 30-min DST doesn't remove a full hour — could be 23 or 24
-    expect(hours.length).toBeGreaterThanOrEqual(23);
-    expect(hours.length).toBeLessThanOrEqual(24);
-  });
+  it(
+    "spring forward day has 23 or 24 hours (30-min shift)",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      /*
+       * Lord Howe springs forward first Sunday of October
+       * Oct 6 2024 — clocks go from +10:30 to +11:00 (only 30 min shift)
+       */
+      const day = derivePeriod(
+        lordHowe,
+        new Date("2024-10-05T14:00:00Z"),
+        "day"
+      );
+      const hours = divide(lordHowe, day, "hour");
+      // 30-min DST doesn't remove a full hour — could be 23 or 24
+      expect(hours.length).toBeGreaterThanOrEqual(SHORT_DAY_HOURS);
+      expect(hours.length).toBeLessThanOrEqual(HOURS_PER_DAY);
+    }
+  );
 });
 
-// ── Multi-DST transition periods (041) ──
-// Periods spanning both spring forward and fall back
+/*
+ * ── Multi-DST transition periods (041) ──
+ * Periods spanning both spring forward and fall back
+ */
 
-describe("DST: periods spanning multiple transitions", () => {
+describe("dst: periods spanning multiple transitions", () => {
   const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
 
-  it("full year divided into months gives 12", () => {
-    const year = derivePeriod(ny, new Date(Date.UTC(2024, 5, 15)), "year");
+  it("full year divided into months gives 12", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const year = derivePeriod(ny, new Date("2024-06-15T00:00:00Z"), "year");
     const months = divide(ny, year, "month");
-    expect(months.length).toBe(12);
+    expect(months).toHaveLength(MONTHS_PER_YEAR);
   });
 
-  it("full year divided into days gives 366 (2024 is leap year)", () => {
-    const year = derivePeriod(ny, new Date(Date.UTC(2024, 5, 15)), "year");
-    const days = divide(ny, year, "day");
-    expect(days.length).toBe(366);
-  });
-
-  it("period spanning spring forward + fall back: contains works", () => {
-    // March through November spans both transitions
-    const span = createPeriod(
-      new Date(Date.UTC(2024, 2, 1, 5)),
-      new Date(Date.UTC(2024, 10, 30, 5))
-    );
-
-    // A date during spring forward gap (adjusted)
-    expect(contains(span, new Date(Date.UTC(2024, 2, 10, 7, 30)))).toBe(true);
-
-    // A date during fall back
-    expect(contains(span, new Date(Date.UTC(2024, 10, 3, 6, 30)))).toBe(true);
-
-    // A date outside the span
-    expect(contains(span, new Date(Date.UTC(2024, 11, 15)))).toBe(false);
-  });
-
-  it("month periods across transitions don't overlap", () => {
-    const year = derivePeriod(ny, new Date(Date.UTC(2024, 5, 15)), "year");
-    const months = divide(ny, year, "month");
-
-    for (let i = 1; i < months.length; i++) {
-      expect(isOverlapping(months[i - 1], months[i])).toBe(false);
+  it(
+    "full year divided into days gives 366 (2024 is leap year)",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const year = derivePeriod(ny, new Date("2024-06-15T00:00:00Z"), "year");
+      const days = divide(ny, year, "day");
+      expect(days).toHaveLength(DAYS_IN_LEAP_YEAR);
     }
-  });
+  );
+});
+
+describe("dst: containment and overlap across multiple transitions", () => {
+  const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
+
+  it(
+    "period spanning spring forward + fall back: contains works",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      // March through November spans both transitions
+      const span = createPeriod(
+        new Date("2024-03-01T05:00:00Z"),
+        new Date("2024-11-30T05:00:00Z")
+      );
+
+      // A date during spring forward gap (adjusted)
+      expect(contains(span, new Date("2024-03-10T07:30:00Z"))).toBe(true);
+
+      // A date during fall back
+      expect(contains(span, new Date("2024-11-03T06:30:00Z"))).toBe(true);
+
+      // A date outside the span
+      expect(contains(span, new Date("2024-12-15T00:00:00Z"))).toBe(false);
+    }
+  );
+
+  it(
+    "month periods across transitions don't overlap",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const year = derivePeriod(ny, new Date("2024-06-15T00:00:00Z"), "year");
+      const months = divide(ny, year, "month");
+
+      for (const [previous, next] of consecutivePairs(months)) {
+        expect(isOverlapping(previous, next)).toBe(false);
+      }
+    }
+  );
 });

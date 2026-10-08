@@ -1,11 +1,11 @@
 export { clamp } from "./clamp";
 export { contains } from "./contains";
-export { derivePeriod, createPeriod } from "./period";
+export { createPeriod, derivePeriod } from "./period";
+export { divide } from "./divide";
 export { duration } from "./duration";
 export { gap } from "./gap";
-export { divide } from "./divide";
 export { go } from "./go";
-export { isSame } from "./isSame";
+export { isSame } from "./is-same";
 export { merge } from "./merge";
 export { move } from "./move";
 export { next } from "./next";

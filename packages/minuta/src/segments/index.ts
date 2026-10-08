@@ -32,6 +32,8 @@ export { fromSlots, toSlots } from "./slots";
 export { GapBuffer, GAP, REGEXP_ONLY_DIGITS } from "./gap-buffer";
 export type { Slot, GapBufferOptions } from "./gap-buffer";
 
+export type { InputResult } from "./input";
+
 // Format
 export { formatPeriod, formatRange, formatPeriodWith } from "./format";
 
