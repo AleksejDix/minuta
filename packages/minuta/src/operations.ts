@@ -24,3 +24,4 @@ export {
   snap,
   split,
 } from "./operations/index";
+export type { DivideOptions } from "./operations/divide";

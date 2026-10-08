@@ -3,4 +3,14 @@
  *
  * Optional calendar functionality for 5-10KB bundle savings when not needed.
  */
-export { createStableMonth, createStableYear } from "./calendar/index";
+export {
+  createStableDay,
+  createStableMonth,
+  createStableYear,
+} from "./calendar/index";
+export type {
+  HourSlot,
+  StableDay,
+  StableMonth,
+  StableYear,
+} from "./calendar/index";

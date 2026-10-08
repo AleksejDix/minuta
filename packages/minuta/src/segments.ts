@@ -43,4 +43,7 @@ export type {
   FormatToken,
   Slot,
   GapBufferOptions,
+  InputResult,
+  EditableSegmentType,
+  DerivedSegmentType,
 } from "./segments/index";
