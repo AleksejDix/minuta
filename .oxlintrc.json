@@ -60,7 +60,7 @@
   },
   "overrides": [
     {
-      "files": ["**/*.tsx", "**/*.vue", "**/*.svelte"],
+      "files": ["**/*.tsx", "**/*.vue"],
       "rules": {
         "unicorn/filename-case": [
           "error",

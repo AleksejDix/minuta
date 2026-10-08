@@ -144,7 +144,6 @@ export default defineConfig({
           items: [
             { text: "Vue 3", link: "/frameworks/vue" },
             { text: "React 18+", link: "/frameworks/react" },
-            { text: "Svelte (Roadmap)", link: "/frameworks/svelte" },
             { text: "Angular (Roadmap)", link: "/frameworks/angular" },
           ],
         },

@@ -1,20 +1,18 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": ["vitepress/**"],
+  "ignore": [
+    "vitepress/**"
+  ],
   "workspaces": {
-    "packages/minuta-svelte": {
-      "entry": ["examples/svelte.config.js"],
-      "typescript": {
-        "config": [
-          "tsconfig.json",
-          "tsconfig.check.json",
-          "tsconfig.examples.json"
-        ]
-      }
-    },
     "packages/slides": {
-      "entry": ["slides.md", "components/**/*.vue", "snippets/**/*.ts"],
-      "ignoreDependencies": ["@slidev/theme-default"]
+      "entry": [
+        "slides.md",
+        "components/**/*.vue",
+        "snippets/**/*.ts"
+      ],
+      "ignoreDependencies": [
+        "@slidev/theme-default"
+      ]
     }
   }
 }

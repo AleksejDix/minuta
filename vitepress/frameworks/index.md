@@ -13,7 +13,6 @@ builder API into real apps.
 
 ## Coming Soon
 
-- [Svelte](/frameworks/svelte) — Store helpers so derived periods stay reactive.
 - [Angular](/frameworks/angular) — Injectable services with signal-based values.
 
 Each package exposes the same surface area (`Minuta`, `usePeriod`,

@@ -92,7 +92,7 @@ console.log(`Next month: ${nextMonth.start.toDateString()}`)
 
 - [Vue 3 composables](/frameworks/vue) ship today via `minuta-vue`, complete with provide/inject helpers.
 - [React hooks](/frameworks/react) live in `minuta-react`, exposing `Minuta()` and `usePeriod()`.
-- [Svelte](/frameworks/svelte) and [Angular](/frameworks/angular) integrations are already scoped and will follow the same pattern so every major framework feels native.
+- An [Angular](/frameworks/angular) integration is already scoped and will follow the same pattern so every major framework feels native.
 
 ## Learn More
 

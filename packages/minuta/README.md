@@ -131,9 +131,6 @@ import { createMinuta, useMinuta, usePeriod, Minuta } from "minuta-vue";
 
 // React
 import { useMinuta, usePeriod } from "minuta-react";
-
-// Svelte
-import { createMinuta, useMinuta, usePeriod } from "minuta-svelte";
 ```
 
 ## Types

@@ -30,7 +30,6 @@ const hours = divide(adapter, days[0], "hour"); // 24 periods
 | `minuta/helpers`     | UI helpers (isWeekend, isToday, ...) |
 | `minuta-vue`         | Vue 3 integration                    |
 | `minuta-react`       | React 18+ integration                |
-| `minuta-svelte`      | Svelte 4/5 integration               |
 
 ## Documentation
 
