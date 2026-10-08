@@ -26,7 +26,6 @@
     ".claude",
     ".gemini-tmp",
     "CHANGELOG.md",
-    "docs/",
     "packages/minuta-vue/examples/playwright-report/",
     "packages/minuta-vue/examples/test-results/"
   ]

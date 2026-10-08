@@ -6,13 +6,13 @@ Every JavaScript date library ships its own parser. That parser needs to underst
 
 This is the single biggest contributor to bundle size in date libraries:
 
-| Library | Parser + Locale Data | What you pay for |
-|---------|---------------------|------------------|
-| Moment.js | ~70KB min (230KB+ with all locales) | 537 locale definitions, format strings, regex parsers |
-| date-fns | ~20KB parse + per-locale imports | Each `locale/` module adds format rules to your bundle |
-| Luxon | ~20KB | Format tables, token maps, regex patterns |
-| Day.js | ~7KB + plugins | Plugin chain: customParseFormat, localizedFormat, etc. |
-| **datefield** | **~3 KB gzip** | **No locale data.** |
+| Library       | Parser + Locale Data                | What you pay for                                       |
+| ------------- | ----------------------------------- | ------------------------------------------------------ |
+| Moment.js     | ~70KB min (230KB+ with all locales) | 537 locale definitions, format strings, regex parsers  |
+| date-fns      | ~20KB parse + per-locale imports    | Each `locale/` module adds format rules to your bundle |
+| Luxon         | ~20KB                               | Format tables, token maps, regex patterns              |
+| Day.js        | ~7KB + plugins                      | Plugin chain: customParseFormat, localizedFormat, etc. |
+| **datefield** | **~3 KB gzip**                      | **No locale data.**                                    |
 
 The irony? **Your browser already has all this data.** Every browser ships ICU — the International Components for Unicode — a comprehensive locale database that handles every country, calendar system, and numeral system on earth. It's exposed through `Intl.DateTimeFormat`.
 
@@ -72,9 +72,9 @@ Once we know the structure, parsing is just slicing strings by known lengths:
 ```typescript
 import { deriveFormat, parseSegments, toDate } from "datefield";
 
-const format = deriveFormat("de-CH");      // Know the structure
-const segments = parseSegments(format, "31.03.2026");  // Slice by lengths
-const date = toDate(segments);             // → Date(2026, 2, 31)
+const format = deriveFormat("de-CH"); // Know the structure
+const segments = parseSegments(format, "31.03.2026"); // Slice by lengths
+const date = toDate(segments); // → Date(2026, 2, 31)
 ```
 
 No regex. No backtracking. No ambiguity. We know exactly where each segment starts and ends because the browser told us.
@@ -86,12 +86,14 @@ We tested `deriveFormat` against **275 locales across 180+ countries**. Every co
 ### The Edge Cases We Handle
 
 **Multi-character separators:**
+
 ```
 Czech:    13. 11. 2026    (dot + space)
 Croatian: 13. 11. 2026.   (dot + space + trailing dot)
 ```
 
 **Trailing literals:**
+
 ```
 Bulgarian: 13.11.2026 г.   (Cyrillic year suffix)
 Serbian:   13.11.2026.     (trailing dot)
@@ -99,16 +101,19 @@ Korean:    2026. 11. 13.   (year first + trailing dot)
 ```
 
 **CJK formats:**
+
 ```
 Chinese (SG): 2026年11月13日  (year/month/day with Kanji suffixes)
 ```
 
 **RTL separators:**
+
 ```
 Arabic: 13‏/11‏/2026  (with invisible RTL marks)
 ```
 
 **Non-Gregorian calendars:**
+
 ```
 Thai:    Buddhist calendar → forced to Gregorian
 Persian: Solar Hijri      → forced to Gregorian
@@ -118,11 +123,11 @@ All handled. Zero special cases in our code. We force Gregorian calendar and Lat
 
 ### Global Coverage
 
-| Segment Order | Locales | % | Regions |
-|--------------|---------|---|---------|
-| Day-Month-Year | 227 | 82% | Europe, Latin America, Africa, Middle East, South/SE Asia |
-| Year-Month-Day | 31 | 11% | East Asia, Scandinavia, Canada, some African languages |
-| Month-Day-Year | 17 | 6% | USA, Philippines, and a few indigenous languages |
+| Segment Order  | Locales | %   | Regions                                                   |
+| -------------- | ------- | --- | --------------------------------------------------------- |
+| Day-Month-Year | 227     | 82% | Europe, Latin America, Africa, Middle East, South/SE Asia |
+| Year-Month-Day | 31      | 11% | East Asia, Scandinavia, Canada, some African languages    |
+| Month-Day-Year | 17      | 6%  | USA, Philippines, and a few indigenous languages          |
 
 ## The Segmented Date Input
 
