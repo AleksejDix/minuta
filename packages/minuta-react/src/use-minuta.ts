@@ -1,7 +1,9 @@
-import { useState, useMemo } from "react";
-import { derivePeriod } from "minuta";
+import type { MinutaBuilder, ReactMinuta, UseMinutaOptions } from "./types";
+import { useMemo, useState } from "react";
 import { createMinutaBuilder } from "./builder";
-import type { UseMinutaOptions, MinutaBuilder, ReactMinuta } from "./types";
+import { derivePeriod } from "minuta";
+
+const MONDAY = 1;
 
 /**
  * Creates a minuta instance with builder methods
@@ -23,8 +25,10 @@ import type { UseMinutaOptions, MinutaBuilder, ReactMinuta } from "./types";
  * const months = minuta.divide(year, "month");
  * ```
  */
-export function useMinuta(options: UseMinutaOptions): MinutaBuilder {
-  if (!options.adapter) {
+function useMinuta(options: UseMinutaOptions): MinutaBuilder {
+  // The type says required, but JavaScript callers may still omit it
+  const givenAdapter: unknown = options.adapter;
+  if (givenAdapter === undefined || givenAdapter === null) {
     throw new Error(
       "A date adapter is required. Please install and provide an adapter from minuta/* packages."
     );
@@ -34,7 +38,7 @@ export function useMinuta(options: UseMinutaOptions): MinutaBuilder {
     adapter,
     date = new Date(),
     now: nowDate = new Date(),
-    weekStartsOn = 1,
+    weekStartsOn = MONDAY,
   } = options;
 
   const [browsingDate, setBrowsingDate] = useState(date);
@@ -54,10 +58,12 @@ export function useMinuta(options: UseMinutaOptions): MinutaBuilder {
   // Create base minuta state
   const reactMinuta: ReactMinuta = {
     adapter,
-    weekStartsOn,
     browsing,
     now,
+    weekStartsOn,
   };
 
   return createMinutaBuilder(reactMinuta, setBrowsingDate);
 }
+
+export { useMinuta };

@@ -1,17 +1,74 @@
-import {
-  derivePeriod,
-  createPeriod,
-  divide,
-  merge as mergeOp,
-  next,
-  previous,
-  go,
-  split,
-  contains,
-  isSame,
-} from "minuta/operations";
-import type { AdapterUnit, Period } from "minuta";
+import type { Adapter, AdapterUnit, Period, ReadonlyPeriod } from "minuta";
 import type { MinutaBuilder, ReactMinuta } from "./types";
+import {
+  contains,
+  createPeriod,
+  derivePeriod,
+  divide,
+  go,
+  isSame,
+  merge as mergeOp,
+  next as nextPeriod,
+  previous as previousPeriod,
+  split,
+} from "minuta/operations";
+
+type SetBrowsingDate = (date: Readonly<Date>) => void;
+
+type Navigation = Pick<MinutaBuilder, "go" | "next" | "previous">;
+
+const SINGLE_STEP = 1;
+
+function stepForward(
+  adapter: Readonly<Adapter>,
+  period: ReadonlyPeriod,
+  count: number
+): Period {
+  if (count === SINGLE_STEP) {
+    return nextPeriod(adapter, period);
+  }
+  return go(adapter, period, count);
+}
+
+function stepBackward(
+  adapter: Readonly<Adapter>,
+  period: ReadonlyPeriod,
+  count: number
+): Period {
+  if (count === SINGLE_STEP) {
+    return previousPeriod(adapter, period);
+  }
+  return go(adapter, period, -count);
+}
+
+function createNavigation(
+  adapter: Readonly<Adapter>,
+  setBrowsingDate: SetBrowsingDate
+): Navigation {
+  function browseTo(result: ReadonlyPeriod): void {
+    setBrowsingDate(result.start);
+  }
+
+  return {
+    go(period: ReadonlyPeriod, count: number): Period {
+      const result = go(adapter, period, count);
+      browseTo(result);
+      return result;
+    },
+
+    next(period: ReadonlyPeriod, count = SINGLE_STEP): Period {
+      const result = stepForward(adapter, period, count);
+      browseTo(result);
+      return result;
+    },
+
+    previous(period: ReadonlyPeriod, count = SINGLE_STEP): Period {
+      const result = stepBackward(adapter, period, count);
+      browseTo(result);
+      return result;
+    },
+  };
+}
 
 /**
  * Create a minuta builder with convenient method wrappers
@@ -31,73 +88,53 @@ import type { MinutaBuilder, ReactMinuta } from "./types";
  * const months = minuta.divide(year, 'month');
  * ```
  */
-export function createMinutaBuilder(
+function createMinutaBuilder(
   minuta: ReactMinuta,
-  setBrowsingDate: (date: Date) => void
+  setBrowsingDate: SetBrowsingDate
 ): MinutaBuilder {
+  const { adapter } = minuta;
+  const navigation = createNavigation(adapter, setBrowsingDate);
+
   return {
-    ...minuta,
-
-    derivePeriod(date: Date, unit: AdapterUnit): Period {
-      return derivePeriod(minuta.adapter, date, unit);
-    },
-
-    createPeriod(start: Date, end: Date): Period {
-      return createPeriod(start, end);
-    },
-
-    divide(period: Period, unit: AdapterUnit): Period[] {
-      return divide(minuta.adapter, period, unit);
-    },
-
-    merge(periods: Period[], targetUnit?: AdapterUnit): Period {
-      return mergeOp(periods, targetUnit);
-    },
-
-    next(period: Period, count: number = 1): Period {
-      const result =
-        count === 1
-          ? next(minuta.adapter, period)
-          : go(minuta.adapter, period, count);
-
-      setBrowsingDate(result.start);
-
-      return result;
-    },
-
-    previous(period: Period, count: number = 1): Period {
-      const result =
-        count === 1
-          ? previous(minuta.adapter, period)
-          : go(minuta.adapter, period, -count);
-
-      setBrowsingDate(result.start);
-
-      return result;
-    },
-
-    go(period: Period, count: number): Period {
-      const result = go(minuta.adapter, period, count);
-
-      setBrowsingDate(result.start);
-
-      return result;
-    },
-
-    split(period: Period, date: Date): [Period, Period] {
-      return split(period, date);
-    },
-
-    contains(period: Period, dateOrPeriod: Date | Period): boolean {
+    adapter,
+    browsing: minuta.browsing,
+    contains(
+      period: ReadonlyPeriod,
+      dateOrPeriod: Readonly<Date> | ReadonlyPeriod
+    ): boolean {
       return contains(period, dateOrPeriod);
     },
-
+    createPeriod(start: Readonly<Date>, end: Readonly<Date>): Period {
+      return createPeriod(start, end);
+    },
+    derivePeriod(date: Readonly<Date>, unit: AdapterUnit): Period {
+      return derivePeriod(adapter, date, unit);
+    },
+    divide(period: ReadonlyPeriod, unit: AdapterUnit): Period[] {
+      return divide(adapter, period, unit);
+    },
+    go: navigation.go,
     isSame(
-      period1: Period,
-      period2: Period,
+      period1: ReadonlyPeriod,
+      period2: ReadonlyPeriod,
       unit: AdapterUnit | "custom"
     ): boolean {
-      return isSame(minuta.adapter, period1, period2, unit);
+      return isSame(adapter, period1, period2, unit);
     },
+    merge(
+      periods: readonly ReadonlyPeriod[],
+      targetUnit?: AdapterUnit
+    ): Period {
+      return mergeOp(periods, targetUnit);
+    },
+    next: navigation.next,
+    now: minuta.now,
+    previous: navigation.previous,
+    split(period: ReadonlyPeriod, date: Readonly<Date>): [Period, Period] {
+      return split(period, date);
+    },
+    weekStartsOn: minuta.weekStartsOn,
   };
 }
+
+export { createMinutaBuilder };

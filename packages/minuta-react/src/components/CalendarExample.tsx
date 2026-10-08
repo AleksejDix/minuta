@@ -1,42 +1,43 @@
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
-import type { Period } from "minuta";
+import { MONDAY, SUNDAY } from "./week-start";
+import { useMemo, useState } from "react";
+import { CalendarHeader } from "./CalendarHeader";
+import type { JSX } from "react";
+import { NavigationControls } from "./NavigationControls";
+import { PeriodDisplay } from "./PeriodDisplay";
+import type { WeekStart } from "./week-start";
+import { WeekdayRow } from "./WeekdayRow";
+import { WeeksGrid } from "./WeeksGrid";
 import { createNativeAdapter } from "minuta/native";
 import { useMinuta } from "#src/use-minuta";
 import { usePeriod } from "#src/use-period";
-import type { MinutaBuilder } from "#src/types";
 
-const WEEKDAY_ORDER: Record<0 | 1, string[]> = {
-  0: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  1: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-};
+type CalendarExampleProps = Readonly<{
+  /** Called with the start of the clicked day */
+  onSelectDate?: (date: Readonly<Date>) => void;
+}>;
 
-const dayFormatter = new Intl.DateTimeFormat("en-US", {
-  weekday: "short",
-});
+const SUNDAY_FIRST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONDAY_FIRST = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const monthFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  year: "numeric",
-});
-
-const rangeFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-});
-
-type WeekWithDays = { period: Period; days: Period[] };
+function weekdayLabels(weekStartsOn: WeekStart): readonly string[] {
+  if (weekStartsOn === SUNDAY) {
+    return SUNDAY_FIRST;
+  }
+  return MONDAY_FIRST;
+}
 
 /**
  * Batteries-included calendar that mirrors the React example app.
  * Ship it from the package so docs + sandboxes can import it directly.
+ *
+ * @param props - Component props
+ * @param props.onSelectDate - Called with the start of the clicked day
+ * @returns The calendar element
  */
-export function CalendarExample({
+function CalendarExample({
   onSelectDate,
-}: {
-  /** Called with the start of the clicked day */
-  onSelectDate?: (date: Date) => void;
-} = {}) {
-  const [weekStartsOn, setWeekStartsOn] = useState<0 | 1>(1);
+}: CalendarExampleProps = {}): JSX.Element {
+  const [weekStartsOn, setWeekStartsOn] = useState<WeekStart>(MONDAY);
 
   // PATTERN: Memoize adapters so React recreates them when config changes.
   const adapter = useMemo(
@@ -51,166 +52,18 @@ export function CalendarExample({
 
   const month = usePeriod(minuta, "month");
 
-  const weeks = useMemo<WeekWithDays[]>(
-    () => buildWeeks(minuta, month),
-    [minuta, month]
-  );
-  const weekdayLabels = WEEKDAY_ORDER[weekStartsOn];
-
   return (
     <section className="calendar-shell" data-testid="calendar-example">
-      <header className="calendar-header">
-        <div>
-          <h1>Minuta React Demo</h1>
-          <p className="subheading">
-            Derived periods, divide() pattern, and adapter reactivity in one
-            hook.
-          </p>
-        </div>
-        <WeekStartToggle
-          weekStartsOn={weekStartsOn}
-          onChange={setWeekStartsOn}
-        />
-      </header>
-
+      <CalendarHeader
+        weekStartsOn={weekStartsOn}
+        onWeekStartChange={setWeekStartsOn}
+      />
       <PeriodDisplay month={month} now={minuta.now} />
-
       <NavigationControls minuta={minuta} targetPeriod={month} />
-
-      <div className="weekday-grid">
-        {weekdayLabels.map((weekday) => (
-          <span key={weekday}>{weekday}</span>
-        ))}
-      </div>
-
-      <div className="weeks-grid">
-        {weeks.map((week) => (
-          <div key={week.period.start.toISOString()} className="week-row">
-            {week.days.map((day) => {
-              const isOutside = !minuta.contains(month, day.start);
-              const isToday = minuta.isSame(day, minuta.now, "day");
-              return (
-                <button
-                  type="button"
-                  key={day.start.toISOString()}
-                  className={[
-                    "day-cell",
-                    isOutside ? "is-outside" : "",
-                    isToday ? "is-today" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={() => {
-                    minuta.go(day, 0);
-                    onSelectDate?.(day.start);
-                  }}
-                  title={dayFormatter.format(day.start)}
-                >
-                  <span className="date-number">{day.start.getDate()}</span>
-                  <span className="weekday-label">
-                    {dayFormatter.format(day.start)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+      <WeekdayRow labels={weekdayLabels(weekStartsOn)} />
+      <WeeksGrid minuta={minuta} month={month} onSelectDate={onSelectDate} />
     </section>
   );
 }
 
-function buildWeeks(minuta: MinutaBuilder, month: Period): WeekWithDays[] {
-  // divide() clips the first and last week to the month; expand them to full
-  // weeks so day 1 lands in its weekday column (outside days render dimmed)
-  return minuta.divide(month, "week").map((clipped) => {
-    const week = minuta.derivePeriod(clipped.start, "week");
-    return { period: week, days: minuta.divide(week, "day") };
-  });
-}
-
-function NavigationControls({
-  minuta,
-  targetPeriod,
-}: {
-  minuta: MinutaBuilder;
-  targetPeriod: Period;
-}) {
-  return (
-    <div className="toolbar-row">
-      <button
-        type="button"
-        className="nav-button"
-        onClick={() => minuta.previous(targetPeriod)}
-      >
-        ← Previous
-      </button>
-      <button
-        type="button"
-        className="nav-button"
-        onClick={() => minuta.next(targetPeriod)}
-      >
-        Next →
-      </button>
-    </div>
-  );
-}
-
-function PeriodDisplay({ month, now }: { month: Period; now: Period }) {
-  const label = monthFormatter.format(month.start);
-  const isCurrentMonth =
-    month.start.getFullYear() === now.start.getFullYear() &&
-    month.start.getMonth() === now.start.getMonth();
-
-  return (
-    <div className="period-display">
-      <div>
-        <p className="eyebrow">Browsing</p>
-        <h2>{label}</h2>
-      </div>
-      <dl>
-        <div>
-          <dt>Range</dt>
-          <dd>
-            {rangeFormatter.format(month.start)} –{" "}
-            {rangeFormatter.format(month.end)}
-          </dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd>{isCurrentMonth ? "Current month" : "Historical view"}</dd>
-        </div>
-      </dl>
-    </div>
-  );
-}
-
-function WeekStartToggle({
-  weekStartsOn,
-  onChange,
-}: {
-  weekStartsOn: 0 | 1;
-  onChange: Dispatch<SetStateAction<0 | 1>>;
-}) {
-  return (
-    <div className="toolbar-section">
-      <p className="toolbar-label">Week starts on</p>
-      <div className="toggle-group">
-        <button
-          type="button"
-          className={weekStartsOn === 0 ? "toggle is-active" : "toggle"}
-          onClick={() => onChange(0)}
-        >
-          Sunday
-        </button>
-        <button
-          type="button"
-          className={weekStartsOn === 1 ? "toggle is-active" : "toggle"}
-          onClick={() => onChange(1)}
-        >
-          Monday
-        </button>
-      </div>
-    </div>
-  );
-}
+export { CalendarExample };
