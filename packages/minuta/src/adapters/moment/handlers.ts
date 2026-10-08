@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 import moment from "moment";
 import type { unitOfTime } from "moment";
 
@@ -9,7 +9,7 @@ function handler(
   startEndUnit: unitOfTime.StartOf,
   addUnit: unitOfTime.DurationConstructor,
   diffUnit: unitOfTime.Diff
-): UnitHandler {
+): UnitSpec {
   return {
     add: (date: Readonly<Date>, amount: number): Date =>
       moment(date).add(amount, addUnit).toDate(),
@@ -22,7 +22,7 @@ function handler(
   };
 }
 
-function createWeekHandler(weekStartsOn: number): UnitHandler {
+function createWeekHandler(weekStartsOn: number): UnitSpec {
   const base = handler("week", "weeks", "weeks");
   return {
     add: (date: Readonly<Date>, amount: number): Date => base.add(date, amount),
@@ -47,13 +47,13 @@ function createWeekHandler(weekStartsOn: number): UnitHandler {
   };
 }
 
-const yearHandler: UnitHandler = handler("year", "years", "years");
-const quarterHandler: UnitHandler = handler("quarter", "quarters", "quarters");
-const monthHandler: UnitHandler = handler("month", "months", "months");
-const dayHandler: UnitHandler = handler("day", "days", "days");
-const hourHandler: UnitHandler = handler("hour", "hours", "hours");
-const minuteHandler: UnitHandler = handler("minute", "minutes", "minutes");
-const secondHandler: UnitHandler = handler("second", "seconds", "seconds");
+const yearHandler: UnitSpec = handler("year", "years", "years");
+const quarterHandler: UnitSpec = handler("quarter", "quarters", "quarters");
+const monthHandler: UnitSpec = handler("month", "months", "months");
+const dayHandler: UnitSpec = handler("day", "days", "days");
+const hourHandler: UnitSpec = handler("hour", "hours", "hours");
+const minuteHandler: UnitSpec = handler("minute", "minutes", "minutes");
+const secondHandler: UnitSpec = handler("second", "seconds", "seconds");
 
 export {
   createWeekHandler,

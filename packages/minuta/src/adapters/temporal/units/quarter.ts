@@ -1,6 +1,6 @@
 import { getTemporal, toPlainDate } from "#src/adapters/temporal/temporal-api";
 import { plainDateToLocal, timeOf } from "#src/adapters/temporal/to-local-date";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const MONTHS_PER_QUARTER = 3;
 const LAST_MONTH_OF_QUARTER_OFFSET = 2;
@@ -19,7 +19,7 @@ function quarterStartMonth(date: Readonly<Date>): number {
   return Math.floor(date.getMonth() / MONTHS_PER_QUARTER) * MONTHS_PER_QUARTER;
 }
 
-const quarterHandler: UnitHandler = {
+const quarterHandler: UnitSpec = {
   add(date: Readonly<Date>, amount: number): Date {
     const result = toPlainDate(date).add({
       months: amount * MONTHS_PER_QUARTER,

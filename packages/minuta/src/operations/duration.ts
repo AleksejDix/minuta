@@ -1,4 +1,4 @@
-import type { ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 const MS_PER_SECOND = 1000;
 const MS_PER_MINUTE = 60_000;
@@ -25,7 +25,7 @@ const DIVISORS: Readonly<Record<"day" | "hour" | "minute" | "second", number>> =
  * @returns The duration in milliseconds or complete units
  */
 function duration(
-  period: ReadonlyPeriod,
+  period: Period,
   unit?: "day" | "hour" | "minute" | "second"
 ): number {
   const ms = period.end.getTime() - period.start.getTime();

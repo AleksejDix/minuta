@@ -1,9 +1,9 @@
-import type { Adapter, ReadonlyPeriod } from "#src/types";
+import type { Period, Units } from "#src/types";
 import { describe, expect, it } from "vitest";
-import { createDateFnsAdapter } from "#src/adapters/date-fns/index";
-import { createLuxonAdapter } from "#src/adapters/luxon/index";
-import { createNativeAdapter } from "#src/adapters/native/index";
-import { createStableYear } from "./stable-year";
+import { dateFnsUnits } from "#src/adapters/date-fns/index";
+import { luxonUnits } from "#src/adapters/luxon/index";
+import { nativeUnits } from "#src/adapters/native/index";
+import { yearGridWith } from "./year-grid";
 
 const SUNDAY = 0;
 const MONDAY = 1;
@@ -19,12 +19,12 @@ const YEAR_2024 = 2024;
 const YEAR_2025 = 2025;
 
 const ADAPTERS = [
-  ["native", createNativeAdapter()],
-  ["date-fns", createDateFnsAdapter()],
-  ["luxon", createLuxonAdapter()],
+  ["native", nativeUnits({ weekStartsOn: MONDAY })],
+  ["date-fns", dateFnsUnits({ weekStartsOn: MONDAY })],
+  ["luxon", luxonUnits({ weekStartsOn: MONDAY })],
 ] as const;
 
-function firstPeriod(periods: readonly ReadonlyPeriod[]): ReadonlyPeriod {
+function firstPeriod(periods: readonly Period[]): Period {
   const [first] = periods;
   if (first === undefined) {
     throw new Error("Expected at least one period");
@@ -32,7 +32,7 @@ function firstPeriod(periods: readonly ReadonlyPeriod[]): ReadonlyPeriod {
   return first;
 }
 
-function lastPeriod(periods: readonly ReadonlyPeriod[]): ReadonlyPeriod {
+function lastPeriod(periods: readonly Period[]): Period {
   const last = periods.at(LAST_INDEX);
   if (last === undefined) {
     throw new Error("Expected at least one period");
@@ -41,13 +41,13 @@ function lastPeriod(periods: readonly ReadonlyPeriod[]): ReadonlyPeriod {
 }
 
 describe.each(ADAPTERS)(
-  "createStableYear() basics with %s adapter",
-  (_name: string, adapter: Readonly<Adapter>) => {
+  "yearGridWith() basics with %s adapter",
+  (_name: string, units: Units) => {
     it("should create a stableYear period", { timeout: 5000 }, () => {
       expect.hasAssertions();
       // June 15, 2024
       const date = new Date("2024-06-15T00:00:00");
-      const stableYear = createStableYear(adapter, MONDAY, date);
+      const stableYear = yearGridWith(units, date);
 
       expect(stableYear).toBeDefined();
       expect(stableYear.periods).toBeDefined();
@@ -59,7 +59,7 @@ describe.each(ADAPTERS)(
       expect.hasAssertions();
       // Jan 1, 2024
       const date = new Date("2024-01-01T00:00:00");
-      const stableYear = createStableYear(adapter, MONDAY, date);
+      const stableYear = yearGridWith(units, date);
       const weeks = stableYear.periods;
 
       expect([SHORT_YEAR_WEEKS, LONG_YEAR_WEEKS]).toContain(weeks.length);
@@ -71,7 +71,7 @@ describe.each(ADAPTERS)(
       () => {
         expect.hasAssertions();
         const date = new Date("2024-01-01T00:00:00");
-        const stableYear = createStableYear(adapter, MONDAY, date);
+        const stableYear = yearGridWith(units, date);
 
         expect(firstPeriod(stableYear.periods).start.getDay()).toBe(MONDAY);
       }
@@ -80,7 +80,7 @@ describe.each(ADAPTERS)(
     it("should end on the day before weekStartsOn", { timeout: 5000 }, () => {
       expect.hasAssertions();
       const date = new Date("2024-01-01T00:00:00");
-      const stableYear = createStableYear(adapter, MONDAY, date);
+      const stableYear = yearGridWith(units, date);
 
       // Should end on Sunday if week starts on Monday
       expect(lastPeriod(stableYear.periods).end.getDay()).toBe(SUNDAY);
@@ -89,15 +89,15 @@ describe.each(ADAPTERS)(
 );
 
 describe.each(ADAPTERS)(
-  "createStableYear() year boundaries with %s adapter",
-  (_name: string, adapter: Readonly<Adapter>) => {
+  "yearGridWith() year boundaries with %s adapter",
+  (_name: string, units: Units) => {
     it(
       "should handle 2024 (leap year, starts on Monday)",
       { timeout: 5000 },
       () => {
         expect.hasAssertions();
         const date = new Date("2024-01-01T00:00:00");
-        const stableYear = createStableYear(adapter, MONDAY, date);
+        const stableYear = yearGridWith(units, date);
         const last = lastPeriod(stableYear.periods);
 
         /*
@@ -119,7 +119,7 @@ describe.each(ADAPTERS)(
       () => {
         expect.hasAssertions();
         const date = new Date("2023-01-01T00:00:00");
-        const stableYear = createStableYear(adapter, MONDAY, date);
+        const stableYear = yearGridWith(units, date);
         const { start } = firstPeriod(stableYear.periods);
 
         /*
@@ -136,12 +136,12 @@ describe.each(ADAPTERS)(
 );
 
 describe.each(ADAPTERS)(
-  "createStableYear() mid-week year start with %s adapter",
-  (_name: string, adapter: Readonly<Adapter>) => {
+  "yearGridWith() mid-week year start with %s adapter",
+  (_name: string, units: Units) => {
     it("should handle 2025 (starts on Wednesday)", { timeout: 5000 }, () => {
       expect.hasAssertions();
       const date = new Date("2025-01-01T00:00:00");
-      const stableYear = createStableYear(adapter, MONDAY, date);
+      const stableYear = yearGridWith(units, date);
       const { start } = firstPeriod(stableYear.periods);
 
       /*

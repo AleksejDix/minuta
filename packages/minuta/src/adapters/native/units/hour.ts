@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const START_MINUTE = 0;
 const START_SECOND = 0;
@@ -11,7 +11,7 @@ const MS_PER_HOUR = 3_600_000;
 /**
  * Hour unit handler - pure functional implementation
  */
-const hourHandler: UnitHandler = {
+const hourHandler: UnitSpec = {
   add: (date: Readonly<Date>, amount: number): Date => {
     const result = new Date(date);
     result.setHours(result.getHours() + amount);

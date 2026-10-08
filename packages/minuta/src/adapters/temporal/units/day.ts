@@ -1,5 +1,5 @@
 import { plainDateToLocal, timeOf } from "#src/adapters/temporal/to-local-date";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 import { toPlainDate } from "#src/adapters/temporal/temporal-api";
 
 const START_HOUR = 0;
@@ -11,7 +11,7 @@ const LAST_MINUTE = 59;
 const LAST_SECOND = 59;
 const LAST_MS = 999;
 
-const dayHandler: UnitHandler = {
+const dayHandler: UnitSpec = {
   add(date: Readonly<Date>, amount: number): Date {
     const result = toPlainDate(date).add({ days: amount });
     return plainDateToLocal(result, timeOf(date));

@@ -1,1 +1,1 @@
-export { createMomentAdapter } from "./adapter";
+export { momentUnits } from "./adapter";

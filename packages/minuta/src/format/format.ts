@@ -1,4 +1,4 @@
-import type { ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 type DisplayOptions = Readonly<Intl.DateTimeFormatOptions>;
 
@@ -53,11 +53,11 @@ const PERIOD_OPTIONS: Readonly<Partial<Record<string, DisplayOptions>>> = {
  * @returns The formatted range
  */
 function formatRange(
-  period: ReadonlyPeriod,
+  period: Period,
   locale: string,
   options?: DisplayOptions
 ): string {
-  const opts = options ?? PERIOD_OPTIONS[period.type] ?? CUSTOM_OPTIONS;
+  const opts = options ?? PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS;
   const fmt = new Intl.DateTimeFormat(locale, opts);
   return fmt.formatRange(period.start, period.end);
 }
@@ -84,10 +84,10 @@ function formatRange(
  * @param locale - BCP 47 locale
  * @returns The formatted period
  */
-function formatPeriod(period: ReadonlyPeriod, locale: string): string {
-  const options = PERIOD_OPTIONS[period.type] ?? CUSTOM_OPTIONS;
+function formatPeriod(period: Period, locale: string): string {
+  const options = PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS;
 
-  if (period.type === "week" || period.type === "custom") {
+  if (period.unit === "week" || period.unit === "custom") {
     return formatRange(period, locale, options);
   }
 
@@ -109,7 +109,7 @@ function formatPeriod(period: ReadonlyPeriod, locale: string): string {
  * @returns The formatted period start
  */
 function formatPeriodWith(
-  period: ReadonlyPeriod,
+  period: Period,
   locale: string,
   options: DisplayOptions
 ): string {

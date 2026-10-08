@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { contains } from "#src/operations/contains";
-import { createNativeAdapter } from "#src/adapters/native/index";
-import { derivePeriod } from "#src/operations/period";
-import { divide } from "#src/operations/divide";
-import { next as nextPeriod } from "#src/operations";
+import { divideWith } from "#src/operations/divide";
+import { nativeUnits } from "#src/adapters/native/index";
+import { nextWith } from "#src/operations/shift";
+import { periodWith } from "#src/operations/period";
 
 const DAYS_IN_COMMON_YEAR = 365;
 const DAYS_IN_LEAP_YEAR = 366;
@@ -13,7 +13,7 @@ const MONTHS_PER_YEAR = 12;
 const HOURS_PER_DAY = 24;
 const SHORT_DAY_HOURS = 23;
 
-const adapter = createNativeAdapter({ weekStartsOn: 1 });
+const units = nativeUnits({ weekStartsOn: 1 });
 
 describe("century leap year", () => {
   /*
@@ -26,12 +26,8 @@ describe("century leap year", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const feb28 = derivePeriod(
-        adapter,
-        new Date("2100-02-28T00:00:00"),
-        "day"
-      );
-      const nextDay = nextPeriod(adapter, feb28);
+      const feb28 = periodWith(units, new Date("2100-02-28T00:00:00"), "day");
+      const nextDay = nextWith(units, feb28);
       // March 1st
       expect({
         date: nextDay.start.getDate(),
@@ -42,8 +38,8 @@ describe("century leap year", () => {
 
   it("year 2100 should have 365 days", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const year = derivePeriod(adapter, new Date("2100-06-15T00:00:00"), "year");
-    const days = divide(adapter, year, "day");
+    const year = periodWith(units, new Date("2100-06-15T00:00:00"), "year");
+    const days = divideWith(units, year, "day");
     expect(days).toHaveLength(DAYS_IN_COMMON_YEAR);
   });
 
@@ -52,12 +48,8 @@ describe("century leap year", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const year = derivePeriod(
-        adapter,
-        new Date("2000-06-15T00:00:00"),
-        "year"
-      );
-      const days = divide(adapter, year, "day");
+      const year = periodWith(units, new Date("2000-06-15T00:00:00"), "year");
+      const days = divideWith(units, year, "day");
       expect(days).toHaveLength(DAYS_IN_LEAP_YEAR);
     }
   );
@@ -66,8 +58,8 @@ describe("century leap year", () => {
 describe("week 53 / ISO week edge cases", () => {
   it("2020 has 53 weeks (starts on Wednesday)", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const year = derivePeriod(adapter, new Date("2020-06-15T00:00:00"), "year");
-    const weeks = divide(adapter, year, "week");
+    const year = periodWith(units, new Date("2020-06-15T00:00:00"), "year");
+    const weeks = divideWith(units, year, "week");
     // Some weeks may be partial — count those that overlap
     expect(weeks.length).toBeGreaterThanOrEqual(MIN_WEEKS_IN_YEAR);
     expect(weeks.length).toBeLessThanOrEqual(MAX_WEEKS_IN_YEAR);
@@ -75,8 +67,8 @@ describe("week 53 / ISO week edge cases", () => {
 
   it("dec 31, 2020 falls in ISO week 53", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const dec31 = derivePeriod(adapter, new Date("2020-12-31T00:00:00"), "day");
-    const week = derivePeriod(adapter, new Date("2020-12-31T00:00:00"), "week");
+    const dec31 = periodWith(units, new Date("2020-12-31T00:00:00"), "day");
+    const week = periodWith(units, new Date("2020-12-31T00:00:00"), "week");
     expect(contains(week, dec31.start)).toBe(true);
   });
 
@@ -85,8 +77,8 @@ describe("week 53 / ISO week edge cases", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const jan1Week = derivePeriod(
-        adapter,
+      const jan1Week = periodWith(
+        units,
         new Date("2021-01-01T00:00:00"),
         "week"
       );
@@ -106,11 +98,7 @@ describe("dst spring forward", () => {
 
   it("day period for DST transition date is valid", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const dstDay = derivePeriod(
-      adapter,
-      new Date("2024-03-10T00:00:00"),
-      "day"
-    );
+    const dstDay = periodWith(units, new Date("2024-03-10T00:00:00"), "day");
     expect({
       end: dstDay.end.getDate(),
       start: dstDay.start.getDate(),
@@ -122,12 +110,8 @@ describe("dst spring forward", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const usDst = derivePeriod(
-        adapter,
-        new Date("2024-03-10T00:00:00"),
-        "day"
-      );
-      const hours = divide(adapter, usDst, "hour");
+      const usDst = periodWith(units, new Date("2024-03-10T00:00:00"), "day");
+      const hours = divideWith(units, usDst, "hour");
       expect(hours.length).toBeGreaterThanOrEqual(SHORT_DAY_HOURS);
       expect(hours.length).toBeLessThanOrEqual(HOURS_PER_DAY);
     }
@@ -142,12 +126,8 @@ describe("dst spring forward in europe", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const euDst = derivePeriod(
-        adapter,
-        new Date("2024-03-31T00:00:00"),
-        "day"
-      );
-      const hours = divide(adapter, euDst, "hour");
+      const euDst = periodWith(units, new Date("2024-03-31T00:00:00"), "day");
+      const hours = divideWith(units, euDst, "hour");
       expect(hours.length).toBeGreaterThanOrEqual(SHORT_DAY_HOURS);
       expect(hours.length).toBeLessThanOrEqual(HOURS_PER_DAY);
     }
@@ -159,11 +139,7 @@ describe("dst fall back", () => {
 
   it("day period for fall-back date is valid", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const fallBack = derivePeriod(
-      adapter,
-      new Date("2024-11-03T00:00:00"),
-      "day"
-    );
+    const fallBack = periodWith(units, new Date("2024-11-03T00:00:00"), "day");
     expect({
       end: fallBack.end.getDate(),
       start: fallBack.start.getDate(),
@@ -172,10 +148,10 @@ describe("dst fall back", () => {
 
   it("navigate across fall-back boundary", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const nov2 = derivePeriod(adapter, new Date("2024-11-02T00:00:00"), "day");
-    const nov3 = nextPeriod(adapter, nov2);
+    const nov2 = periodWith(units, new Date("2024-11-02T00:00:00"), "day");
+    const nov3 = nextWith(units, nov2);
     expect({ date: nov3.start.getDate() }).toStrictEqual({ date: 3 });
-    const nov4 = nextPeriod(adapter, nov3);
+    const nov4 = nextWith(units, nov3);
     expect({ date: nov4.start.getDate() }).toStrictEqual({ date: 4 });
   });
 });
@@ -183,31 +159,23 @@ describe("dst fall back", () => {
 describe("date range extremes", () => {
   it("should handle year 1970 (Unix epoch)", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const epoch = derivePeriod(
-      adapter,
-      new Date("1970-01-01T00:00:00"),
-      "year"
-    );
-    const months = divide(adapter, epoch, "month");
+    const epoch = periodWith(units, new Date("1970-01-01T00:00:00"), "year");
+    const months = divideWith(units, epoch, "month");
     expect(months).toHaveLength(MONTHS_PER_YEAR);
   });
 
   it("should handle year 1900", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const old = derivePeriod(adapter, new Date("1900-06-15T00:00:00"), "month");
-    expect(old.type).toBe("month");
+    const old = periodWith(units, new Date("1900-06-15T00:00:00"), "month");
+    expect(old.unit).toBe("month");
     // June
     expect({ month: old.start.getMonth() }).toStrictEqual({ month: 5 });
   });
 
   it("should handle year 2099", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const future = derivePeriod(
-      adapter,
-      new Date("2099-12-31T00:00:00"),
-      "year"
-    );
-    const days = divide(adapter, future, "day");
+    const future = periodWith(units, new Date("2099-12-31T00:00:00"), "year");
+    const days = divideWith(units, future, "day");
     // 2099 is not a leap year
     expect(days).toHaveLength(DAYS_IN_COMMON_YEAR);
   });

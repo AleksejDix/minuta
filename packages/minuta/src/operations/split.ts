@@ -1,14 +1,13 @@
-import type { Period, ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 const ONE_MS = 1;
 
 function withBounds(
-  period: ReadonlyPeriod,
+  period: Period,
   start: Readonly<Date>,
   end: Readonly<Date>
 ): Period {
-  const bounded: Period = { end, start, type: period.type };
-  return Object.assign(bounded, period, { end, start });
+  return { end, start, unit: period.unit };
 }
 
 /**
@@ -18,10 +17,7 @@ function withBounds(
  * @param splitDate - The date at which the second half starts
  * @returns The part before the split date and the part from the split date on
  */
-function split(
-  period: ReadonlyPeriod,
-  splitDate: Readonly<Date>
-): [Period, Period] {
+function split(period: Period, splitDate: Readonly<Date>): [Period, Period] {
   const splitTime = splitDate.getTime();
 
   if (splitTime <= period.start.getTime()) {

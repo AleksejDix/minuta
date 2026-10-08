@@ -1,0 +1,98 @@
+/**
+ * `withUnits`: every operation bound to one set of unit specs, like
+ * ibanita's `withCountries`. Each member's type is derived from its core
+ * function, so the bound object and the default entry cannot drift apart.
+ */
+
+import {
+  clamp,
+  contains,
+  divideWith,
+  duration,
+  gap,
+  isTodayWith,
+  isWeekday,
+  isWeekend,
+  merge,
+  move,
+  nextWith,
+  overlaps,
+  periodWith,
+  previousWith,
+  range,
+  resize,
+  sameWith,
+  shiftWith,
+  snap,
+  split,
+} from "#src/operations/index";
+import type { Bound } from "#src/bind";
+import type { Units } from "#src/types";
+
+/**
+ * All operations, bound to one set of units.
+ */
+type Minuta = Readonly<{
+  clamp: typeof clamp;
+  contains: typeof contains;
+  divide: Bound<typeof divideWith>;
+  duration: typeof duration;
+  gap: typeof gap;
+  isToday: Bound<typeof isTodayWith>;
+  isWeekday: typeof isWeekday;
+  isWeekend: typeof isWeekend;
+  merge: typeof merge;
+  move: typeof move;
+  next: Bound<typeof nextWith>;
+  overlaps: typeof overlaps;
+  period: Bound<typeof periodWith>;
+  previous: Bound<typeof previousWith>;
+  range: typeof range;
+  resize: typeof resize;
+  same: Bound<typeof sameWith>;
+  shift: Bound<typeof shiftWith>;
+  snap: typeof snap;
+  split: typeof split;
+}>;
+
+/**
+ * Bind every operation to `units`. Pass only the units you need, or an
+ * adapter's full set.
+ *
+ * @example
+ * import { withUnits } from "minuta/core";
+ * import { nativeUnits } from "minuta/native";
+ *
+ * const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
+ * time.next(time.period(new Date(), "week"));
+ *
+ * @param units - Unit specs to bind
+ * @returns The operations without the `units` parameter
+ */
+function withUnits(units: Units): Minuta {
+  return {
+    clamp,
+    contains,
+    divide: (period, unit, options) => divideWith(units, period, unit, options),
+    duration,
+    gap,
+    isToday: (now, period) => isTodayWith(units, now, period),
+    isWeekday,
+    isWeekend,
+    merge,
+    move,
+    next: (period) => nextWith(units, period),
+    overlaps,
+    period: (date, unit) => periodWith(units, date, unit),
+    previous: (period) => previousWith(units, period),
+    range,
+    resize,
+    same: (first, second, unit) => sameWith(units, first, second, unit),
+    shift: (period, steps) => shiftWith(units, period, steps),
+    snap,
+    split,
+  };
+}
+
+export { withUnits };
+export type { Minuta };

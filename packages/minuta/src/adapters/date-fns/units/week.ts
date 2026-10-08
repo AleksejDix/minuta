@@ -1,10 +1,10 @@
 import { add, differenceInWeeks, endOfWeek, startOfWeek } from "date-fns";
 import type { Day } from "date-fns";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const MONDAY = 1;
 
-function createWeekHandler(weekStartsOn: Day = MONDAY): UnitHandler {
+function createWeekHandler(weekStartsOn: Day = MONDAY): UnitSpec {
   return {
     add(date: Readonly<Date>, amount: number): Date {
       return add(date, { weeks: amount });

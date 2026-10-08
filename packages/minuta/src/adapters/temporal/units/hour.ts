@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 import { plainDateTimeToLocal } from "#src/adapters/temporal/to-local-date";
 import { toPlainDateTime } from "#src/adapters/temporal/temporal-api";
 
@@ -10,7 +10,7 @@ const LAST_SECOND = 59;
 const LAST_MS = 999;
 const MS_PER_HOUR = 3_600_000;
 
-const hourHandler: UnitHandler = {
+const hourHandler: UnitSpec = {
   add(date: Readonly<Date>, amount: number): Date {
     const result = toPlainDateTime(date).add({ hours: amount });
     return plainDateTimeToLocal(result);

@@ -1,4 +1,4 @@
-import type { ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 /**
  * Checks if two periods share any time.
@@ -7,11 +7,11 @@ import type { ReadonlyPeriod } from "#src/types";
  * @param second - The second period
  * @returns True when the periods overlap
  */
-function isOverlapping(first: ReadonlyPeriod, second: ReadonlyPeriod): boolean {
+function overlaps(first: Period, second: Period): boolean {
   return (
     first.start.getTime() <= second.end.getTime() &&
     second.start.getTime() <= first.end.getTime()
   );
 }
 
-export { isOverlapping };
+export { overlaps };

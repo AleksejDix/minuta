@@ -1,1 +1,1 @@
-export { createDayjsAdapter } from "./adapter";
+export { dayjsUnits } from "./adapter";

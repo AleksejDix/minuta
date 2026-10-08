@@ -1,10 +1,10 @@
-import { createPeriod, derivePeriod } from "#src/operations/period";
 import { describe, expect, it } from "vitest";
-import type { ReadonlyPeriod } from "#src/types";
+import { periodWith, range } from "#src/operations/period";
+import type { Period } from "#src/types";
 import { contains } from "#src/operations/contains";
-import { createDateFnsTzAdapter } from "#src/adapters/date-fns-tz/index";
-import { divide } from "#src/operations/divide";
-import { isOverlapping } from "#src/operations/utils/is-overlapping";
+import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
+import { divideWith } from "#src/operations/divide";
+import { overlaps } from "#src/operations/overlaps";
 
 const HOURS_PER_DAY = 24;
 const SHORT_DAY_HOURS = 23;
@@ -15,8 +15,8 @@ const INDIA_DAY_START_UTC_MINUTE = 30;
 const NEPAL_DAY_START_UTC_HOUR = 18;
 const NEPAL_DAY_START_UTC_MINUTE = 15;
 
-function startTimes(periods: readonly ReadonlyPeriod[]): number[] {
-  return periods.map((period: ReadonlyPeriod) => period.start.getTime());
+function startTimes(periods: readonly Period[]): number[] {
+  return periods.map((period: Period) => period.start.getTime());
 }
 
 function isStrictlyIncreasing(values: readonly number[]): boolean {
@@ -31,10 +31,10 @@ function isStrictlyIncreasing(values: readonly number[]): boolean {
 }
 
 function consecutivePairs(
-  periods: readonly ReadonlyPeriod[]
-): (readonly [ReadonlyPeriod, ReadonlyPeriod])[] {
-  const pairs: (readonly [ReadonlyPeriod, ReadonlyPeriod])[] = [];
-  let previous: ReadonlyPeriod | undefined = undefined;
+  periods: readonly Period[]
+): (readonly [Period, Period])[] {
+  const pairs: (readonly [Period, Period])[] = [];
+  let previous: Period | undefined = undefined;
   for (const period of periods) {
     if (previous !== undefined) {
       pairs.push([previous, period]);
@@ -50,21 +50,21 @@ function consecutivePairs(
  */
 
 describe("dst: ambiguous times during fall back", () => {
-  const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
 
   it("period created during ambiguous hour is valid", { timeout: 5000 }, () => {
     expect.hasAssertions();
     // Nov 3 2024: 1:30 AM occurs twice in New York
     // 1:30 AM EDT (first occurrence)
     const ambiguous = new Date("2024-11-03T06:30:00Z");
-    const day = derivePeriod(ny, ambiguous, "day");
+    const day = periodWith(ny, ambiguous, "day");
     expect(day.start.getTime()).toBeLessThan(day.end.getTime());
   });
 
   it("hour periods during fall back don't overlap", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const day = derivePeriod(ny, new Date("2024-11-03T05:00:00Z"), "day");
-    const hours = divide(ny, day, "hour");
+    const day = periodWith(ny, new Date("2024-11-03T05:00:00Z"), "day");
+    const hours = divideWith(ny, day, "hour");
 
     // Each hour should start after the previous one
     expect(isStrictlyIncreasing(startTimes(hours))).toBe(true);
@@ -77,14 +77,14 @@ describe("dst: ambiguous times during fall back", () => {
  */
 
 describe("dst: gap times during spring forward", () => {
-  const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
 
   it("period created with gap time adjusts forward", { timeout: 5000 }, () => {
     expect.hasAssertions();
     // Mar 10 2024: 2:30 AM doesn't exist in New York (clocks jump 2:00 → 3:00)
     // 2:30 AM EST → adjusted
     const gapTime = new Date("2024-03-10T07:30:00Z");
-    const hour = derivePeriod(ny, gapTime, "hour");
+    const hour = periodWith(ny, gapTime, "hour");
     // The period should be valid (start <= end)
     expect(hour.start.getTime()).toBeLessThanOrEqual(hour.end.getTime());
   });
@@ -94,8 +94,8 @@ describe("dst: gap times during spring forward", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const day = derivePeriod(ny, new Date("2024-03-10T05:00:00Z"), "day");
-      const hours = divide(ny, day, "hour");
+      const day = periodWith(ny, new Date("2024-03-10T05:00:00Z"), "day");
+      const hours = divideWith(ny, day, "hour");
 
       // Each hour should start after the previous one
       expect(isStrictlyIncreasing(startTimes(hours))).toBe(true);
@@ -109,13 +109,13 @@ describe("dst: gap times during spring forward", () => {
  */
 
 describe("dst: fractional timezone offsets", () => {
-  const india = createDateFnsTzAdapter({ timezone: "Asia/Kolkata" });
-  const nepal = createDateFnsTzAdapter({ timezone: "Asia/Kathmandu" });
+  const india = dateFnsTzUnits({ timezone: "Asia/Kolkata" });
+  const nepal = dateFnsTzUnits({ timezone: "Asia/Kathmandu" });
 
   it("india (+5:30): day has 24 hours", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const day = derivePeriod(india, new Date("2024-01-15T00:00:00Z"), "day");
-    const hours = divide(india, day, "hour");
+    const day = periodWith(india, new Date("2024-01-15T00:00:00Z"), "day");
+    const hours = divideWith(india, day, "hour");
     expect(hours).toHaveLength(HOURS_PER_DAY);
   });
 
@@ -124,7 +124,7 @@ describe("dst: fractional timezone offsets", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const day = derivePeriod(india, new Date("2024-01-15T00:00:00Z"), "day");
+      const day = periodWith(india, new Date("2024-01-15T00:00:00Z"), "day");
       // Jan 15 in India starts at Jan 14 18:30 UTC
       expect(day.start.getUTCHours()).toBe(INDIA_DAY_START_UTC_HOUR);
       expect(day.start.getUTCMinutes()).toBe(INDIA_DAY_START_UTC_MINUTE);
@@ -133,8 +133,8 @@ describe("dst: fractional timezone offsets", () => {
 
   it("nepal (+5:45): day has 24 hours", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const day = derivePeriod(nepal, new Date("2024-01-15T00:00:00Z"), "day");
-    const hours = divide(nepal, day, "hour");
+    const day = periodWith(nepal, new Date("2024-01-15T00:00:00Z"), "day");
+    const hours = divideWith(nepal, day, "hour");
     expect(hours).toHaveLength(HOURS_PER_DAY);
   });
 
@@ -143,7 +143,7 @@ describe("dst: fractional timezone offsets", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const day = derivePeriod(nepal, new Date("2024-01-15T00:00:00Z"), "day");
+      const day = periodWith(nepal, new Date("2024-01-15T00:00:00Z"), "day");
       // Jan 15 in Nepal starts at Jan 14 18:15 UTC
       expect(day.start.getUTCHours()).toBe(NEPAL_DAY_START_UTC_HOUR);
       expect(day.start.getUTCMinutes()).toBe(NEPAL_DAY_START_UTC_MINUTE);
@@ -154,12 +154,12 @@ describe("dst: fractional timezone offsets", () => {
 // ── Lord Howe Island: 30-minute DST shift ──
 
 describe("dst: Lord Howe Island (30-minute DST shift)", () => {
-  const lordHowe = createDateFnsTzAdapter({ timezone: "Australia/Lord_Howe" });
+  const lordHowe = dateFnsTzUnits({ timezone: "Australia/Lord_Howe" });
 
   it("normal day has 24 hours", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const day = derivePeriod(lordHowe, new Date("2024-01-15T00:00:00Z"), "day");
-    const hours = divide(lordHowe, day, "hour");
+    const day = periodWith(lordHowe, new Date("2024-01-15T00:00:00Z"), "day");
+    const hours = divideWith(lordHowe, day, "hour");
     expect(hours).toHaveLength(HOURS_PER_DAY);
   });
 
@@ -172,12 +172,8 @@ describe("dst: Lord Howe Island (30-minute DST shift)", () => {
        * Lord Howe springs forward first Sunday of October
        * Oct 6 2024 — clocks go from +10:30 to +11:00 (only 30 min shift)
        */
-      const day = derivePeriod(
-        lordHowe,
-        new Date("2024-10-05T14:00:00Z"),
-        "day"
-      );
-      const hours = divide(lordHowe, day, "hour");
+      const day = periodWith(lordHowe, new Date("2024-10-05T14:00:00Z"), "day");
+      const hours = divideWith(lordHowe, day, "hour");
       // 30-min DST doesn't remove a full hour — could be 23 or 24
       expect(hours.length).toBeGreaterThanOrEqual(SHORT_DAY_HOURS);
       expect(hours.length).toBeLessThanOrEqual(HOURS_PER_DAY);
@@ -191,12 +187,12 @@ describe("dst: Lord Howe Island (30-minute DST shift)", () => {
  */
 
 describe("dst: periods spanning multiple transitions", () => {
-  const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
 
   it("full year divided into months gives 12", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const year = derivePeriod(ny, new Date("2024-06-15T00:00:00Z"), "year");
-    const months = divide(ny, year, "month");
+    const year = periodWith(ny, new Date("2024-06-15T00:00:00Z"), "year");
+    const months = divideWith(ny, year, "month");
     expect(months).toHaveLength(MONTHS_PER_YEAR);
   });
 
@@ -205,15 +201,15 @@ describe("dst: periods spanning multiple transitions", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const year = derivePeriod(ny, new Date("2024-06-15T00:00:00Z"), "year");
-      const days = divide(ny, year, "day");
+      const year = periodWith(ny, new Date("2024-06-15T00:00:00Z"), "year");
+      const days = divideWith(ny, year, "day");
       expect(days).toHaveLength(DAYS_IN_LEAP_YEAR);
     }
   );
 });
 
 describe("dst: containment and overlap across multiple transitions", () => {
-  const ny = createDateFnsTzAdapter({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
 
   it(
     "period spanning spring forward + fall back: contains works",
@@ -221,7 +217,7 @@ describe("dst: containment and overlap across multiple transitions", () => {
     () => {
       expect.hasAssertions();
       // March through November spans both transitions
-      const span = createPeriod(
+      const span = range(
         new Date("2024-03-01T05:00:00Z"),
         new Date("2024-11-30T05:00:00Z")
       );
@@ -242,11 +238,11 @@ describe("dst: containment and overlap across multiple transitions", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const year = derivePeriod(ny, new Date("2024-06-15T00:00:00Z"), "year");
-      const months = divide(ny, year, "month");
+      const year = periodWith(ny, new Date("2024-06-15T00:00:00Z"), "year");
+      const months = divideWith(ny, year, "month");
 
       for (const [previous, next] of consecutivePairs(months)) {
-        expect(isOverlapping(previous, next)).toBe(false);
+        expect(overlaps(previous, next)).toBe(false);
       }
     }
   );

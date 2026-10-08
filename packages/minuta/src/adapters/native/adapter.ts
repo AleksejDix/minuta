@@ -1,6 +1,5 @@
-import type { Adapter } from "#src/types";
+import type { AllUnits } from "#src/types";
 import type { WeekStartsOn } from "./units/week";
-import { createAdapter } from "#src/adapters/create-adapter";
 import { createWeekHandler } from "./units/week";
 import { dayHandler } from "./units/day";
 import { hourHandler } from "./units/hour";
@@ -12,10 +11,10 @@ import { yearHandler } from "./units/year";
 
 const MONDAY = 1;
 
-function createNativeAdapter({
+function nativeUnits({
   weekStartsOn = MONDAY,
-}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): Adapter {
-  return createAdapter({
+}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits {
+  return {
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
@@ -24,11 +23,7 @@ function createNativeAdapter({
     second: secondHandler,
     week: createWeekHandler(weekStartsOn),
     year: yearHandler,
-  });
+  };
 }
 
-const nativeFunctionalAdapter: Adapter = createNativeAdapter({
-  weekStartsOn: MONDAY,
-});
-
-export { createNativeAdapter, nativeFunctionalAdapter };
+export { nativeUnits };

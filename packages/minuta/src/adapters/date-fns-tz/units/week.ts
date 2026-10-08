@@ -1,9 +1,9 @@
 import { add, differenceInWeeks, endOfWeek, startOfWeek } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import type { Day } from "date-fns";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
-function createWeekHandler(timezone: string, weekStartsOn: Day): UnitHandler {
+function createWeekHandler(timezone: string, weekStartsOn: Day): UnitSpec {
   return {
     add(date: Readonly<Date>, amount: number): Date {
       const zonedDate = toZonedTime(date, timezone);

@@ -1,53 +1,53 @@
-import type { Adapter } from "#src/types";
+import type { AllUnits } from "#src/types";
 import type { ComplianceOptions } from "./compliance/context";
-import { createDateFnsAdapter } from "#src/adapters/date-fns/index";
-import { createDateFnsTzAdapter } from "#src/adapters/date-fns-tz/index";
-import { createLuxonAdapter } from "#src/adapters/luxon/index";
-import { createMinutaAdapter } from "#src/adapters/temporal/index";
-import { createNativeAdapter } from "#src/adapters/native/index";
+import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
+import { dateFnsUnits } from "#src/adapters/date-fns/index";
 import { describe } from "vitest";
+import { luxonUnits } from "#src/adapters/luxon/index";
+import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 import { testAdapterCompliance } from "./adapter-compliance";
 
 type ComplianceCase = Readonly<{
   name: string;
-  adapter: Adapter;
+  units: AllUnits;
   options: ComplianceOptions | undefined;
 }>;
 
 const complianceCases: readonly ComplianceCase[] = [
   {
-    adapter: createNativeAdapter({ weekStartsOn: 1 }),
     name: "Native",
     options: undefined,
+    units: nativeUnits({ weekStartsOn: 1 }),
   },
   {
-    adapter: createDateFnsAdapter({ weekStartsOn: 1 }),
     name: "date-fns",
     options: undefined,
+    units: dateFnsUnits({ weekStartsOn: 1 }),
   },
   {
-    adapter: createDateFnsTzAdapter({ timezone: "UTC", weekStartsOn: 1 }),
     name: "date-fns-tz",
     options: { timezone: "UTC" },
+    units: dateFnsTzUnits({ timezone: "UTC", weekStartsOn: 1 }),
   },
   {
-    adapter: createLuxonAdapter({ weekStartsOn: 1 }),
     name: "Luxon",
     options: undefined,
+    units: luxonUnits({ weekStartsOn: 1 }),
   },
   // Temporal adapter - now includes polyfill automatically
   {
-    adapter: createMinutaAdapter({ weekStartsOn: 1 }),
     name: "Temporal",
     options: undefined,
+    units: temporalUnits({ weekStartsOn: 1 }),
   },
 ];
 
 // Run compliance tests for all adapters
 describe.each(complianceCases)(
   "adapter compliance tests",
-  ({ name, adapter, options }: ComplianceCase) => {
+  ({ name, options, units }: ComplianceCase) => {
     // oxlint-disable-next-line vitest/require-hook -- testAdapterCompliance registers suites, which must happen synchronously at collection time
-    testAdapterCompliance(name, adapter, options);
+    testAdapterCompliance(name, units, options);
   }
 );

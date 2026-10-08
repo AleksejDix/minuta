@@ -1,34 +1,47 @@
-import { createPeriod, derivePeriod } from "#src/operations/period";
 import { describe, expect, it } from "vitest";
+import { periodWith, range } from "#src/operations/period";
 import { contains } from "#src/operations/contains";
-import { createNativeAdapter } from "#src/adapters/native/index";
 import { gap } from "#src/operations/gap";
-import { go } from "#src/operations";
-import { isOverlapping } from "#src/operations/utils/is-overlapping";
-import { isSame } from "#src/operations/is-same";
 import { merge } from "#src/operations/merge";
+import { nativeUnits } from "#src/adapters/native/index";
+import { overlaps } from "#src/operations/overlaps";
+import { sameWith } from "#src/operations/same";
+import { shiftWith } from "#src/operations/shift";
 
 const DAYS_IN_COMMON_YEAR = 365;
 const DAYS_IN_LEAP_YEAR = 366;
 
-const adapter = createNativeAdapter({ weekStartsOn: 1 });
+const units = nativeUnits({ weekStartsOn: 1 });
 
-describe("isOverlapping()", () => {
+/**
+ * Narrow away undefined, failing the test otherwise.
+ *
+ * @param value - Value expected to be present
+ * @returns The value
+ */
+function required<TValue>(value: TValue | undefined): TValue {
+  if (value === undefined) {
+    throw new Error("Expected a value");
+  }
+  return value;
+}
+
+describe("overlaps()", () => {
   it("overlapping periods return true", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const jan = derivePeriod(adapter, new Date("2024-01-15T00:00:00"), "month");
-    const janMid = createPeriod(
+    const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+    const janMid = range(
       new Date("2024-01-15T00:00:00"),
       new Date("2024-02-15T00:00:00")
     );
-    expect(isOverlapping(jan, janMid)).toBe(true);
+    expect(overlaps(jan, janMid)).toBe(true);
   });
 
   it("non-overlapping periods return false", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const jan = derivePeriod(adapter, new Date("2024-01-15T00:00:00"), "month");
-    const mar = derivePeriod(adapter, new Date("2024-03-15T00:00:00"), "month");
-    expect(isOverlapping(jan, mar)).toBe(false);
+    const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+    const mar = periodWith(units, new Date("2024-03-15T00:00:00"), "month");
+    expect(overlaps(jan, mar)).toBe(false);
   });
 
   it(
@@ -36,48 +49,36 @@ describe("isOverlapping()", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const jan = derivePeriod(
-        adapter,
-        new Date("2024-01-15T00:00:00"),
-        "month"
-      );
-      const feb = derivePeriod(
-        adapter,
-        new Date("2024-02-15T00:00:00"),
-        "month"
-      );
+      const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+      const feb = periodWith(units, new Date("2024-02-15T00:00:00"), "month");
       /*
        * Jan ends at 31 23:59:59.999, Feb starts at 1 00:00:00.000
        * They don't share any millisecond
        */
-      expect(isOverlapping(jan, feb)).toBe(false);
+      expect(overlaps(jan, feb)).toBe(false);
     }
   );
 });
 
-describe("isOverlapping() with identical or nested periods", () => {
+describe("overlaps() with identical or nested periods", () => {
   it("same period overlaps itself", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const jan = derivePeriod(adapter, new Date("2024-01-15T00:00:00"), "month");
-    expect(isOverlapping(jan, jan)).toBe(true);
+    const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+    expect(overlaps(jan, jan)).toBe(true);
   });
 
   it("contained period overlaps parent", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const year = derivePeriod(adapter, new Date("2024-06-15T00:00:00"), "year");
-    const month = derivePeriod(
-      adapter,
-      new Date("2024-06-15T00:00:00"),
-      "month"
-    );
-    expect(isOverlapping(year, month)).toBe(true);
+    const year = periodWith(units, new Date("2024-06-15T00:00:00"), "year");
+    const month = periodWith(units, new Date("2024-06-15T00:00:00"), "month");
+    expect(overlaps(year, month)).toBe(true);
   });
 });
 
 describe("gap edge cases", () => {
   it("gap between same period is zero-duration", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const jan = derivePeriod(adapter, new Date("2024-01-15T00:00:00"), "month");
+    const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
     const between = gap(jan, jan);
     expect(between.start.getTime()).toBe(between.end.getTime());
   });
@@ -87,12 +88,8 @@ describe("gap edge cases", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const jan = derivePeriod(
-        adapter,
-        new Date("2024-01-15T00:00:00"),
-        "month"
-      );
-      const janMid = createPeriod(
+      const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+      const janMid = range(
         new Date("2024-01-15T00:00:00"),
         new Date("2024-02-15T00:00:00")
       );
@@ -103,8 +100,8 @@ describe("gap edge cases", () => {
 
   it("gap result is always passable to contains()", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const jan = derivePeriod(adapter, new Date("2024-01-15T00:00:00"), "month");
-    const mar = derivePeriod(adapter, new Date("2024-03-15T00:00:00"), "month");
+    const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+    const mar = periodWith(units, new Date("2024-03-15T00:00:00"), "month");
     const between = gap(jan, mar);
     // February should be inside the gap
     expect(contains(between, new Date("2024-02-15T00:00:00"))).toBe(true);
@@ -114,17 +111,9 @@ describe("gap edge cases", () => {
 describe("isSame edge cases", () => {
   it("same day different times are same day", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const morning = derivePeriod(
-      adapter,
-      new Date("2024-01-15T08:00:00"),
-      "day"
-    );
-    const evening = derivePeriod(
-      adapter,
-      new Date("2024-01-15T20:00:00"),
-      "day"
-    );
-    expect(isSame(adapter, morning, evening, "day")).toBe(true);
+    const morning = periodWith(units, new Date("2024-01-15T08:00:00"), "day");
+    const evening = periodWith(units, new Date("2024-01-15T20:00:00"), "day");
+    expect(sameWith(units, morning, evening, "day")).toBe(true);
   });
 
   it(
@@ -132,43 +121,35 @@ describe("isSame edge cases", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const jan31 = derivePeriod(
-        adapter,
-        new Date("2024-01-31T00:00:00"),
-        "day"
-      );
-      const feb1 = derivePeriod(
-        adapter,
-        new Date("2024-02-01T00:00:00"),
-        "day"
-      );
-      expect(isSame(adapter, jan31, feb1, "month")).toBe(false);
+      const jan31 = periodWith(units, new Date("2024-01-31T00:00:00"), "day");
+      const feb1 = periodWith(units, new Date("2024-02-01T00:00:00"), "day");
+      expect(sameWith(units, jan31, feb1, "month")).toBe(false);
     }
   );
 
   it("dec 31 and Jan 1 are different years", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const dec31 = derivePeriod(adapter, new Date("2024-12-31T00:00:00"), "day");
-    const jan1 = derivePeriod(adapter, new Date("2025-01-01T00:00:00"), "day");
-    expect(isSame(adapter, dec31, jan1, "year")).toBe(false);
+    const dec31 = periodWith(units, new Date("2024-12-31T00:00:00"), "day");
+    const jan1 = periodWith(units, new Date("2025-01-01T00:00:00"), "day");
+    expect(sameWith(units, dec31, jan1, "year")).toBe(false);
   });
 });
 
 describe("merge edge cases", () => {
   it("merge single period returns itself", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const jan = derivePeriod(adapter, new Date("2024-01-15T00:00:00"), "month");
-    const merged = merge([jan]);
+    const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+    const merged = required(merge([jan]));
     expect(merged.start.getTime()).toBe(jan.start.getTime());
   });
 
   it("merge Q1 months produces custom period", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const jan = derivePeriod(adapter, new Date("2024-01-15T00:00:00"), "month");
-    const feb = derivePeriod(adapter, new Date("2024-02-15T00:00:00"), "month");
-    const mar = derivePeriod(adapter, new Date("2024-03-15T00:00:00"), "month");
-    const q1 = merge([jan, feb, mar]);
-    expect(q1.type).toBe("custom");
+    const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+    const feb = periodWith(units, new Date("2024-02-15T00:00:00"), "month");
+    const mar = periodWith(units, new Date("2024-03-15T00:00:00"), "month");
+    const q1 = required(merge([jan, feb, mar]));
+    expect(q1.unit).toBe("custom");
   });
 
   it(
@@ -176,23 +157,11 @@ describe("merge edge cases", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const feb = derivePeriod(
-        adapter,
-        new Date("2024-02-15T00:00:00"),
-        "month"
-      );
-      const mar = derivePeriod(
-        adapter,
-        new Date("2024-03-15T00:00:00"),
-        "month"
-      );
-      const apr = derivePeriod(
-        adapter,
-        new Date("2024-04-15T00:00:00"),
-        "month"
-      );
-      const merged = merge([feb, mar, apr]);
-      expect(merged.type).toBe("custom");
+      const feb = periodWith(units, new Date("2024-02-15T00:00:00"), "month");
+      const mar = periodWith(units, new Date("2024-03-15T00:00:00"), "month");
+      const apr = periodWith(units, new Date("2024-04-15T00:00:00"), "month");
+      const merged = required(merge([feb, mar, apr]));
+      expect(merged.unit).toBe("custom");
     }
   );
 });
@@ -203,12 +172,8 @@ describe("navigation across year boundaries", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const jan1 = derivePeriod(
-        adapter,
-        new Date("2023-01-01T00:00:00"),
-        "day"
-      );
-      const result = go(adapter, jan1, DAYS_IN_COMMON_YEAR);
+      const jan1 = periodWith(units, new Date("2023-01-01T00:00:00"), "day");
+      const result = shiftWith(units, jan1, DAYS_IN_COMMON_YEAR);
       expect({
         date: result.start.getDate(),
         month: result.start.getMonth(),
@@ -219,8 +184,8 @@ describe("navigation across year boundaries", () => {
 
   it("go 366 days from leap year start", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const jan1 = derivePeriod(adapter, new Date("2024-01-01T00:00:00"), "day");
-    const result = go(adapter, jan1, DAYS_IN_LEAP_YEAR);
+    const jan1 = periodWith(units, new Date("2024-01-01T00:00:00"), "day");
+    const result = shiftWith(units, jan1, DAYS_IN_LEAP_YEAR);
     expect({
       date: result.start.getDate(),
       month: result.start.getMonth(),

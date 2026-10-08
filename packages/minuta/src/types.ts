@@ -1,31 +1,27 @@
 /**
- * The primitive — every time range is this.
+ * The primitive: every time range is a Period. Plain, deeply readonly data.
  *
- * Created by derivePeriod(adapter, date, "month") for adapter units,
- * or createPeriod(start, end) for custom ranges.
- *
- * All operations work on Period.
+ * `periodWith(units, date, "month")` creates one aligned to a unit,
+ * `range(start, end)` a custom one. `end` is inclusive (the last millisecond).
  */
-type Period = {
-  start: Date;
-  end: Date;
-  type: AdapterUnit | "custom";
-};
+type Period = Readonly<{
+  end: Readonly<Date>;
+  start: Readonly<Date>;
+  unit: Unit | "custom";
+}>;
 
 /**
- * A container of periods with optional metadata.
- *
- * Stable grids (StableMonth, StableYear, StableDay) join this
- * with grid-specific metadata.
+ * A container of periods. Calendar grids extend it with metadata.
  */
-type Series = {
-  periods: Period[];
-};
+type Series = Readonly<{
+  periods: readonly Period[];
+}>;
 
 // ── Units ──
 
 /**
- * Registry for unit types — keep as interface for module augmentation.
+ * Registry of unit names. An interface so plugins can add units through
+ * module augmentation; the matching spec is passed as data in `Units`.
  */
 // oxlint-disable-next-line typescript/consistent-type-definitions -- Module augmentation requires an interface
 interface UnitRegistry {
@@ -39,59 +35,32 @@ interface UnitRegistry {
   second: true;
 }
 
-type AdapterUnit = keyof UnitRegistry;
-
-// ── Adapter ──
+type Unit = keyof UnitRegistry;
 
 /**
- * 4 operations for date manipulation.
+ * How one unit behaves — plain data, like a country spec in ibanita.
  *
- * - startOf: earliest millisecond of the unit (e.g., midnight for "day")
- * - endOf: latest millisecond of the unit (e.g., 23:59:59.999 for "day")
- * - add(date, N, unit) followed by add(result, -N, unit) returns the original date
- * - diff(a, b, unit) returns the number of complete units between a and b
+ * - startOf: earliest millisecond of the unit containing `date`
+ * - endOf: latest millisecond of the unit containing `date`
+ * - add(date, n) then add(result, -n) returns the original date
+ * - diff(from, to) is the number of complete units between the dates
  */
-type Adapter = {
-  readonly startOf: (date: Readonly<Date>, unit: AdapterUnit) => Date;
-  readonly endOf: (date: Readonly<Date>, unit: AdapterUnit) => Date;
-  readonly add: (
-    date: Readonly<Date>,
-    amount: number,
-    unit: AdapterUnit
-  ) => Date;
-  readonly diff: (
-    from: Readonly<Date>,
-    to: Readonly<Date>,
-    unit: AdapterUnit
-  ) => number;
-};
-
-/**
- * Per-unit handler — internal to adapter implementations.
- */
-type UnitHandler = {
-  readonly startOf: (date: Readonly<Date>) => Date;
-  readonly endOf: (date: Readonly<Date>) => Date;
-  readonly add: (date: Readonly<Date>, amount: number) => Date;
-  readonly diff: (from: Readonly<Date>, to: Readonly<Date>) => number;
-};
-
-/**
- * Deeply readonly view of a Period, accepted by functions that never mutate
- * their input. Every Period is assignable to it.
- */
-type ReadonlyPeriod = Readonly<{
-  end: Readonly<Date>;
-  start: Readonly<Date>;
-  type: Period["type"];
+type UnitSpec = Readonly<{
+  add: (date: Readonly<Date>, amount: number) => Date;
+  diff: (from: Readonly<Date>, to: Readonly<Date>) => number;
+  endOf: (date: Readonly<Date>) => Date;
+  startOf: (date: Readonly<Date>) => Date;
 }>;
 
-export type {
-  Adapter,
-  AdapterUnit,
-  Period,
-  ReadonlyPeriod,
-  Series,
-  UnitHandler,
-  UnitRegistry,
-};
+/**
+ * The unit specs available to unit-aware functions. Partial, so a bundle can
+ * carry only the units it uses; adapters such as `nativeUnits()` return all.
+ */
+type Units = Readonly<Partial<Record<Unit, UnitSpec>>>;
+
+/**
+ * A spec for every unit, as returned by the adapters.
+ */
+type AllUnits = Readonly<Record<Unit, UnitSpec>>;
+
+export type { AllUnits, Period, Series, Unit, UnitRegistry, Units, UnitSpec };

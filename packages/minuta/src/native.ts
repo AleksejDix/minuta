@@ -1,4 +1,4 @@
-// Native adapter entry point for backward compatibility
-// Allows: import { createNativeAdapter } from 'minuta/native'
+// Native Date units: nativeUnits({ weekStartsOn })
+// Usage: import { nativeUnits } from "minuta/native"
 
 export * from "./adapters/native";

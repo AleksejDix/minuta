@@ -1,4 +1,4 @@
-import type { ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 const MS_PER_DAY = 86_400_000;
 const MAX_SPAN_DAYS = 2;
@@ -17,7 +17,7 @@ function isWeekdayIndex(day: number): boolean {
  * @param period - The period to check
  * @returns True when both start and end fall on Monday to Friday
  */
-function isWeekday(period: ReadonlyPeriod): boolean {
+function isWeekday(period: Period): boolean {
   /*
    * Weekday stretch is at most Mon-Fri (5 days). We use 2-day threshold because
    * any period crossing a day boundary into a weekend would fail the day-of-week check.

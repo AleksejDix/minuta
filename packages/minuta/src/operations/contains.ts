@@ -1,4 +1,4 @@
-import type { ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 /**
  * Check if a period contains a date or another period.
@@ -7,10 +7,7 @@ import type { ReadonlyPeriod } from "#src/types";
  * @param target - The date or period to test
  * @returns True when the target lies fully within the period
  */
-function contains(
-  period: ReadonlyPeriod,
-  target: Readonly<Date> | ReadonlyPeriod
-): boolean {
+function contains(period: Period, target: Readonly<Date> | Period): boolean {
   const startTime = period.start.getTime();
   const endTime = period.end.getTime();
 

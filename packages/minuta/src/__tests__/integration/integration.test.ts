@@ -1,8 +1,8 @@
-import type { Period, ReadonlyPeriod } from "#src/types";
-import { createStableMonth, createStableYear } from "#src/calendar";
 import { describe, expect, it } from "vitest";
-import { divide, derivePeriod as period } from "#src/index";
-import { createNativeAdapter } from "#src/adapters/native/index";
+import { divide, period } from "#src/index";
+import { monthGridWith, yearGridWith } from "#src/calendar";
+import type { Period } from "#src/types";
+import { nativeUnits } from "#src/adapters/native/index";
 
 const MONTH_GRID_DAYS = 42;
 const MIN_WEEKS_PER_YEAR = 52;
@@ -39,37 +39,30 @@ function required<TValue>(value: TValue | undefined): TValue {
  * @param weeks - Week periods
  * @returns All days of all weeks
  */
-function daysOf(weeks: readonly ReadonlyPeriod[]): Period[] {
-  const adapter = createNativeAdapter();
-  return weeks.flatMap((week: ReadonlyPeriod) => divide(adapter, week, "day"));
+function daysOf(weeks: readonly Period[]): Period[] {
+  return weeks.flatMap((week: Period) => divide(week, "day"));
 }
 
-describe("calendar units integration: stableMonth", () => {
-  it("should create stableMonth with 42 day periods", { timeout: 5000 }, () => {
+describe("calendar units integration: monthGridWith()", () => {
+  it("should create monthGrid with 42 day periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const adapter = createNativeAdapter();
-    const grid = createStableMonth(
-      adapter,
-      MONDAY,
+    const grid = monthGridWith(
+      nativeUnits({ weekStartsOn: MONDAY }),
       new Date("2024-01-01T00:00:00")
     );
 
     expect(grid).toBeDefined();
     expect(grid.periods).toHaveLength(MONTH_GRID_DAYS);
-    expect(required(grid.periods[FIRST_INDEX]).type).toBe("day");
+    expect(required(grid.periods[FIRST_INDEX]).unit).toBe("day");
     expect(grid.monthStart).toBeInstanceOf(Date);
   });
 });
 
-describe("calendar units integration: stableYear", () => {
-  const adapter = createNativeAdapter();
-  const weekStartsOn = MONDAY;
-
-  it("should create stableYear with week periods", { timeout: 5000 }, () => {
+describe("calendar units integration: yearGridWith()", () => {
+  it("should create yearGrid with week periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const grid = createStableYear(
-      adapter,
-      weekStartsOn,
+    const grid = yearGridWith(
+      nativeUnits({ weekStartsOn: MONDAY }),
       new Date("2024-06-15T00:00:00")
     );
 
@@ -80,9 +73,8 @@ describe("calendar units integration: stableYear", () => {
 
   it("should create GitHub-style contribution grid", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const grid = createStableYear(
-      adapter,
-      weekStartsOn,
+    const grid = yearGridWith(
+      nativeUnits({ weekStartsOn: MONDAY }),
       new Date("2024-06-15T00:00:00")
     );
 
@@ -100,18 +92,14 @@ describe("calendar units integration: stableYear", () => {
   });
 });
 
-describe("calendar units integration: stableYear transitions", () => {
-  const adapter = createNativeAdapter();
-  const weekStartsOn = MONDAY;
-
+describe("calendar units integration: yearGridWith() transitions", () => {
   it("should handle year transitions correctly", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const years = ["2022", "2023", "2024", "2025"];
 
     for (const year of years) {
-      const grid = createStableYear(
-        adapter,
-        weekStartsOn,
+      const grid = yearGridWith(
+        nativeUnits({ weekStartsOn: MONDAY }),
         new Date(`${year}-01-01T00:00:00`)
       );
 
@@ -120,7 +108,7 @@ describe("calendar units integration: stableYear transitions", () => {
       );
 
       for (const week of grid.periods) {
-        const days = divide(adapter, week, "day");
+        const days = divide(week, "day");
         expect(days).toHaveLength(DAYS_PER_WEEK);
       }
     }
@@ -133,12 +121,10 @@ describe("calendar units integration: combined usage", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const adapter = createNativeAdapter();
 
       for (const month of Array.from({ length: MONTHS_PER_YEAR }).keys()) {
-        const grid = createStableMonth(
-          adapter,
-          MONDAY,
+        const grid = monthGridWith(
+          nativeUnits({ weekStartsOn: MONDAY }),
           new Date(YEAR_2024, month, MID_MONTH_DAY)
         );
         expect(grid.periods).toHaveLength(MONTH_GRID_DAYS);
@@ -148,29 +134,25 @@ describe("calendar units integration: combined usage", () => {
 
   it("should allow drilling from year to months", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const adapter = createNativeAdapter();
 
-    const regularYear = period(
-      adapter,
-      new Date("2024-06-15T00:00:00"),
-      "year"
-    );
-    const months = divide(adapter, regularYear, "month");
+    const regularYear = period(new Date("2024-06-15T00:00:00"), "year");
+    const months = divide(regularYear, "month");
 
     for (const month of months) {
-      const grid = createStableMonth(adapter, MONDAY, month.start);
+      const grid = monthGridWith(
+        nativeUnits({ weekStartsOn: MONDAY }),
+        month.start
+      );
       expect(grid.periods).toHaveLength(MONTH_GRID_DAYS);
     }
   });
 });
 
 describe("calendar units integration: weekStartsOn configurations", () => {
-  it("should adapt stableYear to Sunday start", { timeout: 5000 }, () => {
+  it("should adapt yearGrid to Sunday start", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const adapter = createNativeAdapter();
-    const grid = createStableYear(
-      adapter,
-      SUNDAY,
+    const grid = yearGridWith(
+      nativeUnits({ weekStartsOn: SUNDAY }),
       new Date("2024-01-01T00:00:00")
     );
     const days = daysOf(grid.periods);
@@ -179,12 +161,10 @@ describe("calendar units integration: weekStartsOn configurations", () => {
     expect(required(days.at(LAST_INDEX)).start.getDay()).toBe(SATURDAY);
   });
 
-  it("should adapt stableMonth to Wednesday start", { timeout: 5000 }, () => {
+  it("should adapt monthGrid to Wednesday start", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const adapter = createNativeAdapter();
-    const grid = createStableMonth(
-      adapter,
-      WEDNESDAY,
+    const grid = monthGridWith(
+      nativeUnits({ weekStartsOn: WEDNESDAY }),
       new Date("2024-06-15T00:00:00")
     );
 

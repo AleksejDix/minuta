@@ -1,4 +1,4 @@
-import type { ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 const MS_PER_DAY = 86_400_000;
 const MAX_SPAN_DAYS = 2;
@@ -17,7 +17,7 @@ function isWeekendIndex(day: number): boolean {
  * @param period - The period to check
  * @returns True when both start and end fall on Saturday or Sunday
  */
-function isWeekend(period: ReadonlyPeriod): boolean {
+function isWeekend(period: Period): boolean {
   // A weekend is at most 2 days (Sat+Sun). Any longer period spans weekdays too.
   if (period.end.getTime() - period.start.getTime() >= TWO_DAYS_MS) {
     return false;

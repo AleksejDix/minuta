@@ -1,4 +1,4 @@
-import type { Adapter } from "#src/types";
+import type { AllUnits } from "#src/types";
 import type { ComplianceOptions } from "./compliance/context";
 import { createComplianceContext } from "./compliance/context";
 import { registerAddTests } from "./compliance/add";
@@ -12,15 +12,15 @@ import { registerStartOfTests } from "./compliance/start-of";
  * Compliance test suite that all adapters must pass
  * This ensures consistent behavior across different date library integrations
  * @param adapterName - Display name of the adapter
- * @param adapter - The adapter under test
+ * @param units - The unit specs under test
  * @param options - Optional timezone the adapter operates in
  */
 function testAdapterCompliance(
   adapterName: string,
-  adapter: Readonly<Adapter>,
+  units: AllUnits,
   options?: ComplianceOptions
 ): void {
-  const ctx = createComplianceContext(adapterName, adapter, options);
+  const ctx = createComplianceContext(adapterName, units, options);
   registerStartOfTests(ctx);
   registerEndOfTests(ctx);
   registerAddTests(ctx);

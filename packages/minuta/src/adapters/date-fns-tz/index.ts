@@ -1,1 +1,1 @@
-export { createDateFnsTzAdapter, dateFnsTzAdapter } from "./adapter";
+export { dateFnsTzUnits } from "./adapter";

@@ -1,16 +1,12 @@
-import type { AdapterUnit, Period, ReadonlyPeriod } from "#src/types";
+import type { Period, Unit } from "#src/types";
 
 const SINGLE_PERIOD = 1;
 
-function withType(period: ReadonlyPeriod, type: AdapterUnit): Period {
-  const retyped: Period = { end: period.end, start: period.start, type };
-  return Object.assign(retyped, period, { type });
+function withUnit(period: Period, unit: Unit): Period {
+  return { end: period.end, start: period.start, unit };
 }
 
-function earliestStart(
-  first: ReadonlyPeriod,
-  periods: readonly ReadonlyPeriod[]
-): number {
+function earliestStart(first: Period, periods: readonly Period[]): number {
   let minStart = first.start.getTime();
   for (const period of periods) {
     const time = period.start.getTime();
@@ -21,10 +17,7 @@ function earliestStart(
   return minStart;
 }
 
-function latestEnd(
-  first: ReadonlyPeriod,
-  periods: readonly ReadonlyPeriod[]
-): number {
+function latestEnd(first: Period, periods: readonly Period[]): number {
   let maxEnd = first.end.getTime();
   for (const period of periods) {
     const time = period.end.getTime();
@@ -41,20 +34,20 @@ function latestEnd(
  *
  * @param periods - The periods to merge (at least one)
  * @param targetUnit - Optional unit type for the merged period
- * @returns The merged period
+ * @returns The merged period, or undefined for an empty list
  */
 function merge(
-  periods: readonly ReadonlyPeriod[],
-  targetUnit?: AdapterUnit
-): Period {
+  periods: readonly Period[],
+  targetUnit?: Unit
+): Period | undefined {
   const [first] = periods;
   if (first === undefined) {
-    throw new Error("merge() requires at least one period");
+    return undefined;
   }
 
   if (periods.length === SINGLE_PERIOD) {
     if (targetUnit) {
-      return withType(first, targetUnit);
+      return withUnit(first, targetUnit);
     }
     return first;
   }
@@ -62,7 +55,7 @@ function merge(
   return {
     end: new Date(latestEnd(first, periods)),
     start: new Date(earliestStart(first, periods)),
-    type: targetUnit ?? "custom",
+    unit: targetUnit ?? "custom",
   };
 }
 

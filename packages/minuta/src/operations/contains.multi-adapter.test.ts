@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { contains } from "./contains";
-import { getAdapterTestCases } from "#src/test/shared-adapter-tests";
-import { derivePeriod as period } from "./period";
+import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
+import { periodWith } from "./period";
 
 const ONE_MS = 1;
 
@@ -13,14 +13,14 @@ function msBefore(date: Readonly<Date>): Date {
   return new Date(date.getTime() - ONE_MS);
 }
 
-const adapters = getAdapterTestCases();
+const unitsCases = getUnitsTestCases();
 
-describe.each(adapters)(
+describe.each(unitsCases)(
   "contains() basic containment with %s adapter",
-  (_name, adapter) => {
+  (_name, units) => {
     it("should detect when a period contains a date", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const month = period(adapter, new Date("2024-01-01T00:00"), "month");
+      const month = periodWith(units, new Date("2024-01-01T00:00"), "month");
 
       expect(contains(month, new Date("2024-01-15T00:00"))).toBe(true);
       expect(contains(month, new Date("2024-01-01T00:00"))).toBe(true);
@@ -34,9 +34,9 @@ describe.each(adapters)(
       { timeout: 5000 },
       () => {
         expect.hasAssertions();
-        const year = period(adapter, new Date("2024-06-15T00:00"), "year");
-        const month = period(adapter, new Date("2024-06-15T00:00"), "month");
-        const day = period(adapter, new Date("2024-06-15T00:00"), "day");
+        const year = periodWith(units, new Date("2024-06-15T00:00"), "year");
+        const month = periodWith(units, new Date("2024-06-15T00:00"), "month");
+        const day = periodWith(units, new Date("2024-06-15T00:00"), "day");
 
         expect(contains(year, month)).toBe(true);
         expect(contains(year, day)).toBe(true);
@@ -48,13 +48,13 @@ describe.each(adapters)(
   }
 );
 
-describe.each(adapters)(
+describe.each(unitsCases)(
   "contains() boundary containment with %s adapter",
-  (_name, adapter) => {
+  (_name, units) => {
     it("should handle cross-year boundaries", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const december = period(adapter, new Date("2023-12-15T00:00"), "month");
-      const january = period(adapter, new Date("2024-01-15T00:00"), "month");
+      const december = periodWith(units, new Date("2023-12-15T00:00"), "month");
+      const january = periodWith(units, new Date("2024-01-15T00:00"), "month");
 
       expect(contains(december, new Date("2023-12-31T00:00"))).toBe(true);
       expect(contains(december, new Date("2024-01-01T00:00"))).toBe(false);
@@ -64,9 +64,9 @@ describe.each(adapters)(
 
     it("should handle week containment", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const week = period(adapter, new Date("2024-01-15T00:00"), "week");
-      const weekStart = adapter.startOf(new Date("2024-01-15T00:00"), "week");
-      const weekEnd = adapter.endOf(new Date("2024-01-15T00:00"), "week");
+      const week = periodWith(units, new Date("2024-01-15T00:00"), "week");
+      const weekStart = units.week.startOf(new Date("2024-01-15T00:00"));
+      const weekEnd = units.week.endOf(new Date("2024-01-15T00:00"));
 
       expect(contains(week, weekStart)).toBe(true);
       expect(contains(week, weekEnd)).toBe(true);
@@ -75,9 +75,9 @@ describe.each(adapters)(
 
     it("should handle exact boundary matches", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const day = period(adapter, new Date("2024-01-15T00:00"), "day");
-      const dayStart = adapter.startOf(new Date("2024-01-15T00:00"), "day");
-      const dayEnd = adapter.endOf(new Date("2024-01-15T00:00"), "day");
+      const day = periodWith(units, new Date("2024-01-15T00:00"), "day");
+      const dayStart = units.day.startOf(new Date("2024-01-15T00:00"));
+      const dayEnd = units.day.endOf(new Date("2024-01-15T00:00"));
 
       expect(contains(day, dayStart)).toBe(true);
       expect(contains(day, dayEnd)).toBe(true);
@@ -87,21 +87,21 @@ describe.each(adapters)(
   }
 );
 
-describe.each(adapters)(
+describe.each(unitsCases)(
   "contains() partial containment with %s adapter",
-  (_name, adapter) => {
+  (_name, units) => {
     it("should handle partial period overlap", { timeout: 5000 }, () => {
       expect.hasAssertions();
       const period1 = {
         end: new Date("2024-01-20T00:00"),
         start: new Date("2024-01-10T00:00"),
-        type: "custom" as const,
+        unit: "custom" as const,
       };
 
       const period2 = {
         end: new Date("2024-01-25T00:00"),
         start: new Date("2024-01-15T00:00"),
-        type: "custom" as const,
+        unit: "custom" as const,
       };
 
       // Period1 does not fully contain period2
@@ -115,7 +115,7 @@ describe.each(adapters)(
 
     it("should handle hour and minute containment", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const hour = period(adapter, new Date("2024-01-15T14:30"), "hour");
+      const hour = periodWith(units, new Date("2024-01-15T14:30"), "hour");
 
       expect(contains(hour, new Date("2024-01-15T14:00"))).toBe(true);
       expect(contains(hour, new Date("2024-01-15T14:30"))).toBe(true);

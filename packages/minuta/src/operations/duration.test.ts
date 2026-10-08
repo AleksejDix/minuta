@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createPeriod } from "./period";
 import { duration } from "./duration";
+import { range } from "./period";
 
 const ONE_HOUR_MS = 3_600_000;
 const ONE = 1;
@@ -9,17 +9,17 @@ const SECONDS_PER_HOUR = 3600;
 const TWO_DAYS = 2;
 const ZERO = 0;
 
-const oneHour = createPeriod(
+const oneHour = range(
   new Date("2024-01-01T09:00"),
   new Date("2024-01-01T10:00")
 );
 
-const ninetyMinutes = createPeriod(
+const ninetyMinutes = range(
   new Date("2024-01-01T09:00"),
   new Date("2024-01-01T10:30")
 );
 
-const threeDays = createPeriod(
+const threeDays = range(
   new Date("2024-01-01T00:00"),
   new Date("2024-01-03T23:59:59.999")
 );
@@ -32,7 +32,7 @@ describe("duration() in milliseconds", () => {
 
   it("returns 0 for zero-width period", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const point = createPeriod(
+    const point = range(
       new Date("2024-01-01T00:00"),
       new Date("2024-01-01T00:00")
     );

@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const JANUARY = 0;
 const DECEMBER = 11;
@@ -18,7 +18,7 @@ const LAST_MS = 999;
 /**
  * Year unit handler - pure functional implementation
  */
-const yearHandler: UnitHandler = {
+const yearHandler: UnitSpec = {
   add: (date: Readonly<Date>, amount: number): Date => {
     const result = new Date(date);
     const originalDay = result.getDate();

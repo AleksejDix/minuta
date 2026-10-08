@@ -23,7 +23,7 @@ import {
   startOfYear,
 } from "date-fns";
 import type { Duration } from "date-fns";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const MONTHS_PER_QUARTER = 3;
 
@@ -34,7 +34,7 @@ type HandlerParts = Readonly<{
   diffFn: (later: Readonly<Date>, earlier: Readonly<Date>) => number;
 }>;
 
-function handler(parts: HandlerParts): UnitHandler {
+function handler(parts: HandlerParts): UnitSpec {
   return {
     add: (date: Readonly<Date>, amount: number): Date =>
       add(date, { [parts.addKey]: amount }),
@@ -45,13 +45,13 @@ function handler(parts: HandlerParts): UnitHandler {
   };
 }
 
-const yearHandler: UnitHandler = handler({
+const yearHandler: UnitSpec = handler({
   addKey: "years",
   diffFn: differenceInYears,
   endOf: endOfYear,
   startOf: startOfYear,
 });
-const quarterHandler: UnitHandler = {
+const quarterHandler: UnitSpec = {
   add: (date: Readonly<Date>, amount: number): Date =>
     add(date, { months: amount * MONTHS_PER_QUARTER }),
   diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
@@ -59,31 +59,31 @@ const quarterHandler: UnitHandler = {
   endOf: (date: Readonly<Date>): Date => endOfQuarter(date),
   startOf: (date: Readonly<Date>): Date => startOfQuarter(date),
 };
-const monthHandler: UnitHandler = handler({
+const monthHandler: UnitSpec = handler({
   addKey: "months",
   diffFn: differenceInMonths,
   endOf: endOfMonth,
   startOf: startOfMonth,
 });
-const dayHandler: UnitHandler = handler({
+const dayHandler: UnitSpec = handler({
   addKey: "days",
   diffFn: differenceInDays,
   endOf: endOfDay,
   startOf: startOfDay,
 });
-const hourHandler: UnitHandler = handler({
+const hourHandler: UnitSpec = handler({
   addKey: "hours",
   diffFn: differenceInHours,
   endOf: endOfHour,
   startOf: startOfHour,
 });
-const minuteHandler: UnitHandler = handler({
+const minuteHandler: UnitSpec = handler({
   addKey: "minutes",
   diffFn: differenceInMinutes,
   endOf: endOfMinute,
   startOf: startOfMinute,
 });
-const secondHandler: UnitHandler = handler({
+const secondHandler: UnitSpec = handler({
   addKey: "seconds",
   diffFn: differenceInSeconds,
   endOf: endOfSecond,

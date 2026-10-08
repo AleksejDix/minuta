@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const DAYS_PER_WEEK = 7;
 const LAST_DAY_OF_WEEK_OFFSET = 6;
@@ -72,7 +72,7 @@ function startOfWeekStartingOn(date: Readonly<Date>, isoWeekday: number): Date {
   return startOfWeek.toJSDate();
 }
 
-function createWeekHandler(weekStartsOn: WeekStartsOn = MONDAY): UnitHandler {
+function createWeekHandler(weekStartsOn: WeekStartsOn = MONDAY): UnitSpec {
   const isoWeekday = toIsoWeekday(weekStartsOn);
 
   return {

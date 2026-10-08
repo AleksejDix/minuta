@@ -11,16 +11,15 @@ export default defineConfig({
     lib: {
       entry: {
         calendar: fromRoot("src/calendar.ts"),
+        core: fromRoot("src/core.ts"),
         "date-fns": fromRoot("src/date-fns.ts"),
         "date-fns-tz": fromRoot("src/date-fns-tz.ts"),
         dayjs: fromRoot("src/dayjs.ts"),
         format: fromRoot("src/format.ts"),
-        helpers: fromRoot("src/helpers.ts"),
         index: fromRoot("src/index.ts"),
         luxon: fromRoot("src/luxon.ts"),
         moment: fromRoot("src/moment.ts"),
         native: fromRoot("src/native.ts"),
-        operations: fromRoot("src/operations.ts"),
         temporal: fromRoot("src/temporal.ts"),
       },
       formats: ["es"],

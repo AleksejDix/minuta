@@ -1,164 +1,157 @@
-# Minuta
+# minuta
 
-**~4.7 kB gzipped** (core + native adapter, zero dependencies)
-
-Divide time into pieces. Pure functional calendar library with a 4-method adapter contract.
-
-| What you import              | gzipped |
-| ---------------------------- | ------- |
-| Core + operations            | ~3.7 kB |
-| + Native adapter (zero deps) | ~4.7 kB |
-| + Calendar utilities         | ~5.1 kB |
-| + Helpers                    | ~5.2 kB |
-
-## Install
+Divide time into pieces. Pure functions over plain, readonly data, with the
+date engine of your choice plugged in as data.
 
 ```bash
 npm install minuta
 ```
 
-## Core Concept
+| What you import                                     | minified + brotli |
+| --------------------------------------------------- | ----------------- |
+| `minuta`: `period`, `next`, `divide`                | 2.4 kB            |
+| `minuta/core` with only the `day` and `month` units | 1.1 kB            |
+| Calendar grids through `bind`                       | 1.8 kB            |
+| An adapter (without its date library)               | 0.3–1.1 kB        |
 
-Every time range is a **Period**: `{ start, end, type }`. The `divide()` function splits any period into smaller ones. That's the entire model.
+Zero dependencies, ES modules only, `sideEffects: false`. Budgets are
+checked on every CI run.
 
-```typescript
-import { createNativeAdapter } from "minuta/native";
-import { derivePeriod, divide } from "minuta";
+## The model
 
-const adapter = createNativeAdapter({ weekStartsOn: 1 });
+Every time range is a **Period**: `{ start, end, unit }`. `divide` splits any
+period into smaller ones. That is the whole model.
 
-const year = derivePeriod(adapter, new Date(2025, 0, 1), "year");
-const months = divide(adapter, year, "month"); // 12 periods
-const days = divide(adapter, months[2], "day"); // 31 periods (March)
-const hours = divide(adapter, days[0], "hour"); // 24 periods
+```ts
+import { divide, period } from "minuta";
+
+const year = period(new Date(2026, 0, 1), "year");
+const months = divide(year, "month"); // 12 periods
+const days = divide(months[2], "day"); // 31 periods (March)
+const quarters = divide(days[0], "minute", { step: 15 }); // 96 periods
 ```
+
+The default entry is bound to the native `Date` units with weeks starting on
+Monday (ISO 8601), so there is nothing to configure.
 
 ## Operations
 
-All operations are **pure functions** — no side effects, no global state.
+| Family   | Functions                                                                                         |
+| -------- | ------------------------------------------------------------------------------------------------- |
+| Create   | `period(date, unit)` · `range(start, end)`                                                        |
+| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`                                      |
+| Compose  | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, date)`                |
+| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` · `gap(a, b)`            |
+| Edit     | `move(period, start)` · `resize(period, edge, date)` · `clamp(period, bounds)` · `snap(date, ms)` |
+| Ask      | `duration(period, unit)` · `isToday(now, period)` · `isWeekday(period)` · `isWeekend(period)`     |
 
-```typescript
-import {
-  derivePeriod, // Derive boundaries from adapter for a date + unit
-  createPeriod, // Create a custom period from start/end dates
-  divide, // Split a period into smaller units
-  next, // Move to the next period
-  previous, // Move to the previous period
-  go, // Move by N periods
-  contains, // Check if a period contains a date or period
-  isSame, // Compare two periods by unit
-  merge, // Combine periods into one
-  split, // Split a period at a specific date
-  difference, // Calculate the gap between two periods
-} from "minuta";
+```ts
+import { contains, next, period, previous, range, shift } from "minuta";
+
+const march = period(new Date(2026, 2, 15), "month");
+next(march); // April
+previous(march); // February
+shift(march, 3); // June
+contains(march, new Date(2026, 2, 20)); // true
+
+range(new Date(2026, 0, 1), new Date(2026, 2, 31)); // { unit: "custom", … }
 ```
 
-### Navigation
+No result is `undefined` (`clamp` without overlap, `merge([])`), never `null`.
+Invalid dates throw a `RangeError` whose message starts with a `MinutaError`
+code such as `INVALID_DATE`.
 
-```typescript
-const march = derivePeriod(adapter, new Date(2025, 2, 1), "month");
-const april = next(adapter, march);
-const february = previous(adapter, march);
-const june = go(adapter, march, 3);
+## Other week starts and date libraries
+
+Rules and data are separate. Units are plain data produced by an adapter; bind
+them once and you get the same operations:
+
+```ts
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
+time.period(new Date(), "week"); // starts on Sunday
 ```
 
-### Containment
+| Adapter                           | Import                                     |
+| --------------------------------- | ------------------------------------------ |
+| Native `Date` (zero dependencies) | `nativeUnits` from `minuta/native`         |
+| date-fns                          | `dateFnsUnits` from `minuta/date-fns`      |
+| date-fns-tz (time zones)          | `dateFnsTzUnits` from `minuta/date-fns-tz` |
+| Day.js                            | `dayjsUnits` from `minuta/dayjs`           |
+| Luxon                             | `luxonUnits` from `minuta/luxon`           |
+| Moment                            | `momentUnits` from `minuta/moment`         |
+| Temporal                          | `temporalUnits` from `minuta/temporal`     |
 
-```typescript
-const month = derivePeriod(adapter, new Date(2025, 2, 15), "month");
-contains(month, new Date(2025, 2, 20)); // true
-contains(month, new Date(2025, 3, 1)); // false
+The bound object's members have exactly the types of the default entry, so
+the two cannot drift apart.
+
+## The pure core
+
+`minuta/core` has the rules without bound data. Unit-aware functions take the
+units first; unit-free functions take none:
+
+```ts
+import { divideWith, nextWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const { day, month } = nativeUnits();
+const units = { day, month }; // only what you use ends up in the bundle
+
+nextWith(units, periodWith(units, new Date(), "month"));
 ```
 
-### Custom periods
+A unit missing from `units` throws a `RangeError` starting with
+`UNIT_NOT_SUPPORTED`.
 
-```typescript
-const q1 = createPeriod(new Date(2025, 0, 1), new Date(2025, 2, 31));
-// q1.type === "custom"
+## Plugins
+
+A plugin is an object of context-first functions. `bind` gives it the same
+convenience as the default entry. The calendar grids ship as one:
+
+```ts
+import { bind } from "minuta/core";
+import { calendar } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+
+const grids = bind(nativeUnits({ weekStartsOn: 0 }), calendar);
+grids.monthGrid(new Date()).periods; // always 42 days: no layout jumps
+grids.yearGrid(new Date()).periods; // whole weeks covering the year
+grids.dayGrid(new Date(), "Europe/Zurich").gapHour; // DST-aware hour slots
 ```
 
-## Helpers
+Write your own the same way:
 
-Optional UI utilities for calendar apps:
+```ts
+import type { Period, Units } from "minuta/core";
+import { bind, divideWith } from "minuta/core";
 
-```typescript
-import { isWeekend, isWeekday, isToday, isOverlapping } from "minuta/helpers";
+const workdays = {
+  workdaysIn: (units: Units, month: Period) =>
+    divideWith(units, month, "day").filter(
+      (day) => day.start.getDay() % 6 !== 0
+    ),
+};
 
-isWeekend(saturdayPeriod); // true
-isToday(adapter, new Date(), day); // true if day is today
-isOverlapping(meetingA, meetingB); // true if they share time
+bind(nativeUnits(), workdays).workdaysIn(march);
 ```
 
-## Calendar Grids
+Custom units are data too: add the name to `UnitRegistry` through module
+augmentation and pass its `UnitSpec` (`startOf`, `endOf`, `add`, `diff`) in
+your units.
 
-Optional import for fixed-size calendar layouts:
+## Formatting
 
-```typescript
-import { createStableMonth, createStableYear } from "minuta/calendar";
+```ts
+import { formatPeriod, formatRange } from "minuta/format";
 
-// Always 42 days (6 weeks) — no layout jumps
-const grid = createStableMonth(adapter, 1, new Date(2025, 2, 1));
-const weeks = divide(adapter, grid, "week");
-const days = weeks.map((week) => divide(adapter, week, "day"));
+formatPeriod(march, "de-CH"); // "März 2026"
 ```
 
-## Adapters
+## Migrating
 
-Swap the date engine without changing your code. 4 methods: `startOf`, `endOf`, `add`, `diff`.
-
-```typescript
-// Native (zero dependencies)
-import { createNativeAdapter } from "minuta/native";
-
-// date-fns
-import { createDateFnsAdapter } from "minuta/date-fns";
-
-// date-fns-tz (timezone support)
-import { createDateFnsTzAdapter } from "minuta/date-fns-tz";
-
-// Luxon
-import { createLuxonAdapter } from "minuta/luxon";
-
-// Temporal API
-import { createMinutaAdapter } from "minuta/temporal";
-```
-
-## Framework Integrations
-
-```typescript
-// Vue
-import { createMinuta, useMinuta, usePeriod, Minuta } from "minuta-vue";
-
-// React
-import { useMinuta, usePeriod } from "minuta-react";
-```
-
-## Types
-
-```typescript
-// A single time range
-interface TimePeriod {
-  start: Date;
-  end: Date;
-  type: AdapterUnit | "custom";
-}
-
-// A calendar grid container (stableMonth: 42 days, stableYear: 52-53 weeks)
-type PeriodSeries =
-  | { start: Date; end: Date; type: "stableMonth"; meta: StableMonthMeta }
-  | { start: Date; end: Date; type: "stableYear"; meta: StableYearMeta };
-
-// The union — most operations accept this
-type Period = TimePeriod | PeriodSeries;
-
-// 4-method contract for date engines
-interface Adapter {
-  startOf(date: Date, unit: AdapterUnit): Date;
-  endOf(date: Date, unit: AdapterUnit): Date;
-  add(date: Date, amount: number, unit: AdapterUnit): Date;
-  diff(from: Date, to: Date, unit: AdapterUnit): number;
-}
-```
+See [MIGRATION.md](MIGRATION.md) for the changes from the adapter-based API.
 
 ## License
 

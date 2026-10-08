@@ -1,38 +1,24 @@
-import type { Adapter, AdapterUnit, Period, ReadonlyPeriod } from "#src/types";
+import type { Period, Unit, UnitSpec, Units } from "#src/types";
+import { specFor } from "#src/units";
 
 const DEFAULT_MAX_PERIODS = 100_000;
 const DEFAULT_STEP = 1;
 const ONE_MS = 1;
 const STALL_STEP_FACTOR = 2;
 
-type DivideOptions = {
+type DivideOptions = Readonly<{
   /** Maximum number of periods before throwing. Default: 100,000. */
-  maxPeriods?: number;
-};
-
-type DivideContext = Readonly<{
-  adapter: Readonly<Adapter>;
-  period: ReadonlyPeriod;
-  step: number;
-  unit: AdapterUnit;
+  maxPeriods?: number | undefined;
+  /** How many units each chunk spans. Default: 1. */
+  step?: number | undefined;
 }>;
 
-function resolveStep(count: number | Readonly<DivideOptions>): number {
-  if (typeof count === "object") {
-    return DEFAULT_STEP;
-  }
-  return count;
-}
-
-function resolveMaxPeriods(
-  count: number | Readonly<DivideOptions>,
-  options: Readonly<DivideOptions>
-): number {
-  if (typeof count === "object") {
-    return count.maxPeriods ?? DEFAULT_MAX_PERIODS;
-  }
-  return options.maxPeriods ?? DEFAULT_MAX_PERIODS;
-}
+type DivideContext = Readonly<{
+  period: Period;
+  spec: UnitSpec;
+  step: number;
+  unit: Unit;
+}>;
 
 function laterOf(left: Readonly<Date>, right: Readonly<Date>): Date {
   if (left < right) {
@@ -48,7 +34,7 @@ function earlierOf(left: Readonly<Date>, right: Readonly<Date>): Date {
   return left;
 }
 
-function chunkType(ctx: DivideContext): Period["type"] {
+function chunkUnit(ctx: DivideContext): Period["unit"] {
   if (ctx.step === DEFAULT_STEP) {
     return ctx.unit;
   }
@@ -66,8 +52,8 @@ function buildChunk(
   ctx: DivideContext,
   start: Readonly<Date>
 ): Period | undefined {
-  const { adapter, period, step, unit } = ctx;
-  const end = new Date(adapter.add(start, step, unit).getTime() - ONE_MS);
+  const { period, spec, step } = ctx;
+  const end = new Date(spec.add(start, step).getTime() - ONE_MS);
 
   // Only include periods that overlap with the parent period
   if (end < period.start || start > period.end) {
@@ -76,7 +62,7 @@ function buildChunk(
   return {
     end: earlierOf(end, period.end),
     start: laterOf(start, period.start),
-    type: chunkType(ctx),
+    unit: chunkUnit(ctx),
   };
 }
 
@@ -85,19 +71,19 @@ function nextCursor(
   start: Readonly<Date>,
   current: Readonly<Date>
 ): Date {
-  const { adapter, step, unit } = ctx;
-  const nextDate = adapter.add(start, step, unit);
+  const { spec, step } = ctx;
+  const nextDate = spec.add(start, step);
 
   if (nextDate.getTime() <= current.getTime()) {
-    return adapter.add(start, step * STALL_STEP_FACTOR, unit);
+    return spec.add(start, step * STALL_STEP_FACTOR);
   }
   return nextDate;
 }
 
 function assertWithinLimit(generated: number, maxPeriods: number): void {
   if (generated > maxPeriods) {
-    throw new Error(
-      `divide() generated over ${maxPeriods} periods — use a larger unit, smaller parent period, or increase maxPeriods`
+    throw new RangeError(
+      `divideWith() generated over ${maxPeriods} periods — use a larger unit, smaller parent period, or increase maxPeriods`
     );
   }
 }
@@ -107,7 +93,7 @@ function collectChunks(ctx: DivideContext, maxPeriods: number): Period[] {
   let current = new Date(ctx.period.start);
 
   while (current <= ctx.period.end) {
-    const start = ctx.adapter.startOf(current, ctx.unit);
+    const start = ctx.spec.startOf(current);
     const chunk = buildChunk(ctx, start);
     if (chunk !== undefined) {
       periods.push(chunk);
@@ -123,35 +109,32 @@ function collectChunks(ctx: DivideContext, maxPeriods: number): Period[] {
 }
 
 /**
- * Divide a period into smaller units.
- *
- * @param adapter - The date adapter
- * @param period - The period to divide
- * @param unit - The unit to divide by
- * @param count - How many units per chunk (default: 1).
- *   divide(adapter, day, "minute", 15) → 15-minute intervals
- * @param options - Division options such as `maxPeriods`
- * @returns The chunks covering the period
+ * Divide a period into chunks of `unit`, clipped to the period.
  *
  * @example
- * divide(adapter, month, "day")         // 28-31 day periods
- * divide(adapter, hour, "minute", 15)   // 4 fifteen-minute periods
- * divide(adapter, day, "minute", 30)    // 48 thirty-minute periods
+ * divideWith(units, month, "day")                 // 28-31 day periods
+ * divideWith(units, hour, "minute", { step: 15 }) // 4 fifteen-minute periods
+ *
+ * @param units - Available unit specs
+ * @param period - Period to divide
+ * @param unit - Unit of the chunks
+ * @param options - `step` (units per chunk) and `maxPeriods` (safety limit)
+ * @returns The chunks covering the period
+ * @throws {RangeError} When more than `maxPeriods` chunks would be created
  */
-// oxlint-disable-next-line eslint/max-params -- Public API signature (adapter, period, unit, count, options) must stay stable
-function divide(
-  adapter: Readonly<Adapter>,
-  period: ReadonlyPeriod,
-  unit: AdapterUnit,
-  count: number | Readonly<DivideOptions> = DEFAULT_STEP,
-  options: Readonly<DivideOptions> = {}
+// oxlint-disable-next-line eslint/max-params -- Context-first core signature: (units, period, unit, options)
+function divideWith(
+  units: Units,
+  period: Period,
+  unit: Unit,
+  options: DivideOptions = {}
 ): Period[] {
-  // Handle backward-compatible options-as-4th-arg
-  const step = resolveStep(count);
-  const maxPeriods = resolveMaxPeriods(count, options);
-
-  return collectChunks({ adapter, period, step, unit }, maxPeriods);
+  const { maxPeriods = DEFAULT_MAX_PERIODS, step = DEFAULT_STEP } = options;
+  return collectChunks(
+    { period, spec: specFor(units, unit), step, unit },
+    maxPeriods
+  );
 }
 
-export { divide };
+export { divideWith };
 export type { DivideOptions };

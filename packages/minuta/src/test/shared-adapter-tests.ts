@@ -1,59 +1,58 @@
-import type { Adapter } from "#src/types";
-import { createDateFnsAdapter } from "#src/adapters/date-fns/index";
-import { createDayjsAdapter } from "#src/adapters/dayjs/index";
-import { createLuxonAdapter } from "#src/adapters/luxon/index";
-import { createMinutaAdapter } from "#src/adapters/temporal/index";
-import { createMomentAdapter } from "#src/adapters/moment/index";
-import { createNativeAdapter } from "#src/adapters/native/index";
+import type { AllUnits } from "#src/types";
+import { dateFnsUnits } from "#src/adapters/date-fns/index";
+import { dayjsUnits } from "#src/adapters/dayjs/index";
+import { luxonUnits } from "#src/adapters/luxon/index";
+import { momentUnits } from "#src/adapters/moment/index";
+import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
-// Define adapter configurations
-type AdapterConfig = {
+type UnitsConfig = {
   name: string;
-  createAdapter: () => Adapter;
+  createUnits: () => AllUnits;
   // Allow skipping certain adapters during development
   skip?: boolean;
 };
 
-// List of adapters to test
-const testAdapters: AdapterConfig[] = [
+// Every adapter's unit set, all with weeks starting on Monday
+const testUnits: UnitsConfig[] = [
   {
-    createAdapter: (): Adapter => createNativeAdapter({ weekStartsOn: 1 }),
+    createUnits: (): AllUnits => nativeUnits({ weekStartsOn: 1 }),
     name: "Native",
   },
   {
-    createAdapter: (): Adapter => createDateFnsAdapter({ weekStartsOn: 1 }),
+    createUnits: (): AllUnits => dateFnsUnits({ weekStartsOn: 1 }),
     name: "date-fns",
   },
   {
-    createAdapter: (): Adapter => createDayjsAdapter({ weekStartsOn: 1 }),
+    createUnits: (): AllUnits => dayjsUnits({ weekStartsOn: 1 }),
     name: "Day.js",
   },
   {
-    createAdapter: (): Adapter => createLuxonAdapter({ weekStartsOn: 1 }),
+    createUnits: (): AllUnits => luxonUnits({ weekStartsOn: 1 }),
     name: "Luxon",
   },
   {
-    createAdapter: (): Adapter => createMomentAdapter({ weekStartsOn: 1 }),
+    createUnits: (): AllUnits => momentUnits({ weekStartsOn: 1 }),
     name: "Moment.js",
   },
   {
-    createAdapter: (): Adapter => createMinutaAdapter({ weekStartsOn: 1 }),
+    createUnits: (): AllUnits => temporalUnits({ weekStartsOn: 1 }),
     name: "Temporal",
   },
 ];
 
 /**
- * Run a test suite with specific adapters using describe.each
- * This is useful when you want to use Vitest's parameterized tests
- * @returns One `[name, adapter]` tuple per enabled adapter
+ * One `[name, units]` case per enabled adapter, for `describe.each`.
+ *
+ * @returns One `[name, units]` tuple per enabled adapter
  */
-function getAdapterTestCases(): (readonly [string, Adapter])[] {
-  return testAdapters
-    .filter((config: Readonly<AdapterConfig>) => config.skip !== true)
+function getUnitsTestCases(): (readonly [string, AllUnits])[] {
+  return testUnits
+    .filter((config: Readonly<UnitsConfig>) => config.skip !== true)
     .map(
-      ({ name, createAdapter }: Readonly<AdapterConfig>) =>
-        [name, createAdapter()] as const
+      ({ name, createUnits }: Readonly<UnitsConfig>) =>
+        [name, createUnits()] as const
     );
 }
 
-export { getAdapterTestCases };
+export { getUnitsTestCases };

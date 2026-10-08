@@ -7,17 +7,16 @@ import {
   secondHandler,
   yearHandler,
 } from "./handlers";
-import type { Adapter } from "#src/types";
+import type { AllUnits } from "#src/types";
 import type { WeekStartsOn } from "./units/week";
-import { createAdapter } from "#src/adapters/create-adapter";
 import { createWeekHandler } from "./units/week";
 
 const MONDAY = 1;
 
-function createLuxonAdapter({
+function luxonUnits({
   weekStartsOn = MONDAY,
-}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): Adapter {
-  return createAdapter({
+}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits {
+  return {
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
@@ -26,9 +25,7 @@ function createLuxonAdapter({
     second: secondHandler,
     week: createWeekHandler(weekStartsOn),
     year: yearHandler,
-  });
+  };
 }
 
-const luxonAdapter: Adapter = createLuxonAdapter({ weekStartsOn: MONDAY });
-
-export { createLuxonAdapter, luxonAdapter };
+export { luxonUnits };

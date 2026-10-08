@@ -1,6 +1,6 @@
 import { getTemporal, toPlainDate } from "#src/adapters/temporal/temporal-api";
 import { plainDateToLocal, timeOf } from "#src/adapters/temporal/to-local-date";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const FIRST_DAY = 1;
 const MONTH_INDEX_OFFSET = 1;
@@ -13,7 +13,7 @@ const LAST_MINUTE = 59;
 const LAST_SECOND = 59;
 const LAST_MS = 999;
 
-const monthHandler: UnitHandler = {
+const monthHandler: UnitSpec = {
   add(date: Readonly<Date>, amount: number): Date {
     const result = toPlainDate(date).add({ months: amount });
     return plainDateToLocal(result, timeOf(date));

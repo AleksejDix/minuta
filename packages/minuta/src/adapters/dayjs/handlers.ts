@@ -1,5 +1,5 @@
 import type { ManipulateType, OpUnitType } from "dayjs";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
 
@@ -9,10 +9,7 @@ const DAYS_PER_WEEK = 7;
 const LAST_DAY_OF_WEEK_OFFSET = 6;
 const MONTHS_PER_QUARTER = 3;
 
-function handler(
-  startEndUnit: OpUnitType,
-  addUnit: ManipulateType
-): UnitHandler {
+function handler(startEndUnit: OpUnitType, addUnit: ManipulateType): UnitSpec {
   return {
     add: (date: Readonly<Date>, amount: number): Date =>
       dayjs(date).add(amount, addUnit).toDate(),
@@ -25,7 +22,7 @@ function handler(
   };
 }
 
-function createWeekHandler(weekStartsOn: number): UnitHandler {
+function createWeekHandler(weekStartsOn: number): UnitSpec {
   const base = handler("week", "week");
   return {
     add: (date: Readonly<Date>, amount: number): Date => base.add(date, amount),
@@ -50,8 +47,8 @@ function createWeekHandler(weekStartsOn: number): UnitHandler {
   };
 }
 
-const yearHandler: UnitHandler = handler("year", "year");
-const quarterHandler: UnitHandler = {
+const yearHandler: UnitSpec = handler("year", "year");
+const quarterHandler: UnitSpec = {
   add: (date: Readonly<Date>, amount: number): Date =>
     dayjs(date)
       .add(amount * MONTHS_PER_QUARTER, "month")
@@ -62,11 +59,11 @@ const quarterHandler: UnitHandler = {
   startOf: (date: Readonly<Date>): Date =>
     dayjs(date).startOf("quarter").toDate(),
 };
-const monthHandler: UnitHandler = handler("month", "month");
-const dayHandler: UnitHandler = handler("day", "day");
-const hourHandler: UnitHandler = handler("hour", "hour");
-const minuteHandler: UnitHandler = handler("minute", "minute");
-const secondHandler: UnitHandler = handler("second", "second");
+const monthHandler: UnitSpec = handler("month", "month");
+const dayHandler: UnitSpec = handler("day", "day");
+const hourHandler: UnitSpec = handler("hour", "hour");
+const minuteHandler: UnitSpec = handler("minute", "minute");
+const secondHandler: UnitSpec = handler("second", "second");
 
 export {
   createWeekHandler,

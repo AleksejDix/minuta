@@ -1,5 +1,6 @@
-import type { Adapter } from "#src/types";
+import type { AllUnits, Unit } from "#src/types";
 import { Temporal } from "@js-temporal/polyfill";
+import { specFor } from "#src/units";
 
 const MONTH_INDEX_OFFSET = 1;
 const UTC = "UTC";
@@ -33,8 +34,28 @@ type ZonedParts = Readonly<{
   millisecond: number;
 }>;
 
+/**
+ * Test-only view of a units map with the classic four-method shape, so the
+ * compliance suites can call `adapter.add(date, n, unit)` on any unit set.
+ */
+type UnitsPort = Readonly<{
+  add: (date: Readonly<Date>, amount: number, unit: Unit) => Date;
+  diff: (from: Readonly<Date>, to: Readonly<Date>, unit: Unit) => number;
+  endOf: (date: Readonly<Date>, unit: Unit) => Date;
+  startOf: (date: Readonly<Date>, unit: Unit) => Date;
+}>;
+
+function portOf(units: AllUnits): UnitsPort {
+  return {
+    add: (date, amount, unit) => specFor(units, unit).add(date, amount),
+    diff: (from, to, unit) => specFor(units, unit).diff(from, to),
+    endOf: (date, unit) => specFor(units, unit).endOf(date),
+    startOf: (date, unit) => specFor(units, unit).startOf(date),
+  };
+}
+
 type ComplianceContext = Readonly<{
-  adapter: Readonly<Adapter>;
+  adapter: UnitsPort;
   adapterName: string;
   createDate: (input: DateInput) => Date;
   parts: (date: Readonly<Date>) => ZonedParts;
@@ -95,13 +116,13 @@ function resolveTimeZone(options: ComplianceOptions | undefined): string {
 /**
  * Build the shared context for the adapter compliance suites.
  * @param adapterName - Display name of the adapter
- * @param adapter - The adapter under test
+ * @param units - The unit specs under test
  * @param options - Optional timezone the adapter operates in
  * @returns The compliance context
  */
 function createComplianceContext(
   adapterName: string,
-  adapter: Readonly<Adapter>,
+  units: AllUnits,
   options: ComplianceOptions | undefined
 ): ComplianceContext {
   // When testing a UTC-based adapter, construct dates as UTC so local TZ doesn't skew results
@@ -123,7 +144,7 @@ function createComplianceContext(
   );
 
   return {
-    adapter,
+    adapter: portOf(units),
     adapterName,
     createDate: (input: DateInput): Date => toDate(input, isUtc),
     parts: (date: Readonly<Date>): ZonedParts => zonedParts(date, timeZone),

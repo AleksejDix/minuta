@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createPeriod } from "./period";
 import { move } from "./move";
+import { range } from "./period";
 
 describe("move()", () => {
   it("relocates a period to a target date", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const appointment = createPeriod(
+    const appointment = range(
       new Date("2026-03-29T09:00:00"),
       new Date("2026-03-29T10:00:00")
     );
@@ -16,7 +16,7 @@ describe("move()", () => {
 
   it("preserves duration", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const period = createPeriod(
+    const period = range(
       new Date("2024-01-01T00:00:00"),
       new Date("2024-01-03T12:00:00")
     );
@@ -26,18 +26,18 @@ describe("move()", () => {
     expect(resultMs).toBe(originalMs);
   });
 
-  it("returns type custom", { timeout: 5000 }, () => {
+  it("returns unit custom", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const period = createPeriod(
+    const period = range(
       new Date("2024-01-01T00:00:00"),
       new Date("2024-01-31T00:00:00")
     );
-    expect(move(period, new Date("2024-06-01T00:00:00")).type).toBe("custom");
+    expect(move(period, new Date("2024-06-01T00:00:00")).unit).toBe("custom");
   });
 
   it("handles zero-duration period", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const point = createPeriod(
+    const point = range(
       new Date("2024-01-01T12:00:00"),
       new Date("2024-01-01T12:00:00")
     );

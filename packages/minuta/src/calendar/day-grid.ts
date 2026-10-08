@@ -1,4 +1,5 @@
-import type { Adapter, Period, Series } from "#src/types";
+import type { Period, Series, Units } from "#src/types";
+import { specFor } from "#src/units";
 
 /**
  * A single hour slot in a stable 24-hour day grid.
@@ -11,15 +12,15 @@ type HourSlot = Period & {
 /**
  * A stable 24-hour grid for a given day, with DST metadata.
  */
-type StableDay = Series & {
+type DayGrid = Series & {
   periods: HourSlot[];
-  /** Wall-clock hour that doesn't exist due to spring forward, or null */
-  gapHour: number | null;
-  /** Wall-clock hour that occurs twice due to fall back, or null */
-  ambiguousHour: number | null;
+  /** Wall-clock hour that doesn't exist due to spring forward, or undefined */
+  gapHour: number | undefined;
+  /** Wall-clock hour that occurs twice due to fall back, or undefined */
+  ambiguousHour: number | undefined;
 };
 
-type DstHours = Pick<StableDay, "ambiguousHour" | "gapHour">;
+type DstHours = Pick<DayGrid, "ambiguousHour" | "gapHour">;
 
 type ReadonlySlot = Readonly<{ hour: number; start: Readonly<Date> }>;
 
@@ -31,8 +32,7 @@ const MIDNIGHT = 0;
 const FIRST_CHECKED_HOUR = 1;
 const HOUR_STEP = 1;
 const DECIMAL_RADIX = 10;
-// oxlint-disable-next-line unicorn/no-null -- Public StableDay API uses null for "no DST hour"
-const NO_HOUR = null;
+const NO_HOUR = undefined;
 
 function wallClockHour(date: Readonly<Date>, timezone: string): number {
   const formatted = new Intl.DateTimeFormat("en-US", {
@@ -47,15 +47,12 @@ function wallClockHour(date: Readonly<Date>, timezone: string): number {
   return hour;
 }
 
-function buildHourSlots(
-  adapter: Readonly<Adapter>,
-  dayStart: Readonly<Date>
-): HourSlot[] {
+function buildHourSlots(units: Units, dayStart: Readonly<Date>): HourSlot[] {
   const periods: HourSlot[] = [];
   for (let hour = 0; hour < HOURS_PER_DAY; hour += HOUR_STEP) {
-    const start = adapter.add(dayStart, hour, "hour");
+    const start = specFor(units, "hour").add(dayStart, hour);
     const end = new Date(start.getTime() + ONE_HOUR_MS - ONE_MS);
-    periods.push({ end, hour, start, type: "hour" });
+    periods.push({ end, hour, start, unit: "hour" });
   }
   return periods;
 }
@@ -69,7 +66,7 @@ function buildHourSlots(
 function findGapHour(
   slots: readonly ReadonlySlot[],
   timezone: string
-): number | null {
+): number | undefined {
   for (const slot of slots.slice(FIRST_CHECKED_HOUR)) {
     if (wallClockHour(slot.start, timezone) > slot.hour) {
       return slot.hour;
@@ -82,7 +79,7 @@ function findGapHour(
 function findAmbiguousHour(
   slots: readonly ReadonlySlot[],
   timezone: string
-): number | null {
+): number | undefined {
   for (const slot of slots.slice(FIRST_CHECKED_HOUR)) {
     const wallClock = wallClockHour(slot.start, timezone);
     if (wallClock < slot.hour) {
@@ -115,27 +112,28 @@ function detectDstHours(
  * Creates a stable 24-hour grid for a given day.
  * Always returns exactly 24 hour periods (0-23), regardless of DST.
  *
- * @param adapter - The date adapter to use
+ * @param units - Available unit specs (needs `day` and `hour`)
  * @param date - Any date within the target day
  * @param timezone - IANA timezone string (e.g. "America/New_York").
  *   Required for correct DST gap/ambiguous detection.
  * @returns The 24 hour slots plus the DST gap and ambiguous hours
  *
  * @example
- * import { createStableDay } from "minuta/calendar";
- * const { periods, gapHour, ambiguousHour } = createStableDay(adapter, new Date(2024, 2, 10), "America/New_York");
+ * import { dayGridWith } from "minuta/calendar";
+ * const { periods, gapHour, ambiguousHour } = dayGridWith(units, new Date(2024, 2, 10), "America/New_York");
  * periods.length // always 24
  * gapHour      // 2 — 2 AM doesn't exist (US spring forward)
  */
-function createStableDay(
-  adapter: Readonly<Adapter>,
+function dayGridWith(
+  units: Units,
   date: Readonly<Date>,
   timezone: string
-): StableDay {
-  const dayStart = adapter.startOf(date, "day");
-  const dayEnd = adapter.endOf(date, "day");
+): DayGrid {
+  const day = specFor(units, "day");
+  const dayStart = day.startOf(date);
+  const dayEnd = day.endOf(date);
   const dayDurationMs = dayEnd.getTime() - dayStart.getTime() + ONE_MS;
-  const periods = buildHourSlots(adapter, dayStart);
+  const periods = buildHourSlots(units, dayStart);
   const { ambiguousHour, gapHour } = detectDstHours(
     periods,
     timezone,
@@ -145,5 +143,5 @@ function createStableDay(
   return { ambiguousHour, gapHour, periods };
 }
 
-export { createStableDay };
-export type { HourSlot, StableDay };
+export { dayGridWith };
+export type { HourSlot, DayGrid };

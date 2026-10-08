@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { AdapterUnit } from "#src/types";
 import type { ComplianceContext } from "./context";
+import type { Unit } from "#src/types";
 
-const REVERSIBLE_UNITS: readonly AdapterUnit[] = [
+const REVERSIBLE_UNITS: readonly Unit[] = [
   "year",
   "month",
   "week",
@@ -12,7 +12,7 @@ const REVERSIBLE_UNITS: readonly AdapterUnit[] = [
   "second",
 ];
 
-const BOUNDED_UNITS: readonly AdapterUnit[] = [
+const BOUNDED_UNITS: readonly Unit[] = [
   "year",
   "month",
   "day",

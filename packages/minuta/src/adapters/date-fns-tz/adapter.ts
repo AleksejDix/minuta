@@ -7,22 +7,21 @@ import {
   createSecondHandler,
   createYearHandler,
 } from "./handlers";
-import type { Adapter } from "#src/types";
+import type { AllUnits } from "#src/types";
 import type { Day } from "date-fns";
-import { createAdapter } from "#src/adapters/create-adapter";
 import { createWeekHandler } from "./units/week";
 
 const MONDAY = 1;
 const DEFAULT_TIMEZONE = "UTC";
 
-function createDateFnsTzAdapter({
+function dateFnsTzUnits({
   timezone = DEFAULT_TIMEZONE,
   weekStartsOn = MONDAY,
 }: Readonly<{
   timezone?: string;
   weekStartsOn?: Day;
-}> = {}): Adapter {
-  return createAdapter({
+}> = {}): AllUnits {
+  return {
     day: createDayHandler(timezone),
     hour: createHourHandler(timezone),
     minute: createMinuteHandler(timezone),
@@ -31,12 +30,7 @@ function createDateFnsTzAdapter({
     second: createSecondHandler(timezone),
     week: createWeekHandler(timezone, weekStartsOn),
     year: createYearHandler(timezone),
-  });
+  };
 }
 
-const dateFnsTzAdapter: Adapter = createDateFnsTzAdapter({
-  timezone: DEFAULT_TIMEZONE,
-  weekStartsOn: MONDAY,
-});
-
-export { createDateFnsTzAdapter, dateFnsTzAdapter };
+export { dateFnsTzUnits };

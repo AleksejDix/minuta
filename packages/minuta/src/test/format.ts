@@ -1,5 +1,5 @@
 import { formatPeriod, formatRange } from "#src/format/format";
-import type { ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 /**
  * Default test locale — en-US for readable English assertions.
@@ -16,7 +16,7 @@ const TEST_LOCALE = "en-US";
  * @param locale - The locale to format with
  * @returns The formatted period
  */
-function format(period: ReadonlyPeriod, locale: string = TEST_LOCALE): string {
+function format(period: Period, locale: string = TEST_LOCALE): string {
   return formatPeriod(period, locale);
 }
 
@@ -30,10 +30,7 @@ function format(period: ReadonlyPeriod, locale: string = TEST_LOCALE): string {
  * @param locale - The locale to format with
  * @returns The formatted range
  */
-function formatAsRange(
-  period: ReadonlyPeriod,
-  locale: string = TEST_LOCALE
-): string {
+function formatAsRange(period: Period, locale: string = TEST_LOCALE): string {
   return formatRange(period, locale);
 }
 

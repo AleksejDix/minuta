@@ -1,26 +1,24 @@
-import type { Adapter, ReadonlyPeriod } from "#src/types";
-import { derivePeriod } from "#src/operations/period";
-import { isSame } from "#src/operations/is-same";
+import type { Period, Units } from "#src/types";
+import { periodWith } from "#src/operations/period";
+import { sameWith } from "#src/operations/same";
 
 /**
- * Checks if a period represents today.
+ * Whether `period` is the day that contains `now`.
  *
- * @param adapter - The date adapter
- * @param now - The current date
- * @param period - The period to check
- * @returns True when the period is the day containing `now`
+ * @param units - Available unit specs (needs `day`)
+ * @param now - The current moment
+ * @param period - Period to check; only day periods can be today
+ * @returns Whether the period is today
  */
-function isToday(
-  adapter: Readonly<Adapter>,
+function isTodayWith(
+  units: Units,
   now: Readonly<Date>,
-  period: ReadonlyPeriod
+  period: Period
 ): boolean {
-  if (period.type !== "day") {
+  if (period.unit !== "day") {
     return false;
   }
-
-  const today = derivePeriod(adapter, now, "day");
-  return isSame(adapter, period, today, "day");
+  return sameWith(units, period, periodWith(units, now, "day"), "day");
 }
 
-export { isToday };
+export { isTodayWith };

@@ -21,7 +21,7 @@ import {
 } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import type { Duration } from "date-fns";
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const MONTHS_PER_QUARTER = 3;
 
@@ -42,7 +42,7 @@ type SubDayHandlerParts = Readonly<{
   unitMs: number;
 }>;
 
-function handler(parts: HandlerParts): UnitHandler {
+function handler(parts: HandlerParts): UnitSpec {
   const { timezone } = parts;
   return {
     add: (date: Readonly<Date>, amount: number): Date =>
@@ -59,7 +59,7 @@ function handler(parts: HandlerParts): UnitHandler {
   };
 }
 
-function createYearHandler(tz: string): UnitHandler {
+function createYearHandler(tz: string): UnitSpec {
   return handler({
     addKey: "years",
     diffFn: differenceInYears,
@@ -68,7 +68,7 @@ function createYearHandler(tz: string): UnitHandler {
     timezone: tz,
   });
 }
-function createQuarterHandler(tz: string): UnitHandler {
+function createQuarterHandler(tz: string): UnitSpec {
   return {
     add: (date: Readonly<Date>, amount: number): Date =>
       fromZonedTime(
@@ -83,7 +83,7 @@ function createQuarterHandler(tz: string): UnitHandler {
       fromZonedTime(startOfQuarter(toZonedTime(date, tz)), tz),
   };
 }
-function createMonthHandler(tz: string): UnitHandler {
+function createMonthHandler(tz: string): UnitSpec {
   return handler({
     addKey: "months",
     diffFn: differenceInMonths,
@@ -92,7 +92,7 @@ function createMonthHandler(tz: string): UnitHandler {
     timezone: tz,
   });
 }
-function createDayHandler(tz: string): UnitHandler {
+function createDayHandler(tz: string): UnitSpec {
   return handler({
     addKey: "days",
     diffFn: differenceInDays,
@@ -112,7 +112,7 @@ const HOUR_MS = 3_600_000;
 const MINUTE_MS = 60_000;
 const SECOND_MS = 1000;
 
-function subDayHandler(parts: SubDayHandlerParts): UnitHandler {
+function subDayHandler(parts: SubDayHandlerParts): UnitSpec {
   const { timezone, unitMs } = parts;
   return {
     add: (date: Readonly<Date>, amount: number): Date =>
@@ -148,7 +148,7 @@ function subDayHandler(parts: SubDayHandlerParts): UnitHandler {
   };
 }
 
-function createHourHandler(tz: string): UnitHandler {
+function createHourHandler(tz: string): UnitSpec {
   return subDayHandler({
     endOfFn: endOfHour,
     startOfFn: startOfHour,
@@ -156,7 +156,7 @@ function createHourHandler(tz: string): UnitHandler {
     unitMs: HOUR_MS,
   });
 }
-function createMinuteHandler(tz: string): UnitHandler {
+function createMinuteHandler(tz: string): UnitSpec {
   return subDayHandler({
     endOfFn: endOfMinute,
     startOfFn: startOfMinute,
@@ -164,7 +164,7 @@ function createMinuteHandler(tz: string): UnitHandler {
     unitMs: MINUTE_MS,
   });
 }
-function createSecondHandler(tz: string): UnitHandler {
+function createSecondHandler(tz: string): UnitSpec {
   return subDayHandler({
     endOfFn: endOfSecond,
     startOfFn: startOfSecond,

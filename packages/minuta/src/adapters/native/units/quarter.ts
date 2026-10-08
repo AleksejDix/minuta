@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const MONTHS_PER_QUARTER = 3;
 const QUARTERS_PER_YEAR = 4;
@@ -21,7 +21,7 @@ function quarterStartMonth(date: Readonly<Date>): number {
 /**
  * Quarter unit handler - pure functional implementation
  */
-const quarterHandler: UnitHandler = {
+const quarterHandler: UnitSpec = {
   add: (date: Readonly<Date>, amount: number): Date => {
     const result = new Date(date);
     const originalDay = result.getDate();

@@ -20,9 +20,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./operations": {
-      "types": "./dist/operations.d.ts",
-      "import": "./dist/operations.js"
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
     },
     "./calendar": {
       "types": "./dist/calendar.d.ts",
@@ -31,10 +31,6 @@
     "./format": {
       "types": "./dist/format.d.ts",
       "import": "./dist/format.js"
-    },
-    "./helpers": {
-      "types": "./dist/helpers.d.ts",
-      "import": "./dist/helpers.js"
     },
     "./types": {
       "types": "./dist/types.d.ts"
@@ -90,72 +86,108 @@
   },
   "size-limit": [
     {
+      "name": "minuta: period + next + divide",
       "path": "dist/index.js",
-      "limit": "1 kB",
-      "gzip": true
+      "import": "{ period, next, divide }",
+      "limit": "3 kB"
     },
     {
-      "path": "dist/operations.js",
-      "limit": "2 kB",
-      "gzip": true
+      "name": "minuta: everything",
+      "path": "dist/index.js",
+      "import": "*",
+      "limit": "3.5 kB"
     },
     {
-      "path": "dist/calendar.js",
-      "limit": "1 kB",
-      "gzip": true
+      "name": "minuta/core: periodWith + nextWith with two units",
+      "import": {
+        "dist/core.js": "{ periodWith, nextWith }",
+        "dist/native.js": "{ nativeUnits }"
+      },
+      "limit": "1.5 kB"
     },
     {
-      "path": "dist/helpers.js",
-      "limit": "1 kB",
-      "gzip": true
+      "name": "minuta/calendar: monthGrid via bind",
+      "import": {
+        "dist/core.js": "{ bind }",
+        "dist/calendar.js": "{ calendar }",
+        "dist/native.js": "{ nativeUnits }"
+      },
+      "limit": "2.5 kB"
     },
     {
-      "path": "dist/native.js",
-      "limit": "2 kB",
-      "gzip": true
+      "name": "minuta/format",
+      "path": "dist/format.js",
+      "import": "*",
+      "limit": "1 kB"
     },
     {
-      "path": "dist/dayjs.js",
-      "limit": "2 kB",
-      "gzip": true
-    },
-    {
+      "name": "adapter: date-fns",
       "path": "dist/date-fns.js",
-      "limit": "2 kB",
-      "gzip": true
+      "import": "{ dateFnsUnits }",
+      "ignore": [
+        "date-fns"
+      ],
+      "limit": "1 kB"
     },
     {
+      "name": "adapter: date-fns-tz",
       "path": "dist/date-fns-tz.js",
-      "limit": "2 kB",
-      "gzip": true
+      "import": "{ dateFnsTzUnits }",
+      "ignore": [
+        "date-fns",
+        "date-fns-tz"
+      ],
+      "limit": "1.5 kB"
     },
     {
+      "name": "adapter: dayjs",
+      "path": "dist/dayjs.js",
+      "import": "{ dayjsUnits }",
+      "ignore": [
+        "dayjs"
+      ],
+      "limit": "1 kB"
+    },
+    {
+      "name": "adapter: luxon",
       "path": "dist/luxon.js",
-      "limit": "2 kB",
-      "gzip": true
+      "import": "{ luxonUnits }",
+      "ignore": [
+        "luxon"
+      ],
+      "limit": "1 kB"
     },
     {
+      "name": "adapter: moment",
       "path": "dist/moment.js",
-      "limit": "2 kB",
-      "gzip": true
+      "import": "{ momentUnits }",
+      "ignore": [
+        "moment"
+      ],
+      "limit": "1 kB"
     },
     {
+      "name": "adapter: temporal",
       "path": "dist/temporal.js",
-      "limit": "2 kB",
-      "gzip": true
+      "import": "{ temporalUnits }",
+      "ignore": [
+        "@js-temporal/polyfill"
+      ],
+      "limit": "2 kB"
     }
   ],
   "devDependencies": {
     "@js-temporal/polyfill": "^0.5.1",
     "@minuta/tsconfig": "2.0.0-alpha.1",
-    "@size-limit/file": "^12.0.1",
+    "@size-limit/esbuild": "^14.0.0",
+    "@size-limit/file": "^14.0.0",
     "@types/luxon": "^3.7.1",
     "@types/node": "^22.12.1",
     "@vitest/coverage-v8": "^4.0.13",
     "dayjs": "^1.11.20",
     "jsdom": "^26.0.0",
     "moment": "^2.30.1",
-    "size-limit": "^12.0.1",
+    "size-limit": "^14.0.0",
     "typescript": "^5.7.3",
     "vite": "^7.2.4",
     "vite-plugin-dts": "^4.4.0",

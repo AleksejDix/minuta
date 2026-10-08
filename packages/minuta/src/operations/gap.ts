@@ -1,8 +1,8 @@
-import type { Period, ReadonlyPeriod } from "#src/types";
+import type { Period } from "#src/types";
 
 const ONE_MS = 1;
 
-type TimePoint = ReadonlyPeriod | Readonly<Date>;
+type TimePoint = Period | Readonly<Date>;
 
 type Bounds = Readonly<{ end: Date; start: Date }>;
 
@@ -13,11 +13,11 @@ function startOfPoint(point: TimePoint): Date {
   return point;
 }
 
-function afterEnd(point: ReadonlyPeriod): Date {
+function afterEnd(point: Period): Date {
   return new Date(point.end.getTime() + ONE_MS);
 }
 
-function beforeStart(point: ReadonlyPeriod): Date {
+function beforeStart(point: Period): Date {
   return new Date(point.start.getTime() - ONE_MS);
 }
 
@@ -34,7 +34,7 @@ function boundsFromDate(from: Readonly<Date>, to: TimePoint): Bounds {
   return { end: from, start: to.end };
 }
 
-function boundsFromPeriod(from: ReadonlyPeriod, to: TimePoint): Bounds {
+function boundsFromPeriod(from: Period, to: TimePoint): Bounds {
   const isForward = from.start.getTime() <= startOfPoint(to).getTime();
   if (!("start" in to)) {
     if (isForward) {
@@ -74,10 +74,10 @@ function gap(from: TimePoint, to: TimePoint): Period {
 
   // Normalize: if periods overlap, there's no gap — return zero-duration at boundary
   if (start.getTime() > end.getTime()) {
-    return { end: start, start, type: "custom" };
+    return { end: start, start, unit: "custom" };
   }
 
-  return { end, start, type: "custom" };
+  return { end, start, unit: "custom" };
 }
 
 export { gap };

@@ -7,17 +7,16 @@ import {
   secondHandler,
   yearHandler,
 } from "./handlers";
-import type { Adapter } from "#src/types";
+import type { AllUnits } from "#src/types";
 import type { Day } from "date-fns";
-import { createAdapter } from "#src/adapters/create-adapter";
 import { createWeekHandler } from "./units/week";
 
 const MONDAY = 1;
 
-function createDateFnsAdapter({
+function dateFnsUnits({
   weekStartsOn = MONDAY,
-}: Readonly<{ weekStartsOn?: Day }> = {}): Adapter {
-  return createAdapter({
+}: Readonly<{ weekStartsOn?: Day }> = {}): AllUnits {
+  return {
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
@@ -26,9 +25,7 @@ function createDateFnsAdapter({
     second: secondHandler,
     week: createWeekHandler(weekStartsOn),
     year: yearHandler,
-  });
+  };
 }
 
-const dateFnsAdapter: Adapter = createDateFnsAdapter({ weekStartsOn: MONDAY });
-
-export { createDateFnsAdapter, dateFnsAdapter };
+export { dateFnsUnits };

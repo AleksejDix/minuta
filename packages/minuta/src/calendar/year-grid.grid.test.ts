@@ -1,10 +1,10 @@
-import type { Adapter, Period, ReadonlyPeriod } from "#src/types";
+import type { Period, Units } from "#src/types";
 import { describe, expect, it } from "vitest";
-import { createDateFnsAdapter } from "#src/adapters/date-fns/index";
-import { createLuxonAdapter } from "#src/adapters/luxon/index";
-import { createNativeAdapter } from "#src/adapters/native/index";
-import { createStableYear } from "./stable-year";
-import { divide } from "#src/index";
+import { dateFnsUnits } from "#src/adapters/date-fns/index";
+import { divideWith } from "#src/operations/index";
+import { luxonUnits } from "#src/adapters/luxon/index";
+import { nativeUnits } from "#src/adapters/native/index";
+import { yearGridWith } from "./year-grid";
 
 const SUNDAY = 0;
 const MONDAY = 1;
@@ -21,9 +21,9 @@ const SHORT_YEAR_DAYS = 364;
 const LONG_YEAR_DAYS = 371;
 
 const ADAPTERS = [
-  ["native", createNativeAdapter()],
-  ["date-fns", createDateFnsAdapter()],
-  ["luxon", createLuxonAdapter()],
+  ["native", nativeUnits({ weekStartsOn: MONDAY })],
+  ["date-fns", dateFnsUnits({ weekStartsOn: MONDAY })],
+  ["luxon", luxonUnits({ weekStartsOn: MONDAY })],
 ] as const;
 
 const YEAR_STARTS = [
@@ -33,7 +33,7 @@ const YEAR_STARTS = [
   "2025-01-01T00:00:00",
 ] as const;
 
-function firstPeriod(periods: readonly ReadonlyPeriod[]): ReadonlyPeriod {
+function firstPeriod(periods: readonly Period[]): Period {
   const [first] = periods;
   if (first === undefined) {
     throw new Error("Expected at least one period");
@@ -41,7 +41,7 @@ function firstPeriod(periods: readonly ReadonlyPeriod[]): ReadonlyPeriod {
   return first;
 }
 
-function lastPeriod(periods: readonly ReadonlyPeriod[]): ReadonlyPeriod {
+function lastPeriod(periods: readonly Period[]): Period {
   const last = periods.at(LAST_INDEX);
   if (last === undefined) {
     throw new Error("Expected at least one period");
@@ -49,23 +49,20 @@ function lastPeriod(periods: readonly ReadonlyPeriod[]): ReadonlyPeriod {
   return last;
 }
 
-function gridDays(
-  adapter: Readonly<Adapter>,
-  periods: readonly ReadonlyPeriod[]
-): Period[] {
-  return divide(
-    adapter,
+function gridDays(units: Units, periods: readonly Period[]): Period[] {
+  return divideWith(
+    units,
     {
       end: lastPeriod(periods).end,
       start: firstPeriod(periods).start,
-      type: "custom",
+      unit: "custom",
     },
     "day"
   );
 }
 
-function chunkIntoWeeks(days: readonly ReadonlyPeriod[]): ReadonlyPeriod[][] {
-  const weeks: ReadonlyPeriod[][] = [];
+function chunkIntoWeeks(days: readonly Period[]): Period[][] {
+  const weeks: Period[][] = [];
   for (let index = 0; index < days.length; index += DAYS_PER_WEEK) {
     weeks.push(days.slice(index, index + DAYS_PER_WEEK));
   }
@@ -73,30 +70,27 @@ function chunkIntoWeeks(days: readonly ReadonlyPeriod[]): ReadonlyPeriod[][] {
 }
 
 describe.each(ADAPTERS)(
-  "createStableYear() divide operations with %s adapter",
-  (_name: string, adapter: Readonly<Adapter>) => {
+  "yearGridWith() divide operations with %s adapter",
+  (_name: string, units: Units) => {
     it("should divide into weeks", { timeout: 5000 }, () => {
       expect.hasAssertions();
       const date = new Date("2024-06-15T00:00:00");
-      const weeks = createStableYear(adapter, MONDAY, date).periods;
+      const weeks = yearGridWith(units, date).periods;
 
       expect(weeks.length).toBeGreaterThanOrEqual(SHORT_YEAR_WEEKS);
       expect(weeks.length).toBeLessThanOrEqual(LONG_YEAR_WEEKS);
 
       // Each week should be a proper week period
       for (const week of weeks) {
-        expect(week.type).toBe("week");
-        expect(divide(adapter, week, "day")).toHaveLength(DAYS_PER_WEEK);
+        expect(week.unit).toBe("week");
+        expect(divideWith(units, week, "day")).toHaveLength(DAYS_PER_WEEK);
       }
     });
 
     it("should divide into days", { timeout: 5000 }, () => {
       expect.hasAssertions();
       const date = new Date("2024-01-01T00:00:00");
-      const days = gridDays(
-        adapter,
-        createStableYear(adapter, MONDAY, date).periods
-      );
+      const days = gridDays(units, yearGridWith(units, date).periods);
 
       // Should have 52 * 7 = 364 or 53 * 7 = 371 days
       expect([SHORT_YEAR_DAYS, LONG_YEAR_DAYS]).toContain(days.length);
@@ -104,18 +98,18 @@ describe.each(ADAPTERS)(
       // Each day should start 1ms after the end of the previous day
       const starts = days
         .slice(NEXT_INDEX)
-        .map((day: ReadonlyPeriod) => day.start.getTime());
+        .map((day: Period) => day.start.getTime());
       const expectedStarts = days
         .slice(FIRST_INDEX, LAST_INDEX)
-        .map((day: ReadonlyPeriod) => day.end.getTime() + ONE_MS);
+        .map((day: Period) => day.end.getTime() + ONE_MS);
       expect(starts).toStrictEqual(expectedStarts);
     });
   }
 );
 
 describe.each(ADAPTERS)(
-  "createStableYear() edge cases with %s adapter",
-  (_name: string, adapter: Readonly<Adapter>) => {
+  "yearGridWith() edge cases with %s adapter",
+  (_name: string, units: Units) => {
     it("should handle year with 53 weeks", { timeout: 5000 }, () => {
       expect.hasAssertions();
       /*
@@ -123,7 +117,7 @@ describe.each(ADAPTERS)(
        * This typically results in 53 weeks when week starts on Monday.
        */
       const date = new Date("2020-01-01T00:00:00");
-      const stableYear = createStableYear(adapter, MONDAY, date);
+      const stableYear = yearGridWith(units, date);
 
       expect(stableYear.periods).toHaveLength(LONG_YEAR_WEEKS);
     });
@@ -134,33 +128,30 @@ describe.each(ADAPTERS)(
       () => {
         expect.hasAssertions();
         const date = new Date("2024-01-01T00:00:00");
-        const stableYear = createStableYear(adapter, MONDAY, date);
+        const stableYear = yearGridWith(units, date);
 
         // First week should include days from previous year if needed
         const firstWeek = firstPeriod(stableYear.periods);
-        expect(divide(adapter, firstWeek, "day")).toHaveLength(DAYS_PER_WEEK);
+        expect(divideWith(units, firstWeek, "day")).toHaveLength(DAYS_PER_WEEK);
 
         // Last week should include days from next year if needed
         const lastWeek = lastPeriod(stableYear.periods);
-        expect(divide(adapter, lastWeek, "day")).toHaveLength(DAYS_PER_WEEK);
+        expect(divideWith(units, lastWeek, "day")).toHaveLength(DAYS_PER_WEEK);
       }
     );
   }
 );
 
 describe.each(ADAPTERS)(
-  "createStableYear() contribution grid with %s adapter",
-  (_name: string, adapter: Readonly<Adapter>) => {
+  "yearGridWith() contribution grid with %s adapter",
+  (_name: string, units: Units) => {
     it(
       "should create a proper year grid for contributions",
       { timeout: 5000 },
       () => {
         expect.hasAssertions();
         const date = new Date("2024-01-01T00:00:00");
-        const days = gridDays(
-          adapter,
-          createStableYear(adapter, MONDAY, date).periods
-        );
+        const days = gridDays(units, yearGridWith(units, date).periods);
 
         // Should have exactly 52 or 53 weeks worth of days
         expect([SHORT_YEAR_DAYS, LONG_YEAR_DAYS]).toContain(days.length);
@@ -183,8 +174,8 @@ describe.each(ADAPTERS)(
 );
 
 describe.each(ADAPTERS)(
-  "createStableYear() grid alignment with %s adapter",
-  (_name: string, adapter: Readonly<Adapter>) => {
+  "yearGridWith() grid alignment with %s adapter",
+  (_name: string, units: Units) => {
     it(
       "should maintain consistent grid alignment across years",
       { timeout: 5000 },
@@ -193,10 +184,7 @@ describe.each(ADAPTERS)(
 
         for (const yearStart of YEAR_STARTS) {
           const date = new Date(yearStart);
-          const days = gridDays(
-            adapter,
-            createStableYear(adapter, MONDAY, date).periods
-          );
+          const days = gridDays(units, yearGridWith(units, date).periods);
 
           // First day should always be Monday (weekStartsOn = 1)
           expect(firstPeriod(days).start.getDay()).toBe(MONDAY);

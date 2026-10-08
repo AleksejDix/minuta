@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const DAYS_PER_WEEK = 7;
 const LAST_DAY_OF_WEEK_OFFSET = 6;
@@ -40,7 +40,7 @@ function daysSinceWeekStart(
  * @param weekStartsOn - Day the week starts on (0 = Sunday, 1 = Monday, ...)
  * @returns The week unit handler
  */
-function createWeekHandler(weekStartsOn: WeekStartsOn = MONDAY): UnitHandler {
+function createWeekHandler(weekStartsOn: WeekStartsOn = MONDAY): UnitSpec {
   return {
     add: (date: Readonly<Date>, amount: number): Date => {
       const result = new Date(date);

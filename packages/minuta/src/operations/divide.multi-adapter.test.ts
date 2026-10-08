@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { ReadonlyPeriod } from "#src/types";
-import { divide } from "./divide";
-import { getAdapterTestCases } from "#src/test/shared-adapter-tests";
-import { derivePeriod as period } from "./period";
+import type { Period } from "#src/types";
+import { divideWith } from "./divide";
+import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
+import { periodWith } from "./period";
 
 const JANUARY = 0;
 const FEBRUARY = 1;
@@ -26,25 +26,20 @@ const MINUTE_30 = 30;
 const YEAR_2023 = 2023;
 const YEAR_2024 = 2024;
 
-function required(slot: ReadonlyPeriod | undefined): ReadonlyPeriod {
+function required(slot: Period | undefined): Period {
   if (slot === undefined) {
     throw new Error("Expected a period");
   }
   return slot;
 }
 
-function adjacentPairs(
-  list: readonly ReadonlyPeriod[]
-): (readonly [ReadonlyPeriod, ReadonlyPeriod])[] {
+function adjacentPairs(list: readonly Period[]): (readonly [Period, Period])[] {
   return list
     .slice(FIRST_DAY)
     .map((current, index) => [required(list[index]), current] as const);
 }
 
-function expectedNextDate(
-  previous: ReadonlyPeriod,
-  current: ReadonlyPeriod
-): number {
+function expectedNextDate(previous: Period, current: Period): number {
   // Handle month boundary
   if (current.start.getMonth() === previous.start.getMonth()) {
     return previous.start.getDate() + FIRST_DAY;
@@ -52,19 +47,19 @@ function expectedNextDate(
   return FIRST_DAY;
 }
 
-const adapters = getAdapterTestCases();
+const unitsCases = getUnitsTestCases();
 
-describe.each(adapters)(
-  "divide() calendar division with %s adapter",
-  (_name, adapter) => {
+describe.each(unitsCases)(
+  "divideWith() calendar division with %s adapter",
+  (_name, units) => {
     it("should divide year into months", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const year = period(adapter, new Date("2024-06-15T00:00"), "year");
-      const months = divide(adapter, year, "month");
+      const year = periodWith(units, new Date("2024-06-15T00:00"), "year");
+      const months = divideWith(units, year, "month");
       const [january] = months;
 
       expect(months).toHaveLength(MONTHS_PER_YEAR);
-      expect(required(january).type).toBe("month");
+      expect(required(january).unit).toBe("month");
       // January
       expect(required(january).start.getMonth()).toBe(JANUARY);
       // December
@@ -78,12 +73,12 @@ describe.each(adapters)(
 
     it("should divide month into days", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const february2024 = period(
-        adapter,
+      const february2024 = periodWith(
+        units,
         new Date("2024-02-15T00:00"),
         "month"
       );
-      const days = divide(adapter, february2024, "day");
+      const days = divideWith(units, february2024, "day");
       const [first] = days;
 
       // Leap year
@@ -96,19 +91,19 @@ describe.each(adapters)(
       // All days should be in February
       for (const day of days) {
         expect(day.start.getMonth()).toBe(FEBRUARY);
-        expect(day.type).toBe("day");
+        expect(day.unit).toBe("day");
       }
     });
   }
 );
 
-describe.each(adapters)(
-  "divide() week division with %s adapter",
-  (_name, adapter) => {
+describe.each(unitsCases)(
+  "divideWith() week division with %s adapter",
+  (_name, units) => {
     it("should divide week into days", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const week = period(adapter, new Date("2024-01-15T00:00"), "week");
-      const days = divide(adapter, week, "day");
+      const week = periodWith(units, new Date("2024-01-15T00:00"), "week");
+      const days = divideWith(units, week, "day");
 
       expect(days).toHaveLength(DAYS_PER_WEEK);
 
@@ -122,8 +117,8 @@ describe.each(adapters)(
 
     it("should divide day into hours", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const day = period(adapter, new Date("2024-01-15T00:00"), "day");
-      const hours = divide(adapter, day, "hour");
+      const day = periodWith(units, new Date("2024-01-15T00:00"), "day");
+      const hours = divideWith(units, day, "hour");
       const [first] = hours;
 
       expect(hours).toHaveLength(HOURS_PER_DAY);
@@ -133,19 +128,19 @@ describe.each(adapters)(
       // All hours should be on the same day
       for (const hour of hours) {
         expect(hour.start.getDate()).toBe(DAY_15);
-        expect(hour.type).toBe("hour");
+        expect(hour.unit).toBe("hour");
       }
     });
   }
 );
 
-describe.each(adapters)(
-  "divide() time division with %s adapter",
-  (_name, adapter) => {
+describe.each(unitsCases)(
+  "divideWith() time division with %s adapter",
+  (_name, units) => {
     it("should divide hour into minutes", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const hour = period(adapter, new Date("2024-01-15T14:00"), "hour");
-      const minutes = divide(adapter, hour, "minute");
+      const hour = periodWith(units, new Date("2024-01-15T14:00"), "hour");
+      const minutes = divideWith(units, hour, "minute");
       const [first] = minutes;
 
       expect(minutes).toHaveLength(MINUTES_PER_HOUR);
@@ -157,14 +152,14 @@ describe.each(adapters)(
       // All minutes should be in the same hour
       for (const minute of minutes) {
         expect(minute.start.getHours()).toBe(HOUR_14);
-        expect(minute.type).toBe("minute");
+        expect(minute.unit).toBe("minute");
       }
     });
 
     it("should divide minute into seconds", { timeout: 5000 }, () => {
       expect.hasAssertions();
-      const minute = period(adapter, new Date("2024-01-15T14:30"), "minute");
-      const seconds = divide(adapter, minute, "second");
+      const minute = periodWith(units, new Date("2024-01-15T14:30"), "minute");
+      const seconds = divideWith(units, minute, "second");
       const [first] = seconds;
 
       expect(seconds).toHaveLength(SECONDS_PER_MINUTE);
@@ -176,33 +171,33 @@ describe.each(adapters)(
       // All seconds should be in the same minute
       for (const second of seconds) {
         expect(second.start.getMinutes()).toBe(MINUTE_30);
-        expect(second.type).toBe("second");
+        expect(second.unit).toBe("second");
       }
     });
   }
 );
 
-describe.each(adapters)(
-  "divide() boundary division with %s adapter",
-  (_name, adapter) => {
+describe.each(unitsCases)(
+  "divideWith() boundary division with %s adapter",
+  (_name, units) => {
     it(
       "should handle month boundaries when dividing",
       { timeout: 5000 },
       () => {
         expect.hasAssertions();
         // Create a week that spans month boundary
-        const lastWeekOfJan = period(
-          adapter,
+        const lastWeekOfJan = periodWith(
+          units,
           new Date("2024-01-29T00:00"),
           "week"
         );
-        const days = divide(adapter, lastWeekOfJan, "day");
+        const days = divideWith(units, lastWeekOfJan, "day");
 
         const januaryDays = days.filter(
-          (day: ReadonlyPeriod) => day.start.getMonth() === JANUARY
+          (day: Period) => day.start.getMonth() === JANUARY
         );
         const februaryDays = days.filter(
-          (day: ReadonlyPeriod) => day.start.getMonth() === FEBRUARY
+          (day: Period) => day.start.getMonth() === FEBRUARY
         );
 
         expect(januaryDays.length + februaryDays.length).toBe(DAYS_PER_WEEK);
@@ -214,18 +209,18 @@ describe.each(adapters)(
     it("should handle year boundaries when dividing", { timeout: 5000 }, () => {
       expect.hasAssertions();
       // Create a week that spans year boundary
-      const lastWeekOf2023 = period(
-        adapter,
+      const lastWeekOf2023 = periodWith(
+        units,
         new Date("2023-12-30T00:00"),
         "week"
       );
-      const days = divide(adapter, lastWeekOf2023, "day");
+      const days = divideWith(units, lastWeekOf2023, "day");
 
       const days2023 = days.filter(
-        (day: ReadonlyPeriod) => day.start.getFullYear() === YEAR_2023
+        (day: Period) => day.start.getFullYear() === YEAR_2023
       );
       const days2024 = days.filter(
-        (day: ReadonlyPeriod) => day.start.getFullYear() === YEAR_2024
+        (day: Period) => day.start.getFullYear() === YEAR_2024
       );
 
       expect(days2023.length + days2024.length).toBe(DAYS_PER_WEEK);
@@ -233,17 +228,17 @@ describe.each(adapters)(
   }
 );
 
-describe.each(adapters)(
-  "divide() irregular division with %s adapter",
-  (_name, adapter) => {
+describe.each(unitsCases)(
+  "divideWith() irregular division with %s adapter",
+  (_name, units) => {
     it(
       "should handle daylight saving time transitions",
       { timeout: 5000 },
       () => {
         expect.hasAssertions();
         // Test spring forward (in US, typically March)
-        const marchDay = period(adapter, new Date("2024-03-10T00:00"), "day");
-        const hours = divide(adapter, marchDay, "hour");
+        const marchDay = periodWith(units, new Date("2024-03-10T00:00"), "day");
+        const hours = divideWith(units, marchDay, "hour");
 
         // DST spring-forward days have 23 hours in affected timezones, 24 otherwise
         expect(hours.length).toBeGreaterThanOrEqual(DST_SHORT_DAY_HOURS);
@@ -264,10 +259,10 @@ describe.each(adapters)(
       const customPeriod = {
         end: new Date("2024-01-16T10:45"),
         start: new Date("2024-01-15T14:30"),
-        type: "custom" as const,
+        unit: "custom" as const,
       };
 
-      const hours = divide(adapter, customPeriod, "hour");
+      const hours = divideWith(units, customPeriod, "hour");
       const [first] = hours;
 
       // Should include partial hours at boundaries

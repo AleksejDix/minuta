@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createNativeAdapter } from "#src/adapters/native/index";
-import { divide } from "#src/operations/divide";
-import { go } from "#src/operations/go";
+import type { Period } from "#src/types";
+import { divideWith } from "#src/operations/divide";
 import { merge } from "#src/operations/merge";
-import { derivePeriod as period } from "#src/operations/period";
+import { nativeUnits } from "#src/adapters/native/index";
+import { periodWith } from "#src/operations/period";
+import { shiftWith } from "#src/operations/shift";
 
 const MORNING_HOURS = 12;
 const FIRST_INDEX = 0;
@@ -23,7 +24,20 @@ const FEB_28 = 28;
 const DEC_30 = 30;
 const DEC_31 = 31;
 
-const adapter = createNativeAdapter();
+const units = nativeUnits();
+
+/**
+ * Narrow away undefined, failing the test otherwise.
+ *
+ * @param value - Value expected to be present
+ * @returns The value
+ */
+function required<TValue>(value: TValue | undefined): TValue {
+  if (value === undefined) {
+    throw new Error("Expected a value");
+  }
+  return value;
+}
 
 /**
  * Derive a day period from a local calendar date.
@@ -31,24 +45,26 @@ const adapter = createNativeAdapter();
  * @param isoDate - Local date as YYYY-MM-DD
  * @returns The day period
  */
-function day(isoDate: string): ReturnType<typeof period> {
-  return period(adapter, new Date(`${isoDate}T00:00:00`), "day");
+function day(isoDate: string): Period {
+  return periodWith(units, new Date(`${isoDate}T00:00:00`), "day");
 }
 
 describe("regression tests for critical bugs: merge()", () => {
-  it("should throw on empty array (bug #1)", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    expect(() => merge([], "day")).toThrow(
-      "merge() requires at least one period"
-    );
-  });
+  it(
+    "should return undefined for an empty array (bug #1)",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      expect(merge([], "day")).toBeUndefined();
+    }
+  );
 
   it("should set target unit type on single period", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const single = day("2024-01-15");
 
-    const asWeek = merge([single], "week");
-    expect(asWeek.type).toBe("week");
+    const asWeek = required(merge([single], "week"));
+    expect(asWeek.unit).toBe("week");
     expect(asWeek.start.getTime()).toBe(single.start.getTime());
     expect(asWeek.end.getTime()).toBe(single.end.getTime());
   });
@@ -59,13 +75,13 @@ describe("regression tests for critical bugs: merge()", () => {
     () => {
       expect.hasAssertions();
       // Regression test for partial period handling
-      const hours = divide(adapter, day("2024-01-15"), "hour");
+      const hours = divideWith(units, day("2024-01-15"), "hour");
 
       // Merge morning hours only (0-11)
       const morningHours = hours.slice(FIRST_INDEX, MORNING_HOURS);
-      const merged = merge(morningHours, "day");
+      const merged = required(merge(morningHours, "day"));
 
-      expect(merged.type).toBe("day");
+      expect(merged.unit).toBe("day");
       expect(merged.start.getHours()).toBe(MIDNIGHT);
       expect(merged.end.getHours()).toBe(LAST_MORNING_HOUR);
       expect(merged.end.getMinutes()).toBe(LAST_MINUTE);
@@ -83,20 +99,20 @@ describe("regression tests for critical bugs: merge() references", () => {
       const first = day("2024-01-10");
       const periods = [first, day("2024-01-11"), day("2024-01-12")];
 
-      const merged = merge(periods, "week");
+      const merged = required(merge(periods, "week"));
       expect(merged.start.getTime()).toBe(first.start.getTime());
     }
   );
 });
 
-describe("regression tests for critical bugs: go() exact days", () => {
+describe("regression tests for critical bugs: shiftWith() exact days", () => {
   it(
     "should add exact days without year-based shortcuts (365 days)",
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
       // 2024 is a leap year (366 days), so 365 days from Jan 1 = Dec 31
-      const result365 = go(adapter, day("2024-01-01"), DAYS_365);
+      const result365 = shiftWith(units, day("2024-01-01"), DAYS_365);
       expect(result365.start.getFullYear()).toBe(YEAR_2024);
       // December
       expect(result365.start.getMonth()).toBe(DECEMBER);
@@ -110,7 +126,7 @@ describe("regression tests for critical bugs: go() exact days", () => {
     () => {
       expect.hasAssertions();
       // 366 days from Jan 1, 2024 = Jan 1, 2025
-      const result366 = go(adapter, day("2024-01-01"), DAYS_366);
+      const result366 = shiftWith(units, day("2024-01-01"), DAYS_366);
       expect(result366.start.getFullYear()).toBe(YEAR_2025);
       expect(result366.start.getMonth()).toBe(JANUARY);
       expect(result366.start.getDate()).toBe(FIRST_DAY);
@@ -118,14 +134,14 @@ describe("regression tests for critical bugs: go() exact days", () => {
   );
 });
 
-describe("regression tests for critical bugs: go() multiple years", () => {
+describe("regression tests for critical bugs: shiftWith() multiple years", () => {
   it(
     "should handle multiple year navigation correctly",
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
       // 2023 is not a leap year (365 days), so 365 days = Jan 1, 2024
-      const oneYear = go(adapter, day("2023-01-01"), DAYS_365);
+      const oneYear = shiftWith(units, day("2023-01-01"), DAYS_365);
       expect(oneYear.start.getFullYear()).toBe(YEAR_2024);
       expect(oneYear.start.getMonth()).toBe(JANUARY);
       expect(oneYear.start.getDate()).toBe(FIRST_DAY);
@@ -137,9 +153,9 @@ describe("regression tests for critical bugs: go() multiple years", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const oneYear = go(adapter, day("2023-01-01"), DAYS_365);
+      const oneYear = shiftWith(units, day("2023-01-01"), DAYS_365);
       // Then 2024 is a leap year, so another 365 days = Dec 31, 2024
-      const twoYears = go(adapter, oneYear, DAYS_365);
+      const twoYears = shiftWith(units, oneYear, DAYS_365);
       expect(twoYears.start.getFullYear()).toBe(YEAR_2024);
       expect(twoYears.start.getMonth()).toBe(DECEMBER);
       expect(twoYears.start.getDate()).toBe(DEC_31);
@@ -147,14 +163,14 @@ describe("regression tests for critical bugs: go() multiple years", () => {
   );
 });
 
-describe("regression tests for critical bugs: go() leap years", () => {
+describe("regression tests for critical bugs: shiftWith() leap years", () => {
   it("should handle negative large day offsets", { timeout: 5000 }, () => {
     expect.hasAssertions();
     /*
      * 2024 is a leap year, so going back 365 days from Jan 1, 2025
      * lands on Jan 2, 2024 (not Jan 1, because 2024 has 366 days)
      */
-    const yearBefore = go(adapter, day("2025-01-01"), -DAYS_365);
+    const yearBefore = shiftWith(units, day("2025-01-01"), -DAYS_365);
     expect(yearBefore.start.getFullYear()).toBe(YEAR_2024);
     expect(yearBefore.start.getMonth()).toBe(JANUARY);
     expect(yearBefore.start.getDate()).toBe(SECOND_DAY);
@@ -163,7 +179,7 @@ describe("regression tests for critical bugs: go() leap years", () => {
   it("should handle leap year boundary crossing", { timeout: 5000 }, () => {
     expect.hasAssertions();
     // Feb 29, 2024 + 365 days = Feb 28, 2025 (exact day math)
-    const nextYear = go(adapter, day("2024-02-29"), DAYS_365);
+    const nextYear = shiftWith(units, day("2024-02-29"), DAYS_365);
     expect(nextYear.start.getFullYear()).toBe(YEAR_2025);
     // February
     expect(nextYear.start.getMonth()).toBe(FEBRUARY);
@@ -176,7 +192,7 @@ describe("regression tests for critical bugs: go() leap years", () => {
     () => {
       expect.hasAssertions();
       // Dec 31, 2023 + 365 days = Dec 30, 2024 (2024 is leap year)
-      const afterYear = go(adapter, day("2023-12-31"), DAYS_365);
+      const afterYear = shiftWith(units, day("2023-12-31"), DAYS_365);
       expect(afterYear.start.getFullYear()).toBe(YEAR_2024);
       expect(afterYear.start.getMonth()).toBe(DECEMBER);
       expect(afterYear.start.getDate()).toBe(DEC_30);

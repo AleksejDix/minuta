@@ -8,7 +8,7 @@ describe("contains() with a date in long periods", () => {
     const year: Period = {
       end: new Date("2024-12-31T23:59:59.999"),
       start: new Date("2024-01-01T00:00"),
-      type: "year",
+      unit: "year",
     };
 
     // First day
@@ -29,7 +29,7 @@ describe("contains() with a date in long periods", () => {
       // Leap year
       end: new Date("2024-02-29T23:59:59.999"),
       start: new Date("2024-02-01T00:00"),
-      type: "month",
+      unit: "month",
     };
 
     // First day
@@ -53,7 +53,7 @@ describe("contains() with a date in short periods", () => {
       end: new Date("2024-01-14T23:59:59.999"),
       // Monday
       start: new Date("2024-01-08T00:00"),
-      type: "week",
+      unit: "week",
     };
 
     // Monday
@@ -73,7 +73,7 @@ describe("contains() with a date in short periods", () => {
     const day: Period = {
       end: new Date("2024-01-15T23:59:59.999"),
       start: new Date("2024-01-15T00:00"),
-      type: "day",
+      unit: "day",
     };
 
     // Start
@@ -93,7 +93,7 @@ describe("contains() with a date in an hour", () => {
     const hour: Period = {
       end: new Date("2024-01-15T14:59:59.999"),
       start: new Date("2024-01-15T14:00"),
-      type: "hour",
+      unit: "hour",
     };
 
     // Start
@@ -115,19 +115,19 @@ describe("contains() with a period in long periods", () => {
     const year: Period = {
       end: new Date("2024-12-31T23:59:59.999"),
       start: new Date("2024-01-01T00:00"),
-      type: "year",
+      unit: "year",
     };
 
     const june2024: Period = {
       end: new Date("2024-06-30T23:59:59.999"),
       start: new Date("2024-06-01T00:00"),
-      type: "month",
+      unit: "month",
     };
 
     const jan2025: Period = {
       end: new Date("2025-01-31T23:59:59.999"),
       start: new Date("2025-01-01T00:00"),
-      type: "month",
+      unit: "month",
     };
 
     expect(contains(year, june2024)).toBe(true);
@@ -139,19 +139,19 @@ describe("contains() with a period in long periods", () => {
     const month: Period = {
       end: new Date("2024-02-29T23:59:59.999"),
       start: new Date("2024-02-01T00:00"),
-      type: "month",
+      unit: "month",
     };
 
     const dayInMonth: Period = {
       end: new Date("2024-02-15T23:59:59.999"),
       start: new Date("2024-02-15T00:00"),
-      type: "day",
+      unit: "day",
     };
 
     const dayOutsideMonth: Period = {
       end: new Date("2024-03-01T23:59:59.999"),
       start: new Date("2024-03-01T00:00"),
-      type: "day",
+      unit: "day",
     };
 
     expect(contains(month, dayInMonth)).toBe(true);
@@ -165,19 +165,19 @@ describe("contains() with a period in short periods", () => {
     const week: Period = {
       end: new Date("2024-01-14T23:59:59.999"),
       start: new Date("2024-01-08T00:00"),
-      type: "week",
+      unit: "week",
     };
 
     const monday: Period = {
       end: new Date("2024-01-08T23:59:59.999"),
       start: new Date("2024-01-08T00:00"),
-      type: "day",
+      unit: "day",
     };
 
     const nextMonday: Period = {
       end: new Date("2024-01-15T23:59:59.999"),
       start: new Date("2024-01-15T00:00"),
-      type: "day",
+      unit: "day",
     };
 
     expect(contains(week, monday)).toBe(true);
@@ -189,19 +189,19 @@ describe("contains() with a period in short periods", () => {
     const day: Period = {
       end: new Date("2024-01-15T23:59:59.999"),
       start: new Date("2024-01-15T00:00"),
-      type: "day",
+      unit: "day",
     };
 
     const morningHour: Period = {
       end: new Date("2024-01-15T08:59:59.999"),
       start: new Date("2024-01-15T08:00"),
-      type: "hour",
+      unit: "hour",
     };
 
     const nextDayHour: Period = {
       end: new Date("2024-01-16T00:59:59.999"),
       start: new Date("2024-01-16T00:00"),
-      type: "hour",
+      unit: "hour",
     };
 
     expect(contains(day, morningHour)).toBe(true);
@@ -215,7 +215,7 @@ describe("contains() edge cases", () => {
     const day: Period = {
       end: new Date("2024-01-15T23:59:59.999"),
       start: new Date("2024-01-15T00:00"),
-      type: "day",
+      unit: "day",
     };
 
     const startOfDay = new Date("2024-01-15T00:00");
@@ -230,7 +230,7 @@ describe("contains() edge cases", () => {
     const january: Period = {
       end: new Date("2024-01-31T23:59:59.999"),
       start: new Date("2024-01-01T00:00"),
-      type: "month",
+      unit: "month",
     };
 
     const lastDayJan = new Date("2024-01-31T23:59:59");

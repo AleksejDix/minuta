@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const FIRST_DAY = 1;
 const LAST_DAY_OF_PREVIOUS_MONTH = 0;
@@ -16,7 +16,7 @@ const MONTHS_PER_YEAR = 12;
 /**
  * Month unit handler - pure functional implementation
  */
-const monthHandler: UnitHandler = {
+const monthHandler: UnitSpec = {
   add: (date: Readonly<Date>, amount: number): Date => {
     const result = new Date(date);
     const targetMonth = result.getMonth() + amount;

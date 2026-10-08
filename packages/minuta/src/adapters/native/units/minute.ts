@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const START_SECOND = 0;
 const START_MS = 0;
@@ -9,7 +9,7 @@ const MS_PER_MINUTE = 60_000;
 /**
  * Minute unit handler - pure functional implementation
  */
-const minuteHandler: UnitHandler = {
+const minuteHandler: UnitSpec = {
   add: (date: Readonly<Date>, amount: number): Date => {
     const result = new Date(date);
     result.setMinutes(result.getMinutes() + amount);

@@ -1,4 +1,4 @@
-import type { UnitHandler } from "#src/types";
+import type { UnitSpec } from "#src/types";
 
 const START_MS = 0;
 const LAST_MS = 999;
@@ -7,7 +7,7 @@ const MS_PER_SECOND = 1000;
 /**
  * Second unit handler - pure functional implementation
  */
-const secondHandler: UnitHandler = {
+const secondHandler: UnitSpec = {
   add: (date: Readonly<Date>, amount: number): Date => {
     const result = new Date(date);
     result.setSeconds(result.getSeconds() + amount);
