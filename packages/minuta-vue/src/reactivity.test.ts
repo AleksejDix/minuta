@@ -3,8 +3,8 @@ import { ref, computed, effect, isRef, reactive } from "vue";
 import { createNativeAdapter } from "minuta/native";
 import { divide, go, next } from "minuta/operations";
 import type { Adapter, Period } from "minuta";
-import { createMinuta } from "./createMinuta";
-import { usePeriod } from "./usePeriod";
+import { createMinuta } from "./create-minuta";
+import { usePeriod } from "./use-period";
 
 describe("Vue Reactivity Integration", () => {
   let adapter: Adapter;

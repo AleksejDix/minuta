@@ -10,7 +10,7 @@ import { derivePeriod } from "minuta/operations";
 import type { Period } from "minuta";
 import { createMinutaBuilder } from "./builder";
 import type { CreateMinutaOptions, MinutaBuilder, SvelteMinuta } from "./types";
-import { provideMinuta } from "./minutaContext";
+import { provideMinuta } from "./minuta-context";
 
 function tryProvideMinuta(builder: MinutaBuilder) {
   try {

@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ref } from "vue";
 import type { MinutaBuilder } from "./types";
-import { createMinuta } from "./createMinuta";
-import { useMinuta } from "./useMinuta";
+import { createMinuta } from "./create-minuta";
+import { useMinuta } from "./use-minuta";
 import { createNativeAdapter } from "minuta/native";
 
 type VueModule = typeof import("vue");

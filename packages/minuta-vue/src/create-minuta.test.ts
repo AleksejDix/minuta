@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createMinuta } from "./createMinuta";
+import { createMinuta } from "./create-minuta";
 import type { CreateMinutaOptions } from "./types";
 import { ref, isRef, effect, computed } from "vue";
 import { createNativeAdapter } from "minuta/native";

@@ -1,5 +1,5 @@
 import type { MinutaBuilder } from "./types";
-import { injectMinuta } from "./minutaContext";
+import { injectMinuta } from "./minuta-context";
 
 /**
  * Injects the nearest minuta instance provided via createMinuta().

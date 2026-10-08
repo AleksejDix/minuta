@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useMinuta, type UseMinutaOptions } from "./useMinuta";
+import { useMinuta, type UseMinutaOptions } from "./use-minuta";
 import { createNativeAdapter } from "minuta/native";
 import type { Adapter } from "minuta";
 

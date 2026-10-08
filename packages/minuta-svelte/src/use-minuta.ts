@@ -1,5 +1,5 @@
 import type { MinutaBuilder } from "./types";
-import { injectMinuta } from "./minutaContext";
+import { injectMinuta } from "./minuta-context";
 
 /**
  * Retrieves the current MinutaBuilder from context.

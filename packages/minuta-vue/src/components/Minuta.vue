@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Adapter } from "minuta";
 import { ref, watch, type Ref } from "vue";
-import { createMinuta } from "../createMinuta";
-import type { MinutaBuilder } from "../types";
+import { createMinuta } from "#src/create-minuta";
+import type { MinutaBuilder } from "#src/types";
 
 const props = withDefaults(
   defineProps<{

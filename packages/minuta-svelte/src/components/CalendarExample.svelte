@@ -2,8 +2,8 @@
   import { derived, get, writable } from "svelte/store";
   import type { Period } from "minuta";
   import { createNativeAdapter } from "minuta/native";
-  import { createMinuta } from "../createMinuta";
-  import { usePeriod } from "../usePeriod";
+  import { createMinuta } from "#src/create-minuta";
+  import { usePeriod } from "#src/use-period";
   import Navigator from "./Navigator.svelte";
 
   const date = writable(new Date());

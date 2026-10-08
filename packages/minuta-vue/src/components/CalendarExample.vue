@@ -5,8 +5,8 @@ import { createNativeAdapter } from "minuta/native";
 import { createStableMonth } from "minuta/calendar";
 import { contains, isSame, go } from "minuta/operations";
 import { isWeekend } from "minuta/helpers";
-import { createMinuta } from "../createMinuta";
-import { usePeriod } from "../usePeriod";
+import { createMinuta } from "#src/create-minuta";
+import { usePeriod } from "#src/use-period";
 
 const WEEKDAY_ORDER: Record<0 | 1, string[]> = {
   0: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],

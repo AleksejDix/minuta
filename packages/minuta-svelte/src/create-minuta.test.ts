@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { get, writable } from "svelte/store";
 import { createNativeAdapter } from "minuta/native";
-import { createMinuta } from "./createMinuta";
-import { usePeriod } from "./usePeriod";
+import { createMinuta } from "./create-minuta";
+import { usePeriod } from "./use-period";
 
 const adapter = createNativeAdapter({ weekStartsOn: 1 });
 

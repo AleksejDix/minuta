@@ -1,6 +1,6 @@
 // Framework bindings
-export { useMinuta } from "./useMinuta";
-export { usePeriod } from "./usePeriod";
+export { useMinuta } from "./use-minuta";
+export { usePeriod } from "./use-period";
 export { createMinutaBuilder } from "./builder";
 
 // Components

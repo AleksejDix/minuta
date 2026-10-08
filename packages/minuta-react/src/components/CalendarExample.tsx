@@ -1,9 +1,9 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import type { Period } from "minuta";
 import { createNativeAdapter } from "minuta/native";
-import { useMinuta } from "../useMinuta";
-import { usePeriod } from "../usePeriod";
-import type { MinutaBuilder } from "../types";
+import { useMinuta } from "#src/use-minuta";
+import { usePeriod } from "#src/use-period";
+import type { MinutaBuilder } from "#src/types";
 
 const WEEKDAY_ORDER: Record<0 | 1, string[]> = {
   0: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],

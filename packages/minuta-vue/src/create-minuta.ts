@@ -2,7 +2,7 @@ import { computed, getCurrentInstance, ref } from "vue";
 import type { Period } from "minuta";
 import { createMinutaBuilder } from "./builder";
 import type { MinutaBuilder, CreateMinutaOptions, VueMinuta } from "./types";
-import { provideMinuta } from "./minutaContext";
+import { provideMinuta } from "./minuta-context";
 
 /**
  * Creates a minuta instance with builder methods (Level 2 API)

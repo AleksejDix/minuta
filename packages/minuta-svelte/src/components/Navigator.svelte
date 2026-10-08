@@ -1,7 +1,7 @@
 <script lang="ts">
   import { get, type Readable } from "svelte/store";
   import type { Period } from "minuta";
-  import { useMinuta } from "../useMinuta";
+  import { useMinuta } from "#src/use-minuta";
 
   export let month!: Readable<Period>;
 
