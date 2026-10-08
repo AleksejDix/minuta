@@ -16,6 +16,7 @@ export default defineConfig({
       "packages/datefield",
       "packages/gap-buffer",
       "packages/text-buffer",
+      "packages/input-state",
     ],
     coverage: {
       provider: "v8",
