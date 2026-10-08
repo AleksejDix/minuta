@@ -3,7 +3,6 @@ import type { UnitHandler } from "#src/types";
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
 
-// oxlint-disable-next-line vitest/require-hook -- Plugin registration must run at module load; this is not a test file
 dayjs.extend(quarterOfYear);
 
 const DAYS_PER_WEEK = 7;

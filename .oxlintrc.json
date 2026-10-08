@@ -7,7 +7,6 @@
     "oxc",
     "import",
     "jsdoc",
-    "vitest",
     "jsx-a11y",
     "react",
     "react-perf",
@@ -58,15 +57,30 @@
     "eslint/no-undefined": "off",
     "import/no-named-export": "off",
     "import/prefer-default-export": "off",
-    "vitest/prefer-to-be-truthy": "off",
-    "vitest/prefer-to-be-falsy": "off",
-    "vitest/no-hooks": "off",
-    "vitest/no-importing-vitest-globals": "off",
     "unicorn/prefer-ternary": "off",
     "oxc/no-async-await": "off",
     "jsdoc/require-param-type": "off",
     "jsdoc/require-returns-type": "off",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "typescript/prefer-readonly-parameter-types": [
+      "error",
+      {
+        "allow": [
+          {
+            "from": "lib",
+            "name": [
+              "AbortSignal",
+              "DataTransfer",
+              "Event",
+              "HTMLElement",
+              "HTMLInputElement",
+              "InputEvent",
+              "KeyboardEvent"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "overrides": [
     {
@@ -97,6 +111,16 @@
       "rules": {
         "import/no-default-export": "off",
         "import/no-nodejs-modules": "off"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "plugins": ["vitest"],
+      "rules": {
+        "vitest/prefer-to-be-truthy": "off",
+        "vitest/prefer-to-be-falsy": "off",
+        "vitest/no-hooks": "off",
+        "vitest/no-importing-vitest-globals": "off"
       }
     }
   ],
