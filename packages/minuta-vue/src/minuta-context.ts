@@ -1,25 +1,21 @@
-import { inject, provide } from "vue";
-import type { MinutaBuilder } from "./types";
+import type { InjectionKey } from "vue";
+import type { MinutaState } from "#src/types";
+import { inject } from "vue";
 
-const MINUTA_CONTEXT_KEY = Symbol("MinutaContext");
+const minutaContextKey: InjectionKey<MinutaState> = Symbol("MinutaContext");
 
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- MinutaBuilder holds Vue refs, which are mutable by design
-function provideMinuta(builder: MinutaBuilder): void {
-  provide(MINUTA_CONTEXT_KEY, builder);
-}
-
-function injectMinuta(): MinutaBuilder {
-  const minuta = inject<MinutaBuilder | undefined>(
-    MINUTA_CONTEXT_KEY,
-    // oxlint-disable-next-line unicorn/no-useless-undefined -- An explicit default stops Vue from warning about a missing injection
-    undefined
-  );
+/**
+ * Reads the minuta state provided by the nearest `<MinutaRoot>`.
+ *
+ * @returns The state of the nearest `<MinutaRoot>`
+ */
+function useMinutaContext(): MinutaState {
+  // oxlint-disable-next-line unicorn/no-useless-undefined -- An explicit default stops Vue from warning about a missing injection
+  const minuta = inject(minutaContextKey, undefined);
   if (minuta === undefined) {
-    throw new Error(
-      "No minuta instance provided. Call createMinuta() in an ancestor component before using useMinuta()."
-    );
+    throw new Error("useMinutaContext() must be used within <MinutaRoot>");
   }
   return minuta;
 }
 
-export { injectMinuta, provideMinuta };
+export { minutaContextKey, useMinutaContext };

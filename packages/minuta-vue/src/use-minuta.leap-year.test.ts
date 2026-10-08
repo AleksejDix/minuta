@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createMinuta } from "./create-minuta";
-import { createNativeAdapter } from "minuta/native";
-import { ref } from "vue";
+import { useMinuta } from "./use-minuta";
 
 const LEAP_YEAR = 2024;
 const JANUARY = 0;
@@ -42,20 +40,18 @@ function calendarFields(
   };
 }
 
-describe("createMinuta() browsing coverage across leap year", () => {
+describe("useMinuta() browsing across a leap year", () => {
   it.each(leapYearDates)(
-    "should assign browsing period for $label",
+    "browses the day $label",
     { timeout: 5000 },
     ({ targetDate }) => {
       expect.hasAssertions();
-      const baseDate = new Date("2024-01-01T00:00:00Z");
-      const minuta = createMinuta({
-        adapter: createNativeAdapter(),
-        date: ref(baseDate),
+      const minuta = useMinuta({
+        date: new Date("2024-01-01T00:00:00"),
+        unit: "day",
       });
 
-      const newPeriod = minuta.derivePeriod(new Date(targetDate), "day");
-      minuta.browsing.value = newPeriod;
+      minuta.browse(minuta.period(targetDate, "day"));
 
       const { end, start } = minuta.browsing.value;
       expect(start.getTime()).toBe(targetDate.getTime());

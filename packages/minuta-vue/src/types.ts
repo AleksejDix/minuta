@@ -1,53 +1,45 @@
-import type { Adapter, AdapterUnit, Period, ReadonlyPeriod } from "minuta";
 import type { ComputedRef, Ref } from "vue";
+import type { Minuta, Period, Unit, Units } from "minuta/core";
 
 /**
- * Vue-specific minuta instance with reactive state.
- * Browsing and now periods remain fully reactive while core adapter logic
- * comes from minuta.
+ * Options of `useMinuta()` and the props of `<MinutaRoot>`.
  */
-type VueMinuta = {
-  adapter: Adapter;
-  weekStartsOn: number;
-  locale: string;
-  browsing: Ref<Period>;
-  now: Ref<Period> | ComputedRef<Period>;
-};
+type MinutaOptions = Readonly<{
+  /** Initially browsed date, default: now */
+  date?: Readonly<Date> | undefined;
+  /** "Today", default: the date `useMinuta()` was called */
+  now?: Readonly<Date> | undefined;
+  /** Unit of the browsed period, default "month" */
+  unit?: Unit | undefined;
+  /** Unit specs, default `nativeUnits()`; the week start lives in the units */
+  units?: Units | undefined;
+}>;
 
 /**
- * Options for creating a Vue minuta instance.
- * Callers must manage reactivity by passing refs for date/now.
+ * A value, a ref holding it, or a getter returning it.
  */
-type CreateMinutaOptions = {
-  date: Ref<Date>;
-  now?: Ref<Date>;
-  adapter: Adapter;
-  weekStartsOn?: number;
-  locale?: string;
-};
+type Source<Value> = Value | Ref<Value> | ComputedRef<Value> | (() => Value);
 
-type MinutaBuilder = VueMinuta & {
-  derivePeriod: (date: Readonly<Date>, unit: AdapterUnit) => Period;
-  createPeriod: (start: Readonly<Date>, end: Readonly<Date>) => Period;
-  divide: (period: ReadonlyPeriod, unit: AdapterUnit) => Period[];
-  merge: (
-    periods: readonly ReadonlyPeriod[],
-    targetUnit?: AdapterUnit
-  ) => Period;
-  next: (period: ReadonlyPeriod, count?: number) => Period;
-  previous: (period: ReadonlyPeriod, count?: number) => Period;
-  go: (period: ReadonlyPeriod, count: number) => Period;
-  split: (period: ReadonlyPeriod, date: Readonly<Date>) => [Period, Period];
-  contains: (
-    period: ReadonlyPeriod,
-    dateOrPeriod: Readonly<Date> | ReadonlyPeriod
-  ) => boolean;
-  isSame: (
-    period1: ReadonlyPeriod,
-    period2: ReadonlyPeriod,
-    unit: AdapterUnit | "custom"
-  ) => boolean;
-};
+/**
+ * Props of `<MinutaRoot>`: the options of `useMinuta()`.
+ */
+type MinutaRootProps = MinutaOptions;
 
-export type { CreateMinutaOptions, MinutaBuilder, VueMinuta };
-export type { Adapter, AdapterUnit, Period } from "minuta";
+/**
+ * What `useMinuta()` returns and `<MinutaRoot>` provides: every operation of
+ * `withUnits(units)` plus the reactive browsing state.
+ */
+type MinutaState = Minuta &
+  Readonly<{
+    /** Browse the period containing `period.start` */
+    browse: (period: Period) => void;
+    /** The browsed period, in the current unit and units */
+    browsing: ComputedRef<Period>;
+    /** "Today" as a second period */
+    now: ComputedRef<Period>;
+    /** The current unit specs */
+    units: ComputedRef<Units>;
+  }>;
+
+export type { MinutaOptions, MinutaRootProps, MinutaState, Source };
+export type { Minuta, Period, Unit, Units } from "minuta/core";

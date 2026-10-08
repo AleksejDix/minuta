@@ -1,137 +1,54 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { contains, isSame } from "minuta/operations";
-import type { ReadonlyPeriod } from "minuta";
-import { createMinuta } from "#src/create-minuta";
-import { createNativeAdapter } from "minuta/native";
-import { createStableMonth } from "minuta/calendar";
-import { isWeekend } from "minuta/helpers";
-import { usePeriod } from "#src/use-period";
-
-type WeekRow = {
-  days: ReadonlyPeriod[];
-  key: string;
-};
+import CalendarGrid from "./CalendarGrid.vue";
+import CalendarHeader from "./CalendarHeader.vue";
+import CalendarRoot from "./CalendarRoot.vue";
+import CalendarWeekdays from "./CalendarWeekdays.vue";
+import type { Period } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import { shallowRef } from "vue";
 
 const SUNDAY = 0;
 const MONDAY = 1;
-const DAYS_PER_WEEK = 7;
-const STAY = 0;
 
 type WeekStart = typeof SUNDAY | typeof MONDAY;
 
-/*
- * Declaring the (empty) slots makes vue-tsc emit an explicitly typed default
- * export, which isolatedDeclarations requires.
- */
+const emit = defineEmits<{
+  select: [day: Period];
+}>();
+
 defineSlots<Record<string, never>>();
 
-const WEEKDAY_ORDER: Readonly<Record<WeekStart, readonly string[]>> = {
-  [SUNDAY]: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  [MONDAY]: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-};
-
-const dayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
-const monthFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  year: "numeric",
-});
-const rangeFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "numeric",
-  month: "short",
-});
-
-const date = ref(new Date());
-const now = ref(new Date());
-const weekStartsOn = ref<WeekStart>(MONDAY);
-const adapter = ref(createNativeAdapter({ weekStartsOn: weekStartsOn.value }));
-
-const minuta = createMinuta({
-  adapter: adapter.value,
-  date,
-  locale: "en",
-  now,
-  weekStartsOn: weekStartsOn.value,
-});
-
-watch(weekStartsOn, (value) => {
-  adapter.value = createNativeAdapter({ weekStartsOn: value });
-  minuta.adapter = adapter.value;
-  minuta.weekStartsOn = value;
-});
+const weekStartsOn = shallowRef<WeekStart>(MONDAY);
+const units = shallowRef(nativeUnits({ weekStartsOn: MONDAY }));
 
 /**
- * Splits the grid days into rows of one week each.
+ * Switches the week start by rebuilding the units.
  *
- * @param days - The day periods of the stable month grid
- * @returns One row per week, keyed by its first day
+ * @param value - The new first day of the week
  */
-function toWeekRows(days: readonly ReadonlyPeriod[]): WeekRow[] {
-  const rows: WeekRow[] = [];
-  for (let index = 0; index < days.length; index += DAYS_PER_WEEK) {
-    const weekDays = days.slice(index, index + DAYS_PER_WEEK);
-    const [firstDay] = weekDays;
-    if (firstDay !== undefined) {
-      rows.push({
-        days: weekDays,
-        key: firstDay.start.toISOString(),
-      });
-    }
-  }
-  return rows;
-}
-
-const month = usePeriod(minuta, "month");
-const grid = computed(() =>
-  createStableMonth(
-    adapter.value,
-    weekStartsOn.value,
-    minuta.browsing.value.start
-  )
-);
-const weeks = computed(() => toWeekRows(grid.value.periods));
-const weekdayLabels = computed(() => WEEKDAY_ORDER[weekStartsOn.value]);
-
-const isCurrentMonth = computed(() => {
-  const current = minuta.now.value;
-  return (
-    month.value.start.getFullYear() === current.start.getFullYear() &&
-    month.value.start.getMonth() === current.start.getMonth()
-  );
-});
-
-const rangeLabel = computed(
-  () =>
-    `${rangeFormatter.format(month.value.start)} – ${rangeFormatter.format(
-      month.value.end
-    )}`
-);
-
-function toggleWeekStart(value: WeekStart): void {
+function setWeekStart(value: WeekStart): void {
   weekStartsOn.value = value;
+  units.value = nativeUnits({ weekStartsOn: value });
 }
 
-function goToDay(day: ReadonlyPeriod): void {
-  minuta.go(day, STAY);
-}
-
-function isOutside(day: ReadonlyPeriod): boolean {
-  return !contains(month.value, day.start);
-}
-
-function isToday(day: ReadonlyPeriod): boolean {
-  return isSame(adapter.value, day, minuta.now.value, "day");
+/**
+ * Reports a selected day.
+ *
+ * @param day - The selected day
+ */
+function select(day: Period): void {
+  emit("select", day);
 }
 </script>
 
 <template>
   <section class="calendar-shell" data-testid="calendar-example">
-    <header class="calendar-header">
+    <header class="calendar-toolbar">
       <div>
-        <h1>useMinuta Vue Demo</h1>
+        <h1>minuta-vue calendar</h1>
         <p class="subheading">
-          Derived periods, divide() pattern, and adapter reactivity packaged as
-          a component.
+          CalendarRoot, CalendarHeader, CalendarWeekdays and CalendarGrid
+          composed on top of MinutaRoot.
         </p>
       </div>
       <div class="toolbar-section">
@@ -140,16 +57,18 @@ function isToday(day: ReadonlyPeriod): boolean {
           <button
             type="button"
             class="toggle"
-            :class="{ 'is-active': weekStartsOn === 0 }"
-            @click="toggleWeekStart(0)"
+            :class="{ 'is-active': weekStartsOn === SUNDAY }"
+            :aria-pressed="weekStartsOn === SUNDAY"
+            @click="setWeekStart(SUNDAY)"
           >
             Sunday
           </button>
           <button
             type="button"
             class="toggle"
-            :class="{ 'is-active': weekStartsOn === 1 }"
-            @click="toggleWeekStart(1)"
+            :class="{ 'is-active': weekStartsOn === MONDAY }"
+            :aria-pressed="weekStartsOn === MONDAY"
+            @click="setWeekStart(MONDAY)"
           >
             Monday
           </button>
@@ -157,58 +76,11 @@ function isToday(day: ReadonlyPeriod): boolean {
       </div>
     </header>
 
-    <div class="period-display">
-      <div>
-        <p class="eyebrow">Browsing</p>
-        <h2>{{ monthFormatter.format(month.start) }}</h2>
-      </div>
-      <dl>
-        <div>
-          <dt>Range</dt>
-          <dd>{{ rangeLabel }}</dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd>{{ isCurrentMonth ? "Current month" : "Historical view" }}</dd>
-        </div>
-      </dl>
-    </div>
-
-    <div class="toolbar-row">
-      <button type="button" class="nav-button" @click="minuta.previous(month)">
-        ← Previous
-      </button>
-      <button type="button" class="nav-button" @click="minuta.next(month)">
-        Next →
-      </button>
-    </div>
-
-    <div class="weekday-grid">
-      <span v-for="weekday in weekdayLabels" :key="weekday">{{ weekday }}</span>
-    </div>
-
-    <div class="weeks-grid">
-      <div v-for="week in weeks" :key="week.key" class="week-row">
-        <button
-          v-for="day in week.days"
-          :key="day.start.toISOString()"
-          type="button"
-          class="day-cell"
-          :class="{
-            'is-outside': isOutside(day),
-            'is-today': isToday(day),
-            'is-weekend': isWeekend(day),
-          }"
-          @click="goToDay(day)"
-          :title="dayFormatter.format(day.start)"
-        >
-          <span class="date-number">{{ day.start.getDate() }}</span>
-          <span class="weekday-label">{{
-            dayFormatter.format(day.start)
-          }}</span>
-        </button>
-      </div>
-    </div>
+    <CalendarRoot :units="units" @select="select">
+      <CalendarHeader />
+      <CalendarWeekdays />
+      <CalendarGrid />
+    </CalendarRoot>
   </section>
 </template>
 
@@ -226,11 +98,15 @@ function isToday(day: ReadonlyPeriod): boolean {
   gap: 1.5rem;
 }
 
-.calendar-header {
+.calendar-toolbar {
   display: flex;
   justify-content: space-between;
   gap: 1.5rem;
   align-items: center;
+}
+
+.calendar-toolbar h1 {
+  margin: 0;
 }
 
 .subheading {
@@ -278,153 +154,9 @@ function isToday(day: ReadonlyPeriod): boolean {
   color: #0f172a;
 }
 
-.period-display {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.period-display h2 {
-  margin: 0;
-  font-size: 1.75rem;
-}
-
-.period-display dl {
-  display: flex;
-  gap: 1rem;
-  margin: 0;
-}
-
-.period-display dt {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: #94a3b8;
-  letter-spacing: 0.08em;
-}
-
-.period-display dd {
-  margin: 0.25rem 0 0;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.eyebrow {
-  margin: 0;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #a0aec0;
-}
-
-.toolbar-row {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.nav-button {
-  border: none;
-  background: #0f172a;
-  color: white;
-  border-radius: 0;
-  padding: 0.6rem 1.2rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.nav-button:hover {
-  opacity: 0.85;
-}
-
-.weekday-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  text-align: center;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  color: #94a3b8;
-  letter-spacing: 0.08em;
-}
-
-.weeks-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.week-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.4rem;
-}
-
-.day-cell {
-  border: none;
-  border-radius: 0;
-  background: #f8fafc;
-  min-height: 84px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease;
-  color: #0f172a;
-}
-
-.day-cell:hover {
-  transform: translateY(-2px);
-  background: #eef2ff;
-}
-
-.day-cell.is-outside {
-  color: #94a3b8;
-  background: #f1f5f9;
-}
-
-.day-cell.is-today {
-  border: 2px solid #6366f1;
-  background: #eef2ff;
-}
-
-.day-cell.is-weekend {
-  background: #fef2f2;
-  color: #991b1b;
-}
-
-.day-cell.is-weekend .weekday-label {
-  color: #dc2626;
-}
-
-.date-number {
-  font-size: 1.35rem;
-  font-weight: 600;
-}
-
-.weekday-label {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
 @media (max-width: 720px) {
   .calendar-shell {
     padding: 1.5rem;
-  }
-
-  .week-row,
-  .weekday-grid {
-    gap: 0.25rem;
-  }
-
-  .day-cell {
-    min-height: 72px;
-    padding: 0.4rem;
   }
 }
 </style>

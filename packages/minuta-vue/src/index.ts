@@ -1,11 +1,14 @@
-// Framework bindings
-export { createMinuta } from "./create-minuta";
-export { useMinuta } from "./use-minuta";
-export { usePeriod } from "./use-period";
-export { createMinutaBuilder } from "./builder";
-
-// Components
-export { Minuta, CalendarExample } from "./components";
-
-// Types
-export type { VueMinuta, CreateMinutaOptions, MinutaBuilder } from "./types";
+export { default as MinutaRoot } from "./components/MinutaRoot.vue";
+export { default as CalendarExample } from "./components/CalendarExample.vue";
+export { useMinuta } from "#src/use-minuta";
+export { useMinutaContext } from "#src/minuta-context";
+export { usePeriod } from "#src/use-period";
+export type {
+  Minuta,
+  MinutaOptions,
+  MinutaRootProps,
+  MinutaState,
+  Period,
+  Unit,
+  Units,
+} from "#src/types";

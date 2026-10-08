@@ -44,7 +44,7 @@ const libraryConfig: UserConfig = {
   plugins: [
     vue(),
     dts({
-      exclude: ["src/**/*.test.ts"],
+      exclude: ["src/**/*.test.ts", "src/test/**"],
       include: ["src/**/*.ts", "src/**/*.vue"],
     }),
   ],

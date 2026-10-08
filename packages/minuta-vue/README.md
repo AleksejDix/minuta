@@ -1,168 +1,124 @@
 # minuta-vue
 
-Vue integration package for `minuta`. Built directly on the
-Vue 3 runtime and Composition API, it exposes composables that wrap the core
-library so `browsing`, `now`, and derived periods remain fully reactive inside
-Vue applications.
-
-## Installation
+Vue bindings for [`minuta`](https://github.com/AleksejDix/minuta/tree/master/packages/minuta):
+a composable that binds every operation to your units and keeps the browsed
+period reactive, a provide/inject root, and composable calendar parts. The API
+mirrors `minuta-react`.
 
 ```bash
 npm install minuta minuta-vue
 ```
 
-Install whichever adapter you need (the core ships the native adapter entry):
-
-```bash
-npm install minuta/native
-```
-
-## Quick Start
-
-```ts
-import { ref } from "vue";
-import { createTemporal, useMinuta, usePeriod } from "minuta-vue";
-import { createNativeAdapter } from "minuta/native";
-
-const date = ref(new Date());
-const now = ref(new Date());
-
-// Call inside setup to create + provide the temporal instance
-const temporal = createTemporal({
-  adapter: createNativeAdapter(),
-  date,
-  now,
-});
-
-const month = usePeriod(temporal, "month");
-
-// Child components can access the same instance via the injector:
-const nestedTemporal = useMinuta();
-
-month.value.start; // Reactive!
-```
-
-### Reactive adapter settings
-
-```ts
-import { computed, ref } from "vue";
-import { createTemporal } from "minuta-vue";
-import { createNativeAdapter } from "minuta/native";
-
-const weekStartsOn = ref(1);
-const temporal = createTemporal({
-  adapter: computed(() =>
-    createNativeAdapter({ weekStartsOn: weekStartsOn.value })
-  ),
-  date: ref(new Date()),
-});
-
-weekStartsOn.value = 0; // automatically recalculates browsing periods
-```
-
-### Declarative `<Temporal>` provider
+## `useMinuta(options?)`
 
 ```vue
 <script setup lang="ts">
-import { ref } from "vue";
-import { Temporal } from "minuta-vue";
-import { createNativeAdapter } from "minuta/native";
+import { useMinuta } from "minuta-vue";
 
-const adapter = createNativeAdapter({ weekStartsOn: 1 });
-const date = ref(new Date());
+const minuta = useMinuta({ unit: "month" });
 </script>
 
 <template>
-  <Temporal :adapter="adapter" :date="date" lang="zh-CN" v-slot="{ temporal }">
-    <MonthHeader />
-    <MonthGrid />
-  </Temporal>
+  <button @click="minuta.browse(minuta.next(minuta.browsing.value))">
+    {{ minuta.browsing.value.start.toDateString() }}
+  </button>
 </template>
 ```
 
-The component automatically creates + provides the builder instance and exposes
-it through the default slot for renderless patterns.
+Options (all optional; pass a plain object, a ref or a getter such as
+`() => props` to keep them reactive):
 
-### API
+- `units` – unit specs, default `nativeUnits()` (weeks start on Monday). The
+  week start lives in the units: `nativeUnits({ weekStartsOn: 0 })`.
+- `date` – initially browsed date, default now
+- `now` – the moment that counts as "now", default `new Date()`
+- `unit` – unit of the browsed period, default `"month"`
 
-- `createTemporal(options: CreateMinutaOptions): TemporalBuilder`  
-  Creates (and automatically provides) a reactive temporal instance. Pass Vue
-  refs for both `date` and (optionally) `now` so you remain in control of
-  reactivity. Methods from the builder delegate to the core operations while
-  passing the adapter automatically. Optionally provide `locale` (defaults to
-  `"en"`) to keep downstream UI helpers in sync with your preferred language.
+Returns every operation of `withUnits(units)` (`period`, `next`, `previous`,
+`shift`, `divide`, `contains`, `same`, `isToday`, …; see the core README),
+always bound to the current units, plus:
 
-- `useMinuta(): TemporalBuilder`  
-  Injects the nearest provided temporal instance so nested components can tap
-  into the same builder without prop drilling.
+- `units` – computed, the bound units
+- `browsing` – computed `Period`, the browsed period of `unit`
+- `now` – computed `Period`, the second containing `now`
+- `browse(period)` – browse to the period of `unit` containing `period.start`
 
-- `usePeriod(temporal: VueTemporal, unit: Unit | Ref<Unit>): ComputedRef<Period>`  
-  Returns a computed period that updates when `browsing` changes or the unit
-  ref updates.
+## `MinutaRoot`, `useMinutaContext()`, `usePeriod(unit)`
 
-- `<Temporal adapter="..." :date="..." :now="..." :week-starts-on="...">`  
-  Renderless provider that wraps `createTemporal()`, injects it, and exposes the
-  builder via the default slot. Pass `lang="fr-FR"` (or any BCP 47 locale) to
-  synchronize UI formatting helpers like weekday views.
-
-### Migration from `createTemporal`
-
-```ts
-// Before (core package)
-import { ref } from "vue";
-import { createTemporal, usePeriod } from "minuta";
-
-const date = ref(new Date());
-const temporal = createTemporal({ adapter, date });
-
-// After
-import { ref } from "vue";
-import { createTemporal, usePeriod } from "minuta-vue";
-
-const date = ref(new Date());
-const temporal = createTemporal({ adapter, date });
-```
-
-## Scripts
-
-- `npm run build --workspace=minuta-vue`
-- `TZ=UTC npm test --workspace=minuta-vue`
-- `npm run type-check --workspace=minuta-vue`
-
-## Example playground
-
-Run the bundled Vite playground directly from this workspace to experiment with
-the composables and shipped calendar component:
-
-```bash
-cd packages/minuta-vue/examples
-npm install
-npm run dev
-```
-
-It imports the workspace source directly, so any local changes are reflected
-instantly. You can also consume the packaged demo component via
-`minuta-vue/components`.
-
-## Components entry point
-
-`minuta-vue/components` ships ready-to-run Vue components that
-mirror our docs examples. Import the `CalendarExample` anywhere you want a quick
-sandbox:
+`MinutaRoot` calls `useMinuta(props)` and provides the result; parts read it
+with `useMinutaContext()`, which throws outside a `MinutaRoot`.
+`usePeriod(unit)` is a computed period of `unit` containing the browsed
+period's start.
 
 ```vue
 <script setup lang="ts">
-import { CalendarExample } from "minuta-vue/components";
+import { MinutaRoot } from "minuta-vue";
+import NextMonth from "./NextMonth.vue";
+import Year from "./Year.vue";
 </script>
 
 <template>
-  <CalendarExample />
+  <MinutaRoot unit="month">
+    <Year />
+    <NextMonth />
+  </MinutaRoot>
 </template>
 ```
 
-## Documentation
+```ts
+// Year.vue / NextMonth.vue
+const year = usePeriod("year");
+const { browse, browsing, next } = useMinutaContext();
+```
 
-See the [minuta README](https://github.com/AleksejDix/minuta/tree/master/packages/minuta) for the full core API.
+## Calendar parts (`minuta-vue/components`)
+
+Flat, composable parts that read the context of `CalendarRoot`:
+
+```vue
+<script setup lang="ts">
+import {
+  CalendarDay,
+  CalendarGrid,
+  CalendarHeader,
+  CalendarRoot,
+  CalendarWeekdays,
+} from "minuta-vue/components";
+import { nativeUnits } from "minuta/native";
+
+const sundayFirst = nativeUnits({ weekStartsOn: 0 });
+</script>
+
+<template>
+  <CalendarRoot :units="sundayFirst" @select="(day) => console.log(day.start)">
+    <CalendarHeader locale="de-CH" />
+    <CalendarWeekdays locale="de-CH" />
+    <CalendarGrid>
+      <template #day="{ day }">
+        <CalendarDay :day="day" />
+      </template>
+    </CalendarGrid>
+  </CalendarRoot>
+</template>
+```
+
+- `CalendarRoot` – props `units?`, `date?`, emits `select(day)`; a
+  `MinutaRoot` browsing months plus the selected day
+- `CalendarHeader` – month label (`locale?`) with previous/next buttons
+- `CalendarWeekdays` – weekday labels in the week order of the units
+- `CalendarGrid` – the stable 42-day month grid; the `#day` slot optionally
+  renders each day (default `<CalendarDay :day="day" />`)
+- `CalendarDay` – one day: classes `is-outside`, `is-today`, `is-selected`;
+  a click selects it and browses to its month
+- `CalendarExample` – the parts composed, with a Sunday/Monday toggle
+
+## Development
+
+```bash
+npm run dev --workspace=minuta-vue
+npm test --workspace=minuta-vue
+npm run type-check --workspace=minuta-vue
+```
 
 ## License
 
