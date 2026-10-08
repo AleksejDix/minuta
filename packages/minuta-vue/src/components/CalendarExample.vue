@@ -1,16 +1,34 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import type { Period } from "minuta";
+import { contains, isSame } from "minuta/operations";
+import type { ReadonlyPeriod } from "minuta";
+import { createMinuta } from "#src/create-minuta";
 import { createNativeAdapter } from "minuta/native";
 import { createStableMonth } from "minuta/calendar";
-import { contains, isSame, go } from "minuta/operations";
 import { isWeekend } from "minuta/helpers";
-import { createMinuta } from "#src/create-minuta";
 import { usePeriod } from "#src/use-period";
 
-const WEEKDAY_ORDER: Record<0 | 1, string[]> = {
-  0: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  1: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+type WeekRow = {
+  days: ReadonlyPeriod[];
+  key: string;
+};
+
+const SUNDAY = 0;
+const MONDAY = 1;
+const DAYS_PER_WEEK = 7;
+const STAY = 0;
+
+type WeekStart = typeof SUNDAY | typeof MONDAY;
+
+/*
+ * Declaring the (empty) slots makes vue-tsc emit an explicitly typed default
+ * export, which isolatedDeclarations requires.
+ */
+defineSlots<Record<string, never>>();
+
+const WEEKDAY_ORDER: Readonly<Record<WeekStart, readonly string[]>> = {
+  [SUNDAY]: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  [MONDAY]: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 };
 
 const dayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
@@ -19,20 +37,20 @@ const monthFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 const rangeFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
   day: "numeric",
+  month: "short",
 });
 
 const date = ref(new Date());
 const now = ref(new Date());
-const weekStartsOn = ref<0 | 1>(1);
+const weekStartsOn = ref<WeekStart>(MONDAY);
 const adapter = ref(createNativeAdapter({ weekStartsOn: weekStartsOn.value }));
 
 const minuta = createMinuta({
   adapter: adapter.value,
   date,
-  now,
   locale: "en",
+  now,
   weekStartsOn: weekStartsOn.value,
 });
 
@@ -42,6 +60,27 @@ watch(weekStartsOn, (value) => {
   minuta.weekStartsOn = value;
 });
 
+/**
+ * Splits the grid days into rows of one week each.
+ *
+ * @param days - The day periods of the stable month grid
+ * @returns One row per week, keyed by its first day
+ */
+function toWeekRows(days: readonly ReadonlyPeriod[]): WeekRow[] {
+  const rows: WeekRow[] = [];
+  for (let index = 0; index < days.length; index += DAYS_PER_WEEK) {
+    const weekDays = days.slice(index, index + DAYS_PER_WEEK);
+    const [firstDay] = weekDays;
+    if (firstDay !== undefined) {
+      rows.push({
+        days: weekDays,
+        key: firstDay.start.toISOString(),
+      });
+    }
+  }
+  return rows;
+}
+
 const month = usePeriod(minuta, "month");
 const grid = computed(() =>
   createStableMonth(
@@ -50,18 +89,7 @@ const grid = computed(() =>
     minuta.browsing.value.start
   )
 );
-const weeks = computed(() => {
-  const days = grid.value.periods;
-  const rows = [];
-  for (let i = 0; i < days.length; i += 7) {
-    const weekDays = days.slice(i, i + 7);
-    rows.push({
-      key: weekDays[0].start.toISOString(),
-      days: weekDays,
-    });
-  }
-  return rows;
-});
+const weeks = computed(() => toWeekRows(grid.value.periods));
 const weekdayLabels = computed(() => WEEKDAY_ORDER[weekStartsOn.value]);
 
 const isCurrentMonth = computed(() => {
@@ -72,25 +100,26 @@ const isCurrentMonth = computed(() => {
   );
 });
 
-const rangeLabel = computed(() => {
-  return `${rangeFormatter.format(month.value.start)} – ${rangeFormatter.format(
-    month.value.end
-  )}`;
-});
+const rangeLabel = computed(
+  () =>
+    `${rangeFormatter.format(month.value.start)} – ${rangeFormatter.format(
+      month.value.end
+    )}`
+);
 
-function toggleWeekStart(value: 0 | 1) {
+function toggleWeekStart(value: WeekStart): void {
   weekStartsOn.value = value;
 }
 
-function goToDay(day: Period) {
-  minuta.go(day, 0);
+function goToDay(day: ReadonlyPeriod): void {
+  minuta.go(day, STAY);
 }
 
-function isOutside(day: Period) {
+function isOutside(day: ReadonlyPeriod): boolean {
   return !contains(month.value, day.start);
 }
 
-function isToday(day: Period) {
+function isToday(day: ReadonlyPeriod): boolean {
   return isSame(adapter.value, day, minuta.now.value, "day");
 }
 </script>

@@ -1,4 +1,4 @@
-import type { Adapter, AdapterUnit, Period } from "minuta";
+import type { Adapter, AdapterUnit, Period, ReadonlyPeriod } from "minuta";
 import type { ComputedRef, Ref } from "vue";
 
 /**
@@ -6,41 +6,48 @@ import type { ComputedRef, Ref } from "vue";
  * Browsing and now periods remain fully reactive while core adapter logic
  * comes from minuta.
  */
-export interface VueMinuta {
+type VueMinuta = {
   adapter: Adapter;
   weekStartsOn: number;
   locale: string;
   browsing: Ref<Period>;
   now: Ref<Period> | ComputedRef<Period>;
-}
+};
 
 /**
  * Options for creating a Vue minuta instance.
  * Callers must manage reactivity by passing refs for date/now.
  */
-export interface CreateMinutaOptions {
+type CreateMinutaOptions = {
   date: Ref<Date>;
   now?: Ref<Date>;
   adapter: Adapter;
   weekStartsOn?: number;
   locale?: string;
-}
+};
 
-export interface MinutaBuilder extends VueMinuta {
-  derivePeriod(date: Date, unit: AdapterUnit): Period;
-  createPeriod(start: Date, end: Date): Period;
-  divide(period: Period, unit: AdapterUnit): Period[];
-  merge(periods: Period[], targetUnit?: AdapterUnit): Period;
-  next(period: Period, count?: number): Period;
-  previous(period: Period, count?: number): Period;
-  go(period: Period, count: number): Period;
-  split(period: Period, date: Date): [Period, Period];
-  contains(period: Period, dateOrPeriod: Date | Period): boolean;
-  isSame(
-    period1: Period,
-    period2: Period,
+type MinutaBuilder = VueMinuta & {
+  derivePeriod: (date: Readonly<Date>, unit: AdapterUnit) => Period;
+  createPeriod: (start: Readonly<Date>, end: Readonly<Date>) => Period;
+  divide: (period: ReadonlyPeriod, unit: AdapterUnit) => Period[];
+  merge: (
+    periods: readonly ReadonlyPeriod[],
+    targetUnit?: AdapterUnit
+  ) => Period;
+  next: (period: ReadonlyPeriod, count?: number) => Period;
+  previous: (period: ReadonlyPeriod, count?: number) => Period;
+  go: (period: ReadonlyPeriod, count: number) => Period;
+  split: (period: ReadonlyPeriod, date: Readonly<Date>) => [Period, Period];
+  contains: (
+    period: ReadonlyPeriod,
+    dateOrPeriod: Readonly<Date> | ReadonlyPeriod
+  ) => boolean;
+  isSame: (
+    period1: ReadonlyPeriod,
+    period2: ReadonlyPeriod,
     unit: AdapterUnit | "custom"
-  ): boolean;
-}
+  ) => boolean;
+};
 
+export type { CreateMinutaOptions, MinutaBuilder, VueMinuta };
 export type { Adapter, AdapterUnit, Period } from "minuta";

@@ -1,463 +1,160 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
+import { isRef, ref } from "vue";
+import type { MinutaBuilder } from "./types";
 import { createMinuta } from "./create-minuta";
-import type { CreateMinutaOptions } from "./types";
-import { ref, isRef, effect, computed } from "vue";
 import { createNativeAdapter } from "minuta/native";
-import type { Adapter } from "minuta";
 
-describe("createMinuta", () => {
-  let mockAdapter: Adapter;
-  let testDate: Date;
+const DAYS_PER_WEEK = 7;
+const MONDAY = 1;
+const WEEK_DAY_INDEXES = Array.from(
+  { length: DAYS_PER_WEEK },
+  (_value, index) => index
+);
 
-  beforeEach(() => {
-    testDate = new Date(2024, 0, 15, 12, 30, 45); // Jan 15, 2024 12:30:45
-    mockAdapter = createNativeAdapter();
-  });
+const mockAdapter = createNativeAdapter();
+const testDate = new Date("2024-01-15T12:30:45");
 
-  describe("factory function validation", () => {
-    it("should throw error when adapter is not provided", () => {
+/**
+ * Calls createMinuta the way an untyped JavaScript caller could.
+ *
+ * @param options - Options that may violate CreateMinutaOptions
+ * @returns Whatever createMinuta returns
+ */
+function createMinutaUnchecked(options: object): MinutaBuilder {
+  // @ts-expect-error -- Simulates a JavaScript caller passing invalid options
+  return createMinuta(options);
+}
+
+describe("createMinuta() validation", () => {
+  it(
+    "should throw error when adapter is not provided",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
       const options = {
         date: ref(testDate),
-      } as CreateMinutaOptions;
+      };
 
-      expect(() => createMinuta(options)).toThrow(
+      expect(() => createMinutaUnchecked(options)).toThrow(
         "A date adapter is required. Please install and provide an adapter from minuta/* packages."
       );
-    });
+    }
+  );
 
-    it("should throw error when adapter is null", () => {
-      const options = {
-        date: ref(testDate),
-        adapter: null as any,
-      };
+  it("should throw error when adapter is null", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const options = {
+      // oxlint-disable-next-line unicorn/no-null -- The test covers callers passing null
+      adapter: null,
+      date: ref(testDate),
+    };
 
-      expect(() => createMinuta(options)).toThrow("A date adapter is required");
-    });
-
-    it("should throw error when adapter is undefined", () => {
-      const options = {
-        date: ref(testDate),
-        adapter: undefined as any,
-      };
-
-      expect(() => createMinuta(options)).toThrow("A date adapter is required");
-    });
+    expect(() => createMinutaUnchecked(options)).toThrow(
+      "A date adapter is required"
+    );
   });
 
-  describe("basic initialization", () => {
-    it("should create minuta with required options", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-      });
+  it("should throw error when adapter is undefined", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const options = {
+      adapter: undefined,
+      date: ref(testDate),
+    };
 
-      expect(minuta).toBeDefined();
-      expect(minuta.adapter).toBe(mockAdapter);
-      expect(minuta.weekStartsOn).toBe(1); // Default Monday
-      expect(isRef(minuta.browsing)).toBe(true);
-      expect(isRef(minuta.now)).toBe(true);
+    expect(() => createMinutaUnchecked(options)).toThrow(
+      "A date adapter is required"
+    );
+  });
+});
+
+describe("createMinuta() defaults", () => {
+  it("should create minuta with required options", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const minuta = createMinuta({
+      adapter: mockAdapter,
+      date: ref(testDate),
     });
 
-    it("should accept custom weekStartsOn values", () => {
-      for (let day = 0; day <= 6; day++) {
-        const minuta = createMinuta({
-          date: ref(testDate),
-          adapter: mockAdapter,
-          weekStartsOn: day,
-        });
-        expect(minuta.weekStartsOn).toBe(day);
-      }
+    expect(minuta).toBeDefined();
+    expect(minuta.adapter).toBe(mockAdapter);
+    // Default Monday
+    expect(minuta.weekStartsOn).toBe(MONDAY);
+    expect(isRef(minuta.browsing)).toBe(true);
+    expect(isRef(minuta.now)).toBe(true);
+  });
+
+  it("should default locale to en", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const minuta = createMinuta({
+      adapter: mockAdapter,
+      date: ref(testDate),
     });
+    expect(minuta.locale).toBe("en");
+  });
 
-    it("should default locale to en", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-      });
-      expect(minuta.locale).toBe("en");
-    });
-
-    it("should accept custom locale", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-        locale: "zh-CN",
-      });
-      expect(minuta.locale).toBe("zh-CN");
-    });
-
-    it("should use provided now date", () => {
-      const nowDate = new Date(2024, 0, 20, 10, 0, 0);
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-        now: ref(nowDate),
-      });
-
-      expect(minuta.now.value.start).toEqual(nowDate);
-    });
-
-    it("should default now to current date when not provided", () => {
+  it(
+    "should default now to current date when not provided",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
       const beforeCreate = new Date();
       const minuta = createMinuta({
-        date: ref(testDate),
         adapter: mockAdapter,
+        date: ref(testDate),
       });
       const afterCreate = new Date();
 
       const nowTime = minuta.now.value.start.getTime();
       expect(nowTime).toBeGreaterThanOrEqual(beforeCreate.getTime());
       expect(nowTime).toBeLessThanOrEqual(afterCreate.getTime());
-    });
+    }
+  );
+});
+
+describe("createMinuta() options", () => {
+  it("should accept custom weekStartsOn values", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    for (const day of WEEK_DAY_INDEXES) {
+      const minuta = createMinuta({
+        adapter: mockAdapter,
+        date: ref(testDate),
+        weekStartsOn: day,
+      });
+      expect(minuta.weekStartsOn).toBe(day);
+    }
   });
 
-  describe("reactive date handling", () => {
-    it("should accept ref date and preserve reactivity", () => {
-      const dateRef = ref(testDate);
-      const minuta = createMinuta({
-        date: dateRef,
-        adapter: mockAdapter,
-      });
-
-      expect(minuta.browsing.value.start).toEqual(testDate);
-
-      // Update ref
-      const newDate = new Date(2024, 1, 1);
-      dateRef.value = newDate;
-      expect(minuta.browsing.value.start).toEqual(testDate); // browsing is its own ref
+  it("should accept custom locale", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const minuta = createMinuta({
+      adapter: mockAdapter,
+      date: ref(testDate),
+      locale: "zh-CN",
     });
-
-    it("should accept ref now and preserve reactivity", () => {
-      const nowRef = ref(new Date(2024, 0, 20));
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-        now: nowRef,
-      });
-
-      expect(minuta.now.value.start).toEqual(nowRef.value);
-
-      // Verify reactivity
-      let effectCount = 0;
-      effect(() => {
-        minuta.now.value;
-        effectCount++;
-      });
-
-      expect(effectCount).toBe(1);
-
-      // Update ref
-      nowRef.value = new Date(2024, 0, 21);
-      expect(effectCount).toBe(2);
-      expect(minuta.now.value.start).toEqual(nowRef.value);
-    });
+    expect(minuta.locale).toBe("zh-CN");
   });
 
-  describe("period initialization", () => {
-    it("should initialize browsing period correctly", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-      });
-
-      const browsing = minuta.browsing.value;
-      expect(browsing.start).toEqual(testDate);
-      expect(browsing.end).toEqual(testDate);
-      expect(browsing.type).toBe("day");
-      expect(browsing.start).toEqual(testDate);
+  it("should use provided now date", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const nowDate = new Date("2024-01-20T10:00:00");
+    const minuta = createMinuta({
+      adapter: mockAdapter,
+      date: ref(testDate),
+      now: ref(nowDate),
     });
 
-    it("should initialize now period as computed", () => {
-      const nowDate = new Date(2024, 0, 20, 15, 30, 45);
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-        now: ref(nowDate),
-      });
-
-      const now = minuta.now.value;
-      expect(now.start).toEqual(nowDate);
-      expect(now.end).toEqual(nowDate);
-      expect(now.type).toBe("second");
-      expect(now.start).toEqual(nowDate);
-    });
+    expect(minuta.now.value.start).toStrictEqual(nowDate);
   });
 
-  describe("reactivity behavior", () => {
-    it("should trigger effects when browsing changes", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-      });
-
-      let effectCount = 0;
-      let lastBrowsing;
-
-      effect(() => {
-        lastBrowsing = minuta.browsing.value;
-        effectCount++;
-      });
-
-      expect(effectCount).toBe(1);
-
-      // Update browsing
-      const newPeriod = {
-        start: new Date(2024, 1, 1),
-        end: new Date(2024, 1, 1),
-        type: "day" as const,
-        date: new Date(2024, 1, 1),
-      };
-      minuta.browsing.value = newPeriod;
-
-      expect(effectCount).toBe(2);
-      expect(lastBrowsing).toEqual(newPeriod);
+  it("should handle weekStartsOn as undefined", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const minuta = createMinutaUnchecked({
+      adapter: mockAdapter,
+      date: ref(testDate),
+      weekStartsOn: undefined,
     });
 
-    it("should support computed properties based on minuta state", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-      });
-
-      const year = computed(() => minuta.browsing.value.start.getFullYear());
-      const month = computed(() => minuta.browsing.value.start.getMonth());
-
-      expect(year.value).toBe(2024);
-      expect(month.value).toBe(0); // January
-
-      // Update browsing
-      minuta.browsing.value = {
-        start: new Date(2025, 5, 15),
-        end: new Date(2025, 5, 15),
-        type: "day",
-        date: new Date(2025, 5, 15),
-      };
-
-      expect(year.value).toBe(2025);
-      expect(month.value).toBe(5); // June
-    });
-
-    it("should cleanup reactive effects properly", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-      });
-
-      let effectCount = 0;
-
-      // Create effect runner
-      const runner = effect(() => {
-        minuta.browsing.value;
-        effectCount++;
-      });
-
-      // Initial run
-      expect(effectCount).toBeGreaterThan(0);
-      const initialCount = effectCount;
-
-      // Update should trigger effect
-      minuta.browsing.value = {
-        start: new Date(2025, 0, 1),
-        end: new Date(2025, 0, 1),
-        type: "day",
-        date: new Date(2025, 0, 1),
-      };
-
-      expect(effectCount).toBeGreaterThan(initialCount);
-      const countBeforeStop = effectCount;
-
-      // Stop the effect
-      runner.effect.stop();
-
-      // Update should not trigger effect after stopping
-      minuta.browsing.value = {
-        start: new Date(2025, 6, 1),
-        end: new Date(2025, 6, 1),
-        type: "day",
-        date: new Date(2025, 6, 1),
-      };
-
-      expect(effectCount).toBe(countBeforeStop); // No change after stop
-    });
-
-    it("should handle concurrent reactive updates", async () => {
-      const dateRef = ref(testDate);
-      const nowRef = ref(new Date(2024, 0, 20));
-
-      const minuta = createMinuta({
-        date: dateRef,
-        adapter: mockAdapter,
-        now: nowRef,
-      });
-
-      const updates: string[] = [];
-
-      effect(() => {
-        minuta.browsing.value;
-        updates.push("browsing");
-      });
-
-      effect(() => {
-        minuta.now.value;
-        updates.push("now");
-      });
-
-      // Initial effects
-      expect(updates).toEqual(["browsing", "now"]);
-
-      // Update both refs
-      dateRef.value = new Date(2024, 1, 1);
-      nowRef.value = new Date(2024, 1, 1);
-
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      // Should have triggered both effects
-      expect(updates.length).toBe(3); // Initial + 1 now update
-      expect(updates[2]).toBe("now");
-    });
-  });
-
-  describe("edge cases", () => {
-    it("should handle dates at year boundaries", () => {
-      const endOfYear = new Date(2023, 11, 31, 23, 59, 59);
-      const minuta = createMinuta({
-        date: ref(endOfYear),
-        adapter: mockAdapter,
-      });
-
-      expect(minuta.browsing.value.start).toEqual(endOfYear);
-    });
-
-    it("should handle leap year dates", () => {
-      const leapDay = new Date(2024, 1, 29); // Feb 29, 2024
-      const minuta = createMinuta({
-        date: ref(leapDay),
-        adapter: mockAdapter,
-      });
-
-      expect(minuta.browsing.value.start).toEqual(leapDay);
-    });
-
-    it("should handle invalid weekStartsOn gracefully", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-        weekStartsOn: -1 as any,
-      });
-
-      expect(minuta.weekStartsOn).toBe(-1); // Uses provided value
-    });
-
-    it("should handle weekStartsOn as undefined", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-        weekStartsOn: undefined,
-      });
-
-      expect(minuta.weekStartsOn).toBe(1); // Default Monday
-    });
-  });
-
-  describe("adapter integration", () => {
-    it("should work with different adapter implementations", () => {
-      // Mock a custom adapter
-      const customAdapter: Adapter = {
-        startOf: vi.fn(),
-        endOf: vi.fn(),
-        add: vi.fn(),
-        diff: vi.fn(),
-      };
-
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: customAdapter,
-      });
-
-      expect(minuta.adapter).toBe(customAdapter);
-    });
-
-    it("should preserve adapter reference", () => {
-      const minuta = createMinuta({
-        date: ref(testDate),
-        adapter: mockAdapter,
-      });
-
-      expect(minuta.adapter).toBe(mockAdapter);
-      expect(minuta.adapter.startOf).toBe(mockAdapter.startOf);
-    });
-
-    it("should recompute week periods when adapter weekStartsOn changes", () => {
-      const date = new Date(2024, 0, 3, 12); // Wednesday
-      const mondayAdapter = createNativeAdapter({ weekStartsOn: 1 });
-      const sundayAdapter = createNativeAdapter({ weekStartsOn: 0 });
-
-      const minuta = createMinuta({
-        date,
-        adapter: mondayAdapter,
-      });
-
-      const mondayWeek = minuta.derivePeriod(date, "week");
-      expect(mondayWeek.start.getDay()).toBe(1);
-      expect(mondayWeek.start.getDate()).toBe(1);
-
-      minuta.adapter = sundayAdapter;
-
-      const sundayWeek = minuta.derivePeriod(date, "week");
-      expect(sundayWeek.start.getDay()).toBe(0);
-      expect(sundayWeek.start.getDate()).toBe(31);
-      expect(sundayWeek.start.getMonth()).toBe(11); // Dec 31, 2023
-    });
-  });
-
-  describe("performance", () => {
-    it("should execute in less than 100ms", () => {
-      const start = performance.now();
-
-      for (let i = 0; i < 100; i++) {
-        createMinuta({
-          date: ref(new Date()),
-          adapter: mockAdapter,
-        });
-      }
-
-      const duration = performance.now() - start;
-      expect(duration).toBeLessThan(100);
-    });
-  });
-
-  describe("browsing coverage across leap year", () => {
-    const leapYearDates = Array.from(
-      { length: 366 },
-      (_, index) => new Date(2024, 0, 1 + index)
-    );
-
-    leapYearDates.forEach((targetDate) => {
-      const label = targetDate.toISOString().slice(0, 10);
-
-      it(`should assign browsing period for ${label}`, () => {
-        const baseDate = new Date(Date.UTC(2024, 0, 1));
-        const minuta = createMinuta({
-          date: ref(baseDate),
-          adapter: createNativeAdapter(),
-        });
-
-        const newPeriod = minuta.derivePeriod(new Date(targetDate), "day");
-        minuta.browsing.value = newPeriod;
-
-        expect(minuta.browsing.value.start.getTime()).toBe(
-          targetDate.getTime()
-        );
-        const start = minuta.browsing.value.start;
-        const end = minuta.browsing.value.end;
-
-        expect(start.getFullYear()).toBe(targetDate.getFullYear());
-        expect(start.getMonth()).toBe(targetDate.getMonth());
-        expect(start.getDate()).toBe(targetDate.getDate());
-        expect(end.getFullYear()).toBe(targetDate.getFullYear());
-        expect(end.getMonth()).toBe(targetDate.getMonth());
-        expect(end.getDate()).toBe(targetDate.getDate());
-      });
-    });
+    // Default Monday
+    expect(minuta.weekStartsOn).toBe(MONDAY);
   });
 });

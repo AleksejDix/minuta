@@ -1,17 +1,97 @@
-import {
-  derivePeriod,
-  createPeriod,
-  divide,
-  merge as mergeOp,
-  next,
-  previous,
-  go,
-  split,
-  contains,
-  isSame,
-} from "minuta/operations";
-import type { AdapterUnit, Period } from "minuta";
+import type { Adapter, Period, ReadonlyPeriod } from "minuta";
 import type { MinutaBuilder, VueMinuta } from "./types";
+import {
+  contains,
+  createPeriod,
+  derivePeriod,
+  divide,
+  go,
+  isSame,
+  merge as mergeOp,
+  next as nextPeriod,
+  previous as previousPeriod,
+  split,
+} from "minuta/operations";
+
+const SINGLE_STEP = 1;
+
+type MinutaOperations = Omit<MinutaBuilder, keyof VueMinuta>;
+
+/**
+ * Moves forward by one unit with next(), or by several with go().
+ *
+ * @param adapter - The date adapter
+ * @param period - The period to move from
+ * @param count - The number of units to move
+ * @returns The moved period
+ */
+function stepForward(
+  adapter: Readonly<Adapter>,
+  period: ReadonlyPeriod,
+  count: number
+): Period {
+  if (count === SINGLE_STEP) {
+    return nextPeriod(adapter, period);
+  }
+  return go(adapter, period, count);
+}
+
+/**
+ * Moves backward by one unit with previous(), or by several with go().
+ *
+ * @param adapter - The date adapter
+ * @param period - The period to move from
+ * @param count - The number of units to move back
+ * @returns The moved period
+ */
+function stepBackward(
+  adapter: Readonly<Adapter>,
+  period: ReadonlyPeriod,
+  count: number
+): Period {
+  if (count === SINGLE_STEP) {
+    return previousPeriod(adapter, period);
+  }
+  return go(adapter, period, -count);
+}
+
+/**
+ * Create the operation wrappers that pass the current adapter.
+ * Navigation methods also update the browsing period.
+ *
+ * @param minuta - The base minuta instance
+ * @returns The operation wrappers
+ */
+function createOperations(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- VueMinuta holds Vue refs, which are mutable by design
+  minuta: VueMinuta
+): MinutaOperations {
+  return {
+    contains: (period, dateOrPeriod) => contains(period, dateOrPeriod),
+    createPeriod: (start, end) => createPeriod(start, end),
+    derivePeriod: (date, unit) => derivePeriod(minuta.adapter, date, unit),
+    divide: (period, unit) => divide(minuta.adapter, period, unit),
+    go: (period, count) => {
+      const result = go(minuta.adapter, period, count);
+      minuta.browsing.value = result;
+      return result;
+    },
+    isSame: (period1, period2, unit) =>
+      isSame(minuta.adapter, period1, period2, unit),
+    merge: (periods, targetUnit) => mergeOp(periods, targetUnit),
+    next: (period, count = SINGLE_STEP) => {
+      const result = stepForward(minuta.adapter, period, count);
+      minuta.browsing.value = result;
+      return result;
+    },
+    previous: (period, count = SINGLE_STEP) => {
+      const result = stepBackward(minuta.adapter, period, count);
+      minuta.browsing.value = result;
+      return result;
+    },
+    split: (period, date) => split(period, date),
+  };
+}
 
 /**
  * Create a minuta builder with convenient method wrappers
@@ -31,7 +111,11 @@ import type { MinutaBuilder, VueMinuta } from "./types";
  * const months = builder.divide(year, 'month');
  * ```
  */
-export function createMinutaBuilder(minuta: VueMinuta): MinutaBuilder {
+function createMinutaBuilder(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- The builder's setters write through to this instance
+  minuta: VueMinuta
+): MinutaBuilder {
+  const operations = createOperations(minuta);
   return {
     get adapter() {
       return minuta.adapter;
@@ -39,85 +123,41 @@ export function createMinutaBuilder(minuta: VueMinuta): MinutaBuilder {
     set adapter(value) {
       minuta.adapter = value;
     },
-    get weekStartsOn() {
-      return minuta.weekStartsOn;
-    },
-    set weekStartsOn(value) {
-      minuta.weekStartsOn = value;
-    },
     get browsing() {
       return minuta.browsing;
     },
     set browsing(value) {
       minuta.browsing = value;
     },
-    get now() {
-      return minuta.now;
-    },
-    set now(value) {
-      minuta.now = value;
-    },
+    contains: operations.contains,
+    createPeriod: operations.createPeriod,
+    derivePeriod: operations.derivePeriod,
+    divide: operations.divide,
+    go: operations.go,
+    isSame: operations.isSame,
     get locale() {
       return minuta.locale;
     },
     set locale(value: string) {
       minuta.locale = value;
     },
-
-    derivePeriod(date: Date, unit: AdapterUnit): Period {
-      return derivePeriod(minuta.adapter, date, unit);
+    merge: operations.merge,
+    next: operations.next,
+    get now() {
+      return minuta.now;
     },
-
-    createPeriod(start: Date, end: Date): Period {
-      return createPeriod(start, end);
+    set now(value) {
+      minuta.now = value;
     },
-
-    divide(period: Period, unit: AdapterUnit): Period[] {
-      return divide(minuta.adapter, period, unit);
+    previous: operations.previous,
+    split: operations.split,
+    get weekStartsOn() {
+      return minuta.weekStartsOn;
     },
-
-    merge(periods: Period[], targetUnit?: AdapterUnit): Period {
-      return mergeOp(periods, targetUnit);
-    },
-
-    next(period: Period, count: number = 1): Period {
-      const result =
-        count === 1
-          ? next(minuta.adapter, period)
-          : go(minuta.adapter, period, count);
-      minuta.browsing.value = result;
-      return result;
-    },
-
-    previous(period: Period, count: number = 1): Period {
-      const result =
-        count === 1
-          ? previous(minuta.adapter, period)
-          : go(minuta.adapter, period, -count);
-      minuta.browsing.value = result;
-      return result;
-    },
-
-    go(period: Period, count: number): Period {
-      const result = go(minuta.adapter, period, count);
-      minuta.browsing.value = result;
-      return result;
-    },
-
-    split(period: Period, date: Date): [Period, Period] {
-      return split(period, date);
-    },
-
-    contains(period: Period, dateOrPeriod: Date | Period): boolean {
-      return contains(period, dateOrPeriod);
-    },
-
-    isSame(
-      period1: Period,
-      period2: Period,
-      unit: AdapterUnit | "custom"
-    ): boolean {
-      return isSame(minuta.adapter, period1, period2, unit);
+    set weekStartsOn(value) {
+      minuta.weekStartsOn = value;
     },
   };
 }
+
+export { createMinutaBuilder };

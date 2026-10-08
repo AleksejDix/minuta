@@ -1,59 +1,57 @@
 <script setup lang="ts">
+import { ref, watch } from "vue";
 import type { Adapter } from "minuta";
-import { ref, watch, type Ref } from "vue";
-import { createMinuta } from "#src/create-minuta";
 import type { MinutaBuilder } from "#src/types";
+import type { Ref } from "vue";
+import { createMinuta } from "#src/create-minuta";
 
-const props = withDefaults(
-  defineProps<{
-    adapter: Adapter;
-    date?: Ref<Date>;
-    now?: Ref<Date>;
-    weekStartsOn?: number;
-    lang?: string;
-  }>(),
-  {
-    weekStartsOn: 1,
-    lang: "en",
-  }
-);
+const DEFAULT_WEEK_STARTS_ON = 1;
 
-const slots = defineSlots<{
-  default?: (scope: { minuta: MinutaBuilder }) => any;
+const {
+  adapter,
+  date = ref(new Date()),
+  lang = "en",
+  now = ref(new Date()),
+  weekStartsOn = DEFAULT_WEEK_STARTS_ON,
+  // oxlint-disable-next-line vue/max-props -- The five props are the component's public API
+} = defineProps<{
+  adapter: Adapter;
+  date?: Ref<Date>;
+  now?: Ref<Date>;
+  weekStartsOn?: number;
+  lang?: string;
 }>();
 
-const fallbackDate = ref(new Date());
-const fallbackNow = ref(new Date());
-
-const dateRef = props.date ?? fallbackDate;
-const nowRef = props.now ?? fallbackNow;
+defineSlots<{
+  default?: (scope: { minuta: MinutaBuilder }) => unknown;
+}>();
 
 const minuta = createMinuta({
-  adapter: props.adapter,
-  date: dateRef,
-  now: nowRef,
-  weekStartsOn: props.weekStartsOn,
-  locale: props.lang,
+  adapter,
+  date,
+  locale: lang,
+  now,
+  weekStartsOn,
 });
 
 watch(
-  () => props.adapter,
-  (adapter) => {
-    minuta.adapter = adapter;
+  () => adapter,
+  (value) => {
+    minuta.adapter = value;
   }
 );
 
 watch(
-  () => props.weekStartsOn,
+  () => weekStartsOn,
   (value) => {
-    minuta.weekStartsOn = value ?? 1;
+    minuta.weekStartsOn = value;
   }
 );
 
 watch(
-  () => props.lang,
+  () => lang,
   (value) => {
-    minuta.locale = value ?? "en";
+    minuta.locale = value;
   }
 );
 </script>

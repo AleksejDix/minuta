@@ -1,8 +1,28 @@
+import type { Adapter, Period } from "minuta";
+import type { CreateMinutaOptions, MinutaBuilder, VueMinuta } from "./types";
 import { computed, getCurrentInstance, ref } from "vue";
-import type { Period } from "minuta";
 import { createMinutaBuilder } from "./builder";
-import type { MinutaBuilder, CreateMinutaOptions, VueMinuta } from "./types";
 import { provideMinuta } from "./minuta-context";
+
+/** Default to Monday. */
+const DEFAULT_WEEK_STARTS_ON = 1;
+
+/**
+ * Returns the adapter, or throws when a caller did not provide one.
+ *
+ * @param adapter - The adapter from the options, possibly missing at runtime
+ * @returns The provided adapter
+ */
+function requireAdapter(
+  adapter: Readonly<Adapter> | null | undefined
+): Adapter {
+  if (!adapter) {
+    throw new Error(
+      "A date adapter is required. Please install and provide an adapter from minuta/* packages."
+    );
+  }
+  return adapter;
+}
 
 /**
  * Creates a minuta instance with builder methods (Level 2 API)
@@ -24,38 +44,34 @@ import { provideMinuta } from "./minuta-context";
  * const months = minuta.divide(year, "month");
  * ```
  */
-export function createMinuta(options: CreateMinutaOptions): MinutaBuilder {
-  if (!options.adapter) {
-    throw new Error(
-      "A date adapter is required. Please install and provide an adapter from minuta/* packages."
-    );
-  }
-
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- The options carry Vue refs, which are mutable by design
+function createMinuta(options: CreateMinutaOptions): MinutaBuilder {
+  const adapter = requireAdapter(options.adapter);
   const browsingDate = options.date;
   const nowDate = options.now ?? ref(new Date());
 
   // Create a reactive Period for browsing that represents a point in time
   const browsing = ref<Period>({
-    start: browsingDate.value,
     end: browsingDate.value,
+    start: browsingDate.value,
     type: "day",
   });
 
   const now = computed<Period>(() => {
     const nowValue = nowDate.value;
     return {
-      start: nowValue,
       end: nowValue,
+      start: nowValue,
       type: "second",
     };
   });
 
   const minuta: VueMinuta = {
-    adapter: options.adapter,
-    weekStartsOn: options.weekStartsOn ?? 1, // Default to Monday
-    locale: options.locale ?? "en",
+    adapter,
     browsing,
+    locale: options.locale ?? "en",
     now,
+    weekStartsOn: options.weekStartsOn ?? DEFAULT_WEEK_STARTS_ON,
   };
 
   const builder = createMinutaBuilder(minuta);
@@ -64,3 +80,5 @@ export function createMinuta(options: CreateMinutaOptions): MinutaBuilder {
   }
   return builder;
 }
+
+export { createMinuta };

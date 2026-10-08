@@ -1,57 +1,58 @@
-import { resolve } from "node:path";
+import type { ConfigEnv, UserConfig } from "vite";
 import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
 import dts from "vite-plugin-dts";
+import path from "node:path";
+import vue from "@vitejs/plugin-vue";
 
-const demoRoot = resolve(import.meta.dirname, "examples");
+const EXTERNAL = [/^minuta/u, /^vue(?:\/.*)?$/u];
 
-export default defineConfig(({ command, mode }) => {
-  const isDemo = command === "serve" || mode === "demo";
+function fromRoot(file: string): string {
+  return path.resolve(import.meta.dirname, file);
+}
 
-  if (isDemo) {
-    return {
-      root: demoRoot,
-      plugins: [vue()],
-      resolve: {
-        alias: {
-          "minuta-vue": resolve(import.meta.dirname, "src"),
-          "minuta-vue/components": resolve(
-            import.meta.dirname,
-            "src/components/index.ts"
-          ),
-        },
-      },
-      build: {
-        outDir: "dist",
-      },
-    };
+function fileName(_format: string, entryName: string): string {
+  if (entryName === "index") {
+    return "index.js";
   }
+  return `${entryName}/index.js`;
+}
 
-  return {
-    build: {
-      lib: {
-        entry: {
-          index: resolve(import.meta.dirname, "src/index.ts"),
-          components: resolve(import.meta.dirname, "src/components/index.ts"),
-        },
-        formats: ["es"],
-        fileName: (_format, entryName) =>
-          entryName === "index" ? "index.js" : `${entryName}/index.js`,
-      },
-      rollupOptions: {
-        external: [/^minuta/, "vue"],
-      },
+const demoConfig: UserConfig = {
+  build: { outDir: "dist" },
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      "minuta-vue": fromRoot("src"),
+      "minuta-vue/components": fromRoot("src/components/index.ts"),
     },
-    plugins: [
-      vue(),
-      dts({
-        include: ["src/**/*.ts", "src/**/*.vue"],
-        exclude: ["src/**/*.test.ts"],
-      }),
-    ],
-    test: {
-      environment: "node",
-      setupFiles: resolve(import.meta.dirname, "../../vitest.setup.ts"),
+  },
+  root: fromRoot("examples"),
+};
+
+const libraryConfig: UserConfig = {
+  build: {
+    lib: {
+      entry: {
+        components: fromRoot("src/components/index.ts"),
+        index: fromRoot("src/index.ts"),
+      },
+      fileName,
+      formats: ["es"],
     },
-  };
+    rollupOptions: { external: EXTERNAL },
+  },
+  plugins: [
+    vue(),
+    dts({
+      exclude: ["src/**/*.test.ts"],
+      include: ["src/**/*.ts", "src/**/*.vue"],
+    }),
+  ],
+};
+
+export default defineConfig(({ command, mode }: Readonly<ConfigEnv>) => {
+  if (command === "serve" || mode === "demo") {
+    return demoConfig;
+  }
+  return libraryConfig;
 });

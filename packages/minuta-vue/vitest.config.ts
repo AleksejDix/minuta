@@ -1,30 +1,27 @@
-import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
-import viteConfig from "./vite.config";
+import path from "node:path";
 
-const coreRoot = resolve(import.meta.dirname, "../minuta/src");
-const alias = {
-  minuta: resolve(coreRoot, "index.ts"),
-  "minuta/native": resolve(coreRoot, "native.ts"),
-  "minuta/types": resolve(coreRoot, "types.ts"),
-  "minuta/temporal": resolve(coreRoot, "temporal.ts"),
-  "minuta/operations": resolve(coreRoot, "operations.ts"),
-};
-const baseResolve = viteConfig.resolve ?? {};
-const baseAlias = baseResolve.alias ?? {};
+const CORE_SOURCE = path.resolve(import.meta.dirname, "../minuta/src");
 
+function core(file: string): string {
+  return path.resolve(CORE_SOURCE, file);
+}
+
+// Tests run against the core's source, not its build
 export default defineConfig({
-  ...viteConfig,
   resolve: {
-    ...baseResolve,
     alias: {
-      ...baseAlias,
-      ...alias,
+      minuta: core("index.ts"),
+      "minuta/native": core("native.ts"),
+      "minuta/operations": core("operations.ts"),
+      "minuta/temporal": core("temporal.ts"),
+      "minuta/types": core("types.ts"),
     },
   },
   test: {
-    ...viteConfig.test,
+    environment: "node",
     globals: false,
     include: ["src/**/*.test.ts"],
+    setupFiles: path.resolve(import.meta.dirname, "../../vitest.setup.ts"),
   },
 });
