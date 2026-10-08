@@ -36,8 +36,8 @@
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "lint:workspaces": "npm run lint --workspaces --if-present",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "type-check": "npm run type-check --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
     "release": "npm run build && changeset publish"
@@ -49,14 +49,15 @@
     "@vitest/coverage-v8": "^4.0.13",
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
-    "oxlint": "^1.29.0",
-    "prettier": "^3.6.2",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0",
+    "oxlint-tsgolint": "^7.0.2002",
     "vite": "^7.2.4",
     "vitest": "^4.0.13"
   },
   "optionalDependencies": {
-    "@oxlint/linux-x64-gnu": "^1.29.0",
-    "@oxlint/wasm32-wasi": "^1.29.0"
+    "@oxlint/linux-x64-gnu": "^1.85.0",
+    "@oxlint/wasm32-wasi": "^1.85.0"
   },
   "engines": {
     "node": ">=16.0.0"
