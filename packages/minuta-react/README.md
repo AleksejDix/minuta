@@ -266,7 +266,7 @@ npm run type-check --workspace=minuta-react
 
 ## Documentation
 
-Complete documentation available at https://minuta.vercel.app
+See the [minuta README](https://github.com/AleksejDix/minuta/tree/master/packages/minuta) for the full core API.
 
 ## License
 

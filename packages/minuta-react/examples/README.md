@@ -43,4 +43,4 @@ packages/minuta-react/examples/
 - **Educational comments** – Components call out the patterns most teams should
   follow when wiring Minuta into React apps
 
-For more details visit [minuta.vercel.app](https://minuta.vercel.app).
+See the [minuta README](https://github.com/AleksejDix/minuta/tree/master/packages/minuta) for the full core API.

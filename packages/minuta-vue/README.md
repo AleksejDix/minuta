@@ -162,7 +162,7 @@ import { CalendarExample } from "minuta-vue/components";
 
 ## Documentation
 
-Complete docs live at https://minuta.vercel.app.
+See the [minuta README](https://github.com/AleksejDix/minuta/tree/master/packages/minuta) for the full core API.
 
 ## License
 

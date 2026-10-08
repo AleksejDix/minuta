@@ -28,7 +28,6 @@
     "CHANGELOG.md",
     "docs/",
     "packages/minuta-vue/examples/playwright-report/",
-    "packages/minuta-vue/examples/test-results/",
-    "vitepress/"
+    "packages/minuta-vue/examples/test-results/"
   ]
 }

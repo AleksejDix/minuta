@@ -34,17 +34,27 @@
   },
   "rules": {
     "oxc/no-optional-chaining": "error",
-
     "eslint/func-style": ["error", "declaration"],
     "eslint/one-var": ["error", "never"],
     "eslint/no-duplicate-imports": [
       "error",
-      { "allowSeparateTypeImports": true }
+      {
+        "allowSeparateTypeImports": true
+      }
     ],
     "typescript/consistent-type-definitions": ["error", "type"],
-    "unicorn/filename-case": ["error", { "case": "kebabCase" }],
-    "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
-
+    "unicorn/filename-case": [
+      "error",
+      {
+        "case": "kebabCase"
+      }
+    ],
+    "react/jsx-filename-extension": [
+      "error",
+      {
+        "extensions": [".tsx"]
+      }
+    ],
     "eslint/no-undefined": "off",
     "import/no-named-export": "off",
     "import/prefer-default-export": "off",
@@ -64,17 +74,26 @@
       "rules": {
         "unicorn/filename-case": [
           "error",
-          { "cases": { "kebabCase": true, "pascalCase": true } }
+          {
+            "cases": {
+              "kebabCase": true,
+              "pascalCase": true
+            }
+          }
         ]
       }
     },
     {
       "files": ["packages/minuta-react/**"],
-      "rules": { "unicorn/no-null": "off" }
+      "rules": {
+        "unicorn/no-null": "off"
+      }
     },
     {
       "files": ["**/*.config.ts", "**/*.config.js"],
-      "env": { "node": true },
+      "env": {
+        "node": true
+      },
       "rules": {
         "import/no-default-export": "off",
         "import/no-nodejs-modules": "off"
@@ -87,7 +106,6 @@
     "coverage",
     "*.min.js",
     "*.d.ts",
-    "vitepress",
     "packages/slides"
   ]
 }

@@ -1,18 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": [
-    "vitepress/**"
-  ],
   "workspaces": {
     "packages/slides": {
-      "entry": [
-        "slides.md",
-        "components/**/*.vue",
-        "snippets/**/*.ts"
-      ],
-      "ignoreDependencies": [
-        "@slidev/theme-default"
-      ]
+      "entry": ["slides.md", "components/**/*.vue", "snippets/**/*.ts"],
+      "ignoreDependencies": ["@slidev/theme-default"]
     }
   }
 }
