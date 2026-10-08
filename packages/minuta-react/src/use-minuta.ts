@@ -1,69 +1,53 @@
-import type { MinutaBuilder, ReactMinuta, UseMinutaOptions } from "./types";
-import { useMemo, useState } from "react";
-import { createMinutaBuilder } from "./builder";
-import { derivePeriod } from "minuta";
+import type { MinutaOptions, MinutaState } from "./types";
+import type { Period, Units } from "minuta/core";
+import { useCallback, useMemo, useState } from "react";
+import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
 
-const MONDAY = 1;
+const DEFAULT_UNITS: Units = nativeUnits();
+
+function currentDate(): Date {
+  return new Date();
+}
 
 /**
- * Creates a minuta instance with builder methods
- *
- * Returns a minuta builder that provides convenience methods
- * wrapping pure operations. Methods automatically pass the adapter.
- *
- * @param options - Configuration options
- * @returns A minuta builder with convenience methods
+ * Reactive minuta state: every operation bound to `units` (memoised on
+ * `units`), the browsed period and the period of "now".
  *
  * @example
- * ```typescript
- * const minuta = useMinuta({
- *   adapter: nativeAdapter,
- *   date: new Date()
- * });
+ * const minuta = useMinuta({ unit: "month" });
+ * minuta.browse(minuta.next(minuta.browsing));
  *
- * const year = minuta.period(new Date(), "year");
- * const months = minuta.divide(year, "month");
- * ```
+ * @param options - Units, initially browsed date, now and browsing unit
+ * @returns The bound operations with `units`, `browsing`, `now` and `browse`
  */
-function useMinuta(options: UseMinutaOptions): MinutaBuilder {
-  // The type says required, but JavaScript callers may still omit it
-  const givenAdapter: unknown = options.adapter;
-  if (givenAdapter === undefined || givenAdapter === null) {
-    throw new Error(
-      "A date adapter is required. Please install and provide an adapter from minuta/* packages."
-    );
-  }
-
+function useMinuta(options: MinutaOptions = {}): MinutaState {
   const {
-    adapter,
-    date = new Date(),
-    now: nowDate = new Date(),
-    weekStartsOn = MONDAY,
+    date,
+    now: nowOption,
+    unit = "month",
+    units = DEFAULT_UNITS,
   } = options;
+  const [browsedDate, setBrowsedDate] = useState<Readonly<Date>>(
+    date ?? currentDate
+  );
+  const fallbackNow = useMemo(() => new Date(), []);
+  const nowDate = nowOption ?? fallbackNow;
 
-  const [browsingDate, setBrowsingDate] = useState(date);
-
-  // Create reactive Period for browsing (default to 'day' unit for point in time)
+  const ops = useMemo(() => withUnits(units), [units]);
   const browsing = useMemo(
-    () => derivePeriod(adapter, browsingDate, "day"),
-    [adapter, browsingDate]
+    () => ops.period(browsedDate, unit),
+    [ops, browsedDate, unit]
   );
+  const now = useMemo(() => ops.period(nowDate, "second"), [ops, nowDate]);
+  const browse = useCallback((period: Period) => {
+    setBrowsedDate(period.start);
+  }, []);
 
-  // Create reactive Period for now (use 'second' for most precise point in time)
-  const now = useMemo(
-    () => derivePeriod(adapter, nowDate, "second"),
-    [adapter, nowDate]
-  );
-
-  // Create base minuta state
-  const reactMinuta: ReactMinuta = {
-    adapter,
-    browsing,
-    now,
-    weekStartsOn,
-  };
-
-  return createMinutaBuilder(reactMinuta, setBrowsingDate);
+  return useMemo(() => {
+    const state = { browse, browsing, now, units };
+    return Object.assign(state, ops);
+  }, [browse, browsing, now, ops, units]);
 }
 
 export { useMinuta };

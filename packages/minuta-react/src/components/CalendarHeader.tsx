@@ -1,32 +1,54 @@
 import type { JSX } from "react";
-import type { WeekStart } from "./week-start";
-import { WeekStartToggle } from "./WeekStartToggle";
+import { formatPeriod } from "minuta/format";
+import { useCallback } from "react";
+import { useMinutaContext } from "#src/minuta-context";
 
 type CalendarHeaderProps = Readonly<{
-  onWeekStartChange: (value: WeekStart) => void;
-  weekStartsOn: WeekStart;
+  /** Locale of the month label, default: `"en-US"` */
+  locale?: string | undefined;
 }>;
 
-const TITLE = "Minuta React Demo";
-const SUBHEADING =
-  "Derived periods, divide() pattern, and adapter reactivity in one hook.";
+const DEFAULT_LOCALE = "en-US";
+const PREVIOUS_LABEL = "← Previous";
+const NEXT_LABEL = "Next →";
 
+/**
+ * The browsed month's label between previous and next buttons.
+ *
+ * @param props - Component props
+ * @param props.locale - Locale of the month label
+ * @returns The header element
+ */
 function CalendarHeader({
-  onWeekStartChange,
-  weekStartsOn,
+  locale = DEFAULT_LOCALE,
 }: CalendarHeaderProps): JSX.Element {
+  const {
+    browse,
+    browsing,
+    next: nextPeriod,
+    previous: previousPeriod,
+  } = useMinutaContext();
+
+  const handlePrevious = useCallback(() => {
+    browse(previousPeriod(browsing));
+  }, [browse, browsing, previousPeriod]);
+
+  const handleNext = useCallback(() => {
+    browse(nextPeriod(browsing));
+  }, [browse, browsing, nextPeriod]);
+
   return (
-    <header className="calendar-header">
-      <div>
-        <h1>{TITLE}</h1>
-        <p className="subheading">{SUBHEADING}</p>
-      </div>
-      <WeekStartToggle
-        weekStartsOn={weekStartsOn}
-        onChange={onWeekStartChange}
-      />
+    <header className="toolbar-row">
+      <button type="button" className="nav-button" onClick={handlePrevious}>
+        {PREVIOUS_LABEL}
+      </button>
+      <h2 aria-live="polite">{formatPeriod(browsing, locale)}</h2>
+      <button type="button" className="nav-button" onClick={handleNext}>
+        {NEXT_LABEL}
+      </button>
     </header>
   );
 }
 
 export { CalendarHeader };
+export type { CalendarHeaderProps };

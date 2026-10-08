@@ -1,55 +1,34 @@
-import type { Adapter, AdapterUnit, Period, ReadonlyPeriod } from "minuta";
+import type { Minuta, Period, Unit, Units } from "minuta/core";
 
 /**
- * Base React minuta instance with reactive state.
- * This is the internal state container, similar to VueMinuta.
+ * Options of `useMinuta()` and the props of `MinutaRoot`.
  */
-type ReactMinuta = {
-  readonly adapter: Readonly<Adapter>;
-  readonly weekStartsOn: number;
-  readonly browsing: ReadonlyPeriod;
-  readonly now: ReadonlyPeriod;
-};
+type MinutaOptions = Readonly<{
+  /** Initially browsed date, default: now */
+  date?: Readonly<Date> | undefined;
+  /** The moment that counts as "now", default: `new Date()` */
+  now?: Readonly<Date> | undefined;
+  /** Unit of the browsed period, default: `"month"` */
+  unit?: Unit | undefined;
+  /** Unit specs, default: `nativeUnits()` (weeks start on Monday) */
+  units?: Units | undefined;
+}>;
 
 /**
- * Minuta builder with convenience methods wrapping operations.
- * This is what useMinuta() returns to users.
+ * What `useMinuta()` returns and `MinutaRoot` provides: every operation of
+ * `withUnits(units)` plus the browsing state.
  */
-type MinutaBuilder = ReactMinuta & {
-  readonly derivePeriod: (date: Readonly<Date>, unit: AdapterUnit) => Period;
-  readonly createPeriod: (start: Readonly<Date>, end: Readonly<Date>) => Period;
-  readonly divide: (period: ReadonlyPeriod, unit: AdapterUnit) => Period[];
-  readonly merge: (
-    periods: readonly ReadonlyPeriod[],
-    targetUnit?: AdapterUnit
-  ) => Period;
-  readonly next: (period: ReadonlyPeriod, count?: number) => Period;
-  readonly previous: (period: ReadonlyPeriod, count?: number) => Period;
-  readonly go: (period: ReadonlyPeriod, count: number) => Period;
-  readonly split: (
-    period: ReadonlyPeriod,
-    date: Readonly<Date>
-  ) => [Period, Period];
-  readonly contains: (
-    period: ReadonlyPeriod,
-    dateOrPeriod: Readonly<Date> | ReadonlyPeriod
-  ) => boolean;
-  readonly isSame: (
-    period1: ReadonlyPeriod,
-    period2: ReadonlyPeriod,
-    unit: AdapterUnit | "custom"
-  ) => boolean;
-};
+type MinutaState = Minuta &
+  Readonly<{
+    /** Browse to the period of the browsing unit containing `period.start` */
+    browse: (period: Period) => void;
+    /** The browsed period */
+    browsing: Period;
+    /** The second containing the `now` date */
+    now: Period;
+    /** The units every operation is bound to */
+    units: Units;
+  }>;
 
-/**
- * Options for creating a React minuta instance.
- */
-type UseMinutaOptions = {
-  readonly adapter: Readonly<Adapter>;
-  readonly date?: Readonly<Date>;
-  readonly now?: Readonly<Date>;
-  readonly weekStartsOn?: number;
-};
-
-export type { MinutaBuilder, ReactMinuta, UseMinutaOptions };
-export type { Adapter, AdapterUnit, Period } from "minuta";
+export type { MinutaOptions, MinutaState };
+export type { Minuta, Period, Unit, Units } from "minuta/core";

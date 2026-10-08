@@ -1,272 +1,111 @@
 # minuta-react
 
-React integration package for `minuta`. Built on React hooks, it provides a reactive temporal instance where `browsing`, `now`, and derived periods update automatically with React's state management.
-
-## Installation
+React bindings for [`minuta`](https://github.com/AleksejDix/minuta/tree/master/packages/minuta):
+a hook that binds every operation to your units and keeps the browsed period
+in React state, a context root, and composable calendar parts.
 
 ```bash
 npm install minuta minuta-react
 ```
 
-Install whichever adapter you need:
-
-```bash
-npm install minuta/native
-```
-
-## Quick Start
+## `useMinuta(options?)`
 
 ```tsx
-import { useMinuta, usePeriod } from "minuta-react";
-import { createNativeAdapter } from "minuta/native";
+import { useMinuta } from "minuta-react";
 
-function Calendar() {
-  const temporal = useMinuta({
-    adapter: createNativeAdapter(),
-    date: new Date(),
-  });
-
-  const month = usePeriod(temporal, "month");
-  const weeks = temporal.divide(month, "week");
-
+function MonthPager() {
+  const minuta = useMinuta({ unit: "month" });
   return (
-    <div>
-      <button onClick={() => temporal.previous(month)}>Previous</button>
-      <button onClick={() => temporal.next(month)}>Next</button>
-      {/* Render calendar using weeks */}
-    </div>
+    <button onClick={() => minuta.browse(minuta.next(minuta.browsing))}>
+      {minuta.browsing.start.toDateString()}
+    </button>
   );
 }
 ```
 
-### Reactive adapter with useMemo
+Options (all optional):
+
+- `units` – unit specs, default `nativeUnits()` (weeks start on Monday). The
+  week start lives in the units: `nativeUnits({ weekStartsOn: 0 })`. Memoise
+  them (`useMemo`) so the operations are rebound only when they change.
+- `date` – initially browsed date, default now
+- `now` – the moment that counts as "now", default `new Date()`
+- `unit` – unit of the browsed period, default `"month"`
+
+Returns every operation of `withUnits(units)` (`period`, `next`, `previous`,
+`shift`, `divide`, `contains`, `same`, `isToday`, …; see the core README) plus:
+
+- `units` – the bound units
+- `browsing: Period` – the browsed period of `unit`
+- `now: Period` – the second containing `now`
+- `browse(period)` – browse to the period of `unit` containing `period.start`
+
+## `MinutaRoot`, `useMinutaContext()`, `usePeriod(unit)`
+
+`MinutaRoot` calls `useMinuta(props)` and provides the result; parts read it
+with `useMinutaContext()`, which throws outside a `MinutaRoot`.
+`usePeriod(unit)` is the period of `unit` containing the browsed period's
+start.
 
 ```tsx
-import { useMemo, useState } from "react";
-import { Minuta } from "minuta-react";
-import { createNativeAdapter } from "minuta/native";
+import { MinutaRoot, useMinutaContext, usePeriod } from "minuta-react";
 
-function App() {
-  const [weekStartsOn, setWeekStartsOn] = useState(1);
-
-  // Adapter recreates when weekStartsOn changes
-  const adapter = useMemo(
-    () => createNativeAdapter({ weekStartsOn }),
-    [weekStartsOn]
-  );
-
-  const temporal = useMinuta({ adapter, date: new Date() });
-
-  return (
-    <div>
-      <button onClick={() => setWeekStartsOn(0)}>Start week on Sunday</button>
-      <button onClick={() => setWeekStartsOn(1)}>Start week on Monday</button>
-    </div>
-  );
+function Year() {
+  const year = usePeriod("year");
+  return <h2>{year.start.getFullYear()}</h2>;
 }
-```
 
-### Calendar Component Example
-
-```tsx
-import { useMinuta, usePeriod } from "minuta-react";
-import { createNativeAdapter } from "minuta/native";
-
-function MonthCalendar() {
-  const temporal = useMinuta({
-    adapter: createNativeAdapter(),
-    date: new Date(),
-  });
-
-  const month = usePeriod(temporal, "month");
-  const weeks = temporal.divide(month, "week");
-
-  return (
-    <div className="calendar">
-      <header>
-        <button onClick={() => temporal.previous(month)}>←</button>
-        <h2>
-          {month.date.toLocaleDateString("en-US", {
-            month: "long",
-            year: "numeric",
-          })}
-        </h2>
-        <button onClick={() => temporal.next(month)}>→</button>
-      </header>
-
-      <div className="weeks">
-        {weeks.map((week, i) => {
-          const days = temporal.divide(week, "day");
-          return (
-            <div key={i} className="week">
-              {days.map((day, j) => (
-                <div
-                  key={j}
-                  className={
-                    temporal.contains(month, day.date)
-                      ? "day"
-                      : "day other-month"
-                  }
-                >
-                  {day.date.getDate()}
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+function NextMonth() {
+  const { browse, browsing, next } = useMinutaContext();
+  return <button onClick={() => browse(next(browsing))}>Next</button>;
 }
+
+<MinutaRoot unit="month">
+  <Year />
+  <NextMonth />
+</MinutaRoot>;
 ```
 
-### Drop-in example component
+## Calendar parts (`minuta-react/components`)
 
-Need a ready-made playground? Import the packaged calendar straight from the
-components entry point:
-
-```tsx
-import { CalendarExample } from "minuta-react/components";
-
-export function Demo() {
-  return (
-    <main className="app-shell">
-      <CalendarExample />
-    </main>
-  );
-}
-```
-
-## API
-
-### `useMinuta(options: UseMinutaOptions): TemporalBuilder`
-
-Creates a reactive temporal instance with builder methods.
-
-**Options:**
-
-- `adapter: Adapter` (required) - Date adapter instance
-- `date?: Date` - Initial browsing date (defaults to `new Date()`)
-- `now?: Date` - Initial now date (defaults to `new Date()`)
-- `weekStartsOn?: number` - Week start day, 0=Sunday, 1=Monday (defaults to 1)
-
-**Returns:** A temporal builder with:
-
-- `adapter: Adapter` - The current adapter
-- `weekStartsOn: number` - Week start day configuration
-- `browsing: Period` - Current browsing period (reactive)
-- `now: Period` - Current time period (reactive)
-- Builder methods: `period()`, `divide()`, `merge()`, `next()`, `previous()`, `go()`, `split()`, `contains()`, `isSame()`
-
-### `usePeriod(temporal: TemporalBuilder, unit: Unit): Period`
-
-Creates a reactive period that updates when `browsing` changes.
-
-**Parameters:**
-
-- `temporal: TemporalBuilder` - The temporal instance from `Minuta`
-- `unit: Unit` - Period unit type (`'year'`, `'month'`, `'week'`, `'day'`, etc.)
-
-**Returns:** A period that automatically updates when browsing changes
-
-### Builder Methods
-
-All operations from `minuta/operations` are available as builder methods:
-
-```tsx
-const temporal = useMinuta({ adapter, date: new Date() });
-
-// Create periods
-const year = temporal.period(new Date(), "year");
-const custom = temporal.period({ start: date1, end: date2 });
-
-// Divide and merge
-const months = temporal.divide(year, "month");
-const merged = temporal.merge(months.slice(0, 3));
-
-// Navigate (automatically updates browsing state)
-temporal.next(months[0]);
-temporal.previous(months[0]);
-temporal.go(months[0], 5);
-
-// Utilities
-temporal.split(period, date);
-temporal.contains(period, date);
-temporal.isSame(period1, period2, "day");
-```
-
-### Re-exported Operations
-
-All core operations and types are re-exported for convenience:
+Flat, composable parts that read the context of `CalendarRoot`:
 
 ```tsx
 import {
-  // Hooks
-  useMinuta,
-  usePeriod,
+  CalendarDay,
+  CalendarGrid,
+  CalendarHeader,
+  CalendarRoot,
+  CalendarWeekdays,
+} from "minuta-react/components";
+import { nativeUnits } from "minuta/native";
 
-  // Operations
-  period,
-  divide,
-  merge,
-  split,
-  next,
-  previous,
-  go,
-  contains,
-  isSame,
-  isToday,
-  isWeekday,
-  isWeekend,
+const sundayFirst = nativeUnits({ weekStartsOn: 0 });
 
-  // Types
-  type Period,
-  type Unit,
-  type Adapter,
-  type TemporalBuilder,
-
-  // Constants
-  UNITS,
-  YEAR,
-  MONTH,
-  WEEK,
-  DAY,
-} from "minuta-react";
+<CalendarRoot units={sundayFirst} onSelect={(day) => console.log(day.start)}>
+  <CalendarHeader locale="de-CH" />
+  <CalendarWeekdays locale="de-CH" />
+  <CalendarGrid>{(day) => <CalendarDay day={day} />}</CalendarGrid>
+</CalendarRoot>;
 ```
 
-## Navigation State Management
+- `CalendarRoot` – props `units?`, `date?`, `onSelect?(day)`; a `MinutaRoot`
+  browsing months plus the selected day
+- `CalendarHeader` – month label (`locale?`) with previous/next buttons
+- `CalendarWeekdays` – weekday labels in the week order of the units
+- `CalendarGrid` – the stable 42-day month grid; `children` optionally
+  renders each day (default `<CalendarDay day={day} />`)
+- `CalendarDay` – one day: classes `is-outside`, `is-today`, `is-selected`;
+  a click selects it and browses to its month
+- `CalendarExample` – the parts composed, with a Sunday/Monday toggle
 
-Navigation helpers always keep `browsing` in sync with the period you pass,
-making it safe to drive state changes from derived periods.
-
-```tsx
-const temporal = useMinuta({ adapter, date: new Date() });
-const month = usePeriod(temporal, "month");
-
-// Derived navigation reuses the same helpers
-temporal.next(month);
-
-// The memoized month recomputes automatically
-console.log(month.date); // New date after navigation
-
-const otherPeriod = temporal.period(new Date(2025, 0, 1), "month");
-
-// Any navigation updates browsing
-temporal.previous(otherPeriod);
-console.log(temporal.browsing.date); // Reflects the previous month
-```
-
-## Testing
+## Development
 
 ```bash
-npm run build --workspace=minuta-react
-TZ=UTC npm test --workspace=minuta-react
+npm run dev --workspace=minuta-react
+npm test --workspace=minuta-react
 npm run type-check --workspace=minuta-react
 ```
-
-## Documentation
-
-See the [minuta README](https://github.com/AleksejDix/minuta/tree/master/packages/minuta) for the full core API.
 
 ## License
 

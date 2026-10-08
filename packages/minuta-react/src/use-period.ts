@@ -1,24 +1,22 @@
-import type { AdapterUnit, Period } from "minuta";
-import type { MinutaBuilder } from "./types";
-import { derivePeriod } from "minuta/operations";
+import type { Period, Unit } from "minuta/core";
 import { useMemo } from "react";
+import { useMinutaContext } from "./minuta-context";
 
 /**
- * Creates a reactive period of any unit type
- * Period updates when minuta.browsing changes
- *
- * @param minuta - The minuta builder returned by useMinuta()
- * @param unit - The unit of the derived period
- * @returns The period of `unit` containing the browsing date
+ * The period of `unit` containing the start of the browsed period of the
+ * closest `MinutaRoot`. Updates when browsing or the units change.
  *
  * @example
- * const year = usePeriod(minuta, 'year')
- * const month = usePeriod(minuta, 'month')
+ * const week = usePeriod("week");
+ *
+ * @param unit - Unit of the period
+ * @returns The period of `unit` containing the browsed period's start
  */
-function usePeriod(minuta: MinutaBuilder, unit: AdapterUnit): Period {
+function usePeriod(unit: Unit): Period {
+  const minuta = useMinutaContext();
   return useMemo(
-    () => derivePeriod(minuta.adapter, minuta.browsing.start, unit),
-    [minuta.adapter, minuta.browsing, unit]
+    () => minuta.period(minuta.browsing.start, unit),
+    [minuta, unit]
   );
 }
 

@@ -3,10 +3,8 @@
 Interactive React demo showcasing how to pair `minuta-react`
 with the core divide() operations. The calendar highlights:
 
-- `Minuta` + `usePeriod` coordination
-- Derived navigation (next/previous) that keeps browsing state in sync
-- Adapter reactivity via a week-start toggle
-- `divide()` chains for month → week → day rendering
+- Context-driven calendar parts built on `MinutaRoot`
+- A segmented date field built the same way
 
 ## Getting started
 
@@ -34,13 +32,12 @@ packages/minuta-react/examples/
 
 ## Features demonstrated
 
-- **Reactive adapters** – `WeekStartToggle` flips between Sunday/Monday while
-  `useMemo` recreates the adapter so browsing + derived periods recalc
-- **Derived navigation** – `NavigationControls` passes the active month to
-  `temporal.previous/next`, mirroring the Vue behavior
-- **divide() pattern** – Calendar rows come from `temporal.divide(month, "week")`
-  and each week divides into its days for rendering
-- **Educational comments** – Components call out the patterns most teams should
-  follow when wiring Minuta into React apps
+- **Calendar parts** – `CalendarRoot` with `CalendarHeader`,
+  `CalendarWeekdays` and `CalendarGrid` from `minuta-react/components`
+- **Date field** – `DateFieldRoot` owns the vanilla `input-dom` controller
+  (datefield mask, arrow-key rotation, day clamping); `DateFieldInput` and
+  `DateFieldOutput` read it through `useDateFieldContext()`
+- **Selection** – picking a day in the calendar sets the field's value; the
+  locale select drives the field format and the calendar labels
 
 See the [minuta README](https://github.com/AleksejDix/minuta/tree/master/packages/minuta) for the full core API.

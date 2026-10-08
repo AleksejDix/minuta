@@ -1,20 +1,40 @@
+import {
+  CalendarGrid,
+  CalendarHeader,
+  CalendarRoot,
+  CalendarWeekdays,
+} from "minuta-react/components";
 import { useCallback, useState } from "react";
-import { CalendarExample } from "minuta-react/components";
+import { DateFieldDemo } from "./DateFieldDemo";
 import type { JSX } from "react";
-import { SegmentedDateInput } from "./SegmentedDateInput";
+import type { Period } from "minuta-react";
+
+const LOCALES = ["de-CH", "en-US", "en-GB", "ja-JP", "ko-KR", "fr-FR"];
+const DEFAULT_LOCALE = "de-CH";
 
 function App(): JSX.Element {
-  const [selected, setSelected] = useState<Date>();
+  const [locale, setLocale] = useState(DEFAULT_LOCALE);
+  const [value, setValue] = useState<Readonly<Date>>();
 
-  // A fresh new Date() so re-picking the same day still resets the input
-  const handleSelectDate = useCallback((date: Readonly<Date>) => {
-    setSelected(new Date(date));
+  // A fresh Date so re-picking the same day still resets the field
+  const handleSelect = useCallback((day: Period) => {
+    setValue(new Date(day.start));
   }, []);
 
   return (
     <main className="app-shell">
-      <SegmentedDateInput date={selected} />
-      <CalendarExample onSelectDate={handleSelectDate} />
+      <DateFieldDemo
+        locale={locale}
+        locales={LOCALES}
+        onChange={setValue}
+        onLocaleChange={setLocale}
+        value={value}
+      />
+      <CalendarRoot onSelect={handleSelect}>
+        <CalendarHeader locale={locale} />
+        <CalendarWeekdays locale={locale} />
+        <CalendarGrid />
+      </CalendarRoot>
     </main>
   );
 }

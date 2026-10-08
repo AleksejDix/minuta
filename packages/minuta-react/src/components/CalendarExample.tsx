@@ -1,69 +1,49 @@
-import { MONDAY, SUNDAY } from "./week-start";
 import { useMemo, useState } from "react";
+import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
+import { CalendarRoot } from "./CalendarRoot";
+import { CalendarWeekdays } from "./CalendarWeekdays";
 import type { JSX } from "react";
-import { NavigationControls } from "./NavigationControls";
-import { PeriodDisplay } from "./PeriodDisplay";
+import { MONDAY } from "./week-start";
+import type { Period } from "minuta/core";
 import type { WeekStart } from "./week-start";
-import { WeekdayRow } from "./WeekdayRow";
-import { WeeksGrid } from "./WeeksGrid";
-import { createNativeAdapter } from "minuta/native";
-import { useMinuta } from "#src/use-minuta";
-import { usePeriod } from "#src/use-period";
+import { WeekStartToggle } from "./WeekStartToggle";
+import { nativeUnits } from "minuta/native";
 
 type CalendarExampleProps = Readonly<{
-  /** Called with the start of the clicked day */
-  onSelectDate?: (date: Readonly<Date>) => void;
+  /** Called with the clicked day */
+  onSelect?: ((day: Period) => void) | undefined;
 }>;
 
-const SUNDAY_FIRST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONDAY_FIRST = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-function weekdayLabels(weekStartsOn: WeekStart): readonly string[] {
-  if (weekStartsOn === SUNDAY) {
-    return SUNDAY_FIRST;
-  }
-  return MONDAY_FIRST;
-}
+const TITLE = "Minuta React Demo";
 
 /**
- * Batteries-included calendar that mirrors the React example app.
- * Ship it from the package so docs + sandboxes can import it directly.
+ * A month calendar composed from the Calendar parts, with a week start
+ * toggle that rebuilds the units.
  *
  * @param props - Component props
- * @param props.onSelectDate - Called with the start of the clicked day
+ * @param props.onSelect - Called with the clicked day
  * @returns The calendar element
  */
-function CalendarExample({
-  onSelectDate,
-}: CalendarExampleProps = {}): JSX.Element {
+function CalendarExample({ onSelect }: CalendarExampleProps = {}): JSX.Element {
   const [weekStartsOn, setWeekStartsOn] = useState<WeekStart>(MONDAY);
-
-  // PATTERN: Memoize adapters so React recreates them when config changes.
-  const adapter = useMemo(
-    () => createNativeAdapter({ weekStartsOn }),
-    [weekStartsOn]
-  );
-
-  const minuta = useMinuta({
-    adapter,
-    date: new Date(),
-  });
-
-  const month = usePeriod(minuta, "month");
+  const units = useMemo(() => nativeUnits({ weekStartsOn }), [weekStartsOn]);
 
   return (
-    <section className="calendar-shell" data-testid="calendar-example">
-      <CalendarHeader
-        weekStartsOn={weekStartsOn}
-        onWeekStartChange={setWeekStartsOn}
-      />
-      <PeriodDisplay month={month} now={minuta.now} />
-      <NavigationControls minuta={minuta} targetPeriod={month} />
-      <WeekdayRow labels={weekdayLabels(weekStartsOn)} />
-      <WeeksGrid minuta={minuta} month={month} onSelectDate={onSelectDate} />
-    </section>
+    <CalendarRoot units={units} onSelect={onSelect}>
+      <div className="calendar-header">
+        <h1>{TITLE}</h1>
+        <WeekStartToggle
+          weekStartsOn={weekStartsOn}
+          onChange={setWeekStartsOn}
+        />
+      </div>
+      <CalendarHeader />
+      <CalendarWeekdays />
+      <CalendarGrid />
+    </CalendarRoot>
   );
 }
 
 export { CalendarExample };
+export type { CalendarExampleProps };

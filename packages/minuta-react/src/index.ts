@@ -1,10 +1,15 @@
-// Framework bindings
 export { useMinuta } from "./use-minuta";
+export { MinutaRoot } from "./minuta-root";
+export { useMinutaContext } from "./minuta-context";
 export { usePeriod } from "./use-period";
-export { createMinutaBuilder } from "./builder";
-
-// Components
 export { CalendarExample } from "./components/CalendarExample";
 
-// Types
-export type { ReactMinuta, UseMinutaOptions, MinutaBuilder } from "./types";
+export type { MinutaRootProps } from "./minuta-root";
+export type {
+  Minuta,
+  MinutaOptions,
+  MinutaState,
+  Period,
+  Unit,
+  Units,
+} from "./types";

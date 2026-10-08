@@ -1,131 +1,116 @@
+import type { MinutaOptions, MinutaState } from "./types";
 import { describe, expect, it } from "vitest";
-import type { MinutaBuilder } from "./types";
 import type { RenderHookResult } from "@testing-library/react";
 import { act } from "react";
-import { createNativeAdapter } from "minuta/native";
 import { renderHook } from "@testing-library/react";
 import { useMinuta } from "./use-minuta";
 
-const GO_STEPS = 5;
-const NEXT_COUNT = 3;
-const PREVIOUS_COUNT = 2;
+const SHIFT_STEPS = 5;
 const FEBRUARY = 1;
+const JUNE = 5;
 const NEXT_YEAR = 2025;
 
-function renderMinuta(): RenderHookResult<MinutaBuilder, unknown> {
-  const adapter = createNativeAdapter();
+function renderMinuta(
+  options: MinutaOptions = {}
+): RenderHookResult<MinutaState, unknown> {
   const date = new Date("2024-01-15T12:30:45");
-  return renderHook(() => useMinuta({ adapter, date }));
+  return renderHook(() => useMinuta({ date, unit: options.unit }));
 }
 
-describe("useMinuta() single-step navigation", () => {
-  it("should navigate to next period", { timeout: 5000 }, () => {
+describe("useMinuta() browse", () => {
+  it("should browse to the next period", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { result } = renderMinuta();
     const initialBrowsing = result.current.browsing;
 
     act(() => {
-      result.current.next(result.current.browsing);
+      result.current.browse(result.current.next(result.current.browsing));
     });
 
-    expect(result.current.browsing.start.getTime()).not.toBe(
-      initialBrowsing.start.getTime()
-    );
     expect(result.current.browsing.start.getTime()).toBeGreaterThan(
       initialBrowsing.start.getTime()
     );
+    expect(result.current.browsing.start.getMonth()).toBe(FEBRUARY);
   });
 
-  it("should navigate to previous period", { timeout: 5000 }, () => {
+  it("should browse to the previous period", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { result } = renderMinuta();
     const initialBrowsing = result.current.browsing;
 
     act(() => {
-      result.current.previous(result.current.browsing);
+      result.current.browse(result.current.previous(result.current.browsing));
     });
 
-    expect(result.current.browsing.start.getTime()).not.toBe(
-      initialBrowsing.start.getTime()
-    );
     expect(result.current.browsing.start.getTime()).toBeLessThan(
       initialBrowsing.start.getTime()
     );
   });
+});
 
-  it("should navigate with go method", { timeout: 5000 }, () => {
+describe("useMinuta() browse with shift", () => {
+  it("should browse to a shifted period", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { result } = renderMinuta();
-    const initialBrowsing = result.current.browsing;
 
     act(() => {
-      result.current.go(result.current.browsing, GO_STEPS);
+      result.current.browse(
+        result.current.shift(result.current.browsing, SHIFT_STEPS)
+      );
     });
 
-    expect(result.current.browsing.start.getTime()).not.toBe(
-      initialBrowsing.start.getTime()
-    );
+    expect(result.current.browsing.start.getMonth()).toBe(JUNE);
+  });
+
+  it("should keep browse stable across renders", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result } = renderMinuta();
+    const { browse } = result.current;
+
+    act(() => {
+      browse(result.current.next(result.current.browsing));
+    });
+
+    expect(result.current.browse).toBe(browse);
   });
 });
 
-describe("useMinuta() multi-step navigation", () => {
+describe("useMinuta() browsing another period", () => {
   it(
-    "should navigate multiple periods with next count",
+    "should update browsing when browsing a non-browsing period",
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
       const { result } = renderMinuta();
-      const initialBrowsing = result.current.browsing;
-
-      act(() => {
-        result.current.next(result.current.browsing, NEXT_COUNT);
-      });
-
-      expect(result.current.browsing.start.getTime()).not.toBe(
-        initialBrowsing.start.getTime()
-      );
-    }
-  );
-
-  it(
-    "should navigate multiple periods with previous count",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      const { result } = renderMinuta();
-      const initialBrowsing = result.current.browsing;
-
-      act(() => {
-        result.current.previous(result.current.browsing, PREVIOUS_COUNT);
-      });
-
-      expect(result.current.browsing.start.getTime()).not.toBe(
-        initialBrowsing.start.getTime()
-      );
-    }
-  );
-});
-
-describe("useMinuta() navigating another period", () => {
-  it(
-    "should update browsing when navigating non-browsing period",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      const { result } = renderMinuta();
-      const otherPeriod = result.current.derivePeriod(
+      const otherPeriod = result.current.period(
         new Date("2025-01-01T00:00:00"),
         "month"
       );
-      const initialBrowsing = result.current.browsing;
 
       act(() => {
-        result.current.next(otherPeriod);
+        result.current.browse(result.current.next(otherPeriod));
       });
 
-      expect(result.current.browsing).not.toStrictEqual(initialBrowsing);
       expect(result.current.browsing.start.getMonth()).toBe(FEBRUARY);
       expect(result.current.browsing.start.getFullYear()).toBe(NEXT_YEAR);
+    }
+  );
+
+  it(
+    "should browse the period of the browsing unit containing the start",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const { result } = renderMinuta({ unit: "month" });
+      const day = result.current.period(new Date("2024-03-20T00:00:00"), "day");
+
+      act(() => {
+        result.current.browse(day);
+      });
+
+      expect(result.current.browsing).toStrictEqual(
+        result.current.period(day.start, "month")
+      );
     }
   );
 });
