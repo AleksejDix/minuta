@@ -15,6 +15,14 @@ pre-commit:
       glob: "*.{ts,tsx,js,mjs,vue}"
       run: npx oxlint {staged_files}
 
+    # CI installs from the public registry only; a lockfile written through a
+    # private mirror (e.g. Artifactory) would fail there
+    - name: lockfile-registry
+      glob: "package-lock.json"
+      run: >-
+        sh -c 'if grep -o "\"resolved\": \"https://[^\"]*" package-lock.json | grep -qv "https://registry.npmjs.org/";
+        then echo "package-lock.json has non-npmjs resolved URLs; rewrite them to https://registry.npmjs.org/ (npm keeps using your mirror via replace-registry-host)"; exit 1; fi'
+
 pre-push:
   parallel: true
   jobs:
