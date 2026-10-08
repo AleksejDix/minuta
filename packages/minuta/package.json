@@ -28,6 +28,10 @@
       "types": "./dist/calendar.d.ts",
       "import": "./dist/calendar.js"
     },
+    "./segments": {
+      "types": "./dist/segments.d.ts",
+      "import": "./dist/segments.js"
+    },
     "./helpers": {
       "types": "./dist/helpers.d.ts",
       "import": "./dist/helpers.js"
