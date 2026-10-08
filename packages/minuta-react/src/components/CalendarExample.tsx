@@ -121,10 +121,12 @@ export function CalendarExample({
 }
 
 function buildWeeks(minuta: MinutaBuilder, month: Period): WeekWithDays[] {
-  return minuta.divide(month, "week").map((week) => ({
-    period: week,
-    days: minuta.divide(week, "day"),
-  }));
+  // divide() clips the first and last week to the month; expand them to full
+  // weeks so day 1 lands in its weekday column (outside days render dimmed)
+  return minuta.divide(month, "week").map((clipped) => {
+    const week = minuta.derivePeriod(clipped.start, "week");
+    return { period: week, days: minuta.divide(week, "day") };
+  });
 }
 
 function NavigationControls({

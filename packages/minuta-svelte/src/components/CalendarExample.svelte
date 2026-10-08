@@ -17,8 +17,12 @@
   });
 
   const month = usePeriod(minuta, "month");
+  // divide() clips the first and last week to the month; expand them to full
+  // weeks so day 1 lands in its weekday column (outside days render inactive)
   const weekPeriods = derived(month, ($month) =>
-    minuta.divide($month, "week")
+    minuta
+      .divide($month, "week")
+      .map((week) => minuta.derivePeriod(week.start, "week"))
   );
   const dayPeriods = derived(weekPeriods, ($weeks) =>
     $weeks.flatMap((week) => minuta.divide(week, "day"))
