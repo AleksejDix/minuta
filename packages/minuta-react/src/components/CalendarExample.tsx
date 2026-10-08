@@ -30,7 +30,12 @@ type WeekWithDays = { period: Period; days: Period[] };
  * Batteries-included calendar that mirrors the React example app.
  * Ship it from the package so docs + sandboxes can import it directly.
  */
-export function CalendarExample() {
+export function CalendarExample({
+  onSelectDate,
+}: {
+  /** Called with the start of the clicked day */
+  onSelectDate?: (date: Date) => void;
+} = {}) {
   const [weekStartsOn, setWeekStartsOn] = useState<0 | 1>(1);
 
   // PATTERN: Memoize adapters so React recreates them when config changes.
@@ -95,7 +100,10 @@ export function CalendarExample() {
                   ]
                     .filter(Boolean)
                     .join(" ")}
-                  onClick={() => minuta.go(day, 0)}
+                  onClick={() => {
+                    minuta.go(day, 0);
+                    onSelectDate?.(day.start);
+                  }}
                   title={dayFormatter.format(day.start)}
                 >
                   <span className="date-number">{day.start.getDate()}</span>
