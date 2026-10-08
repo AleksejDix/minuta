@@ -14,7 +14,6 @@ export default defineConfig({
       "packages/minuta-vue",
       "packages/minuta-react",
       "packages/datefield",
-      "packages/gap-buffer",
       "packages/text-buffer",
       "packages/input-state",
       "packages/input-dom",

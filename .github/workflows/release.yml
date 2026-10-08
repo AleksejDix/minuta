@@ -41,8 +41,18 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish gap-buffer
-        run: npm publish -w gap-buffer --access public
+      - name: Publish text-buffer
+        run: npm publish -w text-buffer --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish input-state
+        run: npm publish -w input-state --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish input-dom
+        run: npm publish -w input-dom --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

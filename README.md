@@ -32,7 +32,9 @@ const hours = divide(adapter, days[0], "hour"); // 24 periods
 | `minuta-vue`         | Vue 3 integration                    |
 | `minuta-react`       | React 18+ integration                |
 | `datefield`          | Headless segmented date input        |
-| `gap-buffer`         | Fixed-slot input buffer with gaps    |
+| `text-buffer`        | Immutable text + selection model     |
+| `input-state`        | Masks + insert/overwrite modes       |
+| `input-dom`          | Vanilla DOM binding for inputs       |
 
 ## Documentation
 
