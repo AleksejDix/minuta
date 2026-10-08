@@ -1,0 +1,57 @@
+{
+  "name": "text-buffer",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Immutable text + selection model with pure editing operations. No modes, no masks, no DOM.",
+  "license": "Apache-2.0",
+  "author": "Aleksej Dix <git@aleksejdix.com>",
+  "homepage": "https://github.com/AleksejDix/minuta/tree/master/packages/text-buffer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleksejDix/minuta.git",
+    "directory": "packages/text-buffer"
+  },
+  "bugs": {
+    "url": "https://github.com/AleksejDix/minuta/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "imports": {
+    "#src/*": {
+      "source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "type-check": "tsc -p tsconfig.check.json",
+    "clean": "rm -rf dist node_modules"
+  },
+  "devDependencies": {
+    "@minuta/tsconfig": "2.0.0-alpha.1",
+    "typescript": "^5.7.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.4.0",
+    "vitest": "^4.0.13"
+  },
+  "keywords": [
+    "text",
+    "buffer",
+    "selection",
+    "cursor",
+    "editor",
+    "headless",
+    "immutable"
+  ]
+}

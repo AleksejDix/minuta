@@ -15,6 +15,7 @@ export default defineConfig({
       "packages/minuta-react",
       "packages/datefield",
       "packages/gap-buffer",
+      "packages/text-buffer",
     ],
     coverage: {
       provider: "v8",
