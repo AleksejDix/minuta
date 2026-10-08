@@ -1,4 +1,4 @@
-# Zero-Cost Date Parsing: How minuta/segments Replaces Thousands of Lines with 265
+# Zero-Cost Date Parsing: How datefield Replaces Locale Tables with the Browser
 
 ## The Problem Every Date Library Got Wrong
 
@@ -12,7 +12,7 @@ This is the single biggest contributor to bundle size in date libraries:
 | date-fns | ~20KB parse + per-locale imports | Each `locale/` module adds format rules to your bundle |
 | Luxon | ~20KB | Format tables, token maps, regex patterns |
 | Day.js | ~7KB + plugins | Plugin chain: customParseFormat, localizedFormat, etc. |
-| **minuta/segments** | **~1KB** | **265 lines. No locale data.** |
+| **datefield** | **~3 KB gzip** | **No locale data.** |
 
 The irony? **Your browser already has all this data.** Every browser ships ICU — the International Components for Unicode — a comprehensive locale database that handles every country, calendar system, and numeral system on earth. It's exposed through `Intl.DateTimeFormat`.
 
@@ -23,7 +23,7 @@ Every parser before us tried to replicate what the browser already knows. We jus
 ### One function. One line. Every locale.
 
 ```typescript
-import { deriveFormat } from "minuta/segments";
+import { deriveFormat } from "datefield";
 
 const format = deriveFormat("de-CH");
 // → [day, ".", month, ".", year]
@@ -70,11 +70,11 @@ fmt.formatToParts(referenceDate);
 Once we know the structure, parsing is just slicing strings by known lengths:
 
 ```typescript
-import { deriveFormat, parseSegments, toDate } from "minuta/segments";
+import { deriveFormat, parseSegments, toDate } from "datefield";
 
 const format = deriveFormat("de-CH");      // Know the structure
 const segments = parseSegments(format, "31.03.2026");  // Slice by lengths
-const date = toDate(adapter, segments);    // → Date(2026, 2, 31)
+const date = toDate(segments);             // → Date(2026, 2, 31)
 ```
 
 No regex. No backtracking. No ambiguity. We know exactly where each segment starts and ends because the browser told us.
@@ -126,28 +126,28 @@ All handled. Zero special cases in our code. We force Gregorian calendar and Lat
 
 ## The Segmented Date Input
 
-`minuta/segments` isn't just a parser — it's a complete engine for building date input fields. The kind where you click on the day, press arrow-up, and it increments. Press Tab, and it moves to the month.
+`datefield` isn't just a parser — it's a complete engine for building date input fields. The kind where you click on the day, press arrow-up, and it rotates. Press Tab, and it moves to the month. Editing runs on [`gap-buffer`](../../gap-buffer), so correcting one digit never shifts the rest of the date.
 
 ```typescript
 import {
   deriveFormat,
   fromDate,
-  incrementSegment,
   nextSegment,
   previousSegment,
   segmentAtPosition,
   inputDigit,
+  rotateSegment,
   toDate,
-} from "minuta/segments";
+} from "datefield";
 
 // Derive format from user's locale
 const format = deriveFormat(navigator.language);
 
 // Convert a date to editable segments
-const segments = fromDate(adapter, new Date(), format);
+const segments = fromDate(new Date(), format);
 
-// Arrow Up on the day segment → adapter.add(date, 1, "day")
-const updated = incrementSegment(adapter, segments, 0, 1, format);
+// Arrow Up on the day segment: 31 → 01, the month stays untouched
+const updated = rotateSegment(segments, 0, 1);
 
 // Navigate between segments (skips separators)
 const monthIndex = nextSegment(segments, 0); // day → month
@@ -156,19 +156,19 @@ const monthIndex = nextSegment(segments, 0); // day → month
 const { segments: typed, activeIndex } = inputDigit(segments, 0, "3");
 
 // Convert back to a Date
-const date = toDate(adapter, segments);
+const date = toDate(segments);
 ```
 
 All pure functions. No DOM. No React. No state. Wire them to your framework of choice in ~20 lines.
 
-### What the adapter gives you
+### Rotation that never destroys the date
 
-The increment uses minuta's adapter — so `adapter.add(date, 1, "month")` correctly handles:
+`rotateSegment` wraps a segment within its own range and never carries into the next one:
 
-- January 31 + 1 month = February 28 (not March 3)
-- Leap years (Feb 29 exists in 2024, not 2025)
-- Year boundaries (December + 1 month = January next year)
-- DST transitions
+- Day 31 → 01 keeps the month; month 12 → 01 keeps the year
+- The day range follows the real month length (30.04 → 01.04, 29.02 only in leap years)
+- Changing the month or year clamps the day: 31.01 → month up → 28.02
+- An empty segment starts like a native date input (up → minimum, down → maximum)
 
 No hardcoded `Math.min(day + 1, 31)` like traditional date inputs.
 
@@ -182,13 +182,13 @@ No hardcoded `Math.min(day + 1, 31)` like traditional date inputs.
                    │ formatToParts()
                    ▼
 ┌─────────────────────────────────────────────┐
-│  minuta/segments (265 lines)                │
+│  datefield                                  │
 │                                             │
 │  deriveFormat()  → format structure          │
 │  parseSegments() → typed segments            │
 │  toDate()        → Date object              │
 │  fromDate()      → segments from Date        │
-│  increment()     → arrow up/down            │
+│  rotateSegment() → arrow up/down            │
 │  navigate()      → arrow left/right          │
 │  inputDigit()    → keyboard typing          │
 └──────────────────┬──────────────────────────┘
@@ -206,7 +206,7 @@ No hardcoded `Math.min(day + 1, 31)` like traditional date inputs.
 
 Every KB of JavaScript delays your app's time-to-interactive. Date parsers are often the largest dependency in form-heavy applications. Shipping 70KB of Moment.js so users can type a date into a form was always absurd — we just didn't have a better option.
 
-Now we do. 265 lines. ~1KB minified. The browser does the rest.
+Now we do. About 3 KB gzipped, zero dependencies besides gap-buffer. The browser does the rest.
 
 ### Locale correctness is not optional
 
@@ -216,7 +216,7 @@ Hardcoding `DD/MM/YYYY` and calling it "international" ignores 275 locale variat
 
 ### The best code is the code you don't write
 
-We didn't build a parser. We built a 265-line bridge to the parser that already ships with every browser. That means:
+We didn't build a parser. We built a thin bridge to the parser that already ships with every browser. That means:
 
 - **Zero maintenance** for locale data — browser vendors update ICU
 - **Zero bugs** in format detection — battle-tested by billions of users
@@ -227,19 +227,17 @@ The most reliable parser is the one you delegate to the platform.
 ## Get Started
 
 ```bash
-npm install minuta
+npm install datefield
 ```
 
 ```typescript
-import { deriveFormat, parseSegments, toDate } from "minuta/segments";
-import { createNativeAdapter } from "minuta/native";
+import { deriveFormat, parseSegments, toDate } from "datefield";
 
-const adapter = createNativeAdapter();
 const format = deriveFormat(navigator.language);
 
 // Parse user input
 const segments = parseSegments(format, userInput);
-const date = toDate(adapter, segments);
+const date = toDate(segments);
 
-// That's it. Every locale. 265 lines. 0KB locale data.
+// That's it. Every locale. 0 KB locale data.
 ```

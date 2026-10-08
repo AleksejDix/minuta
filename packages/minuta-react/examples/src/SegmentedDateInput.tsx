@@ -5,10 +5,8 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
-import { createNativeAdapter } from "minuta/native";
+import { GapBuffer, REGEXP_ONLY_DIGITS } from "gap-buffer";
 import {
-  GapBuffer,
-  REGEXP_ONLY_DIGITS,
   clampDay,
   deriveFormat,
   fromDate,
@@ -20,9 +18,7 @@ import {
   toSlots,
   type DateFormat,
   type Segment,
-} from "minuta/segments";
-
-const adapter = createNativeAdapter();
+} from "datefield";
 
 const LOCALES = ["de-CH", "en-US", "en-GB", "ja-JP", "ko-KR", "fr-FR"];
 
@@ -60,9 +56,7 @@ function emptyBuffer(format: DateFormat) {
 }
 
 function bufferFromDate(format: DateFormat, date: Date, locale: string) {
-  return emptyBuffer(format).setValue(
-    toSlots(fromDate(adapter, date, format, locale))
-  );
+  return emptyBuffer(format).setValue(toSlots(fromDate(date, format, locale)));
 }
 
 export function SegmentedDateInput({ date: selected }: { date?: Date }) {
@@ -93,7 +87,7 @@ export function SegmentedDateInput({ date: selected }: { date?: Date }) {
 
   function changeLocale(next: string) {
     const nextFormat = deriveFormat(next);
-    const current = toDate(adapter, segments);
+    const current = toDate(segments);
     setLocale(next);
     setBuffer(
       current
@@ -160,11 +154,11 @@ export function SegmentedDateInput({ date: selected }: { date?: Date }) {
     setBuffer(buffer.focus(posToSlot(segments, pos)));
   }
 
-  const date = toDate(adapter, segments);
+  const date = toDate(segments);
 
   return (
     <section style={{ display: "grid", gap: "1rem", minWidth: "20rem" }}>
-      <h2 style={{ margin: 0 }}>minuta/segments</h2>
+      <h2 style={{ margin: 0 }}>datefield</h2>
 
       <label style={{ display: "grid", gap: "0.25rem" }}>
         Locale

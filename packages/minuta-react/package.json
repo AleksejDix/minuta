@@ -59,11 +59,13 @@
     "minuta": "^1.0.0-beta.1"
   },
   "devDependencies": {
+    "@minuta/tsconfig": "^2.0.0-alpha.1",
     "@testing-library/react": "^14.0.0",
     "@types/node": "^22.12.1",
     "@types/react": "^18.0.0",
-    "@minuta/tsconfig": "^2.0.0-alpha.1",
     "@vitejs/plugin-react": "^5.1.1",
+    "datefield": "^0.1.0",
+    "gap-buffer": "^0.1.0",
     "jsdom": "^25.0.1",
     "react": "^18.0.0",
     "react-dom": "^18.3.1",

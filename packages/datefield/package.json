@@ -1,0 +1,59 @@
+{
+  "name": "datefield",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Headless segmented date input: Intl locale formats, gap-buffer editing and segment rotation.",
+  "license": "Apache-2.0",
+  "author": "Aleksej Dix <git@aleksejdix.com>",
+  "homepage": "https://github.com/AleksejDix/minuta/tree/master/packages/datefield",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleksejDix/minuta.git",
+    "directory": "packages/datefield"
+  },
+  "bugs": {
+    "url": "https://github.com/AleksejDix/minuta/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "imports": {
+    "#src/*": {
+      "source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "type-check": "tsc -p tsconfig.check.json",
+    "clean": "rm -rf dist node_modules"
+  },
+  "dependencies": {
+    "gap-buffer": "^0.1.0"
+  },
+  "devDependencies": {
+    "@minuta/tsconfig": "2.0.0-alpha.1",
+    "typescript": "^5.7.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.4.0",
+    "vitest": "^4.0.13"
+  },
+  "keywords": [
+    "date",
+    "input",
+    "date-input",
+    "segmented",
+    "intl",
+    "headless"
+  ]
+}

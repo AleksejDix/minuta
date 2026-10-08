@@ -1,5 +1,5 @@
 import type { DateFormat, FormatToken, Segment } from "./types";
-import { GAP } from "./gap-buffer";
+import { GAP } from "gap-buffer";
 
 const PLACEHOLDER = "_";
 

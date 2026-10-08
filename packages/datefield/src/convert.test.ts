@@ -1,42 +1,40 @@
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
 import { fromDate, segmentsToString, toDate } from "./convert";
-import { createNativeAdapter } from "#src/adapters/native/adapter";
 
-const adapter = createNativeAdapter();
 const format = deriveFormat("de-CH");
 
 describe("toDate()", () => {
   it("converts valid segments to a Date", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const segments = parseSegments(format, "31.03.2026");
-    const date = toDate(adapter, segments);
+    const date = toDate(segments);
     expect(date).toStrictEqual(new Date("2026-03-31T00:00:00"));
   });
 
   it("returns undefined for invalid date (Feb 30)", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const segments = parseSegments(format, "30.02.2026");
-    expect(toDate(adapter, segments)).toBeUndefined();
+    expect(toDate(segments)).toBeUndefined();
   });
 
   it("returns undefined for incomplete segments", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const segments = parseSegments(format, "__.__.____ ");
-    expect(toDate(adapter, segments)).toBeUndefined();
+    expect(toDate(segments)).toBeUndefined();
   });
 
   it("handles leap year Feb 29", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const segments = parseSegments(format, "29.02.2024");
-    const date = toDate(adapter, segments);
+    const date = toDate(segments);
     expect(date).toStrictEqual(new Date("2024-02-29T00:00:00"));
   });
 
   it("rejects non-leap year Feb 29", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const segments = parseSegments(format, "29.02.2025");
-    expect(toDate(adapter, segments)).toBeUndefined();
+    expect(toDate(segments)).toBeUndefined();
   });
 });
 
@@ -44,7 +42,7 @@ describe("fromDate()", () => {
   it("converts a Date to segments in de-CH format", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const date = new Date("2026-03-31T00:00:00");
-    const segments = fromDate(adapter, date, format);
+    const segments = fromDate(date, format);
 
     expect(segments).toStrictEqual([
       { end: 2, start: 0, type: "day", value: "31" },
@@ -59,7 +57,7 @@ describe("fromDate()", () => {
     expect.hasAssertions();
     const usFormat = deriveFormat("en-US");
     const date = new Date("2026-01-05T00:00:00");
-    const [month, , day, , year] = fromDate(adapter, date, usFormat);
+    const [month, , day, , year] = fromDate(date, usFormat);
 
     expect(month).toMatchObject({ type: "month", value: "01" });
     expect(day).toMatchObject({ type: "day", value: "05" });
@@ -81,9 +79,7 @@ describe("toDate() with gaps", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      expect(
-        toDate(adapter, parseSegments(format, "3_.03.2026"))
-      ).toBeUndefined();
+      expect(toDate(parseSegments(format, "3_.03.2026"))).toBeUndefined();
     }
   );
 });

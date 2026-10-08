@@ -4,7 +4,6 @@ import type {
   FormatToken,
   Segment,
 } from "./types";
-import type { Adapter } from "#src/types";
 import { extractDerivedPart } from "./derived-part";
 
 const DEFAULT_TIME_PART = 0;
@@ -104,20 +103,16 @@ function buildDate(parts: Readonly<DateParts>): Date | undefined {
 }
 
 /**
- * Convert segments to a Date using the adapter.
+ * Convert segments to a Date.
  * Returns undefined if the segments don't form a valid date.
  *
  * Editable segments (day, month, year, hour, minute, second) are parsed.
  * Derived segments (era, weekday, dayPeriod, etc.) are ignored — they're computed from the date.
  *
- * @param _adapter - Adapter (reserved, currently unused)
  * @param segments - Segments to convert
  * @returns The date, or undefined if the segments are incomplete or invalid
  */
-function toDate(
-  _adapter: Adapter,
-  segments: readonly Segment[]
-): Date | undefined {
+function toDate(segments: readonly Segment[]): Date | undefined {
   const parts = collectParts(segments);
   if (parts === undefined) {
     return undefined;
@@ -167,15 +162,12 @@ function tokenToSegment(input: TokenInput): Segment | undefined {
  * Handles editable segments (day, month, year, hour, minute, second)
  * and derived segments (era, weekday, dayPeriod, fractionalSecond, timeZoneName).
  *
- * @param _adapter - Adapter (reserved, currently unused)
  * @param date - Date to convert
  * @param format - Format of the segments
  * @param locale - Locale for derived segments (defaults to en-US)
  * @returns The segments
  */
-// oxlint-disable-next-line eslint/max-params -- Public API signature; an options object would break callers
 function fromDate(
-  _adapter: Adapter,
   date: Readonly<Date>,
   format: Readonly<DateFormat>,
   locale?: string

@@ -13,6 +13,8 @@ export default defineConfig({
       "packages/minuta",
       "packages/minuta-vue",
       "packages/minuta-react",
+      "packages/datefield",
+      "packages/gap-buffer",
     ],
     coverage: {
       provider: "v8",

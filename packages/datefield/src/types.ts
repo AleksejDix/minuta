@@ -1,5 +1,5 @@
 /**
- * Editable segment types that map to adapter units.
+ * Editable segment types: the parts a user can type into.
  * These can be incremented, decremented, and typed into.
  */
 type EditableSegmentType =

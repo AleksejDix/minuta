@@ -28,9 +28,9 @@
       "types": "./dist/calendar.d.ts",
       "import": "./dist/calendar.js"
     },
-    "./segments": {
-      "types": "./dist/segments.d.ts",
-      "import": "./dist/segments.js"
+    "./format": {
+      "types": "./dist/format.d.ts",
+      "import": "./dist/format.js"
     },
     "./helpers": {
       "types": "./dist/helpers.d.ts",

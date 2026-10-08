@@ -1,4 +1,4 @@
-import { formatPeriod, formatRange } from "#src/segments/format";
+import { formatPeriod, formatRange } from "#src/format/format";
 import type { ReadonlyPeriod } from "#src/types";
 
 /**
