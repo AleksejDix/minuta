@@ -17,6 +17,7 @@ export default defineConfig({
       "packages/gap-buffer",
       "packages/text-buffer",
       "packages/input-state",
+      "packages/input-dom",
     ],
     coverage: {
       provider: "v8",

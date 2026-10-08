@@ -27,6 +27,7 @@
     "dev": "npm run dev --workspace=minuta",
     "dev:react": "npm run dev --workspace=minuta-react",
     "dev:vue": "npm run dev --workspace=minuta-vue",
+    "dev:inputs": "npm run build -w text-buffer -w input-state -w datefield -w input-dom && npm run dev --workspace=input-dom",
     "demo:build:react": "npm run demo:build --workspace=minuta-react",
     "demo:build:vue": "npm run demo:build --workspace=minuta-vue",
     "lint": "oxlint .",
