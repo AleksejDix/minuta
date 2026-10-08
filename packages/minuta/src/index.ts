@@ -19,4 +19,10 @@ export {
 } from "./operations";
 
 // Types
-export type { Period, Series, Adapter, AdapterUnit } from "./types";
+export type {
+  Adapter,
+  AdapterUnit,
+  Period,
+  ReadonlyPeriod,
+  Series,
+} from "./types";
