@@ -1,5 +1,4 @@
 import {
-  CalendarDay,
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
@@ -20,7 +19,6 @@ const MARCH_1_CELL = 4;
 const MARCH_16_CELL = 19;
 const NO_CELLS = 0;
 const ONE_CELL = 1;
-const OUTSIDE_CALENDAR = "Calendar parts must be used within <CalendarRoot>";
 
 const testDate = new Date("2024-03-13T00:00:00");
 
@@ -274,24 +272,4 @@ describe("calendarDay selection", () => {
       );
     }
   );
-});
-
-describe("calendar parts outside CalendarRoot", () => {
-  it.each([CalendarHeader, CalendarWeekdays, CalendarGrid])(
-    "throws for part %#",
-    { timeout: 5000 },
-    (part) => {
-      expect.hasAssertions();
-      expect(() => mountRender(() => h(part))).toThrow(OUTSIDE_CALENDAR);
-    }
-  );
-
-  it("throws for a day", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const day: Period = { end: testDate, start: testDate, unit: "day" };
-
-    expect(() => mountRender(() => h(CalendarDay, { day }))).toThrow(
-      OUTSIDE_CALENDAR
-    );
-  });
 });

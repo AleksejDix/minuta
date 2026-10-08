@@ -1,8 +1,8 @@
 import type { Period, Unit } from "minuta/core";
 import { computed, effect, isRef, ref } from "vue";
 import { describe, expect, it } from "vitest";
+import { probeInRoot, silenceVueWarnings } from "./test/mount";
 import { nativeUnits } from "minuta/native";
-import { probeInRoot } from "./test/mount";
 import { useMinutaContext } from "./minuta-context";
 import { usePeriod } from "./use-period";
 
@@ -53,8 +53,12 @@ describe("usePeriod()", () => {
 
   it("throws outside MinutaRoot", { timeout: 5000 }, () => {
     expect.hasAssertions();
+    const warn = silenceVueWarnings();
     expect(() => usePeriod("day")).toThrow(
       "useMinutaContext() must be used within <MinutaRoot>"
+    );
+    expect(warn.mock.calls.flat()).toContainEqual(
+      expect.stringContaining("[Vue warn]")
     );
   });
 });

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { h, nextTick, shallowRef } from "vue";
-import { itemAt, mountRender, probeInRoot, recorder } from "./test/mount";
+import {
+  itemAt,
+  mountRender,
+  probeInRoot,
+  recorder,
+  silenceVueWarnings,
+} from "./test/mount";
 import { MinutaRoot } from "#src/index";
 import type { MinutaState } from "./types";
 import { nativeUnits } from "minuta/native";
@@ -43,9 +49,13 @@ describe("useMinutaContext()", () => {
 
   it("throws outside MinutaRoot", { timeout: 5000 }, () => {
     expect.hasAssertions();
+    const warn = silenceVueWarnings();
     const orphan = recorder(useMinutaContext);
 
     expect(() => mountRender(() => h(orphan.component))).toThrow(OUTSIDE_ROOT);
+    expect(warn.mock.calls.flat()).toContainEqual(
+      expect.stringContaining("[Vue warn]")
+    );
   });
 
   it("throws outside any component", { timeout: 5000 }, () => {

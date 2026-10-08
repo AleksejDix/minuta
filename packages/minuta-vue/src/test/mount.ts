@@ -1,10 +1,27 @@
 import type { Component, VNode } from "vue";
 import { createApp, defineComponent, h } from "vue";
+import { onTestFinished, vi } from "vitest";
 import type { MinutaOptions } from "#src/types";
 import { MinutaRoot } from "#src/index";
-import { onTestFinished } from "vitest";
+import type { MockInstance } from "vitest";
 
 const FIRST = 0;
+
+/**
+ * Capture console.warn for the rest of the current test, so warnings Vue
+ * prints for a deliberately failing setup don't clutter the output.
+ *
+ * @returns The spy, to assert that Vue did warn
+ */
+function silenceVueWarnings(): MockInstance<Console["warn"]> {
+  const warn = vi
+    .spyOn(console, "warn")
+    .mockImplementation(vi.fn<Console["warn"]>());
+  onTestFinished(() => {
+    warn.mockRestore();
+  });
+  return warn;
+}
 
 type Mounted = Readonly<{
   element: HTMLElement;
@@ -88,4 +105,4 @@ function probeInRoot<Result>(
   return { element, result: itemAt(probe.results, FIRST) };
 }
 
-export { itemAt, mountRender, probeInRoot, recorder };
+export { itemAt, mountRender, probeInRoot, recorder, silenceVueWarnings };
