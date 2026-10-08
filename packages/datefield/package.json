@@ -2,7 +2,7 @@
   "name": "datefield",
   "version": "0.1.0",
   "type": "module",
-  "description": "Headless segmented date input: Intl locale formats, gap-buffer editing and segment rotation.",
+  "description": "Headless segmented date input: Intl locale formats as input masks, segment rotation and day clamping.",
   "license": "Apache-2.0",
   "author": "Aleksej Dix <git@aleksejdix.com>",
   "homepage": "https://github.com/AleksejDix/minuta/tree/master/packages/datefield",
@@ -39,7 +39,8 @@
     "clean": "rm -rf dist node_modules"
   },
   "dependencies": {
-    "gap-buffer": "^0.1.0"
+    "input-state": "^0.1.0",
+    "text-buffer": "^0.1.0"
   },
   "devDependencies": {
     "@minuta/tsconfig": "2.0.0-alpha.1",

@@ -9,7 +9,7 @@ export default defineConfig({
       formats: ["es"],
     },
     rollupOptions: {
-      external: ["gap-buffer"],
+      external: ["input-state", "text-buffer"],
     },
   },
   plugins: [

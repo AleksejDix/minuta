@@ -126,7 +126,7 @@ All handled. Zero special cases in our code. We force Gregorian calendar and Lat
 
 ## The Segmented Date Input
 
-`datefield` isn't just a parser — it's a complete engine for building date input fields. The kind where you click on the day, press arrow-up, and it rotates. Press Tab, and it moves to the month. Editing runs on [`gap-buffer`](../../gap-buffer), so correcting one digit never shifts the rest of the date.
+`datefield` isn't just a parser — it's a complete engine for building date input fields. The kind where you click on the day, press arrow-up, and it rotates. Press Tab, and it moves to the month. The format becomes an [`input-state`](../../input-state) mask in overwrite mode, so correcting one digit never shifts the rest of the date.
 
 ```typescript
 import {
@@ -206,7 +206,7 @@ No hardcoded `Math.min(day + 1, 31)` like traditional date inputs.
 
 Every KB of JavaScript delays your app's time-to-interactive. Date parsers are often the largest dependency in form-heavy applications. Shipping 70KB of Moment.js so users can type a date into a form was always absurd — we just didn't have a better option.
 
-Now we do. About 3 KB gzipped, zero dependencies besides gap-buffer. The browser does the rest.
+Now we do. A few KB gzipped, built only on the tiny input-state and text-buffer layers. The browser does the rest.
 
 ### Locale correctness is not optional
 

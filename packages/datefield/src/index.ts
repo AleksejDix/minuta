@@ -1,9 +1,9 @@
 /**
  * Headless logic for segmented date inputs like DD.MM.YYYY (datefield).
  *
- * Locale formats come from Intl.DateTimeFormat; editing runs on the gap-buffer package,
- * so correcting one digit never shifts the rest. Framework-agnostic: wire the
- * pure functions to DOM events in your framework of choice.
+ * Locale formats come from Intl.DateTimeFormat and become input-state masks;
+ * editing overwrites slots, so correcting one digit never shifts the rest.
+ * Framework-agnostic: no DOM, no framework.
  */
 // Parse
 export {
@@ -31,8 +31,8 @@ export { inputDigit, clearSegment } from "./input";
 // Rotate
 export { rotateSegment, clampDay } from "./rotate";
 
-// Bridge to the gap-buffer package
-export { fromSlots, toSlots } from "./slots";
+// Bridge to input-state fields
+export { dateMask, withSegments } from "./field";
 
 export type { InputResult } from "./input";
 
