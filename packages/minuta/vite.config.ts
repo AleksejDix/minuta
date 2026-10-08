@@ -1,29 +1,27 @@
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
-import { resolve } from "path";
+import path from "node:path";
+
+function fromRoot(file: string): string {
+  return path.resolve(import.meta.dirname, file);
+}
 
 export default defineConfig({
-  plugins: [
-    dts({
-      insertTypesEntry: true,
-      include: ["src/**/*.ts"],
-    }),
-  ],
   build: {
     lib: {
       entry: {
-        index: resolve(__dirname, "src/index.ts"),
-        operations: resolve(__dirname, "src/operations.ts"),
-        calendar: resolve(__dirname, "src/calendar.ts"),
-        segments: resolve(__dirname, "src/segments.ts"),
-        helpers: resolve(__dirname, "src/helpers.ts"),
-        native: resolve(__dirname, "src/native.ts"),
-        dayjs: resolve(__dirname, "src/dayjs.ts"),
-        "date-fns": resolve(__dirname, "src/date-fns.ts"),
-        "date-fns-tz": resolve(__dirname, "src/date-fns-tz.ts"),
-        luxon: resolve(__dirname, "src/luxon.ts"),
-        moment: resolve(__dirname, "src/moment.ts"),
-        temporal: resolve(__dirname, "src/temporal.ts"),
+        calendar: fromRoot("src/calendar.ts"),
+        "date-fns": fromRoot("src/date-fns.ts"),
+        "date-fns-tz": fromRoot("src/date-fns-tz.ts"),
+        dayjs: fromRoot("src/dayjs.ts"),
+        helpers: fromRoot("src/helpers.ts"),
+        index: fromRoot("src/index.ts"),
+        luxon: fromRoot("src/luxon.ts"),
+        moment: fromRoot("src/moment.ts"),
+        native: fromRoot("src/native.ts"),
+        operations: fromRoot("src/operations.ts"),
+        segments: fromRoot("src/segments.ts"),
+        temporal: fromRoot("src/temporal.ts"),
       },
       formats: ["es"],
     },
@@ -42,4 +40,10 @@ export default defineConfig({
       },
     },
   },
+  plugins: [
+    dts({
+      include: ["src/**/*.ts"],
+      insertTypesEntry: true,
+    }),
+  ],
 });

@@ -2,9 +2,7 @@
   "extends": "@minuta/tsconfig/library.json",
   "compilerOptions": {
     "outDir": "dist",
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
-    "rootDir": "src",
-    "baseUrl": "."
+    "rootDir": "src"
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]

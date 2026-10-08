@@ -1,6 +1,7 @@
 {
   "name": "minuta-monorepo",
   "private": true,
+  "type": "module",
   "description": "Minuta — divide time into pieces",
   "author": "Aleksej Dix <git@aleksejdix.com>",
   "license": "Apache-2.0",
@@ -35,6 +36,7 @@
     "demo:build:svelte": "npm run demo:build --workspace=minuta-svelte",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
+    "knip": "knip",
     "lint:workspaces": "npm run lint --workspaces --if-present",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
@@ -45,14 +47,13 @@
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
     "@js-temporal/polyfill": "^0.5.1",
-    "@tsconfig/svelte": "^5.0.6",
     "@vitest/coverage-v8": "^4.0.13",
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
+    "knip": "^6.38.0",
     "oxfmt": "^0.70.0",
     "oxlint": "^1.85.0",
     "oxlint-tsgolint": "^7.0.2002",
-    "vite": "^7.2.4",
     "vitest": "^4.0.13"
   },
   "optionalDependencies": {
@@ -60,6 +61,6 @@
     "@oxlint/wasm32-wasi": "^1.85.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.19.0"
   }
 }

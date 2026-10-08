@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 import viteConfig from "./vite.config";
 
-const coreRoot = resolve(__dirname, "../minuta/src");
+const coreRoot = resolve(import.meta.dirname, "../minuta/src");
 const alias = {
   minuta: resolve(coreRoot, "index.ts"),
   "minuta/native": resolve(coreRoot, "native.ts"),

@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
 
-const demoRoot = resolve(__dirname, "examples");
+const demoRoot = resolve(import.meta.dirname, "examples");
 
 export default defineConfig(({ command, mode }) => {
   const isDemo = command === "serve" || mode === "demo";
@@ -14,7 +14,7 @@ export default defineConfig(({ command, mode }) => {
       plugins: [react()],
       resolve: {
         alias: {
-          "minuta-react": resolve(__dirname, "src"),
+          "minuta-react": resolve(import.meta.dirname, "src"),
         },
       },
       build: {
@@ -27,8 +27,8 @@ export default defineConfig(({ command, mode }) => {
     build: {
       lib: {
         entry: {
-          index: resolve(__dirname, "src/index.ts"),
-          components: resolve(__dirname, "src/components/index.ts"),
+          index: resolve(import.meta.dirname, "src/index.ts"),
+          components: resolve(import.meta.dirname, "src/components/index.ts"),
         },
         formats: ["es"],
         fileName: (_format, entryName) =>
@@ -46,7 +46,7 @@ export default defineConfig(({ command, mode }) => {
     ],
     test: {
       environment: "jsdom",
-      setupFiles: resolve(__dirname, "../../vitest.setup.ts"),
+      setupFiles: resolve(import.meta.dirname, "../../vitest.setup.ts"),
     },
   };
 });

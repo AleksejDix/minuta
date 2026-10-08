@@ -29,8 +29,13 @@
     },
     "./types": "./dist/types.d.ts"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "imports": {
+    "#src/*": {
+      "source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
   "types": "./dist/index.d.ts",
   "keywords": [
     "react",
@@ -45,10 +50,10 @@
     "demo:build": "vite build --mode demo",
     "test": "vitest run",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc -p tsconfig.check.json && tsc -p examples/tsconfig.app.json",
     "clean": "rm -rf dist node_modules",
-    "lint": "oxlint --config ../../oxlint.vite.json .",
-    "lint:fix": "oxlint --config ../../oxlint.vite.json --fix ."
+    "lint": "oxlint -c ../../.oxlintrc.json .",
+    "lint:fix": "oxlint -c ../../.oxlintrc.json --fix ."
   },
   "dependencies": {
     "minuta": "^1.0.0-beta.1"

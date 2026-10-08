@@ -29,8 +29,13 @@
     },
     "./types": "./dist/types.d.ts"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "imports": {
+    "#src/*": {
+      "source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
   "types": "./dist/index.d.ts",
   "keywords": [
     "svelte",
@@ -46,19 +51,21 @@
     "demo:build": "vite build --mode demo",
     "test": "vitest run",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit",
+    "type-check": "svelte-check --tsconfig ./tsconfig.check.json --fail-on-warnings && svelte-check --tsconfig ./tsconfig.examples.json --fail-on-warnings",
     "clean": "rm -rf dist node_modules",
-    "lint": "oxlint --config ../../oxlint.vite.json .",
-    "lint:fix": "oxlint --config ../../oxlint.vite.json --fix ."
+    "lint": "oxlint -c ../../.oxlintrc.json .",
+    "lint:fix": "oxlint -c ../../.oxlintrc.json --fix ."
   },
   "dependencies": {
     "minuta": "^1.0.0-beta.1"
   },
   "devDependencies": {
-    "@types/node": "^22.12.1",
     "@minuta/tsconfig": "^2.0.0-alpha.1",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@tsconfig/svelte": "^5.0.8",
+    "@types/node": "^22.12.1",
     "svelte": "^5.0.0",
+    "svelte-check": "^4.7.6",
     "typescript": "^5.7.3",
     "vite": "^7.2.4",
     "vite-plugin-dts": "^4.4.0",

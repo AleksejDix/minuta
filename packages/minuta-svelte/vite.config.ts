@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import dts from "vite-plugin-dts";
 
-const demoRoot = resolve(__dirname, "examples");
+const demoRoot = resolve(import.meta.dirname, "examples");
 
 export default defineConfig(({ command, mode }) => {
   const isDemo = command === "serve" || mode === "demo";
@@ -18,9 +18,9 @@ export default defineConfig(({ command, mode }) => {
       ],
       resolve: {
         alias: {
-          "minuta-svelte": resolve(__dirname, "src"),
+          "minuta-svelte": resolve(import.meta.dirname, "src"),
           "minuta-svelte/components": resolve(
-            __dirname,
+            import.meta.dirname,
             "src/components/index.ts"
           ),
         },
@@ -35,8 +35,8 @@ export default defineConfig(({ command, mode }) => {
     build: {
       lib: {
         entry: {
-          index: resolve(__dirname, "src/index.ts"),
-          components: resolve(__dirname, "src/components/index.ts"),
+          index: resolve(import.meta.dirname, "src/index.ts"),
+          components: resolve(import.meta.dirname, "src/components/index.ts"),
         },
         formats: ["es"],
         fileName: (_format, entryName) =>
@@ -55,7 +55,7 @@ export default defineConfig(({ command, mode }) => {
     ],
     test: {
       environment: "node",
-      setupFiles: resolve(__dirname, "../../vitest.setup.ts"),
+      setupFiles: resolve(import.meta.dirname, "../../vitest.setup.ts"),
     },
   };
 });

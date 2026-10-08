@@ -1,12 +1,14 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
+  "extends": ["@tsconfig/svelte/tsconfig.json", "@minuta/tsconfig/base.json"],
   "compilerOptions": {
     "types": ["svelte"],
-    "baseUrl": "examples",
     "paths": {
-      "minuta-svelte": ["src"],
-      "minuta-svelte/components": ["src/components/index"]
-    }
+      "minuta-svelte": ["./src"],
+      "minuta-svelte/components": ["./src/components/index"]
+    },
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedDeclarations": false
   },
   "include": [
     "examples/src/**/*.d.ts",

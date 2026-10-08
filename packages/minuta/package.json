@@ -68,8 +68,13 @@
       "import": "./dist/moment.js"
     }
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "imports": {
+    "#src/*": {
+      "source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
@@ -79,7 +84,7 @@
     "dev": "vite build --watch",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage --passWithNoTests",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc -p tsconfig.check.json",
     "clean": "rm -rf dist node_modules",
     "size": "size-limit"
   },
