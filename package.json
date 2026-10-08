@@ -17,7 +17,7 @@
     "packages/*"
   ],
   "scripts": {
-    "prepare": "husky",
+    "prepare": "lefthook install",
     "build": "npm run build --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -44,9 +44,9 @@
     "@changesets/cli": "^2.27.0",
     "@js-temporal/polyfill": "^0.5.1",
     "@vitest/coverage-v8": "^4.0.13",
-    "husky": "^9.1.7",
     "jsdom": "^25.0.1",
     "knip": "^6.38.0",
+    "lefthook": "^2.1.14",
     "oxfmt": "^0.70.0",
     "oxlint": "^1.85.0",
     "oxlint-tsgolint": "^7.0.2002",
