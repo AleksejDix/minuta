@@ -4,13 +4,20 @@ import { computed } from "vue";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
-const { day } = defineProps<CalendarDayProps>();
+const { day, locale = "en-US" } = defineProps<CalendarDayProps>();
 
 defineSlots<Record<string, never>>();
 
 const calendar = useCalendarContext();
 const minuta = useMinutaContext();
 
+// The day number in the units' time zone, which may differ from the runtime's
+const dayNumber = computed(() =>
+  new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    timeZone: minuta.units.value.timeZone,
+  }).format(day.start)
+);
 const isOutside = computed(
   () => !minuta.contains(minuta.browsing.value, day.start)
 );
@@ -49,7 +56,7 @@ function choose(): void {
     :aria-pressed="isSelected"
     @click="choose"
   >
-    {{ day.start.getDate() }}
+    {{ dayNumber }}
   </button>
 </template>
 

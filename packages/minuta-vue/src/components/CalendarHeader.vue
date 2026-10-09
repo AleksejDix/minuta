@@ -11,7 +11,11 @@ defineSlots<Record<string, never>>();
 
 useCalendarContext();
 const minuta = useMinutaContext();
-const label = computed(() => formatPeriod(minuta.browsing.value, locale));
+const label = computed(() =>
+  formatPeriod(minuta.browsing.value, locale, {
+    timeZone: minuta.units.value.timeZone,
+  })
+);
 
 /**
  * Browses the previous month.

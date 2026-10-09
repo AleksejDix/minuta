@@ -11,7 +11,7 @@ type CalendarRootProps = Readonly<{
 }>;
 
 /**
- * Props of `<CalendarHeader>` and `<CalendarWeekdays>`.
+ * Props of `<CalendarHeader>`, `<CalendarWeekdays>` and `<CalendarDay>`.
  */
 type CalendarLabelProps = Readonly<{
   /** BCP 47 locale of the labels, default "en-US" */
@@ -21,10 +21,11 @@ type CalendarLabelProps = Readonly<{
 /**
  * Props of `<CalendarDay>`.
  */
-type CalendarDayProps = Readonly<{
-  /** The day period to render */
-  day: Period;
-}>;
+type CalendarDayProps = CalendarLabelProps &
+  Readonly<{
+    /** The day period to render */
+    day: Period;
+  }>;
 
 export type {
   CalendarDayProps,
