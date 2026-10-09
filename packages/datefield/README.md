@@ -51,8 +51,11 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
   cursor (e.g. on blur) it clamps right away.
 - `typeDate(format, state, text)` types the way people type dates: digits fill
   slots and a separator finishes the part being typed, so "1.3.2026" becomes
-  01.03.2026 (a paste finishes its last part too; call `finishSegment` on
-  blur for typed input).
+  01.03.2026 (call `finishSegment` on blur for typed input). A paste is read
+  with `recognizeDate`: ISO 8601 (`2026-03-31`, timestamps), month names in
+  the locale or English (`31. März 2026`, `March 31, 2026`) and numbers in any
+  order (`3/31/2026` in a de-CH field: 31 can only be the day) all fill the
+  field in its format; an ambiguous `04/05/2026` follows the field's order.
 - `toDate` returns `undefined` while a slot is empty or the date is invalid,
   without touching what the user typed.
 - `dateMask` rejects display-only parts (weekday, era) — they cannot be typed.

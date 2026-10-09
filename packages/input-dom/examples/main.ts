@@ -99,7 +99,7 @@ function mountDate(): void {
     input,
     createInputState({ mask: dateMask(format) }),
     {
-      insert: (state, text) => typeDate(format, state, text),
+      insert: (state, text) => typeDate(format, state, text, locale.value),
       normalize: (state) => clampedDate(format, state),
       onChange: (state) => {
         output.textContent = describeDate(format, state);
