@@ -1,0 +1,62 @@
+{
+  "name": "fechita",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Parse dates the way people write them, in every modern locale: ISO 8601, RFC 2822, month names, numbers in any order. Locale data from Unicode CLDR, ambiguity reported, zero dependencies.",
+  "license": "Apache-2.0",
+  "author": "Aleksej Dix <git@aleksejdix.com>",
+  "homepage": "https://github.com/AleksejDix/minuta/tree/master/packages/fechita",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleksejDix/minuta.git",
+    "directory": "packages/fechita"
+  },
+  "bugs": {
+    "url": "https://github.com/AleksejDix/minuta/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "imports": {
+    "#src/*": {
+      "source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "type-check": "tsc -p tsconfig.check.json",
+    "clean": "rm -rf dist node_modules",
+    "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\"",
+    "data": "node scripts/build-locales.mjs && oxfmt src/locales"
+  },
+  "devDependencies": {
+    "@minuta/tsconfig": "2.0.0-alpha.1",
+    "cldr-core": "48.2.0",
+    "cldr-dates-full": "48.2.0",
+    "typescript": "^5.7.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.4.0",
+    "vitest": "^4.0.13"
+  },
+  "keywords": [
+    "date",
+    "parse",
+    "parser",
+    "locale",
+    "cldr",
+    "i18n",
+    "iso-8601",
+    "intl"
+  ]
+}
