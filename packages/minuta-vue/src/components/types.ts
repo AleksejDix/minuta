@@ -6,12 +6,14 @@ import type { Period, Units } from "minuta/core";
 type CalendarRootProps = Readonly<{
   /** Initially browsed date, default: now */
   date?: Readonly<Date> | undefined;
+  /** Whether a day can't be selected, default: none */
+  isDisabled?: ((day: Period) => boolean) | undefined;
   /** Unit specs, default `nativeUnits()`; the week start lives in the units */
   units?: Units | undefined;
 }>;
 
 /**
- * Props of `<CalendarHeader>`, `<CalendarWeekdays>` and `<CalendarDay>`.
+ * Props of `<CalendarHeader>`, `<CalendarWeekdays>` and `<CalendarGrid>`.
  */
 type CalendarLabelProps = Readonly<{
   /** BCP 47 locale of the labels, default "en-US" */
@@ -29,6 +31,7 @@ type CalendarDayProps = CalendarLabelProps &
 
 export type {
   CalendarDayProps,
+  CalendarLabelProps as CalendarGridProps,
   CalendarLabelProps as CalendarHeaderProps,
   CalendarLabelProps as CalendarWeekdaysProps,
   CalendarRootProps,

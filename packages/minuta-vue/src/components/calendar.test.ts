@@ -2,7 +2,6 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-  CalendarWeekdays,
 } from "#src/components/index";
 import type { Period, Units } from "minuta/core";
 import { describe, expect, it } from "vitest";
@@ -37,7 +36,7 @@ function ignore(): void {
 }
 
 /**
- * Renders a calendar with a header, the weekdays and the grid.
+ * Renders a calendar with a header and the grid.
  *
  * @param setup - Props of the root and the label locale
  * @returns The element holding the calendar
@@ -49,8 +48,7 @@ function renderCalendar(setup: CalendarSetup = {}): HTMLElement {
     h(CalendarRoot, props, {
       default: (): VNode[] => [
         h(CalendarHeader, { locale }),
-        h(CalendarWeekdays, { locale }),
-        h(CalendarGrid),
+        h(CalendarGrid, { locale }),
       ],
     })
   ).element;
@@ -105,8 +103,8 @@ function weekdayLabels(element: HTMLElement): string[] {
   const labels = byTestId(
     element,
     "calendar-weekdays"
-  ).querySelectorAll<HTMLElement>("span");
-  return [...labels].map((label) => label.textContent);
+  ).querySelectorAll<HTMLElement>("th");
+  return [...labels].map((label) => label.textContent.trim());
 }
 
 describe("calendarHeader", () => {
@@ -140,7 +138,7 @@ describe("calendarHeader", () => {
   });
 });
 
-describe("calendarWeekdays", () => {
+describe("calendarWeekdays in calendarGrid", () => {
   it("starts on Monday with the default units", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const element = renderCalendar();
@@ -254,7 +252,11 @@ describe("calendarDay selection", () => {
       new Date("2024-03-16T00:00:00"),
     ]);
     expect(cell.classList.contains("is-selected")).toBe(true);
-    expect(cell.getAttribute("aria-pressed")).toBe("true");
+    expect(
+      itemAt([...element.querySelectorAll("td")], MARCH_16_CELL).getAttribute(
+        "aria-selected"
+      )
+    ).toBe("true");
   });
 
   it(

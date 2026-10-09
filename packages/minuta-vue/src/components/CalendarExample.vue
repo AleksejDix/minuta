@@ -2,7 +2,6 @@
 import CalendarGrid from "./CalendarGrid.vue";
 import CalendarHeader from "./CalendarHeader.vue";
 import CalendarRoot from "./CalendarRoot.vue";
-import CalendarWeekdays from "./CalendarWeekdays.vue";
 import type { Period } from "minuta/core";
 import { nativeUnits } from "minuta/native";
 import { shallowRef } from "vue";
@@ -47,8 +46,8 @@ function select(day: Period): void {
       <div>
         <h1>minuta-vue calendar</h1>
         <p class="subheading">
-          CalendarRoot, CalendarHeader, CalendarWeekdays and CalendarGrid
-          composed on top of MinutaRoot.
+          CalendarRoot, CalendarHeader and CalendarGrid composed on top of
+          MinutaRoot.
         </p>
       </div>
       <div class="toolbar-section">
@@ -78,7 +77,6 @@ function select(day: Period): void {
 
     <CalendarRoot :units="units" @select="select">
       <CalendarHeader />
-      <CalendarWeekdays />
       <CalendarGrid />
     </CalendarRoot>
   </section>

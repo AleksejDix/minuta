@@ -6,6 +6,14 @@ import { inject } from "vue";
  * What `<CalendarRoot>` provides to its parts.
  */
 type CalendarContext = Readonly<{
+  /** The last focused day */
+  focused: Readonly<ShallowRef<Period | undefined>>;
+  /** Remember a day as focused */
+  focus: (day: Period) => void;
+  /** Whether a day can't be selected */
+  isDisabled: (day: Period) => boolean;
+  /** Id of the month heading that labels the grid */
+  labelId: string;
   select: (day: Period) => void;
   selected: Readonly<ShallowRef<Period | undefined>>;
 }>;

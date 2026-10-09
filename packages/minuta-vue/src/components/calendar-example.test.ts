@@ -34,9 +34,9 @@ function buttonWithText(element: HTMLElement, text: string): HTMLElement {
  */
 function firstWeekday(element: HTMLElement): string {
   const labels = element.querySelectorAll<HTMLElement>(
-    '[data-testid="calendar-weekdays"] span'
+    '[data-testid="calendar-weekdays"] th'
   );
-  return itemAt([...labels], FIRST).textContent;
+  return itemAt([...labels], FIRST).textContent.trim();
 }
 
 describe("calendarExample", () => {

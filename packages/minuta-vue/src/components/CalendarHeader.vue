@@ -9,7 +9,7 @@ const { locale = "en-US" } = defineProps<CalendarHeaderProps>();
 
 defineSlots<Record<string, never>>();
 
-useCalendarContext();
+const calendar = useCalendarContext();
 const minuta = useMinutaContext();
 const label = computed(() =>
   formatPeriod(minuta.browsing.value, locale, {
@@ -43,7 +43,9 @@ function showNext(): void {
     >
       ← Previous
     </button>
-    <h2 aria-live="polite" data-testid="calendar-label">{{ label }}</h2>
+    <h2 :id="calendar.labelId" aria-live="polite" data-testid="calendar-label">
+      {{ label }}
+    </h2>
     <button
       type="button"
       class="nav-button"
