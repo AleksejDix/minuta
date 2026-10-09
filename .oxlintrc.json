@@ -105,6 +105,12 @@
       {
         "allow": ["**/*.css"]
       }
+    ],
+    "typescript/dot-notation": [
+      "error",
+      {
+        "allowIndexSignaturePropertyAccess": true
+      }
     ]
   },
   "overrides": [
@@ -135,7 +141,8 @@
       },
       "rules": {
         "import/no-default-export": "off",
-        "import/no-nodejs-modules": "off"
+        "import/no-nodejs-modules": "off",
+        "node/no-process-env": "off"
       }
     },
     {

@@ -23,7 +23,8 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html"],
     },
-    env: { TZ: "UTC" },
+    // UTC unless the run sets TZ, so the CI time-zone matrix takes effect
+    env: { TZ: process.env["TZ"] ?? "UTC" },
     onConsoleLog: (log) =>
       !EXPECTED_REACT_ERRORS.some((message) => log.includes(message)),
     pool: "forks",
