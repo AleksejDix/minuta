@@ -6,6 +6,7 @@ import {
   rotateSegment,
   segmentAtPosition,
   toDate,
+  typeDate,
   withSegments,
 } from "datefield";
 import { createInputState, isComplete, parseMask } from "input-state";
@@ -98,6 +99,7 @@ function mountDate(): void {
     input,
     createInputState({ mask: dateMask(format) }),
     {
+      insert: (state, text) => typeDate(format, state, text),
       normalize: (state) => clampedDate(format, state),
       onChange: (state) => {
         output.textContent = describeDate(format, state);

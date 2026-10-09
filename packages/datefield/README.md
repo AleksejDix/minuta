@@ -49,6 +49,10 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
 - `clampDay(segments, cursor)` keeps the day valid after a month/year edit
   (31.02 → 28.02) once the cursor has left the part being typed; without a
   cursor (e.g. on blur) it clamps right away.
+- `typeDate(format, state, text)` types the way people type dates: digits fill
+  slots and a separator finishes the part being typed, so "1.3.2026" becomes
+  01.03.2026 (a paste finishes its last part too; call `finishSegment` on
+  blur for typed input).
 - `toDate` returns `undefined` while a slot is empty or the date is invalid,
   without touching what the user typed.
 - `dateMask` rejects display-only parts (weekday, era) — they cannot be typed.

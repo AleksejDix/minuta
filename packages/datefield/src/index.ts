@@ -31,6 +31,9 @@ export { inputDigit, clearSegment } from "./input";
 // Rotate
 export { rotateSegment, clampDay } from "./rotate";
 
+// Typing: digits fill slots, separators finish a segment
+export { finishSegment, typeDate } from "./type-date";
+
 // Digits of a locale, for display
 export { localeDigits } from "./digits";
 
