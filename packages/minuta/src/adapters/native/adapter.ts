@@ -1,14 +1,16 @@
-import { weekStartOf, weekendOf } from "#src/weekday";
+import {
+  createWeekHandler,
+  dayHandler,
+  hourHandler,
+  minuteHandler,
+  monthHandler,
+  quarterHandler,
+  secondHandler,
+  yearHandler,
+} from "./units/index";
 import type { AllUnits } from "#src/types";
 import type { WeekOptions } from "#src/weekday";
-import { createWeekHandler } from "./units/week";
-import { dayHandler } from "./units/day";
-import { hourHandler } from "./units/hour";
-import { minuteHandler } from "./units/minute";
-import { monthHandler } from "./units/month";
-import { quarterHandler } from "./units/quarter";
-import { secondHandler } from "./units/second";
-import { yearHandler } from "./units/year";
+import { adapterUnits } from "#src/adapters/adapter-units";
 
 /**
  * Unit specs for every unit, computed with the built-in `Date` (zero dependencies). Pass the result to
@@ -28,17 +30,16 @@ import { yearHandler } from "./units/year";
  * @returns A spec for every unit
  */
 function nativeUnits(options: WeekOptions = {}): AllUnits {
-  return {
+  return adapterUnits(options, (weekStartsOn) => ({
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
     month: monthHandler,
     quarter: quarterHandler,
     second: secondHandler,
-    week: createWeekHandler(weekStartOf(options)),
-    weekend: weekendOf(options),
+    week: createWeekHandler(weekStartsOn),
     year: yearHandler,
-  };
+  }));
 }
 
 export { nativeUnits };

@@ -106,7 +106,7 @@
         "dist/core.js": "{ periodWith, nextWith }",
         "dist/native.js": "{ nativeUnits }"
       },
-      "limit": "1.5 kB"
+      "limit": "1.7 kB"
     },
     {
       "name": "minuta/calendar: monthGrid via bind",

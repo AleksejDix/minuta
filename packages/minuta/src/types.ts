@@ -49,7 +49,10 @@ type Unit = keyof UnitRegistry;
  * - startOf: earliest millisecond of the unit containing `date`
  * - endOf: latest millisecond of the unit containing `date`
  * - add(date, n) then add(result, -n) returns the original date
- * - diff(from, to) is the number of complete units between the dates
+ * - diff(from, to) is the number of complete units from `from` to `to`,
+ *   truncated toward zero: the largest `n` with `add(from, n) <= to` (for an
+ *   earlier `to`, the smallest `n` with `add(from, n) >= to`). The adapters
+ *   guarantee it; custom units must follow it
  */
 type UnitSpec = Readonly<{
   add: (date: Readonly<Date>, amount: number) => Date;
