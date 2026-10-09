@@ -88,6 +88,11 @@ const DATES: readonly Case[] = [
     options: { locale: "pl" },
     text: "5 listopad 2026",
   },
+  // Found by the comparison with other parsers: a Finnish month that starts like an English one
+  { expected: "2030-11-09T00:00", text: "9. marraskuuta 2030" },
+  // Day and month equal: both readings are the same day
+  { expected: "2026-01-01T00:00", text: "1/1/2026" },
+  { expected: "2026-05-05T00:00", text: "5/5/26" },
 ];
 
 describe("parseDate() reads", () => {

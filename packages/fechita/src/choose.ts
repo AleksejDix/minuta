@@ -97,6 +97,18 @@ function pickedIn(
   return success(picked, clock);
 }
 
+// Readings of the same day are one: 1/1/2026 is not ambiguous
+function distinctDays(readings: readonly Reading[]): Reading[] {
+  const days = new Map<string, Reading>();
+  for (const reading of readings) {
+    const day = `${String(reading.year)}-${String(reading.month)}-${String(reading.day)}`;
+    if (!days.has(day)) {
+      days.set(day, reading);
+    }
+  }
+  return [...days.values()];
+}
+
 /**
  * The date of the readings: the only real one, or the one in the order of
  * `options`; otherwise the reasons and candidates.
@@ -111,7 +123,9 @@ function chosen(
   clock: Clock,
   scope: Readonly<{ locales: Locales; options: ParseOptions }>
 ): ParseResult {
-  const real = readings.filter((reading) => problemOf(reading) === undefined);
+  const real = distinctDays(
+    readings.filter((reading) => problemOf(reading) === undefined)
+  );
   const [only] = real;
   if (only === undefined) {
     return failure(problems(readings));
