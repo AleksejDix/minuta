@@ -14,6 +14,26 @@
 const START = 0;
 const ONE = 1;
 
+// What users see as one character: emoji sequences, flags, letter + accent
+const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+
+type Grapheme = Readonly<{ index: number; segment: string }>;
+
+/**
+ * The grapheme cluster that contains the code unit at `position`.
+ *
+ * @param text - The text
+ * @param position - Index of a code unit inside the text
+ * @returns The cluster's start and content
+ */
+function graphemeAt(text: string, position: number): Grapheme {
+  const cluster = graphemes.segment(text).containing(position);
+  if (cluster === undefined) {
+    return { index: position, segment: text.charAt(position) };
+  }
+  return cluster;
+}
+
 type Selection = Readonly<{
   anchor: number;
   head: number;
@@ -164,7 +184,8 @@ function insertText(buffer: TextBuffer, text: string): TextBuffer {
 }
 
 /**
- * Backspace: delete the selection, or the character before the cursor.
+ * Backspace: delete the selection, or the character (grapheme cluster)
+ * before the cursor.
  *
  * @param buffer - Buffer to change
  * @returns The new buffer, or the same buffer at the start of the text
@@ -177,11 +198,13 @@ function deleteBackward(buffer: TextBuffer): TextBuffer {
   if (head === START) {
     return buffer;
   }
-  return replaceRange(buffer, { from: head - ONE, to: head }, "");
+  const { index } = graphemeAt(buffer.text, head - ONE);
+  return replaceRange(buffer, { from: index, to: head }, "");
 }
 
 /**
- * Delete: delete the selection, or the character after the cursor.
+ * Delete: delete the selection, or the character (grapheme cluster) after
+ * the cursor.
  *
  * @param buffer - Buffer to change
  * @returns The new buffer, or the same buffer at the end of the text
@@ -194,7 +217,8 @@ function deleteForward(buffer: TextBuffer): TextBuffer {
   if (head === buffer.text.length) {
     return buffer;
   }
-  return replaceRange(buffer, { from: head, to: head + ONE }, "");
+  const { index, segment } = graphemeAt(buffer.text, head);
+  return replaceRange(buffer, { from: head, to: index + segment.length }, "");
 }
 
 export {

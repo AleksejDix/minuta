@@ -18,6 +18,7 @@ import {
   toggleMode,
 } from "input-state";
 import type { InputState } from "input-state";
+import { moveCursor } from "./cursor-keys";
 
 const ONE = 1;
 
@@ -113,10 +114,13 @@ function applyKey(
   if (event.key === "Insert") {
     return toggleMode(state);
   }
-  if (options.onKeyDown === undefined) {
-    return undefined;
+  if (options.onKeyDown !== undefined) {
+    const handled = options.onKeyDown(event, state);
+    if (handled !== undefined) {
+      return handled;
+    }
   }
-  return options.onKeyDown(event, state);
+  return moveCursor(state, event);
 }
 
 function selectionFromElement(
@@ -133,6 +137,23 @@ function selectionFromElement(
     return setSelection(state, end, start);
   }
   return setSelection(state, start, end);
+}
+
+/**
+ * Show the selection of `state`, e.g. redraw the overwrite block where the
+ * user put the cursor.
+ *
+ * @param element - The input
+ * @param state - The state to show
+ * @returns The range now shown
+ */
+function showSelection(
+  element: HTMLInputElement,
+  state: InputState
+): VisibleRange {
+  const shown = visibleRange(state);
+  element.setSelectionRange(shown.start, shown.end, shown.direction);
+  return shown;
 }
 
 function render(element: HTMLInputElement, state: InputState): VisibleRange {
@@ -227,8 +248,12 @@ function attachInput(
       current: () => state,
       options,
       syncSelection: () => {
-        state = selectionFromElement(element, state, shown);
-        shown = visibleRange(state);
+        const synced = selectionFromElement(element, state, shown);
+        if (synced === state) {
+          return;
+        }
+        state = synced;
+        shown = showSelection(element, state);
       },
     },
     listening.signal

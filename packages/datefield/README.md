@@ -28,8 +28,11 @@ let field = createInputState({ mask: dateMask(format) });
 // Typing: overwrite mode with a mask, nothing shifts
 field = typeChar(field, "3");
 
-// Keep the day valid after every edit (31.02 → 28.02)
-field = withSegments(field, clampDay(parseSegments(format, field.buffer.text)));
+// Keep the day valid after every edit (31.02 → 28.02). With the cursor, a
+// day, month or year still being typed is left alone, so retyping "12" as
+// "03" never passes through "02" and cuts 31 to 28.
+const typed = parseSegments(format, field.buffer.text);
+field = withSegments(field, clampDay(typed, field.buffer.selection.head));
 
 // Arrow up on the segment under the cursor: wraps, never carries
 const segments = parseSegments(format, field.buffer.text);
@@ -43,7 +46,9 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
 
 - `rotateSegment` wraps within the segment (day 31 → 01 keeps the month) and
   uses the real month length; month and year changes clamp the day.
-- `clampDay` keeps the day valid after any month/year edit (31.02 → 28.02).
+- `clampDay(segments, cursor)` keeps the day valid after a month/year edit
+  (31.02 → 28.02) once the cursor has left the part being typed; without a
+  cursor (e.g. on blur) it clamps right away.
 - `toDate` returns `undefined` while a slot is empty or the date is invalid,
   without touching what the user typed.
 - `dateMask` rejects display-only parts (weekday, era) — they cannot be typed.

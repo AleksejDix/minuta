@@ -4,6 +4,7 @@ import type {
   FormatToken,
   Segment,
 } from "./types";
+import { dateOf, fullYear, shownYear } from "./year";
 import { extractDerivedPart } from "./derived-part";
 
 const DEFAULT_TIME_PART = 0;
@@ -37,6 +38,15 @@ function isEditableType(type: string): type is EditableSegmentType {
   return Object.hasOwn(EDITABLE_GETTERS, type);
 }
 
+// The value of a segment; a two-digit year stands for a full year
+function partValue(seg: Segment): number {
+  const value = Number(seg.value);
+  if (seg.type === "year") {
+    return fullYear(value, seg.end - seg.start);
+  }
+  return value;
+}
+
 /**
  * Collect the numeric value of every editable segment.
  *
@@ -50,7 +60,7 @@ function collectParts(segments: readonly Segment[]): DateParts | undefined {
       if (!DIGITS.test(seg.value)) {
         return undefined;
       }
-      parts[seg.type] = Number(seg.value);
+      parts[seg.type] = partValue(seg);
     }
   }
   return parts;
@@ -88,10 +98,8 @@ function buildDate(parts: Readonly<DateParts>): Date | undefined {
   if (day === undefined || month === undefined || year === undefined) {
     return undefined;
   }
-  const candidate = new Date(
-    year,
-    month - MONTH_OFFSET,
-    day,
+  const candidate = dateOf(year, month - MONTH_OFFSET, day);
+  candidate.setHours(
     parts.hour ?? DEFAULT_TIME_PART,
     parts.minute ?? DEFAULT_TIME_PART,
     parts.second ?? DEFAULT_TIME_PART
@@ -120,6 +128,19 @@ function toDate(segments: readonly Segment[]): Date | undefined {
   return buildDate(parts);
 }
 
+// A part of `date` as a segment of `length` slots shows it
+function editableValue(
+  type: EditableSegmentType,
+  length: number,
+  date: Readonly<Date>
+): string {
+  const part = EDITABLE_GETTERS[type](date);
+  if (type === "year") {
+    return String(shownYear(part, length)).padStart(length, ZERO_PAD);
+  }
+  return String(part).padStart(length, ZERO_PAD);
+}
+
 type TokenInput = {
   readonly date: Readonly<Date>;
   readonly locale: string | undefined;
@@ -138,10 +159,7 @@ function tokenToSegment(input: TokenInput): Segment | undefined {
     };
   }
   if (isEditableType(token.type)) {
-    const value = String(EDITABLE_GETTERS[token.type](date)).padStart(
-      token.length,
-      ZERO_PAD
-    );
+    const value = editableValue(token.type, token.length, date);
     return { end: pos + token.length, start: pos, type: token.type, value };
   }
   if (DERIVED_TYPES.has(token.type)) {

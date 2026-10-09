@@ -217,3 +217,18 @@ describe("toggleMode()", () => {
     }
   );
 });
+
+describe("characters outside the BMP", () => {
+  it(
+    "rejects an astral letter without corrupting the mask",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const field = paste(
+        createInputState({ mask: parseMask("AA99") }),
+        "𝐀BC12"
+      );
+      expect(field.buffer.text).toBe("BC12");
+    }
+  );
+});

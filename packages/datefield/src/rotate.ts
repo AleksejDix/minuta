@@ -1,4 +1,5 @@
 import type { Segment, SegmentType } from "./types";
+import { dateOf, fullYear, shownYear } from "./year";
 
 const UP = 1;
 const DOWN = -1;
@@ -44,6 +45,16 @@ function numberOf(seg: Segment | undefined): number | undefined {
   return Number.parseInt(seg.value, RADIX);
 }
 
+// The full year typed, or a leap year while it is empty
+function yearOf(segments: readonly Segment[]): number {
+  const seg = segments.find((part) => part.type === "year");
+  const typed = numberOf(seg);
+  if (seg === undefined || typed === undefined) {
+    return LEAP_YEAR;
+  }
+  return fullYear(typed, seg.end - seg.start);
+}
+
 /**
  * Days in the month described by the segments. While month or year is
  * unknown, assume the widest possible range (31, or 29 for February).
@@ -56,9 +67,7 @@ function daysInMonth(segments: readonly Segment[]): number {
   if (month === undefined || month < FIRST_MONTH || month > LAST_MONTH) {
     return MAX_DAYS_IN_MONTH;
   }
-  const year =
-    numberOf(segments.find((seg) => seg.type === "year")) ?? LEAP_YEAR;
-  return new Date(year, month, LAST_DAY_OF_PREVIOUS_MONTH).getDate();
+  return dateOf(yearOf(segments), month, LAST_DAY_OF_PREVIOUS_MONTH).getDate();
 }
 
 function rangeOf(
@@ -98,18 +107,42 @@ function withValue(
   });
 }
 
+const DATE_PARTS: ReadonlySet<string> = new Set(["day", "month", "year"]);
+
 /**
- * Keep the day within the month's actual length.
+ * Whether `cursor` sits inside a day, month or year segment, past its first
+ * slot: the user is still typing it.
  *
- * Call after any month or year change (rotation or typing) so the
- * date stays valid — e.g. 31.02.2026 → 28.02.2026.
+ * @param segments - Current segments
+ * @param cursor - Cursor position in the text
+ * @returns True while a date part is half typed
+ */
+function isTypingDatePart(
+  segments: readonly Segment[],
+  cursor: number
+): boolean {
+  return segments.some(
+    (seg) => DATE_PARTS.has(seg.type) && cursor > seg.start && cursor < seg.end
+  );
+}
+
+/**
+ * Keep the day within the month's actual length — e.g. 31.02.2026 →
+ * 28.02.2026. Call after every edit with the cursor: while the cursor is
+ * still inside the day, month or year being typed the date stays as typed,
+ * so correcting "12" to "03" never passes through "02" and cuts the day.
+ * Call without a cursor (e.g. on blur) to clamp unconditionally.
  * Returns the same array when nothing changes.
  *
  * @param segments - Current segments
+ * @param cursor - Cursor position after the edit, if typing
  * @returns The segments with a valid day
  */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Returned by identity when unchanged; readonly would change the public return type
-function clampDay(segments: Segment[]): Segment[] {
+function clampDay(segments: Segment[], cursor?: number): Segment[] {
+  if (cursor !== undefined && isTypingDatePart(segments, cursor)) {
+    return segments;
+  }
   const index = segments.findIndex((seg) => seg.type === "day");
   const day = numberOf(segments[index]);
   const max = daysInMonth(segments);
@@ -142,13 +175,14 @@ type RotateInput = {
   readonly range: Range;
   readonly today: Readonly<Date>;
   readonly type: SegmentType;
+  readonly width: number;
 };
 
 function nextValue(input: RotateInput): number {
-  const { current, direction, range, today, type } = input;
+  const { current, direction, range, today, type, width } = input;
   if (current === undefined) {
     if (type === "year") {
-      return today.getFullYear();
+      return shownYear(today.getFullYear(), width);
     }
     return boundFor(direction, range);
   }
@@ -198,6 +232,7 @@ function rotateSegment(
     range,
     today,
     type: seg.type,
+    width: seg.end - seg.start,
   });
   const rotated = withValue(segments, index, next);
   if (seg.type === "day") {
