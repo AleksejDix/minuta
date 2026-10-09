@@ -1,5 +1,5 @@
 import type { Unit, UnitSpec, Units } from "#src/types";
-import { assertValidDate, specFor } from "#src/units";
+import { assertPositiveInteger, assertValidDate, specFor } from "#src/units";
 
 const DEFAULT_STEP = 1;
 const ONE = 1;
@@ -115,6 +115,7 @@ function snapWith(
 ): Date {
   assertValidDate(date, "date");
   const { mode = "nearest", step = DEFAULT_STEP } = options;
+  assertPositiveInteger(step, "snapWith() step");
   const spec = specFor(units, unit);
   return pick(date, boundsOf({ date, spec, step, unit, units }), mode);
 }

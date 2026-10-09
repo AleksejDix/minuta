@@ -14,6 +14,7 @@
 ## Error codes
 
 - `INVALID_DATE`: A Date argument is invalid (`new Date("nope")`).
+- `INVALID_OPTION`: An option such as `step` or `maxPeriods` is not a positive whole number.
 - `TOO_MANY_PERIODS`: `divideWith` would create more chunks than `maxPeriods` allows.
 - `UNIT_NOT_SUPPORTED`: The `units` passed to a function have no spec for the requested unit.
 

@@ -1,4 +1,4 @@
-import { MinutaError, specFor } from "#src/units";
+import { MinutaError, assertPositiveInteger, specFor } from "#src/units";
 import type { Period, Unit, UnitSpec, Units } from "#src/types";
 
 const DEFAULT_MAX_PERIODS = 100_000;
@@ -124,7 +124,9 @@ function collectChunks(ctx: DivideContext, maxPeriods: number): Period[] {
  * @param unit - Unit of the chunks
  * @param options - `step` (units per chunk) and `maxPeriods` (safety limit)
  * @returns The chunks covering the period
- * @throws {RangeError} When more than `maxPeriods` chunks would be created
+ * @throws {RangeError} `TOO_MANY_PERIODS` when more than `maxPeriods` chunks
+ *   would be created, `INVALID_OPTION` for a `step` or `maxPeriods` that is not
+ *   a positive whole number
  */
 // oxlint-disable-next-line eslint/max-params -- Context-first core signature: (units, period, unit, options)
 function divideWith(
@@ -134,6 +136,8 @@ function divideWith(
   options: DivideOptions = {}
 ): Period[] {
   const { maxPeriods = DEFAULT_MAX_PERIODS, step = DEFAULT_STEP } = options;
+  assertPositiveInteger(step, "divideWith() step");
+  assertPositiveInteger(maxPeriods, "divideWith() maxPeriods");
   return collectChunks(
     { period, spec: specFor(units, unit), step, unit },
     maxPeriods

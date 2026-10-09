@@ -9,7 +9,7 @@ npm install minuta
 
 | What you import                                     | minified + brotli |
 | --------------------------------------------------- | ----------------- |
-| `minuta`: `period`, `next`, `divide`                | 1.9 kB            |
+| `minuta`: `period`, `next`, `divide`                | 2.0 kB            |
 | `minuta/core` with only the `day` and `month` units | 1.6 kB            |
 | Calendar grids through `bind`                       | 2.2 kB            |
 | An adapter (without its date library)               | 0.6–1.4 kB        |

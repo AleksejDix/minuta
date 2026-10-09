@@ -3,8 +3,18 @@ import { periodWith, range } from "#src/operations/period";
 import { MinutaError } from "#src/units";
 import { divideWith } from "#src/operations/divide";
 import { nativeUnits } from "#src/adapters/native/index";
+import { snapWith } from "#src/operations/snap";
 
 const MAX_PERIODS = 10;
+const ZERO = 0;
+const NEGATIVE = -15;
+const FRACTION = 1.5;
+const INVALID_COUNTS: readonly number[] = [
+  ZERO,
+  NEGATIVE,
+  FRACTION,
+  Number.NaN,
+];
 
 describe("error messages", () => {
   it(
@@ -42,4 +52,27 @@ describe("error messages", () => {
         "Use a larger unit or step, a shorter period, or raise the maxPeriods option."
     );
   });
+});
+
+describe("option errors", () => {
+  it.each(INVALID_COUNTS)(
+    "rejects step %s with a code and a fix",
+    { timeout: 5000 },
+    (step) => {
+      expect.hasAssertions();
+      const units = nativeUnits();
+      const day = periodWith(units, new Date("2026-01-01T00:00:00"), "day");
+      const date = new Date("2026-01-01T10:37:00");
+      const fix = "must be a positive whole number";
+      expect(() => divideWith(units, day, "hour", { step })).toThrow(
+        `${MinutaError.InvalidOption}: divideWith() step ${fix}, got ${String(step)}. Pass a count such as 1 or 15.`
+      );
+      expect(() => snapWith(units, date, "minute", { step })).toThrow(
+        `${MinutaError.InvalidOption}: snapWith() step ${fix}`
+      );
+      expect(() =>
+        divideWith(units, day, "hour", { maxPeriods: step })
+      ).toThrow(`${MinutaError.InvalidOption}: divideWith() maxPeriods ${fix}`);
+    }
+  );
 });
