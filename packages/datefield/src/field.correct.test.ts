@@ -121,3 +121,18 @@ describe("localeDigits()", () => {
     expect(localeDigits(locale)[THREE]).toBe(three);
   });
 });
+
+describe("initial values", () => {
+  it.each(["31/03/2026", "31032026"])(
+    "reads %s into an ar-EG field despite its direction marks",
+    { timeout: 5000 },
+    (value) => {
+      expect.hasAssertions();
+      const format = deriveFormat("ar-EG");
+      const field = createInputState({ mask: dateMask(format), value });
+      expect(toDate(parseSegments(format, field.buffer.text))).toStrictEqual(
+        new Date("2026-03-31T00:00:00")
+      );
+    }
+  );
+});

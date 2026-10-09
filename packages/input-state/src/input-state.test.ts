@@ -232,3 +232,22 @@ describe("characters outside the BMP", () => {
     }
   );
 });
+
+describe("initial masked values", () => {
+  it.each(["31.03.2026", "31032026", "31/03/2026", "31-03-2026"])(
+    "places %s in the slots",
+    { timeout: 5000 },
+    (value) => {
+      expect.hasAssertions();
+      expect(createInputState({ mask: DATE, value }).buffer.text).toBe(
+        "31.03.2026"
+      );
+    }
+  );
+
+  it("keeps empty slots of a template value", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const value = "31.__.2026";
+    expect(createInputState({ mask: DATE, value }).buffer.text).toBe(value);
+  });
+});
