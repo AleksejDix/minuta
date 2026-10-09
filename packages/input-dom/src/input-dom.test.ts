@@ -220,3 +220,22 @@ describe("cursor keys in overwrite mode", () => {
     expect(event.defaultPrevented).toBe(false);
   });
 });
+
+describe("locale digits", () => {
+  const ARABIC = Array.from({ length: 10 }, (_unused, value) =>
+    new Intl.NumberFormat("ar-EG").format(value)
+  );
+
+  it("shows the digits while the state keeps ASCII", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { controller, element } = setup(createInputState({ mask: DATE }), {
+      digits: ARABIC,
+    });
+    beforeInput(element, "insertText", "3");
+    beforeInput(element, "insertText", "١");
+    expect([element.value, controller.getState().buffer.text]).toStrictEqual([
+      "٣١.__.____",
+      "31.__.____",
+    ]);
+  });
+});

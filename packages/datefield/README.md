@@ -55,7 +55,10 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
 - Fields use the Gregorian calendar in every locale: `fa-IR` or `th-TH` get
   their order and separators, with Gregorian years (not Persian or Buddhist).
 - Digits of any script can be typed or pasted (٣١, ۳۱, ३१, ３１); they are
-  stored as 0–9, so `toDate` always parses what is shown.
+  stored as 0–9, so `toDate` always parses what is stored. To show the
+  locale's digits, pass `localeDigits(locale)` to the view, e.g.
+  `attachInput(element, field, { digits: localeDigits("ar-EG") })` from
+  `input-dom` shows ٣١/٠٣/٢٠٢٦ while the state keeps 31/03/2026.
 
 See [docs/zero-cost-parsing.md](docs/zero-cost-parsing.md) for the design and
 [docs/date-formats.md](docs/date-formats.md) for formats by country.

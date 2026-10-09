@@ -42,7 +42,81 @@ function setChar(
   return replaceRange(buffer, { from: position, to: position + ONE }, char);
 }
 
+/**
+ * The character slot `slot` stores for `char`, if it accepts it.
+ *
+ * @param mask - The mask
+ * @param slot - Position of the slot
+ * @param char - Typed character
+ * @returns The character to store, or undefined
+ */
+function storedAt(
+  mask: Mask,
+  slot: number | undefined,
+  char: string
+): string | undefined {
+  if (slot === undefined) {
+    return undefined;
+  }
+  const token = mask.tokens[slot];
+  if (token === undefined || token.kind !== "slot") {
+    return undefined;
+  }
+  return slotChar(token.accepts, char);
+}
+
+// A value already in template form: same length, literals in place
+function fitsTemplate(mask: Mask, value: string): boolean {
+  return (
+    value.length === mask.tokens.length &&
+    mask.tokens.every(
+      (token, position) =>
+        token.kind !== "literal" || value.charAt(position) === token.char
+    )
+  );
+}
+
+// The character a position of the empty template shows
+function templateChar(mask: Mask, position: number): string {
+  const token = mask.tokens[position];
+  if (token !== undefined && token.kind === "literal") {
+    return token.char;
+  }
+  return mask.placeholder;
+}
+
+// Fill the value in slot by slot like a paste, skipping rejected characters
+function filledText(mask: Mask, value: string): string {
+  const slots = slotPositions(mask);
+  const accepted: string[] = [];
+  for (const char of value) {
+    const stored = storedAt(mask, slots[accepted.length], char);
+    if (stored !== undefined) {
+      accepted.push(stored);
+    }
+  }
+  return mask.tokens
+    .map(
+      (_token, position) =>
+        accepted[slots.indexOf(position)] ?? templateChar(mask, position)
+    )
+    .join("");
+}
+
+/**
+ * The text of a masked field holding `value`: taken position by position
+ * when it already matches the template, otherwise filled in slot by slot,
+ * so "31032026", "31.03.2026" and a value without the format's invisible
+ * marks all give the same text.
+ *
+ * @param mask - The mask
+ * @param value - The initial value
+ * @returns The field text
+ */
 function maskedText(mask: Mask, value: string): string {
+  if (!fitsTemplate(mask, value)) {
+    return filledText(mask, value);
+  }
   return mask.tokens
     .map((token, position) => {
       if (token.kind === "literal") {
@@ -65,22 +139,6 @@ function clearSelectedSlots(buffer: TextBuffer, mask: Mask): TextBuffer {
     }
   }
   return select(next, from);
-}
-
-/**
- * The character slot `slot` stores for `char`, if it accepts it.
- *
- * @param mask - The mask
- * @param slot - Position of the slot
- * @param char - Typed character
- * @returns The character to store, or undefined
- */
-function storedAt(mask: Mask, slot: number, char: string): string | undefined {
-  const token = mask.tokens[slot];
-  if (token === undefined || token.kind !== "slot") {
-    return undefined;
-  }
-  return slotChar(token.accepts, char);
 }
 
 function typeIntoMask(

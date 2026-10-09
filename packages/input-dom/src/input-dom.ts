@@ -19,10 +19,13 @@ import {
 } from "input-state";
 import type { InputState } from "input-state";
 import { moveCursor } from "./cursor-keys";
+import { shownText } from "./shown-text";
 
 const ONE = 1;
 
 type AttachOptions = Readonly<{
+  /** Digits to show for 0–9, e.g. `localeDigits("ar-EG")`; the state keeps ASCII */
+  digits?: readonly string[] | undefined;
   normalize?: ((state: InputState) => InputState) | undefined;
   onChange?: ((state: InputState) => void) | undefined;
   onKeyDown?:
@@ -156,9 +159,13 @@ function showSelection(
   return shown;
 }
 
-function render(element: HTMLInputElement, state: InputState): VisibleRange {
+function render(
+  element: HTMLInputElement,
+  state: InputState,
+  digits: readonly string[] | undefined
+): VisibleRange {
   const shown = visibleRange(state);
-  element.value = state.buffer.text;
+  element.value = shownText(state.buffer.text, digits);
   element.setSelectionRange(shown.start, shown.end, shown.direction);
   return shown;
 }
@@ -225,7 +232,7 @@ function attachInput(
   options: AttachOptions = {}
 ): InputController {
   let state = initial;
-  let shown = render(element, state);
+  let shown = render(element, state, options.digits);
   const listening = new AbortController();
   listen(
     element,
@@ -240,7 +247,7 @@ function attachInput(
           return;
         }
         state = result;
-        shown = render(element, state);
+        shown = render(element, state, options.digits);
         if (options.onChange !== undefined) {
           options.onChange(state);
         }
@@ -265,7 +272,7 @@ function attachInput(
     getState: () => state,
     setState: (next) => {
       state = next;
-      shown = render(element, state);
+      shown = render(element, state, options.digits);
     },
   };
 }

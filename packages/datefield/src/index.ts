@@ -31,6 +31,9 @@ export { inputDigit, clearSegment } from "./input";
 // Rotate
 export { rotateSegment, clampDay } from "./rotate";
 
+// Digits of a locale, for display
+export { localeDigits } from "./digits";
+
 // Bridge to input-state fields
 export { dateMask, withSegments } from "./field";
 
