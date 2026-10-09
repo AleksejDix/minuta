@@ -73,3 +73,21 @@ describe("digits of other scripts", () => {
     }
   );
 });
+
+describe("characters JavaScript reads as numbers", () => {
+  it.each(["e", "E", "+", "-", ".", "x"])(
+    "rejects %s in a digit slot",
+    { timeout: 5000 },
+    (char) => {
+      expect.hasAssertions();
+      const field = createInputState({ mask: dateMask(DE) });
+      expect(typeChar(field, char)).toBe(field);
+    }
+  );
+
+  it("never converts exponent notation", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    // Number("1e") is NaN and Number("1e1") is 10; toDate only reads digits
+    expect(toDate(parseSegments(DE, "1e.03.2026"))).toBeUndefined();
+  });
+});
