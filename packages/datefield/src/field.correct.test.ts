@@ -4,6 +4,7 @@ import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
 import type { InputState } from "input-state";
 import { clampDay } from "./rotate";
+import { localeDigits } from "./digits";
 import { toDate } from "./convert";
 
 const DE = deriveFormat("de-CH");
@@ -103,5 +104,20 @@ describe("calendars", () => {
     expect(toDate(parseSegments(format, text))).toStrictEqual(
       new Date("2026-03-31T00:00:00")
     );
+  });
+});
+
+describe("localeDigits()", () => {
+  const THREE = 3;
+
+  it.each([
+    ["ar-EG", "٣"],
+    ["fa-IR", "۳"],
+    ["hi-IN-u-nu-deva", "३"],
+    ["de-CH", "3"],
+    ["ff-Adlm-GN", "3"],
+  ])("gives %s the digit %s for three", { timeout: 5000 }, (locale, three) => {
+    expect.hasAssertions();
+    expect(localeDigits(locale)[THREE]).toBe(three);
   });
 });
