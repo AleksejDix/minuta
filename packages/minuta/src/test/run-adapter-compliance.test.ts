@@ -21,7 +21,7 @@ const complianceCases: readonly ComplianceCase[] = [
   {
     name: "date-fns-tz",
     options: { timezone: "UTC" },
-    units: dateFnsTzUnits({ timezone: "UTC", weekStartsOn: "monday" }),
+    units: dateFnsTzUnits({ timeZone: "UTC", weekStartsOn: "monday" }),
   },
 ];
 

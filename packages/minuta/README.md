@@ -191,7 +191,7 @@ import { dateFnsTzUnits } from "minuta/date-fns-tz";
 import { formatPeriod } from "minuta/format";
 import { periodWith } from "minuta/core";
 
-const tokyo = dateFnsTzUnits({ timezone: "Asia/Tokyo" });
+const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
 const day = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
 formatPeriod(day, "en-US", { timeZone: tokyo.timeZone }); // "March 21, 2026"
 ```

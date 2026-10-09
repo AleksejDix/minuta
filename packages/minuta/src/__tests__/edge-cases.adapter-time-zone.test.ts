@@ -23,7 +23,10 @@ const SATURDAY_NOON: Readonly<Record<string, string>> = {
 describe.each(ZONES)(
   "calendar facts follow the adapter zone %s",
   (timezone) => {
-    const units = dateFnsTzUnits({ timezone, weekStartsOn: "monday" });
+    const units = dateFnsTzUnits({
+      timeZone: timezone,
+      weekStartsOn: "monday",
+    });
     const saturday = new Date(SATURDAY_NOON[timezone] ?? "");
 
     it("checks the weekend in the adapter's zone", { timeout: 5000 }, () => {

@@ -80,7 +80,7 @@ function detectDstHours(slots: readonly HourSlot[]): DstHours {
  * import { dateFnsTzUnits } from "minuta/date-fns-tz";
  * import { dayGridWith } from "minuta/calendar";
  *
- * const units = dateFnsTzUnits({ timezone: "America/New_York" });
+ * const units = dateFnsTzUnits({ timeZone: "America/New_York" });
  * const { periods, gapHour } = dayGridWith(units, new Date("2024-03-10T12:00:00Z"));
  * periods.length; // 23
  * gapHour; // 2

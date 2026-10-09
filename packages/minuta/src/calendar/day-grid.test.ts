@@ -24,7 +24,7 @@ const NY_SPRING_FORWARD = new Date("2024-03-10T05:00:00Z");
 const NY_FALL_BACK = new Date("2024-11-03T05:00:00Z");
 
 describe("dayGridWith() on a New York spring forward day", () => {
-  const ny = dateFnsTzUnits({ timezone: NEW_YORK });
+  const ny = dateFnsTzUnits({ timeZone: NEW_YORK });
 
   it(
     "returns the 23 real hours of a spring forward day",
@@ -52,7 +52,7 @@ describe("dayGridWith() on a New York spring forward day", () => {
 });
 
 describe("dayGridWith() on a New York fall back day", () => {
-  const ny = dateFnsTzUnits({ timezone: NEW_YORK });
+  const ny = dateFnsTzUnits({ timeZone: NEW_YORK });
 
   it("returns the 25 real hours of a fall back day", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -75,7 +75,7 @@ describe("dayGridWith() on a New York fall back day", () => {
 });
 
 describe("dayGridWith() on Europe/Zurich DST days", () => {
-  const zurich = dateFnsTzUnits({ timezone: ZURICH });
+  const zurich = dateFnsTzUnits({ timeZone: ZURICH });
 
   it("returns the 23 real hours of Mar 31 2024", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -102,7 +102,7 @@ describe("dayGridWith() on Europe/Zurich DST days", () => {
 });
 
 describe("dayGridWith() on Europe/London DST days", () => {
-  const london = dateFnsTzUnits({ timezone: LONDON });
+  const london = dateFnsTzUnits({ timeZone: LONDON });
 
   it("marks hour 1 as gap (1 AM → 2 AM)", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -123,8 +123,8 @@ describe("dayGridWith() on Europe/London DST days", () => {
 });
 
 describe("dayGridWith() on southern hemisphere DST days", () => {
-  const sydney = dateFnsTzUnits({ timezone: SYDNEY });
-  const auckland = dateFnsTzUnits({ timezone: AUCKLAND });
+  const sydney = dateFnsTzUnits({ timeZone: SYDNEY });
+  const auckland = dateFnsTzUnits({ timeZone: AUCKLAND });
 
   it("marks hour 2 as gap in Sydney (2 AM → 3 AM)", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -168,7 +168,7 @@ describe("dayGridWith() in zones without DST", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const tokyo = dateFnsTzUnits({ timezone: "Asia/Tokyo" });
+      const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
       const { periods, gapHour, ambiguousHour } = dayGridWith(
         tokyo,
         new Date("2024-03-10T00:00:00Z")
@@ -181,7 +181,7 @@ describe("dayGridWith() in zones without DST", () => {
 
   it("never has gaps or ambiguous hours in UTC", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const utc = dateFnsTzUnits({ timezone: "UTC" });
+    const utc = dateFnsTzUnits({ timeZone: "UTC" });
     // Test on US spring forward date — UTC doesn't care
     const { periods, gapHour, ambiguousHour } = dayGridWith(
       utc,

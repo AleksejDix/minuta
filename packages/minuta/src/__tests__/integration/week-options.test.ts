@@ -26,7 +26,7 @@ const FACTORIES: readonly (readonly [
     "date-fns-tz",
     (options) =>
       dateFnsTzUnits({
-        timezone: TIME_ZONE,
+        timeZone: TIME_ZONE,
         weekStartsOn: options.weekStartsOn,
         weekend: options.weekend,
       }),

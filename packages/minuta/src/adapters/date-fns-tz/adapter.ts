@@ -25,16 +25,16 @@ const DEFAULT_TIMEZONE = "UTC";
  * import { dateFnsTzUnits } from "minuta/date-fns-tz";
  * import { withUnits } from "minuta/core";
  *
- * const time = withUnits(dateFnsTzUnits({ timezone: "Europe/Zurich", weekStartsOn: "monday" }));
+ * const time = withUnits(dateFnsTzUnits({ timeZone: "Europe/Zurich", weekStartsOn: "monday" }));
  * time.period(new Date(), "week");
  *
  * @param options - Week start, weekend, time zone
  * @returns A spec for every unit
  */
 function dateFnsTzUnits(
-  options: WeekOptions & Readonly<{ timezone?: string }> = {}
+  options: WeekOptions & Readonly<{ timeZone?: string }> = {}
 ): AllUnits {
-  const { timezone = DEFAULT_TIMEZONE } = options;
+  const { timeZone: timezone = DEFAULT_TIMEZONE } = options;
   return adapterUnits(
     options,
     (weekStartsOn) => ({

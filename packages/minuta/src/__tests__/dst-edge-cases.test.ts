@@ -50,7 +50,7 @@ function consecutivePairs(
  */
 
 describe("dst: ambiguous times during fall back", () => {
-  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timeZone: "America/New_York" });
 
   it("period created during ambiguous hour is valid", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -77,7 +77,7 @@ describe("dst: ambiguous times during fall back", () => {
  */
 
 describe("dst: gap times during spring forward", () => {
-  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timeZone: "America/New_York" });
 
   it("period created with gap time adjusts forward", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -109,8 +109,8 @@ describe("dst: gap times during spring forward", () => {
  */
 
 describe("dst: fractional timezone offsets", () => {
-  const india = dateFnsTzUnits({ timezone: "Asia/Kolkata" });
-  const nepal = dateFnsTzUnits({ timezone: "Asia/Kathmandu" });
+  const india = dateFnsTzUnits({ timeZone: "Asia/Kolkata" });
+  const nepal = dateFnsTzUnits({ timeZone: "Asia/Kathmandu" });
 
   it("india (+5:30): day has 24 hours", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -154,7 +154,7 @@ describe("dst: fractional timezone offsets", () => {
 // ── Lord Howe Island: 30-minute DST shift ──
 
 describe("dst: Lord Howe Island (30-minute DST shift)", () => {
-  const lordHowe = dateFnsTzUnits({ timezone: "Australia/Lord_Howe" });
+  const lordHowe = dateFnsTzUnits({ timeZone: "Australia/Lord_Howe" });
 
   it("normal day has 24 hours", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -187,7 +187,7 @@ describe("dst: Lord Howe Island (30-minute DST shift)", () => {
  */
 
 describe("dst: periods spanning multiple transitions", () => {
-  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timeZone: "America/New_York" });
 
   it("full year divided into months gives 12", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -209,7 +209,7 @@ describe("dst: periods spanning multiple transitions", () => {
 });
 
 describe("dst: containment and overlap across multiple transitions", () => {
-  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timeZone: "America/New_York" });
 
   it(
     "period spanning spring forward + fall back: contains works",
