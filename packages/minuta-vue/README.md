@@ -36,7 +36,7 @@ Options (all optional; pass a plain object, a ref or a getter such as
 - `unit` – unit of the browsed period, default `"month"`
 
 Returns every operation of `withUnits(units)` (`period`, `next`, `previous`,
-`shift`, `divide`, `contains`, `same`, `isToday`, …; see the core README),
+`shift`, `divide`, `contains`, `same`, …; see the core README),
 always bound to the current units, plus:
 
 - `units` – computed, the bound units

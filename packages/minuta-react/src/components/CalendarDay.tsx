@@ -80,12 +80,12 @@ function CalendarDay({
   day,
   locale = DEFAULT_LOCALE,
 }: CalendarDayProps): JSX.Element {
-  const { browsing, contains, isToday, now, same, units } = useMinutaContext();
+  const { browsing, contains, now, same, units } = useMinutaContext();
   const { select, selected } = useCalendarContext();
   const state: DayState = {
     isOutside: !contains(browsing, day.start),
     isSelected: selected !== undefined && same(selected, day, "day"),
-    isToday: isToday(now.start, day),
+    isToday: contains(day, now.start),
   };
   const labels = useMemo(
     () => dayLabels(day.start, locale, units.timeZone),

@@ -114,26 +114,4 @@ function formatPeriod(
   return fmt.format(period.start);
 }
 
-/**
- * Format a period with explicit Intl options.
- *
- * Escape hatch for custom formatting needs.
- *
- * @example
- * formatPeriodWith(period, "de-CH", { weekday: "long", day: "numeric" })
- * // → "Sonntag, 15."
- * @param period - Period to format
- * @param locale - BCP 47 locale
- * @param options - Intl options
- * @returns The formatted period start
- */
-function formatPeriodWith(
-  period: Period,
-  locale: string,
-  options: DisplayOptions
-): string {
-  const fmt = new Intl.DateTimeFormat(locale, options);
-  return fmt.format(period.start);
-}
-
-export { formatPeriod, formatPeriodWith, formatRange };
+export { formatPeriod, formatRange };

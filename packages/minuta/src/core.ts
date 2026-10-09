@@ -13,7 +13,6 @@ export {
   divideWith,
   durationWith,
   gap,
-  isTodayWith,
   isWeekdayWith,
   isWeekendWith,
   length,
@@ -44,8 +43,8 @@ export type { Minuta, WithUnitsOptions } from "#src/with-units";
 export type { WeekOptions, Weekday, WeekdayNumber } from "#src/weekday";
 export type {
   AllUnits,
+  BuiltInUnit,
   Period,
-  Series,
   Unit,
   UnitRegistry,
   Units,

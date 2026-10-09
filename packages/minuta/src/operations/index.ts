@@ -12,7 +12,6 @@ export { sameWith } from "./same";
 export { nextWith, previousWith, shiftWith } from "./shift";
 export { snapWith } from "./snap";
 export { split } from "./split";
-export { isTodayWith } from "./utils/is-today";
 export { isWeekdayWith } from "./utils/is-weekday";
 export { isWeekendWith } from "./utils/is-weekend";
 export type { DivideOptions } from "./divide";

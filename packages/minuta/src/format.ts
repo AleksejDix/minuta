@@ -5,4 +5,4 @@
  *
  * Locale-aware labels for periods via Intl.DateTimeFormat.
  */
-export { formatPeriod, formatPeriodWith, formatRange } from "./format/format";
+export { formatPeriod, formatRange } from "./format/format";

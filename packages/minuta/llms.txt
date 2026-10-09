@@ -48,18 +48,6 @@ duration(period(new Date(2026, 9, 8), "day"), "hour"); // 24
 duration(period(new Date(2026, 1, 1), "month"), "day"); // 28
 ```
 
-### `isToday`
-
-```ts
-isToday(now: Readonly<Date>, period: Period): boolean
-```
-
-Whether `period` is the day containing `now`. Native units.
-
-```ts
-isToday(new Date(), period(new Date(), "day")); // true
-```
-
 ### `isWeekday`
 
 ```ts
@@ -361,7 +349,6 @@ type Minuta = Readonly<{
   divide: Bound<typeof divideWith>;
   duration: Bound<typeof durationWith>;
   gap: typeof gap;
-  isToday: Bound<typeof isTodayWith>;
   isWeekday: Bound<typeof isWeekdayWith>;
   isWeekend: Bound<typeof isWeekendWith>;
   length: typeof length;
@@ -398,16 +385,6 @@ The primitive: every time range is a Period. Plain, deeply readonly data.
 
 `periodWith(units, date, "month")` creates one aligned to a unit,
 `range(start, end)` a custom one. `end` is inclusive (the last millisecond).
-
-### `Series`
-
-```ts
-type Series = Readonly<{
-  periods: readonly Period[];
-}>;
-```
-
-A container of periods. Calendar grids extend it with metadata.
 
 ### `Unit`
 
@@ -483,18 +460,6 @@ durationWith(units, period(new Date(2026, 1, 1), "month"), "day"); // 28
 ### `gap`
 
 Same as `gap` in `minuta`.
-
-### `isTodayWith`
-
-```ts
-isTodayWith(units: Units, now: Readonly<Date>, period: Period): boolean
-```
-
-Whether `period` is the day that contains `now`.
-
-```ts
-isTodayWith(nativeUnits(), new Date(), periodWith(nativeUnits(), new Date(), "day")); // true
-```
 
 ### `isWeekdayWith`
 
@@ -797,18 +762,32 @@ A day of the week as `Date#getDay()` numbers it: 0 = Sunday … 6 = Saturday.
 ### `AllUnits`
 
 ```ts
-type AllUnits = Readonly<Record<Unit, UnitSpec>> & Settings;
+type AllUnits = Readonly<Record<BuiltInUnit, UnitSpec>> & Settings;
 ```
 
-A spec for every unit, as returned by the adapters.
+A spec for every built-in unit, as returned by the adapters. Add specs of
+your own units next to them: `Object.assign({ fortnight }, nativeUnits())`.
+
+### `BuiltInUnit`
+
+```ts
+type BuiltInUnit =
+  | "day"
+  | "hour"
+  | "minute"
+  | "month"
+  | "quarter"
+  | "second"
+  | "week"
+  | "year";
+```
+
+The units every adapter provides. Units added to `UnitRegistry` come with
+your own spec, so they are not part of `AllUnits`.
 
 ### `Period`
 
 Same as `Period` in `minuta`.
-
-### `Series`
-
-Same as `Series` in `minuta`.
 
 ### `Unit`
 
@@ -909,7 +888,7 @@ yearGridWith(nativeUnits({ weekStartsOn: "monday" }), new Date(2026, 5, 1)).peri
 
 ```ts
 type DayGrid = Readonly<{
-  /** The slots; a DayGrid is also a `Series` */
+  /** The hour slots of the day */
   periods: readonly HourSlot[];
   /** Wall-clock hour that doesn't exist due to spring forward, or undefined */
   gapHour: number | undefined;
@@ -935,11 +914,12 @@ One real hour of a day, labelled with its wall-clock hour.
 ### `MonthGrid`
 
 ```ts
-type MonthGrid = Series &
-  Readonly<{
-    monthStart: Readonly<Date>;
-    weekStartsOn: number;
-  }>;
+type MonthGrid = Readonly<{
+  monthStart: Readonly<Date>;
+  /** The 42 day periods, row by row */
+  periods: readonly Period[];
+  weekStartsOn: number;
+}>;
 ```
 
 A 42-day month grid (`periods`), the month's first day and the week start
@@ -948,11 +928,12 @@ the grid was built with.
 ### `YearGrid`
 
 ```ts
-type YearGrid = Series &
-  Readonly<{
-    weekStartsOn: number;
-    yearStart: Readonly<Date>;
-  }>;
+type YearGrid = Readonly<{
+  /** The week periods covering the year */
+  periods: readonly Period[];
+  weekStartsOn: number;
+  yearStart: Readonly<Date>;
+}>;
 ```
 
 The whole weeks covering a year (`periods`), the year's first day and the
@@ -986,21 +967,6 @@ formatPeriod(weekPeriod, "ja-JP")
 
 // a period of time-zone units, in their zone
 formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone })
-```
-
-### `formatPeriodWith`
-
-```ts
-formatPeriodWith(period: Period, locale: string, options: DisplayOptions): string
-```
-
-Format a period with explicit Intl options.
-
-Escape hatch for custom formatting needs.
-
-```ts
-formatPeriodWith(period, "de-CH", { weekday: "long", day: "numeric" })
-// → "Sonntag, 15."
 ```
 
 ### `formatRange`

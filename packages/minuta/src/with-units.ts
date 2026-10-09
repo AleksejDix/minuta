@@ -11,7 +11,6 @@ import {
   divideWith,
   durationWith,
   gap,
-  isTodayWith,
   isWeekdayWith,
   isWeekendWith,
   length,
@@ -40,7 +39,6 @@ type Minuta = Readonly<{
   divide: Bound<typeof divideWith>;
   duration: Bound<typeof durationWith>;
   gap: typeof gap;
-  isToday: Bound<typeof isTodayWith>;
   isWeekday: Bound<typeof isWeekdayWith>;
   isWeekend: Bound<typeof isWeekendWith>;
   length: typeof length;
@@ -104,7 +102,6 @@ function operationsFor(units: Units): Minuta {
     divide: (period, unit, options) => divideWith(units, period, unit, options),
     duration: (period, unit) => durationWith(units, period, unit),
     gap,
-    isToday: (now, period) => isTodayWith(units, now, period),
     isWeekday: (period) => isWeekdayWith(units, period),
     isWeekend: (period) => isWeekendWith(units, period),
     length,

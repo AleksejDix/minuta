@@ -1,4 +1,4 @@
-import type { AllUnits, Unit, UnitSpec } from "#src/types";
+import type { AllUnits, BuiltInUnit, UnitSpec } from "#src/types";
 import type { WeekOptions, WeekdayNumber } from "#src/weekday";
 import { weekStartOf, weekendOf } from "#src/weekday";
 
@@ -66,7 +66,9 @@ function withCompleteDiff(spec: UnitSpec): UnitSpec {
  */
 function adapterUnits(
   options: WeekOptions,
-  specsFor: (weekStartsOn: WeekdayNumber) => Readonly<Record<Unit, UnitSpec>>,
+  specsFor: (
+    weekStartsOn: WeekdayNumber
+  ) => Readonly<Record<BuiltInUnit, UnitSpec>>,
   timeZone: string = runtimeTimeZone()
 ): AllUnits {
   const weekStartsOn = weekStartOf(options);
@@ -77,7 +79,9 @@ function adapterUnits(
     ]
   );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries returns any; the keys are the units of specsFor
-  const specs = Object.fromEntries(entries) as Readonly<Record<Unit, UnitSpec>>;
+  const specs = Object.fromEntries(entries) as Readonly<
+    Record<BuiltInUnit, UnitSpec>
+  >;
   return Object.assign(specs, {
     timeZone,
     weekStartsOn,
