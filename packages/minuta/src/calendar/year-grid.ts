@@ -1,4 +1,5 @@
 import type { Series, Units } from "#src/types";
+import { DEFAULT_WEEK_START } from "#src/weekday";
 import { divideWith } from "#src/operations/divide";
 import { specFor } from "#src/units";
 
@@ -34,7 +35,11 @@ function yearGridWith(units: Units, date: Readonly<Date>): YearGrid {
     { end: gridEnd, start: gridStart, unit: "custom" },
     "week"
   );
-  return { periods, weekStartsOn: gridStart.getDay(), yearStart };
+  return {
+    periods,
+    weekStartsOn: units.weekStartsOn ?? DEFAULT_WEEK_START,
+    yearStart,
+  };
 }
 
 export { yearGridWith };

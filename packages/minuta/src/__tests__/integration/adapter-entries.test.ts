@@ -44,6 +44,9 @@ function exportsOf(namespace: unknown): ReadonlyMap<string, unknown> {
   return new Map<string, unknown>(Object.entries(namespace));
 }
 
+// Keys of the units that are settings, not unit specs
+const SETTINGS: ReadonlySet<string> = new Set(["weekStartsOn", "weekend"]);
+
 describe("export verification: adapter entries", () => {
   it.each(ADAPTER_ENTRIES)(
     "%s entry should export only %s",
@@ -63,7 +66,7 @@ describe("export verification: adapter entries", () => {
     (_entry: string, _factoryName: string, factory: () => AllUnits) => {
       expect.hasAssertions();
       const unitNames = new Set(
-        Object.keys(factory()).filter((name) => name !== "weekend")
+        Object.keys(factory()).filter((name) => !SETTINGS.has(name))
       );
       expect(unitNames).toStrictEqual(new Set(UNIT_NAMES));
     }

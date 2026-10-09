@@ -65,6 +65,8 @@ type UnitSpec = Readonly<{
  * Calendar settings that travel with the unit specs.
  */
 type WeekSettings = Readonly<{
+  /** First day of the `week` spec as a `Date#getDay()` number. Default: Monday. */
+  weekStartsOn?: WeekdayNumber | undefined;
   /** Weekend days as `Date#getDay()` numbers. Default: Saturday and Sunday. */
   weekend?: readonly WeekdayNumber[] | undefined;
 }>;

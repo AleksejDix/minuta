@@ -3,7 +3,8 @@ import { assertValidDate, specFor } from "#src/units";
 
 const DEFAULT_STEP = 1;
 const ONE = 1;
-const EPOCH = new Date("1970-01-01T00:00");
+// Midday UTC lies in 1970 and in the same week in every time zone
+const EPOCH = new Date("1970-01-01T12:00:00Z");
 
 /** How `snap` / `snapWith` picks the boundary. */
 type SnapMode = "ceil" | "floor" | "nearest";

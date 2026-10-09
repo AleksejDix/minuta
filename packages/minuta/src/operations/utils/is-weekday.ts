@@ -10,13 +10,13 @@ import { daysTouched } from "./days-touched";
  * isWeekdayWith(nativeUnits(), period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
  * isWeekdayWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 22), "day")); // true (a Sunday)
  *
- * @param units - Units whose `weekend` to use
+ * @param units - Units whose `weekend` to use, with `day` and `week` specs
  * @param period - The period to check
  * @returns True when the period touches no weekend day
  */
 function isWeekdayWith(units: Units, period: Period): boolean {
   const weekend = units.weekend ?? DEFAULT_WEEKEND;
-  return daysTouched(period).every((day) => !weekend.includes(day));
+  return daysTouched(units, period).every((day) => !weekend.includes(day));
 }
 
 export { isWeekdayWith };

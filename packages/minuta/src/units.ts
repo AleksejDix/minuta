@@ -20,6 +20,9 @@ const MinutaError = {
 /** One of the {@link MinutaError} codes. */
 type MinutaErrorCode = (typeof MinutaError)[keyof typeof MinutaError];
 
+// Keys of `Units` that are settings, not unit specs
+const SETTINGS: ReadonlySet<string> = new Set(["weekStartsOn", "weekend"]);
+
 /**
  * The spec for `unit`.
  *
@@ -36,7 +39,7 @@ function specFor(units: Units, unit: Unit): UnitSpec {
   if (spec === undefined) {
     const available =
       Object.keys(units)
-        .filter((name) => name !== "weekend")
+        .filter((name) => !SETTINGS.has(name))
         .join(", ") || "none";
     throw new RangeError(
       `${MinutaError.UnitNotSupported}: no "${unit}" spec in the units passed (available: ${available}). ` +

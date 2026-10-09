@@ -51,7 +51,8 @@ function withCompleteDiff(spec: UnitSpec): UnitSpec {
 }
 
 /**
- * Build an adapter's units: the week start and weekend from `options`, and
+ * Build an adapter's units: the week start and weekend from `options`, also
+ * carried on the result, and
  * every spec with an exact `diff` (see `withCompleteDiff`).
  *
  * @param options - The adapter's week options
@@ -62,7 +63,8 @@ function adapterUnits(
   options: WeekOptions,
   specsFor: (weekStartsOn: WeekdayNumber) => Readonly<Record<Unit, UnitSpec>>
 ): AllUnits {
-  const entries = Object.entries(specsFor(weekStartOf(options))).map(
+  const weekStartsOn = weekStartOf(options);
+  const entries = Object.entries(specsFor(weekStartsOn)).map(
     ([unit, spec]: readonly [string, UnitSpec]) => [
       unit,
       withCompleteDiff(spec),
@@ -70,7 +72,7 @@ function adapterUnits(
   );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries returns any; the keys are the units of specsFor
   const specs = Object.fromEntries(entries) as Readonly<Record<Unit, UnitSpec>>;
-  return Object.assign(specs, { weekend: weekendOf(options) });
+  return Object.assign(specs, { weekStartsOn, weekend: weekendOf(options) });
 }
 
 export { adapterUnits };
