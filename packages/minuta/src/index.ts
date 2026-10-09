@@ -42,6 +42,16 @@ const duration: Minuta["duration"] = defaults.duration;
 const isToday: Minuta["isToday"] = defaults.isToday;
 
 /**
+ * Merge periods into one; keeps `unit` only when the result is exactly one
+ * period of it, otherwise `"custom"`. Native units.
+ *
+ * @example
+ * merge([period(new Date(2026, 0, 5), "day"), period(new Date(2026, 0, 9), "day")]); // Jan 5–9, "custom"
+ * merge(divide(period(new Date(2026, 0, 1), "month"), "day"), "month"); // January, "month"
+ */
+const merge: Minuta["merge"] = defaults.merge;
+
+/**
  * The next period of the same unit. Native units, weeks start on Monday.
  *
  * @example
@@ -83,7 +93,17 @@ const same: Minuta["same"] = defaults.same;
  */
 const shift: Minuta["shift"] = defaults.shift;
 
-export { divide, duration, isToday, next, period, previous, same, shift };
+export {
+  divide,
+  duration,
+  isToday,
+  merge,
+  next,
+  period,
+  previous,
+  same,
+  shift,
+};
 export {
   clamp,
   contains,
@@ -91,7 +111,6 @@ export {
   isWeekday,
   isWeekend,
   length,
-  merge,
   move,
   overlaps,
   range,

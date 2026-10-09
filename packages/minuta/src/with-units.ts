@@ -14,7 +14,7 @@ import {
   isWeekday,
   isWeekend,
   length,
-  merge,
+  mergeWith,
   move,
   nextWith,
   overlaps,
@@ -43,7 +43,7 @@ type Minuta = Readonly<{
   isWeekday: typeof isWeekday;
   isWeekend: typeof isWeekend;
   length: typeof length;
-  merge: typeof merge;
+  merge: Bound<typeof mergeWith>;
   move: typeof move;
   next: Bound<typeof nextWith>;
   overlaps: typeof overlaps;
@@ -82,7 +82,7 @@ function withUnits(units: Units): Minuta {
     isWeekday,
     isWeekend,
     length,
-    merge,
+    merge: (periods, unit) => mergeWith(units, periods, unit),
     move,
     next: (period) => nextWith(units, period),
     overlaps,

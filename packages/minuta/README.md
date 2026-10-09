@@ -68,7 +68,8 @@ duration(march, "day"); // 31
 duration(period(new Date(2026, 2, 29), "day"), "hour"); // 23 in Europe/Zurich (DST)
 ```
 
-No result is `undefined` (`clamp` without overlap, `merge([])`), never `null`.
+No result is `undefined` (`clamp` without overlap, `merge([])`, `split` outside
+the period), never `null`.
 Invalid dates throw a `RangeError` whose message starts with a `MinutaError`
 code such as `INVALID_DATE`.
 

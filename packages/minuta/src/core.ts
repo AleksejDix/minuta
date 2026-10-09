@@ -17,7 +17,7 @@ export {
   isWeekday,
   isWeekend,
   length,
-  merge,
+  mergeWith,
   move,
   nextWith,
   overlaps,

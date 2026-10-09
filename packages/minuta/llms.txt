@@ -59,6 +59,20 @@ Whether `period` is the day containing `now`. Native units.
 isToday(new Date(), period(new Date(), "day")); // true
 ```
 
+### `merge`
+
+```ts
+merge(periods: readonly Period[], unit?: Unit): Period | undefined
+```
+
+Merge periods into one; keeps `unit` only when the result is exactly one
+period of it, otherwise `"custom"`. Native units.
+
+```ts
+merge([period(new Date(2026, 0, 5), "day"), period(new Date(2026, 0, 9), "day")]); // Jan 5–9, "custom"
+merge(divide(period(new Date(2026, 0, 1), "month"), "day"), "month"); // January, "month"
+```
+
 ### `next`
 
 ```ts
@@ -210,21 +224,6 @@ The period's length in milliseconds, measured over the half-open range
 length(period(new Date(2026, 9, 8), "day")); // 86400000, outside a DST change
 ```
 
-### `merge`
-
-```ts
-merge(periods: readonly Period[], targetUnit?: Unit): Period | undefined
-```
-
-Merge multiple periods into a single period spanning
-from the earliest start to the latest end.
-
-```ts
-merge([period(new Date(2026, 0, 1), "month"), period(new Date(2026, 2, 1), "month")]);
-// { start: Jan 1, end: Mar 31 23:59:59.999, unit: "custom" }
-merge([]); // undefined
-```
-
 ### `move`
 
 ```ts
@@ -298,14 +297,16 @@ snap(new Date('2024-03-15T10:37:00'), 15 * 60000, 'ceil')  // → 10:45
 ### `split`
 
 ```ts
-split(period: Period, splitDate: Readonly<Date>): [Period, Period]
+split(period: Period, splitDate: Readonly<Date>): [Period, Period] | undefined
 ```
 
-Split a period at a specific date
+Split a period at a date inside it. Both parts are `"custom"` periods:
+half a month is not a month.
 
 ```ts
-const [before, after] = split(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 15));
-// before: Mar 1 – Mar 14 23:59:59.999, after: Mar 15 – Mar 31
+const parts = split(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 15));
+// [Mar 1 – Mar 14 23:59:59.999, Mar 15 – Mar 31 23:59:59.999]
+split(period(new Date(2026, 2, 1), "month"), new Date(2027, 0, 1)); // undefined
 ```
 
 ### `MinutaError`
@@ -346,7 +347,7 @@ type Minuta = Readonly<{
   isWeekday: typeof isWeekday;
   isWeekend: typeof isWeekend;
   length: typeof length;
-  merge: typeof merge;
+  merge: Bound<typeof mergeWith>;
   move: typeof move;
   next: Bound<typeof nextWith>;
   overlaps: typeof overlaps;
@@ -471,9 +472,21 @@ Same as `isWeekend` in `minuta`.
 
 Same as `length` in `minuta`.
 
-### `merge`
+### `mergeWith`
 
-Same as `merge` in `minuta`.
+```ts
+mergeWith(units: Units, periods: readonly Period[], unit?: Unit): Period | undefined
+```
+
+Merge periods into one spanning the earliest start to the latest end. The
+result keeps `unit` (by default the first period's unit) only when it is
+exactly one period of that unit; otherwise its unit is `"custom"`.
+
+```ts
+mergeWith(units, [januaryFirstHalf, januarySecondHalf], "month"); // January, unit "month"
+mergeWith(units, [january, march]); // Jan 1 – Mar 31, unit "custom"
+mergeWith(units, []); // undefined
+```
 
 ### `move`
 

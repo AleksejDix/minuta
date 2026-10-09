@@ -3,7 +3,7 @@ export { contains } from "./contains";
 export { divideWith } from "./divide";
 export { durationWith, length } from "./duration";
 export { gap } from "./gap";
-export { merge } from "./merge";
+export { mergeWith } from "./merge";
 export { move } from "./move";
 export { overlaps } from "./overlaps";
 export { periodWith, range } from "./period";

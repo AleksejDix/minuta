@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Period } from "#src/types";
 import { divideWith } from "#src/operations/divide";
-import { merge } from "#src/operations/merge";
+import { mergeWith } from "#src/operations/merge";
 import { nativeUnits } from "#src/adapters/native/index";
 import { periodWith } from "#src/operations/period";
 import { shiftWith } from "#src/operations/shift";
@@ -55,19 +55,23 @@ describe("regression tests for critical bugs: merge()", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      expect(merge([], "day")).toBeUndefined();
+      expect(mergeWith(units, [], "day")).toBeUndefined();
     }
   );
 
-  it("should set target unit type on single period", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const single = day("2024-01-15");
+  it(
+    "should not set an unaligned unit on a single period",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const single = day("2024-01-15");
 
-    const asWeek = required(merge([single], "week"));
-    expect(asWeek.unit).toBe("week");
-    expect(asWeek.start.getTime()).toBe(single.start.getTime());
-    expect(asWeek.end.getTime()).toBe(single.end.getTime());
-  });
+      const asWeek = required(mergeWith(units, [single], "week"));
+      expect(asWeek.unit).toBe("custom");
+      expect(asWeek.start.getTime()).toBe(single.start.getTime());
+      expect(asWeek.end.getTime()).toBe(single.end.getTime());
+    }
+  );
 
   it(
     "should preserve exact start/end times for partial period merges",
@@ -79,9 +83,9 @@ describe("regression tests for critical bugs: merge()", () => {
 
       // Merge morning hours only (0-11)
       const morningHours = hours.slice(FIRST_INDEX, MORNING_HOURS);
-      const merged = required(merge(morningHours, "day"));
+      const merged = required(mergeWith(units, morningHours, "day"));
 
-      expect(merged.unit).toBe("day");
+      expect(merged.unit).toBe("custom");
       expect(merged.start.getHours()).toBe(MIDNIGHT);
       expect(merged.end.getHours()).toBe(LAST_MORNING_HOUR);
       expect(merged.end.getMinutes()).toBe(LAST_MINUTE);
@@ -99,7 +103,7 @@ describe("regression tests for critical bugs: merge() references", () => {
       const first = day("2024-01-10");
       const periods = [first, day("2024-01-11"), day("2024-01-12")];
 
-      const merged = required(merge(periods, "week"));
+      const merged = required(mergeWith(units, periods, "week"));
       expect(merged.start.getTime()).toBe(first.start.getTime());
     }
   );

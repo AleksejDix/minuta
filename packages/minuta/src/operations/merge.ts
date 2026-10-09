@@ -1,10 +1,5 @@
-import type { Period, Unit } from "#src/types";
-
-const SINGLE_PERIOD = 1;
-
-function withUnit(period: Period, unit: Unit): Period {
-  return { end: period.end, start: period.start, unit };
-}
+import type { Period, Unit, Units } from "#src/types";
+import { specFor } from "#src/units";
 
 function earliestStart(first: Period, periods: readonly Period[]): number {
   let minStart = first.start.getTime();
@@ -28,40 +23,52 @@ function latestEnd(first: Period, periods: readonly Period[]): number {
   return maxEnd;
 }
 
+// oxlint-disable-next-line eslint/max-params -- Context-first: (units, start, end, unit)
+function isAligned(
+  units: Units,
+  start: Readonly<Date>,
+  end: Readonly<Date>,
+  unit: Unit
+): boolean {
+  const spec = specFor(units, unit);
+  return (
+    spec.startOf(start).getTime() === start.getTime() &&
+    spec.endOf(start).getTime() === end.getTime()
+  );
+}
+
 /**
- * Merge multiple periods into a single period spanning
- * from the earliest start to the latest end.
+ * Merge periods into one spanning the earliest start to the latest end. The
+ * result keeps `unit` (by default the first period's unit) only when it is
+ * exactly one period of that unit; otherwise its unit is `"custom"`.
  *
  * @example
- * merge([period(new Date(2026, 0, 1), "month"), period(new Date(2026, 2, 1), "month")]);
- * // { start: Jan 1, end: Mar 31 23:59:59.999, unit: "custom" }
- * merge([]); // undefined
+ * mergeWith(units, [januaryFirstHalf, januarySecondHalf], "month"); // January, unit "month"
+ * mergeWith(units, [january, march]); // Jan 1 – Mar 31, unit "custom"
+ * mergeWith(units, []); // undefined
  *
- * @param periods - The periods to merge (at least one)
- * @param targetUnit - Optional unit type for the merged period
+ * @param units - Available unit specs
+ * @param periods - The periods to merge
+ * @param unit - The unit the merged period should have if it is aligned;
+ *   defaults to the first period's unit
  * @returns The merged period, or undefined for an empty list
  */
-function merge(
+function mergeWith(
+  units: Units,
   periods: readonly Period[],
-  targetUnit?: Unit
+  unit?: Unit
 ): Period | undefined {
   const [first] = periods;
   if (first === undefined) {
     return undefined;
   }
-
-  if (periods.length === SINGLE_PERIOD) {
-    if (targetUnit) {
-      return withUnit(first, targetUnit);
-    }
-    return first;
+  const start = new Date(earliestStart(first, periods));
+  const end = new Date(latestEnd(first, periods));
+  const target = unit ?? first.unit;
+  if (target === "custom" || !isAligned(units, start, end, target)) {
+    return { end, start, unit: "custom" };
   }
-
-  return {
-    end: new Date(latestEnd(first, periods)),
-    start: new Date(earliestStart(first, periods)),
-    unit: targetUnit ?? "custom",
-  };
+  return { end, start, unit: target };
 }
 
-export { merge };
+export { mergeWith };

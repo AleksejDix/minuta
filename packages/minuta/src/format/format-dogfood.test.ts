@@ -167,7 +167,9 @@ describe("dogfood merge() and split()", () => {
   it("splits March at the 15th", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const march = period("2026-03-01", "month");
-    const [first, second] = split(march, new Date("2026-03-15T00:00:00"));
+    const [first, second] = required(
+      split(march, new Date("2026-03-15T00:00:00"))
+    );
     expect(formatAsRange(first)).toContain("Mar");
     expect(formatAsRange(second)).toContain("Mar");
   });
