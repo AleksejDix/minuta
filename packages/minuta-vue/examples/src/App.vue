@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarGrid, CalendarHeader, CalendarRoot, CalendarWeekdays } from 'minuta-vue/components'
+import { CalendarGrid, CalendarHeader, CalendarRoot } from 'minuta-vue/components'
 import DateFieldInput from './DateFieldInput.vue'
 import DateFieldOutput from './DateFieldOutput.vue'
 import DateFieldRoot from './DateFieldRoot.vue'
@@ -46,8 +46,7 @@ function changeDate(date: Readonly<Date> | undefined): void {
     <CalendarRoot @select="selectDay">
       <section class="calendar-shell">
         <CalendarHeader :locale="locale" />
-        <CalendarWeekdays :locale="locale" />
-        <CalendarGrid />
+        <CalendarGrid :locale="locale" />
       </section>
     </CalendarRoot>
   </main>
