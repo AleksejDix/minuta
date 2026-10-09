@@ -42,6 +42,24 @@ const duration: Minuta["duration"] = defaults.duration;
 const isToday: Minuta["isToday"] = defaults.isToday;
 
 /**
+ * Whether every day the period touches is a working day (Monday to Friday).
+ * Native units; for another weekend use `withUnits(nativeUnits({ weekend }))`.
+ *
+ * @example
+ * isWeekday(period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
+ */
+const isWeekday: Minuta["isWeekday"] = defaults.isWeekday;
+
+/**
+ * Whether every day the period touches is Saturday or Sunday. Native units;
+ * for another weekend use `withUnits(nativeUnits({ weekend }))`.
+ *
+ * @example
+ * isWeekend(period(new Date(2026, 2, 21), "day")); // true (a Saturday)
+ */
+const isWeekend: Minuta["isWeekend"] = defaults.isWeekend;
+
+/**
  * Merge periods into one; keeps `unit` only when the result is exactly one
  * period of it, otherwise `"custom"`. Native units.
  *
@@ -107,6 +125,8 @@ export {
   divide,
   duration,
   isToday,
+  isWeekday,
+  isWeekend,
   merge,
   next,
   period,
@@ -119,8 +139,6 @@ export {
   clamp,
   contains,
   gap,
-  isWeekday,
-  isWeekend,
   length,
   move,
   overlaps,
@@ -137,3 +155,4 @@ export type {
 } from "#src/operations/index";
 export type { Minuta } from "#src/with-units";
 export type { Period, Series, Unit, Units } from "#src/types";
+export type { Weekday } from "#src/weekday";

@@ -5,7 +5,7 @@
 ## Rules
 
 - Every unit-aware function exists twice: `xWith(units, …)` in `minuta/core` takes the units first; `x(…)` in `minuta` is the same function bound to the native `Date` units with weeks starting on Monday. Unit-free functions have one form and take no units.
-- `withUnits(units, { plugins })` (from `minuta/core`) binds every operation, and the functions of plugins such as `calendar` from `minuta/calendar`, to your units, e.g. `withUnits(nativeUnits({ weekStartsOn: 0 }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
+- `withUnits(units, { plugins })` (from `minuta/core`) binds every operation, and the functions of plugins such as `calendar` from `minuta/calendar`, to your units, e.g. `withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
 - `Units` is a partial map of unit specs; pass only the units you use (`{ day, month }`) to keep the bundle small.
 - No result is `undefined`, never `null` (`clamp` without overlap, `merge([])`, …).
 - Invalid input throws `RangeError`; the message starts with one of the error codes below and says how to fix it.
@@ -57,6 +57,32 @@ Whether `period` is the day containing `now`. Native units.
 
 ```ts
 isToday(new Date(), period(new Date(), "day")); // true
+```
+
+### `isWeekday`
+
+```ts
+isWeekday(period: Period): boolean
+```
+
+Whether every day the period touches is a working day (Monday to Friday).
+Native units; for another weekend use `withUnits(nativeUnits({ weekend }))`.
+
+```ts
+isWeekday(period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
+```
+
+### `isWeekend`
+
+```ts
+isWeekend(period: Period): boolean
+```
+
+Whether every day the period touches is Saturday or Sunday. Native units;
+for another weekend use `withUnits(nativeUnits({ weekend }))`.
+
+```ts
+isWeekend(period(new Date(2026, 2, 21), "day")); // true (a Saturday)
 ```
 
 ### `merge`
@@ -199,32 +225,6 @@ gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 5), "day"));
 // { start: Mar 3, end: Mar 4 23:59:59.999, unit: "custom" }
 ```
 
-### `isWeekday`
-
-```ts
-isWeekday(period: Period): boolean
-```
-
-Checks if a period falls entirely within weekdays.
-Returns false for periods spanning more than 2 days.
-
-```ts
-isWeekday(period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
-```
-
-### `isWeekend`
-
-```ts
-isWeekend(period: Period): boolean
-```
-
-Checks if a period falls entirely within a weekend.
-Returns false for periods spanning more than 2 days.
-
-```ts
-isWeekend(period(new Date(2026, 2, 21), "day")); // true (a Saturday)
-```
-
 ### `length`
 
 ```ts
@@ -365,8 +365,8 @@ type Minuta = Readonly<{
   duration: Bound<typeof durationWith>;
   gap: typeof gap;
   isToday: Bound<typeof isTodayWith>;
-  isWeekday: typeof isWeekday;
-  isWeekend: typeof isWeekend;
+  isWeekday: Bound<typeof isWeekdayWith>;
+  isWeekend: Bound<typeof isWeekendWith>;
   length: typeof length;
   merge: Bound<typeof mergeWith>;
   move: typeof move;
@@ -424,11 +424,27 @@ A unit name: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`,
 ### `Units`
 
 ```ts
-type Units = Readonly<Partial<Record<Unit, UnitSpec>>>;
+type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & WeekSettings;
 ```
 
 The unit specs available to unit-aware functions. Partial, so a bundle can
-carry only the units it uses; adapters such as `nativeUnits()` return all.
+carry only the units it uses; adapters such as `nativeUnits()` return all,
+plus the `weekend`.
+
+### `Weekday`
+
+```ts
+type Weekday =
+  | "friday"
+  | "monday"
+  | "saturday"
+  | "sunday"
+  | "thursday"
+  | "tuesday"
+  | "wednesday";
+```
+
+A day of the week by name.
 
 ## `minuta/core`
 
@@ -483,13 +499,33 @@ Whether `period` is the day that contains `now`.
 isTodayWith(nativeUnits(), new Date(), periodWith(nativeUnits(), new Date(), "day")); // true
 ```
 
-### `isWeekday`
+### `isWeekdayWith`
 
-Same as `isWeekday` in `minuta`.
+```ts
+isWeekdayWith(units: Units, period: Period): boolean
+```
 
-### `isWeekend`
+Whether every day the period touches is a working day: not in the units'
+`weekend` (Saturday and Sunday unless set).
 
-Same as `isWeekend` in `minuta`.
+```ts
+isWeekdayWith(nativeUnits(), period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
+isWeekdayWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 22), "day")); // true (a Sunday)
+```
+
+### `isWeekendWith`
+
+```ts
+isWeekendWith(units: Units, period: Period): boolean
+```
+
+Whether every day the period touches is a weekend day, as configured by
+the units' `weekend` (Saturday and Sunday unless set).
+
+```ts
+isWeekendWith(nativeUnits(), period(new Date(2026, 2, 21), "day")); // true (a Saturday)
+isWeekendWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 20), "day")); // true (a Friday)
+```
 
 ### `length`
 
@@ -622,7 +658,7 @@ Bind every function of `plugin` to `units`.
 
 ```ts
 import { calendar } from "minuta/calendar";
-const grids = bind(nativeUnits({ weekStartsOn: 0 }), calendar);
+const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
 grids.monthGrid(new Date());
 ```
 
@@ -660,7 +696,7 @@ import { calendar } from "minuta/calendar";
 import { nativeUnits } from "minuta/native";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(nativeUnits({ weekStartsOn: 0 }), { plugins: [calendar] });
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
 time.next(time.period(new Date(), "week"));
 time.monthGrid(new Date()); // from the plugin
 time.units; // the units passed in
@@ -729,10 +765,42 @@ type WithUnitsOptions<Plugins extends readonly Plugin[]> = Readonly<{
 
 Options of `withUnits`.
 
+### `WeekOptions`
+
+```ts
+type WeekOptions = Readonly<{
+  /** First day of the week. Default: `"monday"` (ISO 8601). */
+  weekStartsOn?: Weekday | WeekdayNumber | undefined;
+  /** Days that `isWeekend` counts as weekend. Default: `["saturday", "sunday"]`. */
+  weekend?: readonly (Weekday | WeekdayNumber)[] | undefined;
+}>;
+```
+
+Week options every adapter factory accepts.
+
+### `Weekday`
+
+Same as `Weekday` in `minuta`.
+
+### `WeekdayNumber`
+
+```ts
+type WeekdayNumber =
+  | typeof SUNDAY
+  | typeof MONDAY
+  | typeof TUESDAY
+  | typeof WEDNESDAY
+  | typeof THURSDAY
+  | typeof FRIDAY
+  | typeof SATURDAY;
+```
+
+A day of the week as `Date#getDay()` numbers it: 0 = Sunday … 6 = Saturday.
+
 ### `AllUnits`
 
 ```ts
-type AllUnits = Readonly<Record<Unit, UnitSpec>>;
+type AllUnits = Readonly<Record<Unit, UnitSpec>> & WeekSettings;
 ```
 
 A spec for every unit, as returned by the adapters.
@@ -817,7 +885,7 @@ A stable month grid: 42 day periods (6 weeks) starting with the week that
 contains the first of the month. The week start comes from the `week` unit.
 
 ```ts
-const { periods } = monthGridWith(nativeUnits({ weekStartsOn: 1 }), new Date(2026, 2, 15));
+const { periods } = monthGridWith(nativeUnits({ weekStartsOn: "monday" }), new Date(2026, 2, 15));
 ```
 
 ### `yearGridWith`
@@ -830,7 +898,7 @@ A stable year grid: whole weeks from the week containing January 1 to the
 week containing December 31. The week start comes from the `week` unit.
 
 ```ts
-yearGridWith(nativeUnits({ weekStartsOn: 1 }), new Date(2026, 5, 1)).periods; // 53 week periods
+yearGridWith(nativeUnits({ weekStartsOn: "monday" }), new Date(2026, 5, 1)).periods; // 53 week periods
 ```
 
 ### `DayGrid`
@@ -948,19 +1016,20 @@ shared parts (same year, same month).
 ### `nativeUnits`
 
 ```ts
-nativeUnits(options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits
+nativeUnits(options: WeekOptions = {}): AllUnits
 ```
 
 Unit specs for every unit, computed with the built-in `Date` (zero dependencies). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(0 = Sunday … 6 = Saturday).
+(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+the days `isWeekend` counts (Saturday and Sunday unless set).
 
 ```ts
 import { nativeUnits } from "minuta/native";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
 time.period(new Date(), "week");
 ```
 
@@ -969,19 +1038,20 @@ time.period(new Date(), "week");
 ### `dateFnsUnits`
 
 ```ts
-dateFnsUnits(options: Readonly<{ weekStartsOn?: Day }> = {}): AllUnits
+dateFnsUnits(options: WeekOptions = {}): AllUnits
 ```
 
 Unit specs for every unit, computed with date-fns (requires the `date-fns` package). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(0 = Sunday … 6 = Saturday).
+(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+the days `isWeekend` counts (Saturday and Sunday unless set).
 
 ```ts
 import { dateFnsUnits } from "minuta/date-fns";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(dateFnsUnits({ weekStartsOn: 1 }));
+const time = withUnits(dateFnsUnits({ weekStartsOn: "monday" }));
 time.period(new Date(), "week");
 ```
 
@@ -990,22 +1060,20 @@ time.period(new Date(), "week");
 ### `dateFnsTzUnits`
 
 ```ts
-dateFnsTzUnits(options: Readonly<{
-    timezone?: string;
-    weekStartsOn?: Day;
-  }> = {}): AllUnits
+dateFnsTzUnits(options: WeekOptions & Readonly<{ timezone?: string }> = {}): AllUnits
 ```
 
 Unit specs for every unit, computed with date-fns-tz in one IANA time zone (requires `date-fns` and `date-fns-tz`). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(0 = Sunday … 6 = Saturday).
+(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+the days `isWeekend` counts (Saturday and Sunday unless set).
 
 ```ts
 import { dateFnsTzUnits } from "minuta/date-fns-tz";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(dateFnsTzUnits({ timezone: "Europe/Zurich", weekStartsOn: 1 }));
+const time = withUnits(dateFnsTzUnits({ timezone: "Europe/Zurich", weekStartsOn: "monday" }));
 time.period(new Date(), "week");
 ```
 
@@ -1014,19 +1082,20 @@ time.period(new Date(), "week");
 ### `dayjsUnits`
 
 ```ts
-dayjsUnits(options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits
+dayjsUnits(options: WeekOptions = {}): AllUnits
 ```
 
 Unit specs for every unit, computed with Day.js (requires the `dayjs` package). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(0 = Sunday … 6 = Saturday).
+(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+the days `isWeekend` counts (Saturday and Sunday unless set).
 
 ```ts
 import { dayjsUnits } from "minuta/dayjs";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(dayjsUnits({ weekStartsOn: 1 }));
+const time = withUnits(dayjsUnits({ weekStartsOn: "monday" }));
 time.period(new Date(), "week");
 ```
 
@@ -1035,19 +1104,20 @@ time.period(new Date(), "week");
 ### `luxonUnits`
 
 ```ts
-luxonUnits(options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits
+luxonUnits(options: WeekOptions = {}): AllUnits
 ```
 
 Unit specs for every unit, computed with Luxon (requires the `luxon` package). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(0 = Sunday … 6 = Saturday).
+(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+the days `isWeekend` counts (Saturday and Sunday unless set).
 
 ```ts
 import { luxonUnits } from "minuta/luxon";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(luxonUnits({ weekStartsOn: 1 }));
+const time = withUnits(luxonUnits({ weekStartsOn: "monday" }));
 time.period(new Date(), "week");
 ```
 
@@ -1056,19 +1126,20 @@ time.period(new Date(), "week");
 ### `momentUnits`
 
 ```ts
-momentUnits(options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits
+momentUnits(options: WeekOptions = {}): AllUnits
 ```
 
 Unit specs for every unit, computed with Moment.js (requires the `moment` package). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(0 = Sunday … 6 = Saturday).
+(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+the days `isWeekend` counts (Saturday and Sunday unless set).
 
 ```ts
 import { momentUnits } from "minuta/moment";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(momentUnits({ weekStartsOn: 1 }));
+const time = withUnits(momentUnits({ weekStartsOn: "monday" }));
 time.period(new Date(), "week");
 ```
 
@@ -1077,18 +1148,19 @@ time.period(new Date(), "week");
 ### `temporalUnits`
 
 ```ts
-temporalUnits(options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits
+temporalUnits(options: WeekOptions = {}): AllUnits
 ```
 
 Unit specs for every unit, computed with the TC39 Temporal API (installs `@js-temporal/polyfill` when the runtime has no Temporal). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(0 = Sunday … 6 = Saturday).
+(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+the days `isWeekend` counts (Saturday and Sunday unless set).
 
 ```ts
 import { temporalUnits } from "minuta/temporal";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(temporalUnits({ weekStartsOn: 1 }));
+const time = withUnits(temporalUnits({ weekStartsOn: "monday" }));
 time.period(new Date(), "week");
 ```

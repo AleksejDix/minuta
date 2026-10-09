@@ -26,7 +26,7 @@ function MonthPager() {
 Options (all optional):
 
 - `units` – unit specs, default `nativeUnits()` (weeks start on Monday). The
-  week start lives in the units: `nativeUnits({ weekStartsOn: 0 })`. Memoise
+  week start lives in the units: `nativeUnits({ weekStartsOn: "sunday" })`. Memoise
   them (`useMemo`) so the operations are rebound only when they change.
 - `date` – initially browsed date, default now
 - `now` – the moment that counts as "now", default `new Date()`
@@ -80,7 +80,7 @@ import {
 } from "minuta-react/components";
 import { nativeUnits } from "minuta/native";
 
-const sundayFirst = nativeUnits({ weekStartsOn: 0 });
+const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 
 <CalendarRoot units={sundayFirst} onSelect={(day) => console.log(day.start)}>
   <CalendarHeader locale="de-CH" />

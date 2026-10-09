@@ -17,7 +17,7 @@ type YearGrid = Series &
  * week containing December 31. The week start comes from the `week` unit.
  *
  * @example
- * yearGridWith(nativeUnits({ weekStartsOn: 1 }), new Date(2026, 5, 1)).periods; // 53 week periods
+ * yearGridWith(nativeUnits({ weekStartsOn: "monday" }), new Date(2026, 5, 1)).periods; // 53 week periods
  *
  * @param units - Available unit specs (needs `year` and `week`)
  * @param date - Any date in the target year

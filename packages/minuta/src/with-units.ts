@@ -12,8 +12,8 @@ import {
   durationWith,
   gap,
   isTodayWith,
-  isWeekday,
-  isWeekend,
+  isWeekdayWith,
+  isWeekendWith,
   length,
   mergeWith,
   move,
@@ -41,8 +41,8 @@ type Minuta = Readonly<{
   duration: Bound<typeof durationWith>;
   gap: typeof gap;
   isToday: Bound<typeof isTodayWith>;
-  isWeekday: typeof isWeekday;
-  isWeekend: typeof isWeekend;
+  isWeekday: Bound<typeof isWeekdayWith>;
+  isWeekend: Bound<typeof isWeekendWith>;
   length: typeof length;
   merge: Bound<typeof mergeWith>;
   move: typeof move;
@@ -105,8 +105,8 @@ function operationsFor(units: Units): Minuta {
     duration: (period, unit) => durationWith(units, period, unit),
     gap,
     isToday: (now, period) => isTodayWith(units, now, period),
-    isWeekday,
-    isWeekend,
+    isWeekday: (period) => isWeekdayWith(units, period),
+    isWeekend: (period) => isWeekendWith(units, period),
     length,
     merge: (periods, unit) => mergeWith(units, periods, unit),
     move,
@@ -133,7 +133,7 @@ function operationsFor(units: Units): Minuta {
  * import { nativeUnits } from "minuta/native";
  * import { withUnits } from "minuta/core";
  *
- * const time = withUnits(nativeUnits({ weekStartsOn: 0 }), { plugins: [calendar] });
+ * const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
  * time.next(time.period(new Date(), "week"));
  * time.monthGrid(new Date()); // from the plugin
  * time.units; // the units passed in

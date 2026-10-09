@@ -1,34 +1,22 @@
-import type { Period } from "#src/types";
-
-const MS_PER_DAY = 86_400_000;
-const MAX_SPAN_DAYS = 2;
-const TWO_DAYS_MS = MAX_SPAN_DAYS * MS_PER_DAY;
-const SUNDAY = 0;
-const SATURDAY = 6;
-
-function isWeekendIndex(day: number): boolean {
-  return day === SUNDAY || day === SATURDAY;
-}
+import type { Period, Units } from "#src/types";
+import { DEFAULT_WEEKEND } from "#src/weekday";
+import { daysTouched } from "./days-touched";
 
 /**
- * Checks if a period falls entirely within a weekend.
- * Returns false for periods spanning more than 2 days.
+ * Whether every day the period touches is a weekend day, as configured by
+ * the units' `weekend` (Saturday and Sunday unless set).
  *
  * @example
- * isWeekend(period(new Date(2026, 2, 21), "day")); // true (a Saturday)
+ * isWeekendWith(nativeUnits(), period(new Date(2026, 2, 21), "day")); // true (a Saturday)
+ * isWeekendWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 20), "day")); // true (a Friday)
  *
+ * @param units - Units whose `weekend` to use
  * @param period - The period to check
- * @returns True when both start and end fall on Saturday or Sunday
+ * @returns True when the period lies within the weekend
  */
-function isWeekend(period: Period): boolean {
-  // A weekend is at most 2 days (Sat+Sun). Any longer period spans weekdays too.
-  if (period.end.getTime() - period.start.getTime() >= TWO_DAYS_MS) {
-    return false;
-  }
-
-  return (
-    isWeekendIndex(period.start.getDay()) && isWeekendIndex(period.end.getDay())
-  );
+function isWeekendWith(units: Units, period: Period): boolean {
+  const weekend = units.weekend ?? DEFAULT_WEEKEND;
+  return daysTouched(period).every((day) => weekend.includes(day));
 }
 
-export { isWeekend };
+export { isWeekendWith };

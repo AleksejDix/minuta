@@ -39,7 +39,7 @@ function followOperations(
  * `units`, `unit` and `now` stay reactive, `date` is only the initial date.
  *
  * @example
- * const minuta = useMinuta({ units: nativeUnits({ weekStartsOn: 0 }) });
+ * const minuta = useMinuta({ units: nativeUnits({ weekStartsOn: "sunday" }) });
  * minuta.browse(minuta.next(minuta.browsing.value));
  *
  * @param options - Units, initial date, today and the browsed unit

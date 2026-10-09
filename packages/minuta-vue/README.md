@@ -29,7 +29,7 @@ Options (all optional; pass a plain object, a ref or a getter such as
 `() => props` to keep them reactive):
 
 - `units` – unit specs, default `nativeUnits()` (weeks start on Monday). The
-  week start lives in the units: `nativeUnits({ weekStartsOn: 0 })`.
+  week start lives in the units: `nativeUnits({ weekStartsOn: "sunday" })`.
 - `date` – initially browsed date, default now
 - `now` – the moment that counts as "now", default `new Date()`
 - `unit` – unit of the browsed period, default `"month"`
@@ -86,7 +86,7 @@ import {
 } from "minuta-vue/components";
 import { nativeUnits } from "minuta/native";
 
-const sundayFirst = nativeUnits({ weekStartsOn: 0 });
+const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 </script>
 
 <template>

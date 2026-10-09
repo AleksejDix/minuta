@@ -14,8 +14,8 @@ export {
   durationWith,
   gap,
   isTodayWith,
-  isWeekday,
-  isWeekend,
+  isWeekdayWith,
+  isWeekendWith,
   length,
   mergeWith,
   move,
@@ -41,6 +41,7 @@ export type {
   SnapOptions,
 } from "#src/operations/index";
 export type { Minuta, WithUnitsOptions } from "#src/with-units";
+export type { WeekOptions, Weekday, WeekdayNumber } from "#src/weekday";
 export type {
   AllUnits,
   Period,

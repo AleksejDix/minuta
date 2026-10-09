@@ -6,7 +6,7 @@
  * import { withUnits } from "minuta/core";
  * import { calendar } from "minuta/calendar";
  *
- * const time = withUnits(nativeUnits({ weekStartsOn: 0 }), { plugins: [calendar] });
+ * const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
  * time.monthGrid(new Date());
  *
  * @module minuta/calendar

@@ -9,10 +9,10 @@ npm install minuta
 
 | What you import                                     | minified + brotli |
 | --------------------------------------------------- | ----------------- |
-| `minuta`: `period`, `next`, `divide`                | 2.4 kB            |
-| `minuta/core` with only the `day` and `month` units | 1.1 kB            |
-| Calendar grids through `bind`                       | 1.8 kB            |
-| An adapter (without its date library)               | 0.3–1.1 kB        |
+| `minuta`: `period`, `next`, `divide`                | 3.1 kB            |
+| `minuta/core` with only the `day` and `month` units | 1.4 kB            |
+| Calendar grids through `bind`                       | 2.0 kB            |
+| An adapter (without its date library)               | 0.4–1.2 kB        |
 
 Zero dependencies, ES modules only, `sideEffects: false`. Budgets are
 checked on every CI run.
@@ -82,9 +82,16 @@ them once and you get the same operations:
 import { withUnits } from "minuta/core";
 import { nativeUnits } from "minuta/native";
 
-const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
+const time = withUnits(
+  nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] })
+);
 time.period(new Date(), "week"); // starts on Sunday
+time.isWeekend(time.period(new Date(2026, 2, 20), "day")); // true: a Friday
 ```
+
+Days are named (`"monday"`); the numbers of `Date#getDay()` (0 = Sunday) work
+too. The `weekend` lives in the units like the week start, so `isWeekend` and
+`isWeekday` follow it.
 
 | Adapter                           | Import                                     |
 | --------------------------------- | ------------------------------------------ |
@@ -128,7 +135,7 @@ import { calendar } from "minuta/calendar";
 import { nativeUnits } from "minuta/native";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(nativeUnits({ weekStartsOn: 0 }), {
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
   plugins: [calendar],
 });
 time.monthGrid(new Date()).periods; // always 42 days: no layout jumps

@@ -35,7 +35,7 @@ type BoundPlugin<Functions> = Readonly<{
  *
  * @example
  * import { calendar } from "minuta/calendar";
- * const grids = bind(nativeUnits({ weekStartsOn: 0 }), calendar);
+ * const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
  * grids.monthGrid(new Date());
  *
  * @param units - Unit specs to bind

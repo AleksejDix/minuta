@@ -1,37 +1,22 @@
-import type { Period } from "#src/types";
-
-const MS_PER_DAY = 86_400_000;
-const MAX_SPAN_DAYS = 2;
-const TWO_DAYS_MS = MAX_SPAN_DAYS * MS_PER_DAY;
-const MONDAY = 1;
-const FRIDAY = 5;
-
-function isWeekdayIndex(day: number): boolean {
-  return day >= MONDAY && day <= FRIDAY;
-}
+import type { Period, Units } from "#src/types";
+import { DEFAULT_WEEKEND } from "#src/weekday";
+import { daysTouched } from "./days-touched";
 
 /**
- * Checks if a period falls entirely within weekdays.
- * Returns false for periods spanning more than 2 days.
+ * Whether every day the period touches is a working day: not in the units'
+ * `weekend` (Saturday and Sunday unless set).
  *
  * @example
- * isWeekday(period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
+ * isWeekdayWith(nativeUnits(), period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
+ * isWeekdayWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 22), "day")); // true (a Sunday)
  *
+ * @param units - Units whose `weekend` to use
  * @param period - The period to check
- * @returns True when both start and end fall on Monday to Friday
+ * @returns True when the period touches no weekend day
  */
-function isWeekday(period: Period): boolean {
-  /*
-   * Weekday stretch is at most Mon-Fri (5 days). We use 2-day threshold because
-   * any period crossing a day boundary into a weekend would fail the day-of-week check.
-   */
-  if (period.end.getTime() - period.start.getTime() >= TWO_DAYS_MS) {
-    return false;
-  }
-
-  return (
-    isWeekdayIndex(period.start.getDay()) && isWeekdayIndex(period.end.getDay())
-  );
+function isWeekdayWith(units: Units, period: Period): boolean {
+  const weekend = units.weekend ?? DEFAULT_WEEKEND;
+  return daysTouched(period).every((day) => !weekend.includes(day));
 }
 
-export { isWeekday };
+export { isWeekdayWith };
