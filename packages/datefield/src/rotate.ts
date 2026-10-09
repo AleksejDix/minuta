@@ -98,18 +98,42 @@ function withValue(
   });
 }
 
+const DATE_PARTS: ReadonlySet<string> = new Set(["day", "month", "year"]);
+
 /**
- * Keep the day within the month's actual length.
+ * Whether `cursor` sits inside a day, month or year segment, past its first
+ * slot: the user is still typing it.
  *
- * Call after any month or year change (rotation or typing) so the
- * date stays valid — e.g. 31.02.2026 → 28.02.2026.
+ * @param segments - Current segments
+ * @param cursor - Cursor position in the text
+ * @returns True while a date part is half typed
+ */
+function isTypingDatePart(
+  segments: readonly Segment[],
+  cursor: number
+): boolean {
+  return segments.some(
+    (seg) => DATE_PARTS.has(seg.type) && cursor > seg.start && cursor < seg.end
+  );
+}
+
+/**
+ * Keep the day within the month's actual length — e.g. 31.02.2026 →
+ * 28.02.2026. Call after every edit with the cursor: while the cursor is
+ * still inside the day, month or year being typed the date stays as typed,
+ * so correcting "12" to "03" never passes through "02" and cuts the day.
+ * Call without a cursor (e.g. on blur) to clamp unconditionally.
  * Returns the same array when nothing changes.
  *
  * @param segments - Current segments
+ * @param cursor - Cursor position after the edit, if typing
  * @returns The segments with a valid day
  */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Returned by identity when unchanged; readonly would change the public return type
-function clampDay(segments: Segment[]): Segment[] {
+function clampDay(segments: Segment[], cursor?: number): Segment[] {
+  if (cursor !== undefined && isTypingDatePart(segments, cursor)) {
+    return segments;
+  }
   const index = segments.findIndex((seg) => seg.type === "day");
   const day = numberOf(segments[index]);
   const max = daysInMonth(segments);

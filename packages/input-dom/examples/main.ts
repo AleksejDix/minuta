@@ -58,7 +58,10 @@ function clampedDate(
 ): InputState {
   return withSegments(
     state,
-    clampDay(parseSegments(format, state.buffer.text))
+    clampDay(
+      parseSegments(format, state.buffer.text),
+      state.buffer.selection.head
+    )
   );
 }
 
