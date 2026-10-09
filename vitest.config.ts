@@ -41,6 +41,7 @@ export default defineConfig({
       "packages/text-buffer",
       "packages/input-state",
       "packages/input-dom",
+      "packages/fechita",
     ],
     setupFiles: ["./vitest.setup.ts"],
   },

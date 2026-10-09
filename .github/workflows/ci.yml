@@ -167,4 +167,4 @@ jobs:
           path: packages/
 
       - name: Check bundle sizes
-        run: npm run size -w minuta
+        run: npm run size -w minuta -w fechita

@@ -75,7 +75,9 @@
               "HTMLElement",
               "HTMLInputElement",
               "InputEvent",
-              "KeyboardEvent"
+              "KeyboardEvent",
+              "ReadonlyMap",
+              "ReadonlySet"
             ]
           },
           {
@@ -157,6 +159,28 @@
       },
       "env": {
         "node": true
+      }
+    },
+    {
+      "files": ["packages/*/scripts/**/*.mjs"],
+      "rules": {
+        "eslint/no-underscore-dangle": "off",
+        "import/no-nodejs-modules": "off",
+        "node/no-sync": "off",
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-return": "off",
+        "typescript/prefer-readonly-parameter-types": "off",
+        "typescript/strict-boolean-expressions": "off"
+      }
+    },
+    {
+      "files": ["packages/fechita/src/locales/**"],
+      "rules": {
+        "unicorn/filename-case": "off",
+        "import/max-dependencies": "off"
       }
     }
   ],
