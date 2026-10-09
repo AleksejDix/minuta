@@ -126,9 +126,7 @@ describe("export verification: calendar.ts", () => {
       for (const date of GRID_DATES) {
         expect(grids.monthGrid(date)).toStrictEqual(monthGridWith(units, date));
         expect(grids.yearGrid(date)).toStrictEqual(yearGridWith(units, date));
-        expect(grids.dayGrid(date, "UTC")).toStrictEqual(
-          dayGridWith(units, date, "UTC")
-        );
+        expect(grids.dayGrid(date)).toStrictEqual(dayGridWith(units, date));
       }
     }
   );

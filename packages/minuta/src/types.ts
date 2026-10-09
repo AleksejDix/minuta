@@ -62,9 +62,11 @@ type UnitSpec = Readonly<{
 }>;
 
 /**
- * Calendar settings that travel with the unit specs.
+ * Settings that travel with the unit specs.
  */
-type WeekSettings = Readonly<{
+type Settings = Readonly<{
+  /** IANA time zone the specs compute in, e.g. "Europe/Zurich". Default: the runtime's. */
+  timeZone?: string | undefined;
   /** First day of the `week` spec as a `Date#getDay()` number. Default: Monday. */
   weekStartsOn?: WeekdayNumber | undefined;
   /** Weekend days as `Date#getDay()` numbers. Default: Saturday and Sunday. */
@@ -76,11 +78,11 @@ type WeekSettings = Readonly<{
  * carry only the units it uses; adapters such as `nativeUnits()` return all,
  * plus the `weekend`.
  */
-type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & WeekSettings;
+type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & Settings;
 
 /**
  * A spec for every unit, as returned by the adapters.
  */
-type AllUnits = Readonly<Record<Unit, UnitSpec>> & WeekSettings;
+type AllUnits = Readonly<Record<Unit, UnitSpec>> & Settings;
 
 export type { AllUnits, Period, Series, Unit, UnitRegistry, Units, UnitSpec };

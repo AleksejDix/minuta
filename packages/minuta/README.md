@@ -140,7 +140,7 @@ const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
 });
 time.monthGrid(new Date()).periods; // always 42 days: no layout jumps
 time.yearGrid(new Date()).periods; // whole weeks covering the year
-time.dayGrid(new Date(), "Europe/Zurich").gapHour; // DST-aware hour slots
+time.dayGrid(new Date()).periods; // the day's real hours: 23, 24 or 25
 time.next(time.period(new Date(), "week")); // the operations, same units
 time.units; // the units it was built with
 ```

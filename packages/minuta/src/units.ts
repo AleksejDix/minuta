@@ -25,7 +25,11 @@ const MinutaError = {
 type MinutaErrorCode = (typeof MinutaError)[keyof typeof MinutaError];
 
 // Keys of `Units` that are settings, not unit specs
-const SETTINGS: ReadonlySet<string> = new Set(["weekStartsOn", "weekend"]);
+const SETTINGS: ReadonlySet<string> = new Set([
+  "timeZone",
+  "weekStartsOn",
+  "weekend",
+]);
 
 /**
  * The spec for `unit`.

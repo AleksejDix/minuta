@@ -45,7 +45,11 @@ function exportsOf(namespace: unknown): ReadonlyMap<string, unknown> {
 }
 
 // Keys of the units that are settings, not unit specs
-const SETTINGS: ReadonlySet<string> = new Set(["weekStartsOn", "weekend"]);
+const SETTINGS: ReadonlySet<string> = new Set([
+  "timeZone",
+  "weekStartsOn",
+  "weekend",
+]);
 
 describe("export verification: adapter entries", () => {
   it.each(ADAPTER_ENTRIES)(

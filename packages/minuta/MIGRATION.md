@@ -61,6 +61,7 @@ take no units. `isWeekday` and `isWeekend` read the weekend from the units:
 | `merge(periods, unit)`                                   | Always labelled the result `unit`, even when it was not one such period                        | Keeps `unit` only for exactly one aligned period, otherwise `"custom"`                                  | Check `unit` before relying on it                       |
 | `split(period, date)`                                    | Returned a zero-length part for a date outside the period; both parts kept the unit            | Returns `undefined` unless the date is after the start and within the period; both parts are `"custom"` | Check for `undefined`                                   |
 | `isWeekday`, `isWeekend`                                 | Only periods under 2 days could be true; Saturday and Sunday were fixed                        | True when every day the period touches is a working or weekend day; the weekend comes from the units    | Set `weekend` in the adapter options for other weekends |
+| Day grid `periods`                                       | Always 24 slots, labelled by index; spilled into the next day or dropped an hour on DST days   | The day's real hours (23, 24 or 25), labelled with the wall-clock hour in `units.timeZone`              | Drop the `timeZone` argument; use the adapter's zone    |
 | `merge([])`                                              | Threw                                                                                          | Returns `undefined`                                                                                     | Check for `undefined`                                   |
 | `divide` over `maxPeriods`                               | Threw `Error`                                                                                  | Throws `RangeError`                                                                                     | Catch `RangeError`                                      |
 | Any unit-aware function with a unit missing from `units` | —                                                                                              | Throws `RangeError` starting with `UNIT_NOT_SUPPORTED`                                                  | Pass the unit, or an adapter's full set                 |
@@ -84,7 +85,7 @@ comes from the `week` unit, so there is no separate `weekStartsOn` argument.
 | ------------------------------------------------ | ---------------------------------------------------- |
 | `createStableMonth(adapter, weekStartsOn, date)` | `monthGridWith(nativeUnits({ weekStartsOn }), date)` |
 | `createStableYear(adapter, weekStartsOn, date)`  | `yearGridWith(nativeUnits({ weekStartsOn }), date)`  |
-| `createStableDay(adapter, date, timeZone)`       | `dayGridWith(units, date, timeZone)`                 |
+| `createStableDay(adapter, date, timeZone)`       | `dayGridWith(units, date)`                           |
 
 Or bind the `calendar` plugin once:
 

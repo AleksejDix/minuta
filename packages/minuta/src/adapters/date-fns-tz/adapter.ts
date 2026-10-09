@@ -35,16 +35,20 @@ function dateFnsTzUnits(
   options: WeekOptions & Readonly<{ timezone?: string }> = {}
 ): AllUnits {
   const { timezone = DEFAULT_TIMEZONE } = options;
-  return adapterUnits(options, (weekStartsOn) => ({
-    day: createDayHandler(timezone),
-    hour: createHourHandler(timezone),
-    minute: createMinuteHandler(timezone),
-    month: createMonthHandler(timezone),
-    quarter: createQuarterHandler(timezone),
-    second: createSecondHandler(timezone),
-    week: createWeekHandler(timezone, weekStartsOn),
-    year: createYearHandler(timezone),
-  }));
+  return adapterUnits(
+    options,
+    (weekStartsOn) => ({
+      day: createDayHandler(timezone),
+      hour: createHourHandler(timezone),
+      minute: createMinuteHandler(timezone),
+      month: createMonthHandler(timezone),
+      quarter: createQuarterHandler(timezone),
+      second: createSecondHandler(timezone),
+      week: createWeekHandler(timezone, weekStartsOn),
+      year: createYearHandler(timezone),
+    }),
+    timezone
+  );
 }
 
 export { dateFnsTzUnits };

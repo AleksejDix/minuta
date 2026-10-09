@@ -425,7 +425,7 @@ A unit name: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`,
 ### `Units`
 
 ```ts
-type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & WeekSettings;
+type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & Settings;
 ```
 
 The unit specs available to unit-aware functions. Partial, so a bundle can
@@ -801,7 +801,7 @@ A day of the week as `Date#getDay()` numbers it: 0 = Sunday … 6 = Saturday.
 ### `AllUnits`
 
 ```ts
-type AllUnits = Readonly<Record<Unit, UnitSpec>> & WeekSettings;
+type AllUnits = Readonly<Record<Unit, UnitSpec>> & Settings;
 ```
 
 A spec for every unit, as returned by the adapters.
@@ -866,17 +866,21 @@ or to `bind(units, calendar)`.
 ### `dayGridWith`
 
 ```ts
-dayGridWith(units: Units, date: Readonly<Date>, timezone: string): DayGrid
+dayGridWith(units: Units, date: Readonly<Date>): DayGrid
 ```
 
-Creates a stable 24-hour grid for a given day.
-Always returns exactly 24 hour periods (0-23), regardless of DST.
+The real hours of the day containing `date`: 23 on a spring-forward day,
+25 on a fall-back day, 24 otherwise. Each slot carries its wall-clock hour
+in `units.timeZone` (the runtime's zone when unset).
 
 ```ts
+import { dateFnsTzUnits } from "minuta/date-fns-tz";
 import { dayGridWith } from "minuta/calendar";
-const { periods, gapHour, ambiguousHour } = dayGridWith(units, new Date(2024, 2, 10), "America/New_York");
-periods.length // always 24
-gapHour      // 2 — 2 AM doesn't exist (US spring forward)
+
+const units = dateFnsTzUnits({ timezone: "America/New_York" });
+const { periods, gapHour } = dayGridWith(units, new Date("2024-03-10T12:00:00Z"));
+periods.length; // 23
+gapHour; // 2
 ```
 
 ### `monthGridWith`
@@ -908,27 +912,29 @@ yearGridWith(nativeUnits({ weekStartsOn: "monday" }), new Date(2026, 5, 1)).peri
 ### `DayGrid`
 
 ```ts
-type DayGrid = Series & {
-  periods: HourSlot[];
+type DayGrid = Readonly<{
+  /** The slots; a DayGrid is also a `Series` */
+  periods: readonly HourSlot[];
   /** Wall-clock hour that doesn't exist due to spring forward, or undefined */
   gapHour: number | undefined;
   /** Wall-clock hour that occurs twice due to fall back, or undefined */
   ambiguousHour: number | undefined;
-};
+}>;
 ```
 
-A stable 24-hour grid for a given day, with DST metadata.
+The real hours of a day: 23, 24 or 25 slots, with DST metadata.
 
 ### `HourSlot`
 
 ```ts
-type HourSlot = Period & {
-  /** Wall-clock hour (0-23) */
-  hour: number;
-};
+type HourSlot = Period &
+  Readonly<{
+    /** Wall-clock hour (0-23) in the units' time zone */
+    hour: number;
+  }>;
 ```
 
-A single hour slot in a stable 24-hour day grid.
+One real hour of a day, labelled with its wall-clock hour.
 
 ### `MonthGrid`
 
