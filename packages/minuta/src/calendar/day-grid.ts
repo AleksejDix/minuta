@@ -15,7 +15,7 @@ type HourSlot = Period &
  * The real hours of a day: 23, 24 or 25 slots, with DST metadata.
  */
 type DayGrid = Readonly<{
-  /** The slots; a DayGrid is also a `Series` */
+  /** The hour slots of the day */
   periods: readonly HourSlot[];
   /** Wall-clock hour that doesn't exist due to spring forward, or undefined */
   gapHour: number | undefined;

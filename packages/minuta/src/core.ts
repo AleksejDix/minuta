@@ -45,7 +45,6 @@ export type {
   AllUnits,
   BuiltInUnit,
   Period,
-  Series,
   Unit,
   UnitRegistry,
   Units,

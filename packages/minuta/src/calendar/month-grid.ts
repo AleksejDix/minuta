@@ -1,4 +1,4 @@
-import type { Series, Units } from "#src/types";
+import type { Period, Units } from "#src/types";
 import { assertValidDate, specFor } from "#src/units";
 import { DEFAULT_WEEK_START } from "#src/weekday";
 import { divideWith } from "#src/operations/divide";
@@ -7,11 +7,12 @@ import { divideWith } from "#src/operations/divide";
  * A 42-day month grid (`periods`), the month's first day and the week start
  * the grid was built with.
  */
-type MonthGrid = Series &
-  Readonly<{
-    monthStart: Readonly<Date>;
-    weekStartsOn: number;
-  }>;
+type MonthGrid = Readonly<{
+  monthStart: Readonly<Date>;
+  /** The 42 day periods, row by row */
+  periods: readonly Period[];
+  weekStartsOn: number;
+}>;
 
 const LAST_GRID_DAY_OFFSET = 41;
 

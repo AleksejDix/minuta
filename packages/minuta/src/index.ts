@@ -240,5 +240,5 @@ export type {
   SnapOptions,
 } from "#src/operations/index";
 export type { Minuta } from "#src/with-units";
-export type { Period, Series, Unit, Units } from "#src/types";
+export type { Period, Unit, Units } from "#src/types";
 export type { Weekday } from "#src/weekday";

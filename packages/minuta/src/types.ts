@@ -12,13 +12,6 @@ type Period = Readonly<{
   unit: Unit | "custom";
 }>;
 
-/**
- * A container of periods. Calendar grids extend it with metadata.
- */
-type Series = Readonly<{
-  periods: readonly Period[];
-}>;
-
 // ── Units ──
 
 /**
@@ -104,7 +97,6 @@ export type {
   AllUnits,
   BuiltInUnit,
   Period,
-  Series,
   Unit,
   UnitRegistry,
   Units,

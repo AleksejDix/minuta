@@ -1,4 +1,4 @@
-import type { Series, Units } from "#src/types";
+import type { Period, Units } from "#src/types";
 import { assertValidDate, specFor } from "#src/units";
 import { DEFAULT_WEEK_START } from "#src/weekday";
 import { divideWith } from "#src/operations/divide";
@@ -7,11 +7,12 @@ import { divideWith } from "#src/operations/divide";
  * The whole weeks covering a year (`periods`), the year's first day and the
  * week start the grid was built with.
  */
-type YearGrid = Series &
-  Readonly<{
-    weekStartsOn: number;
-    yearStart: Readonly<Date>;
-  }>;
+type YearGrid = Readonly<{
+  /** The week periods covering the year */
+  periods: readonly Period[];
+  weekStartsOn: number;
+  yearStart: Readonly<Date>;
+}>;
 
 /**
  * A stable year grid: whole weeks from the week containing January 1 to the
