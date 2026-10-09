@@ -1,12 +1,12 @@
 // Buffer edits under a mask: overwrite slots, never shift, skip literals
 
-import { accepts, slotPositions } from "./mask";
 import {
   replaceRange,
   select,
   selectionEnd,
   selectionStart,
 } from "text-buffer";
+import { slotChar, slotPositions } from "./mask";
 import type { Mask } from "./mask";
 import type { TextBuffer } from "text-buffer";
 
@@ -48,11 +48,9 @@ function maskedText(mask: Mask, value: string): string {
       if (token.kind === "literal") {
         return token.char;
       }
-      const char = value.charAt(position);
-      if (accepts(token.accepts, char)) {
-        return char;
-      }
-      return mask.placeholder;
+      return (
+        slotChar(token.accepts, value.charAt(position)) ?? mask.placeholder
+      );
     })
     .join("");
 }
@@ -69,6 +67,22 @@ function clearSelectedSlots(buffer: TextBuffer, mask: Mask): TextBuffer {
   return select(next, from);
 }
 
+/**
+ * The character slot `slot` stores for `char`, if it accepts it.
+ *
+ * @param mask - The mask
+ * @param slot - Position of the slot
+ * @param char - Typed character
+ * @returns The character to store, or undefined
+ */
+function storedAt(mask: Mask, slot: number, char: string): string | undefined {
+  const token = mask.tokens[slot];
+  if (token === undefined || token.kind !== "slot") {
+    return undefined;
+  }
+  return slotChar(token.accepts, char);
+}
+
 function typeIntoMask(
   buffer: TextBuffer,
   mask: Mask,
@@ -76,15 +90,11 @@ function typeIntoMask(
 ): TextBuffer {
   const cleared = clearSelectedSlots(buffer, mask);
   const slot = slotAtOrAfter(mask, cleared.selection.head);
-  const token = mask.tokens[slot];
-  if (
-    token === undefined ||
-    token.kind !== "slot" ||
-    !accepts(token.accepts, char)
-  ) {
+  const stored = storedAt(mask, slot, char);
+  if (stored === undefined) {
     return buffer;
   }
-  const written = setChar(cleared, slot, char);
+  const written = setChar(cleared, slot, stored);
   const next = slotAtOrAfter(mask, slot + ONE);
   if (next === NOT_FOUND) {
     return select(written, written.text.length);

@@ -107,5 +107,47 @@ function accepts(charClass: CharClass, char: string): boolean {
   return CLASS_TESTS[charClass].test(char);
 }
 
-export { accepts, emptyText, parseMask, slotPositions };
+const DIGITS_PER_SET = 10;
+const ONE = 1;
+const FIRST = 0;
+const NO_CODE_POINT = 0;
+
+/**
+ * The ASCII digit with the value of a decimal digit of any script. Unicode
+ * keeps every set of decimal digits as ten consecutive code points from 0
+ * to 9, so the value is the count of digits before it, modulo ten.
+ *
+ * @param digit - One `\p{Nd}` character, e.g. "٣" or "３"
+ * @returns The ASCII digit, e.g. "3"
+ */
+function asciiDigit(digit: string): string {
+  const codePoint = digit.codePointAt(FIRST) ?? NO_CODE_POINT;
+  let before = 0;
+  while (
+    CLASS_TESTS.digit.test(String.fromCodePoint(codePoint - before - ONE))
+  ) {
+    before += ONE;
+  }
+  return String(before % DIGITS_PER_SET);
+}
+
+/**
+ * The character a slot of `charClass` stores for `char`: decimal digits of
+ * any script become ASCII, so what is shown is what parses.
+ *
+ * @param charClass - Class of the slot
+ * @param char - Candidate character
+ * @returns The character to store, or undefined when the slot rejects it
+ */
+function slotChar(charClass: CharClass, char: string): string | undefined {
+  if (!accepts(charClass, char)) {
+    return undefined;
+  }
+  if (CLASS_TESTS.digit.test(char)) {
+    return asciiDigit(char);
+  }
+  return char;
+}
+
+export { accepts, emptyText, parseMask, slotChar, slotPositions };
 export type { CharClass, Mask, MaskToken };

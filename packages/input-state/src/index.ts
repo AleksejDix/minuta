@@ -13,6 +13,6 @@ export {
   toggleMode,
   typeChar,
 } from "./input-state";
-export { accepts, emptyText, parseMask, slotPositions } from "./mask";
+export { accepts, emptyText, parseMask, slotChar, slotPositions } from "./mask";
 export type { InputOptions, InputState, Mode } from "./input-state";
 export type { CharClass, Mask, MaskToken } from "./mask";

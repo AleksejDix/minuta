@@ -1,9 +1,10 @@
-import { createInputState, setSelection, typeChar } from "input-state";
+import { createInputState, paste, setSelection, typeChar } from "input-state";
 import { dateMask, withSegments } from "./field";
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
 import type { InputState } from "input-state";
 import { clampDay } from "./rotate";
+import { toDate } from "./convert";
 
 const DE = deriveFormat("de-CH");
 const MONTH_START = 3;
@@ -56,4 +57,19 @@ describe("correcting a typed date", () => {
     const field = typeClamped(fieldAt("29.02.2024", YEAR_START), "2026");
     expect(field.buffer.text).toBe("28.02.2026");
   });
+});
+
+describe("digits of other scripts", () => {
+  it.each(["٣١٠٣٢٠٢٦", "３１０３２０２６"])(
+    "turns pasted %s into a date",
+    { timeout: 5000 },
+    (digits) => {
+      expect.hasAssertions();
+      const field = paste(createInputState({ mask: dateMask(DE) }), digits);
+      expect(field.buffer.text).toBe("31.03.2026");
+      expect(toDate(parseSegments(DE, field.buffer.text))).toStrictEqual(
+        new Date("2026-03-31T00:00:00")
+      );
+    }
+  );
 });

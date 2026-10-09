@@ -1,4 +1,4 @@
-import { accepts, emptyText, parseMask, slotPositions } from "./mask";
+import { accepts, emptyText, parseMask, slotChar, slotPositions } from "./mask";
 import { describe, expect, it } from "vitest";
 
 const FIRST = 0;
@@ -83,4 +83,27 @@ describe("accepts()", () => {
       ]);
     }
   );
+});
+
+describe("slotChar()", () => {
+  it.each([
+    ["٣", "3"],
+    ["０", "0"],
+    ["９", "9"],
+    ["७", "7"],
+    ["𝟘", "0"],
+    ["𝟙", "1"],
+    ["5", "5"],
+  ])("stores %s in a digit slot as %s", { timeout: 5000 }, (digit, ascii) => {
+    expect.hasAssertions();
+    expect(slotChar("digit", digit)).toBe(ascii);
+  });
+
+  it("keeps letters and rejects other classes", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect([slotChar("letter", "é"), slotChar("digit", "a")]).toStrictEqual([
+      "é",
+      undefined,
+    ]);
+  });
 });
