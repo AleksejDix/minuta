@@ -7,9 +7,11 @@
 import type { DateFormat, Segment } from "./types";
 import { setSelection, slotChar, typeChar } from "input-state";
 import type { InputState } from "input-state";
+import { fromDate } from "./convert";
 import { fullYear } from "./year";
 import { nextSegment } from "./navigate";
 import { parseSegments } from "./parse";
+import { recognizeDate } from "./recognize";
 import { withSegments } from "./field";
 
 const ZERO_PAD = "0";
@@ -107,23 +109,8 @@ function finishSegment(
   return setSelection(finished, Math.max(next.start, seg.end));
 }
 
-/**
- * Type text into a date field: digits (of any script) fill the slots,
- * separators finish the segment being typed, other characters are ignored.
- * Text longer than one character (a paste) also finishes its last segment.
- * Use it for typing and pasting, e.g. as input-dom's `insert` option.
- *
- * @example
- * const format = deriveFormat("de-CH");
- * const field = createInputState({ mask: dateMask(format) });
- * typeDate(format, field, "1.3.2026").buffer.text; // "01.03.2026"
- *
- * @param format - The field's format
- * @param state - The field
- * @param text - Typed or pasted text
- * @returns The field after typing
- */
-function typeDate(
+// Digits fill slots, separators finish the segment, anything else is ignored
+function typedChars(
   format: Readonly<DateFormat>,
   state: InputState,
   text: string
@@ -136,6 +123,69 @@ function typeDate(
       next = finishSegment(format, next);
     }
   }
+  return next;
+}
+
+/**
+ * The field holding the date recognised in pasted text, written in the
+ * field's format with the cursor at the end.
+ *
+ * @param format - The field's format
+ * @param state - The field
+ * @param text - Pasted text
+ * @param locale - The field's locale, for month names
+ * @returns The filled field, or undefined for typed or unrecognised text
+ */
+// oxlint-disable-next-line eslint/max-params -- Mirrors typeDate's parameters
+function pastedDate(
+  format: Readonly<DateFormat>,
+  state: InputState,
+  text: string,
+  locale: string | undefined
+): InputState | undefined {
+  if (text.length <= ONE_CHAR) {
+    return undefined;
+  }
+  const date = recognizeDate(text, format, locale);
+  if (date === undefined) {
+    return undefined;
+  }
+  const filled = withSegments(state, fromDate(date, format, locale));
+  return setSelection(filled, filled.buffer.text.length);
+}
+
+/**
+ * Type text into a date field: digits (of any script) fill the slots,
+ * separators finish the segment being typed, other characters are ignored.
+ * Text longer than one character is a paste: a recognisable date in any
+ * common form (`recognizeDate`: ISO 8601, month names, numbers in any order)
+ * replaces the whole field in its format; anything else is typed and its
+ * last segment finished.
+ *
+ * @example
+ * const format = deriveFormat("de-CH");
+ * const field = createInputState({ mask: dateMask(format) });
+ * typeDate(format, field, "1.3.2026").buffer.text; // "01.03.2026"
+ * typeDate(format, field, "2026-03-31").buffer.text; // "31.03.2026"
+ *
+ * @param format - The field's format
+ * @param state - The field
+ * @param text - Typed or pasted text
+ * @param locale - The field's locale, for pasted month names
+ * @returns The field after typing
+ */
+// oxlint-disable-next-line eslint/max-params -- (format, state, text) plus the optional locale for month names
+function typeDate(
+  format: Readonly<DateFormat>,
+  state: InputState,
+  text: string,
+  locale?: string
+): InputState {
+  const pasted = pastedDate(format, state, text, locale);
+  if (pasted !== undefined) {
+    return pasted;
+  }
+  const next = typedChars(format, state, text);
   // Pasted or dropped text is a whole value: finish its last part too
   if (text.length > ONE_CHAR) {
     return finishSegment(format, next);

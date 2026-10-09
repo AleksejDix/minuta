@@ -74,7 +74,8 @@ const element = document.createElement("input");
 
 attachInput(element, createInputState({ mask: dateMask(format) }), {
   digits: localeDigits(locale), // shows ٣١/٠٣/٢٠٢٦
-  insert: (state, text) => typeDate(format, state, text), // "1/3" → 01/03
+  // "1/3" → 01/03, and pasted "2026-03-31" or "31. März 2026" fill the field
+  insert: (state, text) => typeDate(format, state, text, locale),
   normalize: (state) =>
     withSegments(
       state,
