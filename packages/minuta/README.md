@@ -36,14 +36,16 @@ Monday (ISO 8601), so there is nothing to configure.
 
 ## Operations
 
-| Family   | Functions                                                                                                           |
-| -------- | ------------------------------------------------------------------------------------------------------------------- |
-| Create   | `period(date, unit)` · `range(start, end)`                                                                          |
-| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`                                                        |
-| Compose  | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, date)`                                  |
-| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` · `gap(a, b)`                              |
-| Edit     | `move(period, start)` · `resize(period, edge, date)` · `clamp(period, bounds)` · `snap(date, unit, { step, mode })` |
-| Ask      | `duration(period, unit)` · `length(period)` · `isWeekday(period)` · `isWeekend(period)`                             |
+| Family   | Functions                                                                |
+| -------- | ------------------------------------------------------------------------ |
+| Create   | `period(date, unit)` · `range(start, end)`                               |
+| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`             |
+| Compose  | `divide(period, unit, { step })`                                         |
+| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` |
+| Ask      | `duration(period, unit)` · `length(period)`                              |
+
+Interval helpers and calendar functions are [plugins](#plugins) in their own
+entries, so they cost nothing until you import them.
 
 ```ts
 import {
@@ -68,10 +70,9 @@ duration(march, "day"); // 31
 duration(period(new Date(2026, 2, 29), "day"), "hour"); // 23 in Europe/Zurich (DST)
 ```
 
-No result is `undefined` (`clamp` without overlap, `merge([])`, `split` outside
-the period, `gap` between touching periods), never `null`.
 Invalid dates throw a `RangeError` whose message starts with a `MinutaError`
-code such as `INVALID_DATE`.
+code such as `INVALID_DATE`. No result is ever `null`; a missing one is
+`undefined`.
 
 ## Other week starts and date libraries
 
@@ -82,16 +83,12 @@ them once and you get the same operations:
 import { withUnits } from "minuta/core";
 import { nativeUnits } from "minuta/native";
 
-const time = withUnits(
-  nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] })
-);
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
 time.period(new Date(), "week"); // starts on Sunday
-time.isWeekend(time.period(new Date(2026, 2, 20), "day")); // true: a Friday
 ```
 
 Days are named (`"monday"`); the numbers of `Date#getDay()` (0 = Sunday) work
-too. The `weekend` lives in the units like the week start, so `isWeekend` and
-`isWeekday` follow it.
+too.
 
 | Adapter                           | Import                                     |
 | --------------------------------- | ------------------------------------------ |
@@ -127,23 +124,36 @@ A unit missing from `units` throws a `RangeError` starting with
 ## Plugins
 
 A plugin is an object of context-first functions. Pass it to `withUnits` and
-its functions join the operations, bound to the same units. The calendar
-grids ship as one:
+its functions join the operations, bound to the same units. Two ship with
+minuta:
+
+| Entry              | Plugin      | Functions                                                                                                                                                                           |
+| ------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `minuta/calendar`  | `calendar`  | `monthGrid(date)` · `yearGrid(date)` · `dayGrid(date)` · `isWeekday(period)` · `isWeekend(period)`                                                                                  |
+| `minuta/intervals` | `intervals` | `merge(periods, unit?)` · `split(period, date)` · `gap(a, b)` · `clamp(period, bounds)` · `move(period, start)` · `resize(period, edge, date)` · `snap(date, unit, { step, mode })` |
 
 ```ts
 import { calendar } from "minuta/calendar";
+import { intervals } from "minuta/intervals";
 import { nativeUnits } from "minuta/native";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
-  plugins: [calendar],
-});
+const time = withUnits(
+  nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
+  { plugins: [calendar, intervals] }
+);
 time.monthGrid(new Date()).periods; // always 42 days: no layout jumps
 time.yearGrid(new Date()).periods; // whole weeks covering the year
 time.dayGrid(new Date()).periods; // the day's real hours: 23, 24 or 25
+time.isWeekend(time.period(new Date(2026, 2, 20), "day")); // true: a Friday
+time.snap(new Date(), "minute", { step: 15 }); // the nearest quarter hour
 time.next(time.period(new Date(), "week")); // the operations, same units
 time.units; // the units it was built with
 ```
+
+The `weekend` lives in the units like the week start, so `isWeekend` and
+`isWeekday` follow it. `merge([])`, `clamp` without overlap, `split` outside
+the period and `gap` between touching periods return `undefined`.
 
 Member names must be unique: a plugin function named like an operation or
 like another plugin's is a type error. `bind(units, plugin)` binds a plugin on

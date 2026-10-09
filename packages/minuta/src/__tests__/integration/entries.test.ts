@@ -9,29 +9,31 @@ import { bind } from "#src/core";
 import { nativeUnits } from "#src/native";
 
 const UNIT_FREE_OPERATIONS: readonly string[] = [
-  "clamp",
   "contains",
-  "gap",
   "length",
-  "move",
   "overlaps",
   "range",
-  "resize",
-  "split",
 ];
 
 const CORE_OPERATIONS: readonly string[] = [
   "divideWith",
   "durationWith",
-  "isWeekdayWith",
-  "isWeekendWith",
-  "mergeWith",
   "nextWith",
   "periodWith",
   "previousWith",
   "sameWith",
   "shiftWith",
+];
+
+const INTERVAL_EXPORTS: readonly string[] = [
+  "clamp",
+  "gap",
+  "intervals",
+  "mergeWith",
+  "move",
+  "resize",
   "snapWith",
+  "split",
 ];
 
 const REMOVED_ENTRIES: readonly string[] = ["operations", "helpers"];
@@ -76,16 +78,34 @@ describe("export verification: core.ts", () => {
   );
 
   it(
-    "should re-export the operations of operations/index.ts unchanged",
+    "should re-export every operation unchanged from core, intervals or calendar",
     { timeout: 5000 },
     async () => {
       expect.hasAssertions();
-      const coreExports = exportsOf(await import("#src/core"));
+      const entries = [
+        exportsOf(await import("#src/core")),
+        exportsOf(await import("#src/intervals")),
+        exportsOf(await import("#src/calendar")),
+      ];
       const operationsIndex = exportsOf(await import("#src/operations/index"));
 
       for (const [key, value] of operationsIndex) {
-        expect(coreExports.get(key)).toBe(value);
+        expect(entries.map((entry) => entry.get(key))).toContain(value);
       }
+    }
+  );
+});
+
+describe("export verification: intervals.ts", () => {
+  it(
+    "should export the intervals plugin and its functions",
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
+      const intervalExports = exportsOf(await import("#src/intervals"));
+      expect(new Set(intervalExports.keys())).toStrictEqual(
+        new Set(INTERVAL_EXPORTS)
+      );
     }
   );
 });
@@ -109,7 +129,14 @@ describe("export verification: calendar.ts", () => {
       expect.hasAssertions();
       const calendarExports = exportsOf(await import("#src/calendar"));
       expect(new Set(calendarExports.keys())).toStrictEqual(
-        new Set(["calendar", "dayGridWith", "monthGridWith", "yearGridWith"])
+        new Set([
+          "calendar",
+          "dayGridWith",
+          "isWeekdayWith",
+          "isWeekendWith",
+          "monthGridWith",
+          "yearGridWith",
+        ])
       );
     }
   );

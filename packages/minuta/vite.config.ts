@@ -17,6 +17,7 @@ export default defineConfig({
         dayjs: fromRoot("src/dayjs.ts"),
         format: fromRoot("src/format.ts"),
         index: fromRoot("src/index.ts"),
+        intervals: fromRoot("src/intervals.ts"),
         luxon: fromRoot("src/luxon.ts"),
         moment: fromRoot("src/moment.ts"),
         native: fromRoot("src/native.ts"),

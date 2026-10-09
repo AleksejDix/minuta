@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CalendarDayProps } from "./types";
 import { computed } from "vue";
+import { isWeekendWith } from "minuta/calendar";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -26,6 +27,7 @@ const isSelected = computed(() => {
   const selected = calendar.selected.value;
   return selected !== undefined && minuta.same(selected, day, "day");
 });
+const isWeekend = computed(() => isWeekendWith(minuta.units.value, day));
 const current = computed(() => {
   if (isToday.value) {
     return "date";
@@ -50,7 +52,7 @@ function choose(): void {
       'is-outside': isOutside,
       'is-selected': isSelected,
       'is-today': isToday,
-      'is-weekend': minuta.isWeekend(day),
+      'is-weekend': isWeekend,
     }"
     :aria-current="current"
     :aria-pressed="isSelected"

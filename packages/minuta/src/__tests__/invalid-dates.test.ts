@@ -1,11 +1,16 @@
-import { contains, gap, move, period, resize, snap, split } from "#src/index";
+import { contains, period } from "#src/index";
 import { describe, expect, it } from "vitest";
 import { monthGridWith, yearGridWith } from "#src/calendar";
 import { MinutaError } from "#src/units";
+import { intervals } from "#src/intervals";
 import { nativeUnits } from "#src/native";
+import { withUnits } from "#src/core";
 
 const INVALID = new Date("nope");
 const units = nativeUnits();
+const { gap, move, resize, snap, split } = withUnits(units, {
+  plugins: [intervals],
+});
 const day = period(new Date("2026-03-18T12:00"), "day");
 
 const CALLS: readonly (readonly [string, string, () => unknown])[] = [

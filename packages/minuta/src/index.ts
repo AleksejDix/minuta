@@ -10,15 +10,11 @@
 import {
   divideWith,
   durationWith,
-  isWeekdayWith,
-  isWeekendWith,
-  mergeWith,
   nextWith,
   periodWith,
   previousWith,
   sameWith,
   shiftWith,
-  snapWith,
 } from "#src/operations/index";
 import type { Minuta } from "#src/with-units";
 import { nativeUnits } from "#src/adapters/native/index";
@@ -63,55 +59,6 @@ function duration(
   ...args: Readonly<Parameters<Minuta["duration"]>>
 ): ReturnType<Minuta["duration"]> {
   return durationWith(units, ...args);
-}
-
-/**
- * Whether every day the period touches is a working day (Monday to Friday).
- * Native units; for another weekend use `withUnits(nativeUnits({ weekend }))`.
- *
- * @example
- * isWeekday(period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
- *
- * @param args - The arguments of `isWeekdayWith` after `units`
- * @returns Whether no day touched is on the weekend
- */
-function isWeekday(
-  ...args: Readonly<Parameters<Minuta["isWeekday"]>>
-): ReturnType<Minuta["isWeekday"]> {
-  return isWeekdayWith(units, ...args);
-}
-
-/**
- * Whether every day the period touches is Saturday or Sunday. Native units;
- * for another weekend use `withUnits(nativeUnits({ weekend }))`.
- *
- * @example
- * isWeekend(period(new Date(2026, 2, 21), "day")); // true (a Saturday)
- *
- * @param args - The arguments of `isWeekendWith` after `units`
- * @returns Whether every day touched is on the weekend
- */
-function isWeekend(
-  ...args: Readonly<Parameters<Minuta["isWeekend"]>>
-): ReturnType<Minuta["isWeekend"]> {
-  return isWeekendWith(units, ...args);
-}
-
-/**
- * Merge periods into one; keeps `unit` only when the result is exactly one
- * period of it, otherwise `"custom"`. Native units.
- *
- * @example
- * merge([period(new Date(2026, 0, 5), "day"), period(new Date(2026, 0, 9), "day")]); // Jan 5–9, "custom"
- * merge(divide(period(new Date(2026, 0, 1), "month"), "day"), "month"); // January, "month"
- *
- * @param args - The arguments of `mergeWith` after `units`
- * @returns The merged period, or undefined for an empty list
- */
-function merge(
-  ...args: Readonly<Parameters<Minuta["merge"]>>
-): ReturnType<Minuta["merge"]> {
-  return mergeWith(units, ...args);
 }
 
 /**
@@ -191,54 +138,11 @@ function shift(
   return shiftWith(units, ...args);
 }
 
-/**
- * Snap a date to a boundary of `step` units. Native units, weeks start on
- * Monday; `snapWith` in `minuta/core` takes your own units.
- *
- * @example
- * snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
- * snap(new Date(2026, 2, 15, 10, 37), "hour", { mode: "ceil" }); // 11:00
- *
- * @param args - The arguments of `snapWith` after `units`
- * @returns The boundary; `date` itself when it is one
- */
-function snap(
-  ...args: Readonly<Parameters<Minuta["snap"]>>
-): ReturnType<Minuta["snap"]> {
-  return snapWith(units, ...args);
-}
-
-export {
-  divide,
-  duration,
-  isWeekday,
-  isWeekend,
-  merge,
-  next,
-  period,
-  previous,
-  same,
-  shift,
-  snap,
-};
-export {
-  clamp,
-  contains,
-  gap,
-  length,
-  move,
-  overlaps,
-  range,
-  resize,
-  split,
-} from "#src/operations/index";
+export { divide, duration, next, period, previous, same, shift };
+export { contains, length, overlaps, range } from "#src/operations/index";
 export { MinutaError } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
-export type {
-  DivideOptions,
-  SnapMode,
-  SnapOptions,
-} from "#src/operations/index";
+export type { DivideOptions } from "#src/operations/index";
 export type { Minuta } from "#src/with-units";
 export type { Period, Unit, Units } from "#src/types";
 export type { Weekday } from "#src/weekday";

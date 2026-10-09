@@ -1,6 +1,7 @@
 import type { AllUnits, WeekOptions } from "#src/core";
 import { describe, expect, it } from "vitest";
-import { isWeekdayWith, isWeekendWith, periodWith, range } from "#src/core";
+import { isWeekdayWith, isWeekendWith } from "#src/calendar";
+import { periodWith, range } from "#src/core";
 import { dateFnsTzUnits } from "#src/date-fns-tz";
 import { dateFnsUnits } from "#src/date-fns";
 import { dayjsUnits } from "#src/dayjs";

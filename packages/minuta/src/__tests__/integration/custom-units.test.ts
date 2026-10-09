@@ -3,12 +3,11 @@ import { describe, expect, it } from "vitest";
 import {
   divideWith,
   durationWith,
-  mergeWith,
   nextWith,
   periodWith,
-  snapWith,
   withUnits,
 } from "#src/core";
+import { mergeWith, snapWith } from "#src/intervals";
 import { nativeUnits } from "#src/native";
 
 /*

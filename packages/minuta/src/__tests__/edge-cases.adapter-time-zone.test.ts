@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { isWeekdayWith, isWeekendWith, periodWith, snapWith } from "#src/core";
-import { monthGridWith, yearGridWith } from "#src/calendar";
+import {
+  isWeekdayWith,
+  isWeekendWith,
+  monthGridWith,
+  yearGridWith,
+} from "#src/calendar";
 import { dateFnsTzUnits } from "#src/date-fns-tz";
+import { periodWith } from "#src/core";
+import { snapWith } from "#src/intervals";
 
 const MONDAY = 1;
 const DECADE = 10;
