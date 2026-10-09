@@ -119,19 +119,28 @@ A unit missing from `units` throws a `RangeError` starting with
 
 ## Plugins
 
-A plugin is an object of context-first functions. `bind` gives it the same
-convenience as the default entry. The calendar grids ship as one:
+A plugin is an object of context-first functions. Pass it to `withUnits` and
+its functions join the operations, bound to the same units. The calendar
+grids ship as one:
 
 ```ts
-import { bind } from "minuta/core";
 import { calendar } from "minuta/calendar";
 import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
 
-const grids = bind(nativeUnits({ weekStartsOn: 0 }), calendar);
-grids.monthGrid(new Date()).periods; // always 42 days: no layout jumps
-grids.yearGrid(new Date()).periods; // whole weeks covering the year
-grids.dayGrid(new Date(), "Europe/Zurich").gapHour; // DST-aware hour slots
+const time = withUnits(nativeUnits({ weekStartsOn: 0 }), {
+  plugins: [calendar],
+});
+time.monthGrid(new Date()).periods; // always 42 days: no layout jumps
+time.yearGrid(new Date()).periods; // whole weeks covering the year
+time.dayGrid(new Date(), "Europe/Zurich").gapHour; // DST-aware hour slots
+time.next(time.period(new Date(), "week")); // the operations, same units
+time.units; // the units it was built with
 ```
+
+Member names must be unique: a plugin function named like an operation or
+like another plugin's is a type error. `bind(units, plugin)` binds a plugin on
+its own.
 
 Write your own the same way:
 

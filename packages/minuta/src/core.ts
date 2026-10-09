@@ -34,13 +34,13 @@ export { bind } from "#src/bind";
 export { MinutaError, specFor } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
 export { withUnits } from "#src/with-units";
-export type { Bound, BoundPlugin, WithUnits } from "#src/bind";
+export type { Bound, BoundPlugin, Plugin, WithUnits } from "#src/bind";
 export type {
   DivideOptions,
   SnapMode,
   SnapOptions,
 } from "#src/operations/index";
-export type { Minuta } from "#src/with-units";
+export type { Minuta, WithUnitsOptions } from "#src/with-units";
 export type {
   AllUnits,
   Period,

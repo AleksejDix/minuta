@@ -12,6 +12,11 @@ import type { Units } from "#src/types";
 type WithUnits = (units: Units, ...args: readonly never[]) => unknown;
 
 /**
+ * An object of context-first functions, such as `calendar`.
+ */
+type Plugin = Readonly<Record<string, WithUnits>>;
+
+/**
  * `Fn` without its leading `units` parameter.
  */
 type Bound<Fn> = Fn extends (units: Units, ...args: infer Args) => infer Result
@@ -21,8 +26,8 @@ type Bound<Fn> = Fn extends (units: Units, ...args: infer Args) => infer Result
 /**
  * Every function of a plugin, bound to one set of units.
  */
-type BoundPlugin<Plugin> = Readonly<{
-  [Name in keyof Plugin]: Bound<Plugin[Name]>;
+type BoundPlugin<Functions> = Readonly<{
+  [Name in keyof Functions]: Bound<Functions[Name]>;
 }>;
 
 /**
@@ -37,10 +42,10 @@ type BoundPlugin<Plugin> = Readonly<{
  * @param plugin - Object of context-first functions
  * @returns The same functions without the `units` parameter
  */
-function bind<Plugin extends Readonly<Record<string, WithUnits>>>(
+function bind<Functions extends Plugin>(
   units: Units,
-  plugin: Plugin
-): BoundPlugin<Plugin> {
+  plugin: Functions
+): BoundPlugin<Functions> {
   const entries = Object.entries(plugin).map(
     ([name, fn]: readonly [string, WithUnits]) => [
       name,
@@ -48,8 +53,8 @@ function bind<Plugin extends Readonly<Record<string, WithUnits>>>(
     ]
   );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries returns any; Bound<> restores the name-to-signature mapping
-  return Object.fromEntries(entries) as BoundPlugin<Plugin>;
+  return Object.fromEntries(entries) as BoundPlugin<Functions>;
 }
 
 export { bind };
-export type { Bound, BoundPlugin, WithUnits };
+export type { Bound, BoundPlugin, Plugin, WithUnits };

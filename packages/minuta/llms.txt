@@ -5,7 +5,7 @@
 ## Rules
 
 - Every unit-aware function exists twice: `xWith(units, …)` in `minuta/core` takes the units first; `x(…)` in `minuta` is the same function bound to the native `Date` units with weeks starting on Monday. Unit-free functions have one form and take no units.
-- `withUnits(units)` (from `minuta/core`) binds every operation to your units, e.g. `withUnits(nativeUnits({ weekStartsOn: 0 }))` or `withUnits(luxonUnits())`. `bind(units, plugin)` does the same for a plugin such as `calendar` from `minuta/calendar`.
+- `withUnits(units, { plugins })` (from `minuta/core`) binds every operation, and the functions of plugins such as `calendar` from `minuta/calendar`, to your units, e.g. `withUnits(nativeUnits({ weekStartsOn: 0 }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
 - `Units` is a partial map of unit specs; pass only the units you use (`{ day, month }`) to keep the bundle small.
 - No result is `undefined`, never `null` (`clamp` without overlap, `merge([])`, …).
 - Invalid input throws `RangeError`; the message starts with one of the error codes below and says how to fix it.
@@ -380,6 +380,8 @@ type Minuta = Readonly<{
   shift: Bound<typeof shiftWith>;
   snap: Bound<typeof snapWith>;
   split: typeof split;
+  /** The units every member is bound to */
+  units: Units;
 }>;
 ```
 
@@ -613,7 +615,7 @@ Same as `split` in `minuta`.
 ### `bind`
 
 ```ts
-bind(units: Units, plugin: Plugin): BoundPlugin<Plugin>
+bind(units: Units, plugin: Functions): BoundPlugin<Functions>
 ```
 
 Bind every function of `plugin` to `units`.
@@ -647,18 +649,21 @@ Same as `MinutaErrorCode` in `minuta`.
 ### `withUnits`
 
 ```ts
-withUnits(units: Units): Minuta
+withUnits(units: Units, options: WithUnitsOptions<Plugins> & NoClashes<Plugins> = {}): Minuta & BoundPlugins<Plugins>
 ```
 
-Bind every operation to `units`. Pass only the units you need, or an
-adapter's full set.
+Bind every operation, and the functions of any plugins, to `units`. Pass
+only the units you need, or an adapter's full set.
 
 ```ts
-import { withUnits } from "minuta/core";
+import { calendar } from "minuta/calendar";
 import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
 
-const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
+const time = withUnits(nativeUnits({ weekStartsOn: 0 }), { plugins: [calendar] });
 time.next(time.period(new Date(), "week"));
+time.monthGrid(new Date()); // from the plugin
+time.units; // the units passed in
 ```
 
 ### `Bound`
@@ -674,12 +679,20 @@ type Bound<Fn> = Fn extends (units: Units, ...args: infer Args) => infer Result
 ### `BoundPlugin`
 
 ```ts
-type BoundPlugin<Plugin> = Readonly<{
-  [Name in keyof Plugin]: Bound<Plugin[Name]>;
+type BoundPlugin<Functions> = Readonly<{
+  [Name in keyof Functions]: Bound<Functions[Name]>;
 }>;
 ```
 
 Every function of a plugin, bound to one set of units.
+
+### `Plugin`
+
+```ts
+type Plugin = Readonly<Record<string, WithUnits>>;
+```
+
+An object of context-first functions, such as `calendar`.
 
 ### `WithUnits`
 
@@ -704,6 +717,17 @@ Same as `SnapOptions` in `minuta`.
 ### `Minuta`
 
 Same as `Minuta` in `minuta`.
+
+### `WithUnitsOptions`
+
+```ts
+type WithUnitsOptions<Plugins extends readonly Plugin[]> = Readonly<{
+  /** Plugins whose functions join the result, bound to the same units */
+  plugins?: Plugins | undefined;
+}>;
+```
+
+Options of `withUnits`.
 
 ### `AllUnits`
 
@@ -764,7 +788,8 @@ const calendar: Readonly<{
 }>
 ```
 
-The calendar plugin: pass it to `bind` together with your units.
+The calendar plugin: pass it to `withUnits(units, { plugins: [calendar] })`
+or to `bind(units, calendar)`.
 
 ### `dayGridWith`
 

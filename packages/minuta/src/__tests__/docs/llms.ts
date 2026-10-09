@@ -30,7 +30,7 @@ const HEADER = `# minuta
 ## Rules
 
 - Every unit-aware function exists twice: \`xWith(units, …)\` in \`minuta/core\` takes the units first; \`x(…)\` in \`minuta\` is the same function bound to the native \`Date\` units with weeks starting on Monday. Unit-free functions have one form and take no units.
-- \`withUnits(units)\` (from \`minuta/core\`) binds every operation to your units, e.g. \`withUnits(nativeUnits({ weekStartsOn: 0 }))\` or \`withUnits(luxonUnits())\`. \`bind(units, plugin)\` does the same for a plugin such as \`calendar\` from \`minuta/calendar\`.
+- \`withUnits(units, { plugins })\` (from \`minuta/core\`) binds every operation, and the functions of plugins such as \`calendar\` from \`minuta/calendar\`, to your units, e.g. \`withUnits(nativeUnits({ weekStartsOn: 0 }), { plugins: [calendar] })\`; the result's \`units\` are the units passed in. \`bind(units, plugin)\` binds a plugin on its own.
 - \`Units\` is a partial map of unit specs; pass only the units you use (\`{ day, month }\`) to keep the bundle small.
 - No result is \`undefined\`, never \`null\` (\`clamp\` without overlap, \`merge([])\`, …).
 - Invalid input throws \`RangeError\`; the message starts with one of the error codes below and says how to fix it.
