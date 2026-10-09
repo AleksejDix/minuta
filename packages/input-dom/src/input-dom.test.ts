@@ -170,3 +170,53 @@ describe("attachInput() extension points", () => {
     expect(element.value).toBe("__.__.____");
   });
 });
+
+function press(element: HTMLInputElement, key: string): void {
+  element.dispatchEvent(
+    new KeyboardEvent("keydown", { cancelable: true, key })
+  );
+}
+
+describe("cursor keys in overwrite mode", () => {
+  it(
+    "moves one slot left on the first ArrowLeft after typing",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const { controller, element } = setup(createInputState({ mask: DATE }));
+      beforeInput(element, "insertText", "3");
+      beforeInput(element, "insertText", "1");
+      const typed = controller.getState().buffer.selection.head;
+      press(element, "ArrowLeft");
+      expect(controller.getState().buffer.selection.head).toBe(typed - ONE);
+      expect([element.selectionStart, element.selectionEnd]).toStrictEqual([
+        typed - ONE,
+        typed,
+      ]);
+    }
+  );
+
+  it("jumps to the ends with Home and End", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { controller, element } = setup(createInputState({ mask: DATE }));
+    press(element, "End");
+    const end = controller.getState().buffer.selection.head;
+    press(element, "Home");
+    expect([end, controller.getState().buffer.selection.head]).toStrictEqual([
+      DATE.tokens.length,
+      START,
+    ]);
+  });
+
+  it("leaves shifted arrows to the browser", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { element } = setup(createInputState({ mask: DATE }));
+    const event = new KeyboardEvent("keydown", {
+      cancelable: true,
+      key: "ArrowRight",
+      shiftKey: true,
+    });
+    element.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+});
