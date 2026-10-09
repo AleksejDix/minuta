@@ -11,12 +11,13 @@ export {
   clamp,
   contains,
   divideWith,
-  duration,
+  durationWith,
   gap,
   isTodayWith,
-  isWeekday,
-  isWeekend,
-  merge,
+  isWeekdayWith,
+  isWeekendWith,
+  length,
+  mergeWith,
   move,
   nextWith,
   overlaps,
@@ -26,16 +27,21 @@ export {
   resize,
   sameWith,
   shiftWith,
-  snap,
+  snapWith,
   split,
 } from "#src/operations/index";
 export { bind } from "#src/bind";
 export { MinutaError, specFor } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
 export { withUnits } from "#src/with-units";
-export type { Bound, BoundPlugin, WithUnits } from "#src/bind";
-export type { DivideOptions } from "#src/operations/index";
-export type { Minuta } from "#src/with-units";
+export type { Bound, BoundPlugin, Plugin, WithUnits } from "#src/bind";
+export type {
+  DivideOptions,
+  SnapMode,
+  SnapOptions,
+} from "#src/operations/index";
+export type { Minuta, WithUnitsOptions } from "#src/with-units";
+export type { WeekOptions, Weekday, WeekdayNumber } from "#src/weekday";
 export type {
   AllUnits,
   Period,

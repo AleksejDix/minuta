@@ -27,9 +27,10 @@ type MinutaRootProps = MinutaOptions;
 
 /**
  * What `useMinuta()` returns and `<MinutaRoot>` provides: every operation of
- * `withUnits(units)` plus the reactive browsing state.
+ * `withUnits(units)` plus the reactive browsing state; `units` is a ref like
+ * the rest of the state.
  */
-type MinutaState = Minuta &
+type MinutaState = Omit<Minuta, "units"> &
   Readonly<{
     /** Browse the period containing `period.start` */
     browse: (period: Period) => void;

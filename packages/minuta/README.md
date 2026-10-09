@@ -9,10 +9,10 @@ npm install minuta
 
 | What you import                                     | minified + brotli |
 | --------------------------------------------------- | ----------------- |
-| `minuta`: `period`, `next`, `divide`                | 2.4 kB            |
-| `minuta/core` with only the `day` and `month` units | 1.1 kB            |
-| Calendar grids through `bind`                       | 1.8 kB            |
-| An adapter (without its date library)               | 0.3–1.1 kB        |
+| `minuta`: `period`, `next`, `divide`                | 3.1 kB            |
+| `minuta/core` with only the `day` and `month` units | 1.4 kB            |
+| Calendar grids through `bind`                       | 2.0 kB            |
+| An adapter (without its date library)               | 0.4–1.2 kB        |
 
 Zero dependencies, ES modules only, `sideEffects: false`. Budgets are
 checked on every CI run.
@@ -36,17 +36,25 @@ Monday (ISO 8601), so there is nothing to configure.
 
 ## Operations
 
-| Family   | Functions                                                                                         |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| Create   | `period(date, unit)` · `range(start, end)`                                                        |
-| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`                                      |
-| Compose  | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, date)`                |
-| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` · `gap(a, b)`            |
-| Edit     | `move(period, start)` · `resize(period, edge, date)` · `clamp(period, bounds)` · `snap(date, ms)` |
-| Ask      | `duration(period, unit)` · `isToday(now, period)` · `isWeekday(period)` · `isWeekend(period)`     |
+| Family   | Functions                                                                                                           |
+| -------- | ------------------------------------------------------------------------------------------------------------------- |
+| Create   | `period(date, unit)` · `range(start, end)`                                                                          |
+| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`                                                        |
+| Compose  | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, date)`                                  |
+| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` · `gap(a, b)`                              |
+| Edit     | `move(period, start)` · `resize(period, edge, date)` · `clamp(period, bounds)` · `snap(date, unit, { step, mode })` |
+| Ask      | `duration(period, unit)` · `length(period)` · `isToday(now, period)` · `isWeekday(period)` · `isWeekend(period)`    |
 
 ```ts
-import { contains, next, period, previous, range, shift } from "minuta";
+import {
+  contains,
+  duration,
+  next,
+  period,
+  previous,
+  range,
+  shift,
+} from "minuta";
 
 const march = period(new Date(2026, 2, 15), "month");
 next(march); // April
@@ -55,9 +63,13 @@ shift(march, 3); // June
 contains(march, new Date(2026, 2, 20)); // true
 
 range(new Date(2026, 0, 1), new Date(2026, 2, 31)); // { unit: "custom", … }
+
+duration(march, "day"); // 31
+duration(period(new Date(2026, 2, 29), "day"), "hour"); // 23 in Europe/Zurich (DST)
 ```
 
-No result is `undefined` (`clamp` without overlap, `merge([])`), never `null`.
+No result is `undefined` (`clamp` without overlap, `merge([])`, `split` outside
+the period), never `null`.
 Invalid dates throw a `RangeError` whose message starts with a `MinutaError`
 code such as `INVALID_DATE`.
 
@@ -70,9 +82,16 @@ them once and you get the same operations:
 import { withUnits } from "minuta/core";
 import { nativeUnits } from "minuta/native";
 
-const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
+const time = withUnits(
+  nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] })
+);
 time.period(new Date(), "week"); // starts on Sunday
+time.isWeekend(time.period(new Date(2026, 2, 20), "day")); // true: a Friday
 ```
+
+Days are named (`"monday"`); the numbers of `Date#getDay()` (0 = Sunday) work
+too. The `weekend` lives in the units like the week start, so `isWeekend` and
+`isWeekday` follow it.
 
 | Adapter                           | Import                                     |
 | --------------------------------- | ------------------------------------------ |
@@ -93,7 +112,7 @@ the two cannot drift apart.
 units first; unit-free functions take none:
 
 ```ts
-import { divideWith, nextWith, periodWith } from "minuta/core";
+import { nextWith, periodWith } from "minuta/core";
 import { nativeUnits } from "minuta/native";
 
 const { day, month } = nativeUnits();
@@ -107,25 +126,36 @@ A unit missing from `units` throws a `RangeError` starting with
 
 ## Plugins
 
-A plugin is an object of context-first functions. `bind` gives it the same
-convenience as the default entry. The calendar grids ship as one:
+A plugin is an object of context-first functions. Pass it to `withUnits` and
+its functions join the operations, bound to the same units. The calendar
+grids ship as one:
 
 ```ts
-import { bind } from "minuta/core";
 import { calendar } from "minuta/calendar";
 import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
 
-const grids = bind(nativeUnits({ weekStartsOn: 0 }), calendar);
-grids.monthGrid(new Date()).periods; // always 42 days: no layout jumps
-grids.yearGrid(new Date()).periods; // whole weeks covering the year
-grids.dayGrid(new Date(), "Europe/Zurich").gapHour; // DST-aware hour slots
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
+  plugins: [calendar],
+});
+time.monthGrid(new Date()).periods; // always 42 days: no layout jumps
+time.yearGrid(new Date()).periods; // whole weeks covering the year
+time.dayGrid(new Date(), "Europe/Zurich").gapHour; // DST-aware hour slots
+time.next(time.period(new Date(), "week")); // the operations, same units
+time.units; // the units it was built with
 ```
+
+Member names must be unique: a plugin function named like an operation or
+like another plugin's is a type error. `bind(units, plugin)` binds a plugin on
+its own.
 
 Write your own the same way:
 
 ```ts
 import type { Period, Units } from "minuta/core";
 import { bind, divideWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import { period } from "minuta";
 
 const workdays = {
   workdaysIn: (units: Units, month: Period) =>
@@ -134,7 +164,8 @@ const workdays = {
     ),
 };
 
-bind(nativeUnits(), workdays).workdaysIn(march);
+const march = period(new Date(2026, 2, 1), "month");
+bind(nativeUnits(), workdays).workdaysIn(march); // 22 day periods
 ```
 
 Custom units are data too: add the name to `UnitRegistry` through module
@@ -145,9 +176,19 @@ your units.
 
 ```ts
 import { formatPeriod, formatRange } from "minuta/format";
+import { period, range } from "minuta";
 
-formatPeriod(march, "de-CH"); // "März 2026"
+formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH"); // "März 2026"
+formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH"); // "30. März – 5. Apr. 2026"
 ```
+
+## For coding agents
+
+The package ships [`llms.txt`](llms.txt): every export with its signature,
+description and example, the naming rules and all error codes on one page.
+It is generated from the source and checked in CI (`npm run docs:llms`
+regenerates it). Error messages start with a `MinutaError` code and say how
+to fix the problem.
 
 ## Migrating
 

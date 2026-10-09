@@ -65,6 +65,10 @@ function computeBounds(from: TimePoint, to: TimePoint): Bounds {
  * Returns a custom Period. Always start <= end.
  * If periods overlap or touch, returns a zero-duration period at the boundary.
  *
+ * @example
+ * gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 5), "day"));
+ * // { start: Mar 3, end: Mar 4 23:59:59.999, unit: "custom" }
+ *
  * @param from - The first date or period
  * @param to - The second date or period
  * @returns A custom period spanning the gap

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { periodWith, range } from "#src/operations/period";
 import { contains } from "#src/operations/contains";
 import { gap } from "#src/operations/gap";
-import { merge } from "#src/operations/merge";
+import { mergeWith } from "#src/operations/merge";
 import { nativeUnits } from "#src/adapters/native/index";
 import { overlaps } from "#src/operations/overlaps";
 import { sameWith } from "#src/operations/same";
@@ -139,7 +139,7 @@ describe("merge edge cases", () => {
   it("merge single period returns itself", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
-    const merged = required(merge([jan]));
+    const merged = required(mergeWith(units, [jan]));
     expect(merged.start.getTime()).toBe(jan.start.getTime());
   });
 
@@ -148,7 +148,7 @@ describe("merge edge cases", () => {
     const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
     const feb = periodWith(units, new Date("2024-02-15T00:00:00"), "month");
     const mar = periodWith(units, new Date("2024-03-15T00:00:00"), "month");
-    const q1 = required(merge([jan, feb, mar]));
+    const q1 = required(mergeWith(units, [jan, feb, mar]));
     expect(q1.unit).toBe("custom");
   });
 
@@ -160,7 +160,7 @@ describe("merge edge cases", () => {
       const feb = periodWith(units, new Date("2024-02-15T00:00:00"), "month");
       const mar = periodWith(units, new Date("2024-03-15T00:00:00"), "month");
       const apr = periodWith(units, new Date("2024-04-15T00:00:00"), "month");
-      const merged = required(merge([feb, mar, apr]));
+      const merged = required(mergeWith(units, [feb, mar, apr]));
       expect(merged.unit).toBe("custom");
     }
   );

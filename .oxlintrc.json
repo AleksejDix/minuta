@@ -82,6 +82,20 @@
             "from": "package",
             "package": "@vue/reactivity",
             "name": ["ComputedRef", "Ref", "ShallowRef"]
+          },
+          {
+            "from": "package",
+            "package": "typescript",
+            "name": [
+              "Declaration",
+              "Diagnostic",
+              "JSDocTagInfo",
+              "ParameterDeclaration",
+              "Program",
+              "SignatureDeclaration",
+              "Symbol",
+              "TypeChecker"
+            ]
           }
         ]
       }
@@ -90,6 +104,12 @@
       "error",
       {
         "allow": ["**/*.css"]
+      }
+    ],
+    "typescript/dot-notation": [
+      "error",
+      {
+        "allowIndexSignaturePropertyAccess": true
       }
     ]
   },
@@ -121,7 +141,8 @@
       },
       "rules": {
         "import/no-default-export": "off",
-        "import/no-nodejs-modules": "off"
+        "import/no-nodejs-modules": "off",
+        "node/no-process-env": "off"
       }
     },
     {
@@ -131,7 +152,11 @@
         "vitest/prefer-to-be-truthy": "off",
         "vitest/prefer-to-be-falsy": "off",
         "vitest/no-hooks": "off",
-        "vitest/no-importing-vitest-globals": "off"
+        "vitest/no-importing-vitest-globals": "off",
+        "import/no-nodejs-modules": "off"
+      },
+      "env": {
+        "node": true
       }
     }
   ],

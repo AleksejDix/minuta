@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Period } from "#src/types";
 import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
 import { periodWith as period } from "./period";
 import { split } from "./split";
@@ -15,6 +16,21 @@ const MAX_GAP_MS = 1;
 
 const adapters = getUnitsTestCases();
 
+/**
+ * Split at a date known to be inside the period.
+ *
+ * @param whole - The period to split
+ * @param date - A date after the start and within the period
+ * @returns Both parts
+ */
+function splitOrFail(whole: Period, date: Readonly<Date>): [Period, Period] {
+  const parts = split(whole, date);
+  if (parts === undefined) {
+    throw new Error("split() returned undefined for a date inside the period");
+  }
+  return parts;
+}
+
 describe.each(adapters)(
   "split() at boundaries with %s adapter",
   (_name, units) => {
@@ -23,7 +39,7 @@ describe.each(adapters)(
       const month = period(units, new Date("2024-01-15T00:00:00"), "month");
       const splitDate = new Date("2024-01-15T12:00:00");
 
-      const [before, after] = split(month, splitDate);
+      const [before, after] = splitOrFail(month, splitDate);
 
       expect(before.start.getTime()).toBe(month.start.getTime());
       expect(before.end.getTime()).toBeLessThan(splitDate.getTime());
@@ -31,35 +47,27 @@ describe.each(adapters)(
       expect(after.end.getTime()).toBe(month.end.getTime());
     });
 
-    it("should handle split at period start", { timeout: 5000 }, () => {
+    it("returns undefined at or before the start", { timeout: 5000 }, () => {
       expect.hasAssertions();
       const day = period(units, new Date("2024-01-15T00:00:00"), "day");
-      const splitDate = day.start;
-
-      const [before, after] = split(day, splitDate);
-
-      // Before should be empty or minimal
-      expect(before.start.getTime()).toBe(day.start.getTime());
-      expect(before.end.getTime()).toBeLessThanOrEqual(day.start.getTime());
-
-      // After should be the full period
-      expect(after.start.getTime()).toBe(day.start.getTime());
-      expect(after.end.getTime()).toBe(day.end.getTime());
+      expect(split(day, day.start)).toBeUndefined();
+      expect(split(day, new Date("2024-01-14T00:00:00"))).toBeUndefined();
     });
 
-    it("should handle split at period end", { timeout: 5000 }, () => {
+    it("returns undefined after the end", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      const day = period(units, new Date("2024-01-15T00:00:00"), "day");
+      const justAfter = new Date(day.end.getTime() + MAX_GAP_MS);
+      expect(split(day, justAfter)).toBeUndefined();
+      expect(split(day, new Date("2027-01-01T00:00:00"))).toBeUndefined();
+    });
+
+    it("splits off the last millisecond at the end", { timeout: 5000 }, () => {
       expect.hasAssertions();
       const week = period(units, new Date("2024-01-15T00:00:00"), "week");
-      const splitDate = week.end;
-
-      const [before, after] = split(week, splitDate);
-
-      // Before should be the full period
-      expect(before.start.getTime()).toBe(week.start.getTime());
-      expect(before.end.getTime()).toBeLessThanOrEqual(week.end.getTime());
-
-      // After should be empty or minimal
-      expect(after.start.getTime()).toBeGreaterThanOrEqual(week.end.getTime());
+      const [before, after] = splitOrFail(week, week.end);
+      expect(before.end.getTime()).toBe(week.end.getTime() - MAX_GAP_MS);
+      expect(after.start.getTime()).toBe(week.end.getTime());
       expect(after.end.getTime()).toBe(week.end.getTime());
     });
   }
@@ -74,7 +82,7 @@ describe.each(adapters)(
       // July 1
       const midYear = new Date("2024-07-01T00:00:00");
 
-      const [firstHalf, secondHalf] = split(year, midYear);
+      const [firstHalf, secondHalf] = splitOrFail(year, midYear);
 
       expect(firstHalf.start.getMonth()).toBe(JANUARY);
       expect(firstHalf.end.getMonth()).toBeLessThan(JULY);
@@ -88,7 +96,7 @@ describe.each(adapters)(
       const hour = period(units, new Date("2024-01-15T14:00:00"), "hour");
       const halfHour = new Date("2024-01-15T14:30:00");
 
-      const [firstHalf, secondHalf] = split(hour, halfHour);
+      const [firstHalf, secondHalf] = splitOrFail(hour, halfHour);
 
       expect(firstHalf.start.getMinutes()).toBe(ZERO);
       expect(firstHalf.end.getMinutes()).toBeLessThan(HALF_HOUR_MINUTE);
@@ -103,7 +111,7 @@ describe.each(adapters)(
       const second = period(units, new Date("2024-01-15T14:30:45"), "second");
       const splitMs = new Date("2024-01-15T14:30:45.500");
 
-      const [before, after] = split(second, splitMs);
+      const [before, after] = splitOrFail(second, splitMs);
 
       expect(before.start.getMilliseconds()).toBe(ZERO);
       expect(before.end.getMilliseconds()).toBeLessThan(HALF_SECOND_MS);
@@ -118,33 +126,20 @@ describe.each(adapters)(
 describe.each(adapters)(
   "split() edge cases with %s adapter",
   (_name, units) => {
-    it("should handle split outside period", { timeout: 5000 }, () => {
-      expect.hasAssertions();
-      const day = period(units, new Date("2024-01-15T00:00:00"), "day");
-      const beforeDay = new Date("2024-01-14T00:00:00");
-      const afterDay = new Date("2024-01-16T00:00:00");
+    it(
+      "returns custom parts: half a month is no month",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        const month = period(units, new Date("2024-01-15T00:00:00"), "month");
+        const splitDate = new Date("2024-01-20T00:00:00");
 
-      // Split before period
-      const [, after1] = split(day, beforeDay);
-      expect(after1.start.getTime()).toBe(day.start.getTime());
-      expect(after1.end.getTime()).toBe(day.end.getTime());
+        const [before, after] = splitOrFail(month, splitDate);
 
-      // Split after period
-      const [before2] = split(day, afterDay);
-      expect(before2.start.getTime()).toBe(day.start.getTime());
-      expect(before2.end.getTime()).toBe(day.end.getTime());
-    });
-
-    it("should preserve period type", { timeout: 5000 }, () => {
-      expect.hasAssertions();
-      const month = period(units, new Date("2024-01-15T00:00:00"), "month");
-      const splitDate = new Date("2024-01-20T00:00:00");
-
-      const [before, after] = split(month, splitDate);
-
-      expect(before.unit).toBe("month");
-      expect(after.unit).toBe("month");
-    });
+        expect(before.unit).toBe("custom");
+        expect(after.unit).toBe("custom");
+      }
+    );
   }
 );
 
@@ -160,7 +155,7 @@ describe.each(adapters)(
       };
 
       const splitDate = new Date("2024-01-15T14:00:00");
-      const [before, after] = split(customPeriod, splitDate);
+      const [before, after] = splitOrFail(customPeriod, splitDate);
 
       expect(before.start.getTime()).toBe(customPeriod.start.getTime());
       expect(before.end.getTime()).toBeLessThan(splitDate.getTime());
@@ -173,7 +168,7 @@ describe.each(adapters)(
       const week = period(units, new Date("2024-01-15T00:00:00"), "week");
       const wednesday = new Date("2024-01-17T12:00:00");
 
-      const [before, after] = split(week, wednesday);
+      const [before, after] = splitOrFail(week, wednesday);
 
       // The split parts should be contiguous
       const gap = after.start.getTime() - before.end.getTime();

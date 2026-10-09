@@ -22,7 +22,7 @@ Other week starts or other date libraries: bind your units once.
 import { withUnits } from "minuta/core";
 import { luxonUnits } from "minuta/luxon";
 
-const time = withUnits(luxonUnits({ weekStartsOn: 0 }));
+const time = withUnits(luxonUnits({ weekStartsOn: "sunday" }));
 time.next(time.period(new Date(), "week"));
 ```
 
@@ -38,22 +38,32 @@ time.next(time.period(new Date(), "week"));
 | `divide(adapter, period, unit, count, options)` | `divide(period, unit, { step, maxPeriods })` | `divideWith(units, period, unit, { step, maxPeriods })` |
 | `isSame(adapter, a, b, unit)`                   | `same(a, b, unit)`                           | `sameWith(units, a, b, unit)`                           |
 | `isToday(adapter, now, period)`                 | `isToday(now, period)`                       | `isTodayWith(units, now, period)`                       |
+| `duration(period, unit)`                        | `duration(period, unit)`                     | `durationWith(units, period, unit)`                     |
+| `merge(periods, unit)`                          | `merge(periods, unit)`                       | `mergeWith(units, periods, unit)`                       |
+| `snap(date, 15 * 60_000, mode)`                 | `snap(date, "minute", { step: 15, mode })`   | `snapWith(units, date, "minute", { step: 15, mode })`   |
+| `duration(period)` (milliseconds)               | `length(period)`                             | `length(period)`                                        |
 | `isOverlapping(a, b)`                           | `overlaps(a, b)`                             | `overlaps(a, b)`                                        |
 
-`contains`, `gap`, `merge`, `move`, `resize`, `clamp`, `split`, `duration`,
-`snap`, `isWeekday` and `isWeekend` keep their names and take no units.
+`contains`, `gap`, `move`, `resize`, `clamp` and `split` keep their names and
+take no units. `isWeekday` and `isWeekend` read the weekend from the units:
+`isWeekdayWith(units, period)` and `isWeekendWith(units, period)` in
+`minuta/core`.
 
 ## Results that change
 
-| Function                                                 | Before                                          | Now                                                         | What to do                                             |
-| -------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
-| `range` (was `createPeriod`)                             | Threw when `start` was after `end`              | Swaps the dates                                             | Nothing, unless you relied on the error                |
-| `period`, `range`                                        | Threw `Error("Period contains invalid date …")` | Throw `RangeError` whose message starts with `INVALID_DATE` | Match `MinutaError.InvalidDate` instead of the message |
-| `clamp`, `resize`                                        | Returned `null`                                 | Return `undefined`                                          | Check for `undefined`                                  |
-| Day grid `gapHour`, `ambiguousHour`                      | `null` when there is no DST hour                | `undefined`                                                 | Check for `undefined`                                  |
-| `merge([])`                                              | Threw                                           | Returns `undefined`                                         | Check for `undefined`                                  |
-| `divide` over `maxPeriods`                               | Threw `Error`                                   | Throws `RangeError`                                         | Catch `RangeError`                                     |
-| Any unit-aware function with a unit missing from `units` | —                                               | Throws `RangeError` starting with `UNIT_NOT_SUPPORTED`      | Pass the unit, or an adapter's full set                |
+| Function                                                 | Before                                                                                         | Now                                                                                                     | What to do                                              |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `range` (was `createPeriod`)                             | Threw when `start` was after `end`                                                             | Swaps the dates                                                                                         | Nothing, unless you relied on the error                 |
+| `period`, `range`                                        | Threw `Error("Period contains invalid date …")`                                                | Throw `RangeError` whose message starts with `INVALID_DATE`                                             | Match `MinutaError.InvalidDate` instead of the message  |
+| `clamp`, `resize`                                        | Returned `null`                                                                                | Return `undefined`                                                                                      | Check for `undefined`                                   |
+| Day grid `gapHour`, `ambiguousHour`                      | `null` when there is no DST hour                                                               | `undefined`                                                                                             | Check for `undefined`                                   |
+| `duration(period, unit)`                                 | Truncated milliseconds: one unit short (a day was 0 days), DST ignored, only `day` to `second` | Counts complete units by the calendar, DST-aware, every unit                                            | Drop any `+ 1` workaround                               |
+| `merge(periods, unit)`                                   | Always labelled the result `unit`, even when it was not one such period                        | Keeps `unit` only for exactly one aligned period, otherwise `"custom"`                                  | Check `unit` before relying on it                       |
+| `split(period, date)`                                    | Returned a zero-length part for a date outside the period; both parts kept the unit            | Returns `undefined` unless the date is after the start and within the period; both parts are `"custom"` | Check for `undefined`                                   |
+| `isWeekday`, `isWeekend`                                 | Only periods under 2 days could be true; Saturday and Sunday were fixed                        | True when every day the period touches is a working or weekend day; the weekend comes from the units    | Set `weekend` in the adapter options for other weekends |
+| `merge([])`                                              | Threw                                                                                          | Returns `undefined`                                                                                     | Check for `undefined`                                   |
+| `divide` over `maxPeriods`                               | Threw `Error`                                                                                  | Throws `RangeError`                                                                                     | Catch `RangeError`                                      |
+| Any unit-aware function with a unit missing from `units` | —                                                                                              | Throws `RangeError` starting with `UNIT_NOT_SUPPORTED`                                                  | Pass the unit, or an adapter's full set                 |
 
 ## Types
 
@@ -83,6 +93,17 @@ import { bind } from "minuta/core";
 import { calendar } from "minuta/calendar";
 import { nativeUnits } from "minuta/native";
 
-const grids = bind(nativeUnits({ weekStartsOn: 0 }), calendar);
+const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
 grids.monthGrid(new Date()).periods; // 42 day periods
+```
+
+Or bind it together with the operations:
+
+```ts
+import { calendar } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
+
+const time = withUnits(nativeUnits(), { plugins: [calendar] });
+time.monthGrid(time.next(time.period(new Date(), "month")).start);
 ```

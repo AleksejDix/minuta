@@ -40,21 +40,4 @@ function toPlainDate(date: Readonly<Date>): Temporal.PlainDate {
   });
 }
 
-/**
- * Convert a local Date to a Temporal PlainDateTime (local wall-clock time).
- * @param date - The local Date
- * @returns The matching PlainDateTime
- */
-function toPlainDateTime(date: Readonly<Date>): Temporal.PlainDateTime {
-  return getTemporal().PlainDateTime.from({
-    day: date.getDate(),
-    hour: date.getHours(),
-    millisecond: date.getMilliseconds(),
-    minute: date.getMinutes(),
-    month: date.getMonth() + MONTH_INDEX_OFFSET,
-    second: date.getSeconds(),
-    year: date.getFullYear(),
-  });
-}
-
-export { getTemporal, hasTemporal, toPlainDate, toPlainDateTime };
+export { getTemporal, hasTemporal, toPlainDate };

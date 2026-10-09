@@ -12,11 +12,9 @@ const MS_PER_HOUR = 3_600_000;
  * Hour unit handler - pure functional implementation
  */
 const hourHandler: UnitSpec = {
-  add: (date: Readonly<Date>, amount: number): Date => {
-    const result = new Date(date);
-    result.setHours(result.getHours() + amount);
-    return result;
-  },
+  // Elapsed time, so DST changes neither skip nor repeat a step
+  add: (date: Readonly<Date>, amount: number): Date =>
+    new Date(date.getTime() + amount * MS_PER_HOUR),
 
   diff: (from: Readonly<Date>, to: Readonly<Date>): number => {
     const diffMs = to.getTime() - from.getTime();

@@ -27,7 +27,6 @@ const MIN_WEEKS_IN_MONTH = 4;
 const MAX_WEEKS_IN_MONTH = 6;
 const DAYS_PER_WEEK = 7;
 const SNAP_MINUTES = 15;
-const FIFTEEN_MINUTES_MS = 900_000;
 const NO_REMAINDER = 0;
 
 /**
@@ -167,7 +166,9 @@ describe("dogfood merge() and split()", () => {
   it("splits March at the 15th", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const march = period("2026-03-01", "month");
-    const [first, second] = split(march, new Date("2026-03-15T00:00:00"));
+    const [first, second] = required(
+      split(march, new Date("2026-03-15T00:00:00"))
+    );
     expect(formatAsRange(first)).toContain("Mar");
     expect(formatAsRange(second)).toContain("Mar");
   });
@@ -229,7 +230,7 @@ describe("dogfood snap()", () => {
   it("snaps a date to nearest 15-minute interval", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const date = new Date("2024-03-15T10:38:00");
-    const snapped = snap(date, FIFTEEN_MINUTES_MS);
+    const snapped = snap(date, "minute", { step: SNAP_MINUTES });
     // Should round to nearest 15-min boundary
     expect(snapped.getMinutes() % SNAP_MINUTES).toBe(NO_REMAINDER);
   });
@@ -237,14 +238,20 @@ describe("dogfood snap()", () => {
   it("floor snaps to earlier boundary", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const date = new Date("2024-03-15T10:37:00");
-    const snapped = snap(date, FIFTEEN_MINUTES_MS, "floor");
+    const snapped = snap(date, "minute", {
+      mode: "floor",
+      step: SNAP_MINUTES,
+    });
     expect(snapped.getTime()).toBeLessThanOrEqual(date.getTime());
   });
 
   it("ceil snaps to later boundary", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const date = new Date("2024-03-15T10:37:00");
-    const snapped = snap(date, FIFTEEN_MINUTES_MS, "ceil");
+    const snapped = snap(date, "minute", {
+      mode: "ceil",
+      step: SNAP_MINUTES,
+    });
     expect(snapped.getTime()).toBeGreaterThanOrEqual(date.getTime());
   });
 });

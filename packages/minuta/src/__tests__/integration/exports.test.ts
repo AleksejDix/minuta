@@ -62,27 +62,28 @@ const MONDAY = 1;
 const UNIT_FREE_OPERATIONS: readonly string[] = [
   "clamp",
   "contains",
-  "duration",
   "gap",
-  "isWeekday",
-  "isWeekend",
-  "merge",
+  "length",
   "move",
   "overlaps",
   "range",
   "resize",
-  "snap",
   "split",
 ];
 
 const BOUND_OPERATIONS: readonly string[] = [
   "divide",
+  "duration",
   "isToday",
+  "isWeekday",
+  "isWeekend",
+  "merge",
   "next",
   "period",
   "previous",
   "same",
   "shift",
+  "snap",
 ];
 
 const INTERNAL_DETAILS: readonly string[] = [

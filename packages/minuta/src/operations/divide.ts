@@ -1,11 +1,14 @@
+import { MinutaError, specFor } from "#src/units";
 import type { Period, Unit, UnitSpec, Units } from "#src/types";
-import { specFor } from "#src/units";
 
 const DEFAULT_MAX_PERIODS = 100_000;
 const DEFAULT_STEP = 1;
 const ONE_MS = 1;
 const STALL_STEP_FACTOR = 2;
 
+/**
+ * Options for `divide` / `divideWith`.
+ */
 type DivideOptions = Readonly<{
   /** Maximum number of periods before throwing. Default: 100,000. */
   maxPeriods?: number | undefined;
@@ -83,7 +86,8 @@ function nextCursor(
 function assertWithinLimit(generated: number, maxPeriods: number): void {
   if (generated > maxPeriods) {
     throw new RangeError(
-      `divideWith() generated over ${maxPeriods} periods — use a larger unit, smaller parent period, or increase maxPeriods`
+      `${MinutaError.TooManyPeriods}: divideWith() generated over ${maxPeriods} periods. ` +
+        "Use a larger unit or step, a shorter period, or raise the maxPeriods option."
     );
   }
 }

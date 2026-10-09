@@ -1,6 +1,4 @@
 import type { UnitSpec } from "#src/types";
-import { plainDateTimeToLocal } from "#src/adapters/temporal/to-local-date";
-import { toPlainDateTime } from "#src/adapters/temporal/temporal-api";
 
 const START_MINUTE = 0;
 const START_SECOND = 0;
@@ -11,9 +9,9 @@ const LAST_MS = 999;
 const MS_PER_HOUR = 3_600_000;
 
 const hourHandler: UnitSpec = {
+  // Elapsed time, so DST changes neither skip nor repeat a step
   add(date: Readonly<Date>, amount: number): Date {
-    const result = toPlainDateTime(date).add({ hours: amount });
-    return plainDateTimeToLocal(result);
+    return new Date(date.getTime() + amount * MS_PER_HOUR);
   },
 
   diff(from: Readonly<Date>, to: Readonly<Date>): number {

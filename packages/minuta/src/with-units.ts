@@ -4,16 +4,18 @@
  * function, so the bound object and the default entry cannot drift apart.
  */
 
+import type { Bound, BoundPlugin, Plugin } from "#src/bind";
 import {
   clamp,
   contains,
   divideWith,
-  duration,
+  durationWith,
   gap,
   isTodayWith,
-  isWeekday,
-  isWeekend,
-  merge,
+  isWeekdayWith,
+  isWeekendWith,
+  length,
+  mergeWith,
   move,
   nextWith,
   overlaps,
@@ -23,11 +25,11 @@ import {
   resize,
   sameWith,
   shiftWith,
-  snap,
+  snapWith,
   split,
 } from "#src/operations/index";
-import type { Bound } from "#src/bind";
 import type { Units } from "#src/types";
+import { bind } from "#src/bind";
 
 /**
  * All operations, bound to one set of units.
@@ -36,12 +38,13 @@ type Minuta = Readonly<{
   clamp: typeof clamp;
   contains: typeof contains;
   divide: Bound<typeof divideWith>;
-  duration: typeof duration;
+  duration: Bound<typeof durationWith>;
   gap: typeof gap;
   isToday: Bound<typeof isTodayWith>;
-  isWeekday: typeof isWeekday;
-  isWeekend: typeof isWeekend;
-  merge: typeof merge;
+  isWeekday: Bound<typeof isWeekdayWith>;
+  isWeekend: Bound<typeof isWeekendWith>;
+  length: typeof length;
+  merge: Bound<typeof mergeWith>;
   move: typeof move;
   next: Bound<typeof nextWith>;
   overlaps: typeof overlaps;
@@ -51,35 +54,61 @@ type Minuta = Readonly<{
   resize: typeof resize;
   same: Bound<typeof sameWith>;
   shift: Bound<typeof shiftWith>;
-  snap: typeof snap;
+  snap: Bound<typeof snapWith>;
   split: typeof split;
+  /** The units every member is bound to */
+  units: Units;
 }>;
 
 /**
- * Bind every operation to `units`. Pass only the units you need, or an
- * adapter's full set.
- *
- * @example
- * import { withUnits } from "minuta/core";
- * import { nativeUnits } from "minuta/native";
- *
- * const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
- * time.next(time.period(new Date(), "week"));
- *
- * @param units - Unit specs to bind
- * @returns The operations without the `units` parameter
+ * Options of `withUnits`.
  */
-function withUnits(units: Units): Minuta {
+type WithUnitsOptions<Plugins extends readonly Plugin[]> = Readonly<{
+  /** Plugins whose functions join the result, bound to the same units */
+  plugins?: Plugins | undefined;
+}>;
+
+/**
+ * The member names of `Plugins` that are already taken by `Taken` or by an
+ * earlier plugin.
+ */
+type Clashes<Plugins, Taken extends PropertyKey> = Plugins extends readonly [
+  infer First,
+  ...infer Rest,
+]
+  ? Extract<keyof First, Taken> | Clashes<Rest, Taken | keyof First>
+  : never;
+
+/**
+ * Compiles only when no plugin member clashes with an operation or with
+ * another plugin; otherwise names the clashing members.
+ */
+type NoClashes<Plugins> = [Clashes<Plugins, keyof Minuta>] extends [never]
+  ? unknown
+  : Readonly<{ clashingMembers: Clashes<Plugins, keyof Minuta> }>;
+
+/**
+ * Every function of every plugin, bound.
+ */
+type BoundPlugins<Plugins> = Plugins extends readonly [
+  infer First,
+  ...infer Rest,
+]
+  ? BoundPlugin<First> & BoundPlugins<Rest>
+  : unknown;
+
+function operationsFor(units: Units): Minuta {
   return {
     clamp,
     contains,
     divide: (period, unit, options) => divideWith(units, period, unit, options),
-    duration,
+    duration: (period, unit) => durationWith(units, period, unit),
     gap,
     isToday: (now, period) => isTodayWith(units, now, period),
-    isWeekday,
-    isWeekend,
-    merge,
+    isWeekday: (period) => isWeekdayWith(units, period),
+    isWeekend: (period) => isWeekendWith(units, period),
+    length,
+    merge: (periods, unit) => mergeWith(units, periods, unit),
     move,
     next: (period) => nextWith(units, period),
     overlaps,
@@ -89,10 +118,40 @@ function withUnits(units: Units): Minuta {
     resize,
     same: (first, second, unit) => sameWith(units, first, second, unit),
     shift: (period, steps) => shiftWith(units, period, steps),
-    snap,
+    snap: (date, unit, options) => snapWith(units, date, unit, options),
     split,
+    units,
   };
 }
 
+/**
+ * Bind every operation, and the functions of any plugins, to `units`. Pass
+ * only the units you need, or an adapter's full set.
+ *
+ * @example
+ * import { calendar } from "minuta/calendar";
+ * import { nativeUnits } from "minuta/native";
+ * import { withUnits } from "minuta/core";
+ *
+ * const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
+ * time.next(time.period(new Date(), "week"));
+ * time.monthGrid(new Date()); // from the plugin
+ * time.units; // the units passed in
+ *
+ * @param units - Unit specs to bind
+ * @param options - `plugins` to bind as well; member names must be unique
+ * @returns The operations and plugin functions without the `units` parameter
+ */
+function withUnits<const Plugins extends readonly Plugin[] = []>(
+  units: Units,
+  options: WithUnitsOptions<Plugins> & NoClashes<Plugins> = {}
+): Minuta & BoundPlugins<Plugins> {
+  const { plugins = [] } = options;
+  const bound = plugins.map((plugin) => bind(units, plugin));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.assign over a list loses the member types; BoundPlugins<> restores them
+  return Object.assign({}, operationsFor(units), ...bound) as Minuta &
+    BoundPlugins<Plugins>;
+}
+
 export { withUnits };
-export type { Minuta };
+export type { Minuta, WithUnitsOptions };

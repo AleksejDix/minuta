@@ -8,11 +8,9 @@ const MS_PER_SECOND = 1000;
  * Second unit handler - pure functional implementation
  */
 const secondHandler: UnitSpec = {
-  add: (date: Readonly<Date>, amount: number): Date => {
-    const result = new Date(date);
-    result.setSeconds(result.getSeconds() + amount);
-    return result;
-  },
+  // Elapsed time, so DST changes neither skip nor repeat a step
+  add: (date: Readonly<Date>, amount: number): Date =>
+    new Date(date.getTime() + amount * MS_PER_SECOND),
 
   diff: (from: Readonly<Date>, to: Readonly<Date>): number => {
     const diffMs = to.getTime() - from.getTime();

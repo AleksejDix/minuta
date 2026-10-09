@@ -68,4 +68,3 @@ function createWeekHandler(weekStartsOn: WeekStartsOn = MONDAY): UnitSpec {
 }
 
 export { createWeekHandler };
-export type { WeekStartsOn };
