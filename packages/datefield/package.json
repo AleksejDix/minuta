@@ -36,7 +36,8 @@
     "dev": "vite build --watch",
     "test": "vitest run",
     "type-check": "tsc -p tsconfig.check.json",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf dist node_modules",
+    "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
   },
   "dependencies": {
     "input-state": "^0.1.0",

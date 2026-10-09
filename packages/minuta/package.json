@@ -75,7 +75,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "llms.txt"
+    "llms.txt",
+    "MIGRATION.md"
   ],
   "scripts": {
     "build": "vite build",
@@ -85,7 +86,8 @@
     "type-check": "tsc -p tsconfig.check.json",
     "clean": "rm -rf dist node_modules",
     "size": "size-limit",
-    "docs:llms": "cd ../.. && UPDATE_LLMS=1 vitest run --project minuta src/__tests__/docs/llms.test.ts"
+    "docs:llms": "cd ../.. && UPDATE_LLMS=1 vitest run --project minuta src/__tests__/docs/llms.test.ts",
+    "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
   },
   "size-limit": [
     {

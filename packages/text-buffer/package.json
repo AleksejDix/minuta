@@ -36,7 +36,8 @@
     "dev": "vite build --watch",
     "test": "vitest run",
     "type-check": "tsc -p tsconfig.check.json",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf dist node_modules",
+    "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
   },
   "devDependencies": {
     "@minuta/tsconfig": "2.0.0-alpha.1",

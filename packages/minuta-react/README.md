@@ -29,7 +29,8 @@ Options (all optional):
   week start lives in the units: `nativeUnits({ weekStartsOn: "sunday" })`. Memoise
   them (`useMemo`) so the operations are rebound only when they change.
 - `date` – initially browsed date, default now
-- `now` – the moment that counts as "now", default `new Date()`
+- `now` – the moment that counts as "now", default the clock, re-read at the
+  start of every new day so "today" never goes stale
 - `unit` – unit of the browsed period, default `"month"`
 
 Returns every operation of `withUnits(units)` (`period`, `next`, `previous`,
@@ -95,9 +96,11 @@ const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 - `CalendarWeekdays` – weekday labels in the week order of the units
 - `CalendarGrid` – the stable 42-day month grid; `children` optionally
   renders each day (default `<CalendarDay day={day} />`)
-- `CalendarDay` – one day: classes `is-outside`, `is-today`, `is-selected`;
-  a click selects it and browses to its month
+- `CalendarDay` – one day (`locale?`): classes `is-outside`, `is-today`,
+  `is-selected`; a click selects it and browses to its month
 - `CalendarExample` – the parts composed, with a Sunday/Monday toggle
+
+All labels are formatted in the units' time zone (`units.timeZone`).
 
 ## Development
 
