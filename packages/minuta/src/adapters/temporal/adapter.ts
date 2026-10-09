@@ -8,10 +8,10 @@ import {
   secondHandler,
   yearHandler,
 } from "./units/index";
-import { weekStartOf, weekendOf } from "#src/weekday";
 import type { AllUnits } from "#src/types";
 import { Temporal } from "@js-temporal/polyfill";
 import type { WeekOptions } from "#src/weekday";
+import { adapterUnits } from "#src/adapters/adapter-units";
 import { hasTemporal } from "./temporal-api";
 
 if (!hasTemporal(globalThis)) {
@@ -40,17 +40,16 @@ function temporalUnits(options: WeekOptions = {}): AllUnits {
     throw new Error("Temporal API is not available in this environment.");
   }
 
-  return {
+  return adapterUnits(options, (weekStartsOn) => ({
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
     month: monthHandler,
     quarter: quarterHandler,
     second: secondHandler,
-    week: createWeekHandler(weekStartOf(options)),
-    weekend: weekendOf(options),
+    week: createWeekHandler(weekStartsOn),
     year: yearHandler,
-  };
+  }));
 }
 
 export { temporalUnits };

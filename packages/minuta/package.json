@@ -92,7 +92,7 @@
       "name": "minuta: period + next + divide",
       "path": "dist/index.js",
       "import": "{ period, next, divide }",
-      "limit": "3.2 kB"
+      "limit": "2.1 kB"
     },
     {
       "name": "minuta: everything",
@@ -106,7 +106,7 @@
         "dist/core.js": "{ periodWith, nextWith }",
         "dist/native.js": "{ nativeUnits }"
       },
-      "limit": "1.5 kB"
+      "limit": "1.7 kB"
     },
     {
       "name": "minuta/calendar: monthGrid via bind",

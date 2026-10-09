@@ -5,12 +5,16 @@
 
 import type { Unit, UnitSpec, Units } from "#src/types";
 
+const ONE = 1;
+
 /**
  * Codes at the start of the messages of errors minuta throws.
  */
 const MinutaError = {
   /** A Date argument is invalid (`new Date("nope")`). */
   InvalidDate: "INVALID_DATE",
+  /** An option such as `step` or `maxPeriods` is not a positive whole number. */
+  InvalidOption: "INVALID_OPTION",
   /** `divideWith` would create more chunks than `maxPeriods` allows. */
   TooManyPeriods: "TOO_MANY_PERIODS",
   /** The `units` passed to a function have no spec for the requested unit. */
@@ -19,6 +23,9 @@ const MinutaError = {
 
 /** One of the {@link MinutaError} codes. */
 type MinutaErrorCode = (typeof MinutaError)[keyof typeof MinutaError];
+
+// Keys of `Units` that are settings, not unit specs
+const SETTINGS: ReadonlySet<string> = new Set(["weekStartsOn", "weekend"]);
 
 /**
  * The spec for `unit`.
@@ -36,7 +43,7 @@ function specFor(units: Units, unit: Unit): UnitSpec {
   if (spec === undefined) {
     const available =
       Object.keys(units)
-        .filter((name) => name !== "weekend")
+        .filter((name) => !SETTINGS.has(name))
         .join(", ") || "none";
     throw new RangeError(
       `${MinutaError.UnitNotSupported}: no "${unit}" spec in the units passed (available: ${available}). ` +
@@ -63,5 +70,21 @@ function assertValidDate(date: Readonly<Date>, name: string): void {
   }
 }
 
-export { MinutaError, assertValidDate, specFor };
+/**
+ * Throw an `INVALID_OPTION` `RangeError` unless `value` is a positive whole
+ * number.
+ *
+ * @param value - The option value
+ * @param option - Where it came from, e.g. "divideWith() step"
+ */
+function assertPositiveInteger(value: number, option: string): void {
+  if (!Number.isInteger(value) || value < ONE) {
+    throw new RangeError(
+      `${MinutaError.InvalidOption}: ${option} must be a positive whole number, got ${String(value)}. ` +
+        `Pass a count such as 1 or 15.`
+    );
+  }
+}
+
+export { MinutaError, assertPositiveInteger, assertValidDate, specFor };
 export type { MinutaErrorCode };

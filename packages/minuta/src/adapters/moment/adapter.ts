@@ -8,9 +8,9 @@ import {
   secondHandler,
   yearHandler,
 } from "./handlers";
-import { weekStartOf, weekendOf } from "#src/weekday";
 import type { AllUnits } from "#src/types";
 import type { WeekOptions } from "#src/weekday";
+import { adapterUnits } from "#src/adapters/adapter-units";
 
 /**
  * Unit specs for every unit, computed with Moment.js (requires the `moment` package). Pass the result to
@@ -30,17 +30,16 @@ import type { WeekOptions } from "#src/weekday";
  * @returns A spec for every unit
  */
 function momentUnits(options: WeekOptions = {}): AllUnits {
-  return {
+  return adapterUnits(options, (weekStartsOn) => ({
     day: dayHandler,
     hour: hourHandler,
     minute: minuteHandler,
     month: monthHandler,
     quarter: quarterHandler,
     second: secondHandler,
-    week: createWeekHandler(weekStartOf(options)),
-    weekend: weekendOf(options),
+    week: createWeekHandler(weekStartsOn),
     year: yearHandler,
-  };
+  }));
 }
 
 export { momentUnits };

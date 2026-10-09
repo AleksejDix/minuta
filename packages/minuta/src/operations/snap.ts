@@ -1,10 +1,10 @@
 import type { Unit, UnitSpec, Units } from "#src/types";
-import { assertValidDate, specFor } from "#src/units";
-import { countUnits } from "./utils/count-units";
+import { assertPositiveInteger, assertValidDate, specFor } from "#src/units";
 
 const DEFAULT_STEP = 1;
 const ONE = 1;
-const EPOCH = new Date("1970-01-01T00:00");
+// Midday UTC lies in 1970 and in the same week in every time zone
+const EPOCH = new Date("1970-01-01T12:00:00Z");
 
 /** How `snap` / `snapWith` picks the boundary. */
 type SnapMode = "ceil" | "floor" | "nearest";
@@ -62,7 +62,7 @@ function gridOf(ctx: StepContext): Grid {
 function stepBounds(ctx: StepContext): Bounds {
   const { date, spec, step } = ctx;
   const { anchor, limit } = gridOf(ctx);
-  const first = Math.floor(countUnits(spec, anchor, date) / step) * step;
+  const first = Math.floor(spec.diff(anchor, date) / step) * step;
   const next = spec.add(anchor, first + step);
   if (limit !== undefined && next > limit) {
     return { floor: spec.add(anchor, first), next: limit };
@@ -115,6 +115,7 @@ function snapWith(
 ): Date {
   assertValidDate(date, "date");
   const { mode = "nearest", step = DEFAULT_STEP } = options;
+  assertPositiveInteger(step, "snapWith() step");
   const spec = specFor(units, unit);
   return pick(date, boundsOf({ date, spec, step, unit, units }), mode);
 }

@@ -114,15 +114,15 @@ function signaturesOf(
   name: string,
   findCore: FindFunction
 ): string[] {
+  const bound = boundSignatures(name, findCore);
+  if (bound.length > NONE) {
+    return bound;
+  }
   const functions = functionDeclarations(symbol).map((declaration) =>
     signatureText(name, declaration, false)
   );
   if (functions.length > NONE) {
     return functions;
-  }
-  const bound = boundSignatures(name, findCore);
-  if (bound.length > NONE) {
-    return bound;
   }
   return declaredText(symbol, name);
 }

@@ -7,9 +7,9 @@ import {
   createSecondHandler,
   createYearHandler,
 } from "./handlers";
-import { weekStartOf, weekendOf } from "#src/weekday";
 import type { AllUnits } from "#src/types";
 import type { WeekOptions } from "#src/weekday";
+import { adapterUnits } from "#src/adapters/adapter-units";
 import { createWeekHandler } from "./units/week";
 
 const DEFAULT_TIMEZONE = "UTC";
@@ -35,17 +35,16 @@ function dateFnsTzUnits(
   options: WeekOptions & Readonly<{ timezone?: string }> = {}
 ): AllUnits {
   const { timezone = DEFAULT_TIMEZONE } = options;
-  return {
+  return adapterUnits(options, (weekStartsOn) => ({
     day: createDayHandler(timezone),
     hour: createHourHandler(timezone),
     minute: createMinuteHandler(timezone),
     month: createMonthHandler(timezone),
     quarter: createQuarterHandler(timezone),
     second: createSecondHandler(timezone),
-    week: createWeekHandler(timezone, weekStartOf(options)),
-    weekend: weekendOf(options),
+    week: createWeekHandler(timezone, weekStartsOn),
     year: createYearHandler(timezone),
-  };
+  }));
 }
 
 export { dateFnsTzUnits };

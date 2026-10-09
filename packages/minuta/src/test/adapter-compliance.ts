@@ -3,6 +3,7 @@ import type { ComplianceOptions } from "./compliance/context";
 import { createComplianceContext } from "./compliance/context";
 import { registerAddTests } from "./compliance/add";
 import { registerConsistencyTests } from "./compliance/consistency";
+import { registerDiffContractTests } from "./compliance/diff-contract";
 import { registerDiffTests } from "./compliance/diff";
 import { registerEdgeCaseTests } from "./compliance/edge-cases";
 import { registerEndOfTests } from "./compliance/end-of";
@@ -25,6 +26,7 @@ function testAdapterCompliance(
   registerEndOfTests(ctx);
   registerAddTests(ctx);
   registerDiffTests(ctx);
+  registerDiffContractTests(ctx);
   registerEdgeCaseTests(ctx);
   registerConsistencyTests(ctx);
 }

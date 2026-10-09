@@ -14,6 +14,7 @@
 ## Error codes
 
 - `INVALID_DATE`: A Date argument is invalid (`new Date("nope")`).
+- `INVALID_OPTION`: An option such as `step` or `maxPeriods` is not a positive whole number.
 - `TOO_MANY_PERIODS`: `divideWith` would create more chunks than `maxPeriods` allows.
 - `UNIT_NOT_SUPPORTED`: The `units` passed to a function have no spec for the requested unit.
 
@@ -842,7 +843,10 @@ How one unit behaves — plain data, like a country spec in ibanita.
 - startOf: earliest millisecond of the unit containing `date`
 - endOf: latest millisecond of the unit containing `date`
 - add(date, n) then add(result, -n) returns the original date
-- diff(from, to) is the number of complete units between the dates
+- diff(from, to) is the number of complete units from `from` to `to`,
+  truncated toward zero: the largest `n` with `add(from, n) <= to` (for an
+  earlier `to`, the smallest `n` with `add(from, n) >= to`). The adapters
+  guarantee it; custom units must follow it
 
 ## `minuta/calendar`
 

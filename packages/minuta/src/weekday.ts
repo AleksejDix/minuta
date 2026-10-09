@@ -51,6 +51,7 @@ const NUMBERS: Readonly<Record<Weekday, WeekdayNumber>> = {
   wednesday: WEDNESDAY,
 };
 
+const DEFAULT_WEEK_START: WeekdayNumber = MONDAY;
 const DEFAULT_WEEKEND: readonly WeekdayNumber[] = [SATURDAY, SUNDAY];
 
 function weekdayNumber(day: Weekday | WeekdayNumber): WeekdayNumber {
@@ -67,7 +68,7 @@ function weekdayNumber(day: Weekday | WeekdayNumber): WeekdayNumber {
  * @returns The week start as a `Date#getDay()` number, Monday by default
  */
 function weekStartOf(options: WeekOptions): WeekdayNumber {
-  return weekdayNumber(options.weekStartsOn ?? MONDAY);
+  return weekdayNumber(options.weekStartsOn ?? DEFAULT_WEEK_START);
 }
 
 /**
@@ -83,5 +84,5 @@ function weekendOf(options: WeekOptions): readonly WeekdayNumber[] {
   return options.weekend.map((day) => weekdayNumber(day));
 }
 
-export { DEFAULT_WEEKEND, weekStartOf, weekendOf };
+export { DEFAULT_WEEK_START, DEFAULT_WEEKEND, weekStartOf, weekendOf };
 export type { WeekOptions, Weekday, WeekdayNumber };

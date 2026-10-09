@@ -1,11 +1,8 @@
 import type { AllUnits } from "#src/types";
 import type { ComplianceOptions } from "./compliance/context";
 import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
-import { dateFnsUnits } from "#src/adapters/date-fns/index";
 import { describe } from "vitest";
-import { luxonUnits } from "#src/adapters/luxon/index";
-import { nativeUnits } from "#src/adapters/native/index";
-import { temporalUnits } from "#src/adapters/temporal/index";
+import { getUnitsTestCases } from "./shared-adapter-tests";
 import { testAdapterCompliance } from "./adapter-compliance";
 
 type ComplianceCase = Readonly<{
@@ -14,32 +11,17 @@ type ComplianceCase = Readonly<{
   options: ComplianceOptions | undefined;
 }>;
 
+// Every adapter, weeks starting on Monday; date-fns-tz in UTC
 const complianceCases: readonly ComplianceCase[] = [
-  {
-    name: "Native",
+  ...getUnitsTestCases().map(([name, units]) => ({
+    name,
     options: undefined,
-    units: nativeUnits({ weekStartsOn: 1 }),
-  },
-  {
-    name: "date-fns",
-    options: undefined,
-    units: dateFnsUnits({ weekStartsOn: 1 }),
-  },
+    units,
+  })),
   {
     name: "date-fns-tz",
     options: { timezone: "UTC" },
-    units: dateFnsTzUnits({ timezone: "UTC", weekStartsOn: 1 }),
-  },
-  {
-    name: "Luxon",
-    options: undefined,
-    units: luxonUnits({ weekStartsOn: 1 }),
-  },
-  // Temporal adapter - now includes polyfill automatically
-  {
-    name: "Temporal",
-    options: undefined,
-    units: temporalUnits({ weekStartsOn: 1 }),
+    units: dateFnsTzUnits({ timezone: "UTC", weekStartsOn: "monday" }),
   },
 ];
 

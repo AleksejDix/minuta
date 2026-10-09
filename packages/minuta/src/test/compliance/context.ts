@@ -153,4 +153,4 @@ function createComplianceContext(
 }
 
 export { createComplianceContext };
-export type { ComplianceContext, ComplianceOptions };
+export type { ComplianceContext, ComplianceOptions, DateInput };
