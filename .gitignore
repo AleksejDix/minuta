@@ -57,3 +57,6 @@ vite.config.ts.timestamp-*
 # Vue
 *.vue.tsbuildinfo
 .vercel
+
+# Copied from the root LICENSE when packing
+packages/*/LICENSE
