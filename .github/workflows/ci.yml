@@ -1,8 +1,8 @@
 name: CI
 
 on:
+  # Every pull request, so stacked PRs are checked before they reach master
   pull_request:
-    branches: [master]
   push:
     branches: [master]
 

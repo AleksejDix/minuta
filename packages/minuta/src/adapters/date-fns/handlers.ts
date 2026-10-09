@@ -1,27 +1,23 @@
 import {
   add,
   differenceInDays,
-  differenceInHours,
-  differenceInMinutes,
   differenceInMonths,
   differenceInQuarters,
-  differenceInSeconds,
   differenceInYears,
   endOfDay,
-  endOfHour,
-  endOfMinute,
   endOfMonth,
   endOfQuarter,
-  endOfSecond,
   endOfYear,
   startOfDay,
-  startOfHour,
-  startOfMinute,
   startOfMonth,
   startOfQuarter,
-  startOfSecond,
   startOfYear,
 } from "date-fns";
+import {
+  elapsedHour,
+  elapsedMinute,
+  elapsedSecond,
+} from "#src/adapters/elapsed-units";
 import type { Duration } from "date-fns";
 import type { UnitSpec } from "#src/types";
 
@@ -71,24 +67,9 @@ const dayHandler: UnitSpec = handler({
   endOf: endOfDay,
   startOf: startOfDay,
 });
-const hourHandler: UnitSpec = handler({
-  addKey: "hours",
-  diffFn: differenceInHours,
-  endOf: endOfHour,
-  startOf: startOfHour,
-});
-const minuteHandler: UnitSpec = handler({
-  addKey: "minutes",
-  diffFn: differenceInMinutes,
-  endOf: endOfMinute,
-  startOf: startOfMinute,
-});
-const secondHandler: UnitSpec = handler({
-  addKey: "seconds",
-  diffFn: differenceInSeconds,
-  endOf: endOfSecond,
-  startOf: startOfSecond,
-});
+const hourHandler: UnitSpec = elapsedHour;
+const minuteHandler: UnitSpec = elapsedMinute;
+const secondHandler: UnitSpec = elapsedSecond;
 
 export {
   dayHandler,
