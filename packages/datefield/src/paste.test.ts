@@ -1,8 +1,9 @@
-import { deriveFormat, parseSegments } from "./parse";
+import { dateOrder, deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
 import type { DateFormat } from "./types";
 import { createInputState } from "input-state";
 import { dateMask } from "./field";
+import { parseDate } from "fechita";
 import { toDate } from "./convert";
 import { typeDate } from "./type-date";
 
@@ -28,12 +29,39 @@ const PASTED: readonly string[] = [
   "٣١/٠٣/٢٠٢٦",
 ];
 
+// Fechita reads the paste; the field's own order resolves ambiguity
+function parsedDate(
+  text: string,
+  locale: string,
+  format: Readonly<DateFormat>
+): Date | undefined {
+  const result = parseDate(text, { locale, order: dateOrder(format) });
+  if (result.valid) {
+    return result.date;
+  }
+  return undefined;
+}
+
+function parserFor(
+  locale: string,
+  format: Readonly<DateFormat>
+): (text: string) => Date | undefined {
+  return (text) => parsedDate(text, locale, format);
+}
+
 function pasted(locale: string, text: string): Date | undefined {
   const format: Readonly<DateFormat> = deriveFormat(locale);
   const field = createInputState({ mask: dateMask(format) });
+  const parse = parserFor(locale, format);
   return toDate(
-    parseSegments(format, typeDate(format, field, text, locale).buffer.text)
+    parseSegments(format, typeDate(format, field, text, { parse }).buffer.text)
   );
+}
+
+function typedWithoutParser(locale: string, text: string): string {
+  const format: Readonly<DateFormat> = deriveFormat(locale);
+  return typeDate(format, createInputState({ mask: dateMask(format) }), text)
+    .buffer.text;
 }
 
 describe.each(LOCALES)("pasting into a %s field", (locale) => {
@@ -67,5 +95,15 @@ describe("pasted dates in other forms", () => {
   it("rejects a day that does not exist", { timeout: 5000 }, () => {
     expect.hasAssertions();
     expect(pasted("de-CH", "2026-04-31")).toBeUndefined();
+  });
+});
+
+describe("pasting without a parser", () => {
+  it("types the paste like keystrokes", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect([
+      typedWithoutParser("de-CH", "31.03.2026"),
+      typedWithoutParser("de-CH", "2026-03-31"),
+    ]).toStrictEqual(["31.03.2026", "20.26.2003"]);
   });
 });

@@ -11,7 +11,6 @@ import { fromDate } from "./convert";
 import { fullYear } from "./year";
 import { nextSegment } from "./navigate";
 import { parseSegments } from "./parse";
-import { recognizeDate } from "./recognize";
 import { withSegments } from "./field";
 
 const ZERO_PAD = "0";
@@ -127,61 +126,75 @@ function typedChars(
 }
 
 /**
- * The field holding the date recognised in pasted text, written in the
+ * Options of `typeDate`.
+ */
+type TypeOptions = Readonly<{
+  /**
+   * Reads a pasted date in any form, e.g. fechita's `parseDate` with the
+   * field's order. Without it a paste is typed like keystrokes.
+   */
+  parse?: ((text: string) => Readonly<Date> | undefined) | undefined;
+}>;
+
+/**
+ * The field holding the date `parse` finds in pasted text, written in the
  * field's format with the cursor at the end.
  *
  * @param format - The field's format
  * @param state - The field
- * @param text - Pasted text
- * @param locale - The field's locale, for month names
+ * @param paste - The pasted text and the parser
  * @returns The filled field, or undefined for typed or unrecognised text
  */
-// oxlint-disable-next-line eslint/max-params -- Mirrors typeDate's parameters
 function pastedDate(
   format: Readonly<DateFormat>,
   state: InputState,
-  text: string,
-  locale: string | undefined
+  paste: Readonly<{ parse: TypeOptions["parse"]; text: string }>
 ): InputState | undefined {
-  if (text.length <= ONE_CHAR) {
+  if (paste.parse === undefined || paste.text.length <= ONE_CHAR) {
     return undefined;
   }
-  const date = recognizeDate(text, format, locale);
+  const date = paste.parse(paste.text);
   if (date === undefined) {
     return undefined;
   }
-  const filled = withSegments(state, fromDate(date, format, locale));
+  const filled = withSegments(state, fromDate(date, format));
   return setSelection(filled, filled.buffer.text.length);
 }
 
 /**
  * Type text into a date field: digits (of any script) fill the slots,
  * separators finish the segment being typed, other characters are ignored.
- * Text longer than one character is a paste: a recognisable date in any
- * common form (`recognizeDate`: ISO 8601, month names, numbers in any order)
+ * Text longer than one character is a paste: with `parse`, a date it reads
  * replaces the whole field in its format; anything else is typed and its
  * last segment finished.
  *
  * @example
+ * import { parseDate } from "fechita";
+ *
  * const format = deriveFormat("de-CH");
  * const field = createInputState({ mask: dateMask(format) });
  * typeDate(format, field, "1.3.2026").buffer.text; // "01.03.2026"
- * typeDate(format, field, "2026-03-31").buffer.text; // "31.03.2026"
+ *
+ * const parse = (text: string) => {
+ *   const result = parseDate(text, { order: dateOrder(format) });
+ *   return result.valid ? result.date : undefined;
+ * };
+ * typeDate(format, field, "2026-03-31", { parse }).buffer.text; // "31.03.2026"
  *
  * @param format - The field's format
  * @param state - The field
  * @param text - Typed or pasted text
- * @param locale - The field's locale, for pasted month names
+ * @param options - `parse` to read pasted dates in any form
  * @returns The field after typing
  */
-// oxlint-disable-next-line eslint/max-params -- (format, state, text) plus the optional locale for month names
+// oxlint-disable-next-line eslint/max-params -- (format, state, text) plus the options
 function typeDate(
   format: Readonly<DateFormat>,
   state: InputState,
   text: string,
-  locale?: string
+  options: TypeOptions = {}
 ): InputState {
-  const pasted = pastedDate(format, state, text, locale);
+  const pasted = pastedDate(format, state, { parse: options.parse, text });
   if (pasted !== undefined) {
     return pasted;
   }
@@ -194,3 +207,4 @@ function typeDate(
 }
 
 export { finishSegment, typeDate };
+export type { TypeOptions };

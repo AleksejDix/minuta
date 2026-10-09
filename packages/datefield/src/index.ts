@@ -7,6 +7,7 @@
  */
 // Parse
 export {
+  dateOrder,
   deriveFormat,
   parseSegments,
   placeholder,
@@ -33,7 +34,8 @@ export { rotateSegment, clampDay } from "./rotate";
 
 // Typing: digits fill slots, separators finish a segment
 export { finishSegment, typeDate } from "./type-date";
-export { recognizeDate } from "./recognize";
+export type { TypeOptions } from "./type-date";
+export type { DateOrder } from "./parse";
 
 // Digits of a locale, for display
 export { localeDigits } from "./digits";
