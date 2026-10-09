@@ -1,4 +1,9 @@
 import type { ManipulateType, OpUnitType } from "dayjs";
+import {
+  elapsedHour,
+  elapsedMinute,
+  elapsedSecond,
+} from "#src/adapters/elapsed-units";
 import type { UnitSpec } from "#src/types";
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
@@ -61,9 +66,9 @@ const quarterHandler: UnitSpec = {
 };
 const monthHandler: UnitSpec = handler("month", "month");
 const dayHandler: UnitSpec = handler("day", "day");
-const hourHandler: UnitSpec = handler("hour", "hour");
-const minuteHandler: UnitSpec = handler("minute", "minute");
-const secondHandler: UnitSpec = handler("second", "second");
+const hourHandler: UnitSpec = elapsedHour;
+const minuteHandler: UnitSpec = elapsedMinute;
+const secondHandler: UnitSpec = elapsedSecond;
 
 export {
   createWeekHandler,

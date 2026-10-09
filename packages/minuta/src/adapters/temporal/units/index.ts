@@ -1,8 +1,10 @@
 export { createWeekHandler } from "./week";
 export { dayHandler } from "./day";
-export { hourHandler } from "./hour";
-export { minuteHandler } from "./minute";
 export { monthHandler } from "./month";
 export { quarterHandler } from "./quarter";
-export { secondHandler } from "./second";
 export { yearHandler } from "./year";
+export {
+  elapsedHour as hourHandler,
+  elapsedMinute as minuteHandler,
+  elapsedSecond as secondHandler,
+} from "#src/adapters/elapsed-units";
