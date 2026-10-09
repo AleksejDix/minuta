@@ -77,30 +77,72 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-  CalendarWeekdays,
 } from "minuta-react/components";
+import { isWeekendWith } from "minuta/calendar";
 import { nativeUnits } from "minuta/native";
 
 const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 
-<CalendarRoot units={sundayFirst} onSelect={(day) => console.log(day.start)}>
+<CalendarRoot
+  units={sundayFirst}
+  isDisabled={(day) => isWeekendWith(sundayFirst, day)}
+  onSelect={(day) => console.log(day.start)}
+>
   <CalendarHeader locale="de-CH" />
-  <CalendarWeekdays locale="de-CH" />
-  <CalendarGrid>{(day) => <CalendarDay day={day} />}</CalendarGrid>
+  <CalendarGrid locale="de-CH">
+    {(day) => <CalendarDay day={day} locale="de-CH" />}
+  </CalendarGrid>
 </CalendarRoot>;
 ```
 
-- `CalendarRoot` – props `units?`, `date?`, `onSelect?(day)`; a `MinutaRoot`
-  browsing months plus the selected day
+- `CalendarRoot` – props `units?`, `date?`, `onSelect?(day)`,
+  `isDisabled?(day)`; a `MinutaRoot` browsing months plus the selected and
+  the focused day. Disabled days stay focusable but can't be selected
 - `CalendarHeader` – month label (`locale?`) with previous/next buttons
-- `CalendarWeekdays` – weekday labels in the week order of the units
-- `CalendarGrid` – the stable 42-day month grid; `children` optionally
-  renders each day (default `<CalendarDay day={day} />`)
+- `CalendarGrid` – the stable 42-day month grid as a table with
+  `role="grid"`, its weekday header row (`CalendarWeekdays`) included;
+  `locale?` for the weekdays and the default days, `children` optionally
+  renders each day (default `<CalendarDay day={day} locale={locale} />`)
+- `CalendarWeekdays` – the grid's column headers in the week order of the
+  units; rendered by `CalendarGrid`
 - `CalendarDay` – one day (`locale?`): classes `is-outside`, `is-today`,
-  `is-selected`; a click selects it and browses to its month
+  `is-selected`, `is-disabled`; a click, Enter or Space selects it and
+  browses to its month
 - `CalendarExample` – the parts composed, with a Sunday/Monday toggle
 
 All labels are formatted in the units' time zone (`units.timeZone`).
+
+### Keyboard
+
+The grid follows the
+[WAI-ARIA date picker grid](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/).
+Only one day is in the tab order: the last focused day of the browsed month,
+else the selected day, else today, else the first of the month.
+
+| Key                     | Moves the focus to                              |
+| ----------------------- | ----------------------------------------------- |
+| ArrowLeft / ArrowRight  | the previous / next day                         |
+| ArrowUp / ArrowDown     | the same weekday of the previous / next week    |
+| Home / End              | the first / last day of the week (units' start) |
+| PageUp / PageDown       | the same day of the previous / next month       |
+| Shift+PageUp / PageDown | the same day of the previous / next year        |
+| Enter / Space           | selects the focused day                         |
+
+A day missing from the target month is clamped to its last day (January 31
+→ February 29). Moving the focus out of the browsed month browses there.
+
+### Accessibility
+
+- The grid is labelled by the month heading (`aria-labelledby`), which is
+  announced politely (`aria-live="polite"`) when browsing changes it
+- Column headers are `<th scope="col">` with the full weekday as `abbr`
+- Each day is a button named with its full date ("Wednesday, January 17,
+  2024"); its cell has `aria-selected`, today has `aria-current="date"`,
+  disabled days have `aria-disabled="true"`
+- The previous/next buttons are named "Previous month" and "Next month"
+
+Custom `children` render inside the grid cells; render `CalendarDay` in them
+to keep the keyboard navigation.
 
 ## Development
 

@@ -6,6 +6,7 @@ export { default as CalendarRoot } from "./CalendarRoot.vue";
 export { default as CalendarWeekdays } from "./CalendarWeekdays.vue";
 export type {
   CalendarDayProps,
+  CalendarGridProps,
   CalendarHeaderProps,
   CalendarRootProps,
   CalendarWeekdaysProps,

@@ -46,6 +46,14 @@ function dayButton(day: number): HTMLElement {
   );
 }
 
+function gridCell(button: HTMLElement): HTMLElement {
+  const cell = button.closest("td");
+  if (cell === null) {
+    throw new Error("Expected the day inside a grid cell");
+  }
+  return cell;
+}
+
 function lastOutsideDay(container: HTMLElement): HTMLElement {
   const outside = [...container.querySelectorAll<HTMLElement>(".is-outside")];
   return only(outside.slice(-ONE));
@@ -101,7 +109,9 @@ describe("<CalendarDay> selection", () => {
 
     fireEvent.click(dayButton(SELECTED_DAY));
 
-    expect(dayButton(SELECTED_DAY).getAttribute("aria-pressed")).toBe("true");
+    expect(
+      gridCell(dayButton(SELECTED_DAY)).getAttribute("aria-selected")
+    ).toBe("true");
     expect(dayButton(SELECTED_DAY).classList.contains("is-selected")).toBe(
       true
     );

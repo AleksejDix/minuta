@@ -128,29 +128,27 @@ body {
   opacity: 0.85;
 }
 
-.weekday-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  text-align: center;
+.weekday-grid th {
   font-size: 0.85rem;
+  font-weight: inherit;
   text-transform: uppercase;
   color: #94a3b8;
   letter-spacing: 0.08em;
 }
 
 .weeks-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0.4rem;
 }
 
-.week-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.4rem;
+.grid-cell {
+  padding: 0;
 }
 
 .day-cell {
+  width: 100%;
   border: none;
   border-radius: 16px;
   background: #f8fafc;
@@ -188,6 +186,16 @@ body {
   color: white;
 }
 
+.day-cell.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.day-cell:focus-visible {
+  outline: 3px solid #0f172a;
+  outline-offset: 2px;
+}
+
 .date-number {
   font-size: 1.35rem;
   font-weight: 600;
@@ -203,9 +211,8 @@ body {
     padding: 1.5rem;
   }
 
-  .week-row,
-  .weekday-grid {
-    gap: 0.25rem;
+  .weeks-grid {
+    border-spacing: 0.25rem;
   }
 
   .day-cell {

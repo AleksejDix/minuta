@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import { CalendarWeekdays } from "./CalendarWeekdays";
 import type { JSX } from "react";
 import { MONDAY } from "./week-start";
 import type { Period } from "minuta/core";
@@ -39,7 +38,6 @@ function CalendarExample({ onSelect }: CalendarExampleProps = {}): JSX.Element {
         />
       </div>
       <CalendarHeader />
-      <CalendarWeekdays />
       <CalendarGrid />
     </CalendarRoot>
   );

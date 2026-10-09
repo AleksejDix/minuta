@@ -2,7 +2,6 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-  CalendarWeekdays,
 } from "minuta-react/components";
 import { useCallback, useState } from "react";
 import { DateFieldDemo } from "./DateFieldDemo";
@@ -32,8 +31,7 @@ function App(): JSX.Element {
       />
       <CalendarRoot onSelect={handleSelect}>
         <CalendarHeader locale={locale} />
-        <CalendarWeekdays locale={locale} />
-        <CalendarGrid />
+        <CalendarGrid locale={locale} />
       </CalendarRoot>
     </main>
   );
