@@ -1,4 +1,5 @@
 import type { UnitSpec } from "#src/types";
+import { calendarDaysBetween } from "./calendar-days";
 
 const DAYS_PER_WEEK = 7;
 const LAST_DAY_OF_WEEK_OFFSET = 6;
@@ -10,7 +11,6 @@ const LAST_HOUR = 23;
 const LAST_MINUTE = 59;
 const LAST_SECOND = 59;
 const LAST_MS = 999;
-const MS_PER_WEEK = 604_800_000;
 const SUNDAY = 0;
 const MONDAY = 1;
 const TUESDAY = 2;
@@ -48,10 +48,8 @@ function createWeekHandler(weekStartsOn: WeekStartsOn = MONDAY): UnitSpec {
       return result;
     },
 
-    diff: (from: Readonly<Date>, to: Readonly<Date>): number => {
-      const diffMs = to.getTime() - from.getTime();
-      return Math.floor(diffMs / MS_PER_WEEK);
-    },
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      Math.floor(calendarDaysBetween(from, to) / DAYS_PER_WEEK),
 
     endOf: (date: Readonly<Date>): Date => {
       const result = new Date(date);

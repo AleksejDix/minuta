@@ -1,6 +1,4 @@
 import type { UnitSpec } from "#src/types";
-import { plainDateTimeToLocal } from "#src/adapters/temporal/to-local-date";
-import { toPlainDateTime } from "#src/adapters/temporal/temporal-api";
 
 const START_SECOND = 0;
 const START_MS = 0;
@@ -9,9 +7,9 @@ const LAST_MS = 999;
 const MS_PER_MINUTE = 60_000;
 
 const minuteHandler: UnitSpec = {
+  // Elapsed time, so DST changes neither skip nor repeat a step
   add(date: Readonly<Date>, amount: number): Date {
-    const result = toPlainDateTime(date).add({ minutes: amount });
-    return plainDateTimeToLocal(result);
+    return new Date(date.getTime() + amount * MS_PER_MINUTE);
   },
 
   diff(from: Readonly<Date>, to: Readonly<Date>): number {

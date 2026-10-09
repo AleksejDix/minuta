@@ -1,15 +1,13 @@
 import type { UnitSpec } from "#src/types";
-import { plainDateTimeToLocal } from "#src/adapters/temporal/to-local-date";
-import { toPlainDateTime } from "#src/adapters/temporal/temporal-api";
 
 const START_MS = 0;
 const LAST_MS = 999;
 const MS_PER_SECOND = 1000;
 
 const secondHandler: UnitSpec = {
+  // Elapsed time, so DST changes neither skip nor repeat a step
   add(date: Readonly<Date>, amount: number): Date {
-    const result = toPlainDateTime(date).add({ seconds: amount });
-    return plainDateTimeToLocal(result);
+    return new Date(date.getTime() + amount * MS_PER_SECOND);
   },
 
   diff(from: Readonly<Date>, to: Readonly<Date>): number {

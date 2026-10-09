@@ -73,4 +73,4 @@ function timeOf(date: Readonly<Date>): TimeParts {
   };
 }
 
-export { plainDateTimeToLocal, plainDateToLocal, timeOf };
+export { plainDateToLocal, timeOf };
