@@ -1,4 +1,5 @@
 import type { Segment, SegmentType } from "./types";
+import { dateOf, fullYear, shownYear } from "./year";
 
 const UP = 1;
 const DOWN = -1;
@@ -44,6 +45,16 @@ function numberOf(seg: Segment | undefined): number | undefined {
   return Number.parseInt(seg.value, RADIX);
 }
 
+// The full year typed, or a leap year while it is empty
+function yearOf(segments: readonly Segment[]): number {
+  const seg = segments.find((part) => part.type === "year");
+  const typed = numberOf(seg);
+  if (seg === undefined || typed === undefined) {
+    return LEAP_YEAR;
+  }
+  return fullYear(typed, seg.end - seg.start);
+}
+
 /**
  * Days in the month described by the segments. While month or year is
  * unknown, assume the widest possible range (31, or 29 for February).
@@ -56,9 +67,7 @@ function daysInMonth(segments: readonly Segment[]): number {
   if (month === undefined || month < FIRST_MONTH || month > LAST_MONTH) {
     return MAX_DAYS_IN_MONTH;
   }
-  const year =
-    numberOf(segments.find((seg) => seg.type === "year")) ?? LEAP_YEAR;
-  return new Date(year, month, LAST_DAY_OF_PREVIOUS_MONTH).getDate();
+  return dateOf(yearOf(segments), month, LAST_DAY_OF_PREVIOUS_MONTH).getDate();
 }
 
 function rangeOf(
@@ -166,13 +175,14 @@ type RotateInput = {
   readonly range: Range;
   readonly today: Readonly<Date>;
   readonly type: SegmentType;
+  readonly width: number;
 };
 
 function nextValue(input: RotateInput): number {
-  const { current, direction, range, today, type } = input;
+  const { current, direction, range, today, type, width } = input;
   if (current === undefined) {
     if (type === "year") {
-      return today.getFullYear();
+      return shownYear(today.getFullYear(), width);
     }
     return boundFor(direction, range);
   }
@@ -222,6 +232,7 @@ function rotateSegment(
     range,
     today,
     type: seg.type,
+    width: seg.end - seg.start,
   });
   const rotated = withValue(segments, index, next);
   if (seg.type === "day") {
