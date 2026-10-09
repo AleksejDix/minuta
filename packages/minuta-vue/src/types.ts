@@ -7,7 +7,7 @@ import type { Minuta, Period, Unit, Units } from "minuta/core";
 type MinutaOptions = Readonly<{
   /** Initially browsed date, default: now */
   date?: Readonly<Date> | undefined;
-  /** "Today", default: the date `useMinuta()` was called */
+  /** "Today", default: the clock, re-read at every new day */
   now?: Readonly<Date> | undefined;
   /** Unit of the browsed period, default "month" */
   unit?: Unit | undefined;

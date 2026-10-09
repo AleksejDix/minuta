@@ -3,6 +3,7 @@ import type { MinutaOptions, MinutaState, Source } from "#src/types";
 import { computed, shallowRef, toValue } from "vue";
 import type { ComputedRef } from "vue";
 import { nativeUnits } from "minuta/native";
+import { useClock } from "#src/use-clock";
 import { withUnits } from "minuta/core";
 
 const DEFAULT_UNITS: Units = nativeUnits();
@@ -46,14 +47,14 @@ function followOperations(
  * @returns The bound operations and the reactive browsing state
  */
 function useMinuta(options: Source<MinutaOptions> = {}): MinutaState {
-  const createdAt = new Date();
   const browsedDate = shallowRef<Readonly<Date>>(
-    toValue(options).date ?? createdAt
+    toValue(options).date ?? new Date()
   );
   const units = computed(() => toValue(options).units ?? DEFAULT_UNITS);
   const unit = computed(() => toValue(options).unit ?? DEFAULT_UNIT);
-  const nowDate = computed(() => toValue(options).now ?? createdAt);
   const operations = computed(() => withUnits(units.value));
+  const clock = useClock(operations, () => toValue(options).now !== undefined);
+  const nowDate = computed(() => toValue(options).now ?? clock.value);
   const browsing = computed(() =>
     operations.value.period(browsedDate.value, unit.value)
   );
