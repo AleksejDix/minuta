@@ -36,14 +36,14 @@ Monday (ISO 8601), so there is nothing to configure.
 
 ## Operations
 
-| Family   | Functions                                                                                                        |
-| -------- | ---------------------------------------------------------------------------------------------------------------- |
-| Create   | `period(date, unit)` · `range(start, end)`                                                                       |
-| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`                                                     |
-| Compose  | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, date)`                               |
-| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` · `gap(a, b)`                           |
-| Edit     | `move(period, start)` · `resize(period, edge, date)` · `clamp(period, bounds)` · `snap(date, ms)`                |
-| Ask      | `duration(period, unit)` · `length(period)` · `isToday(now, period)` · `isWeekday(period)` · `isWeekend(period)` |
+| Family   | Functions                                                                                                           |
+| -------- | ------------------------------------------------------------------------------------------------------------------- |
+| Create   | `period(date, unit)` · `range(start, end)`                                                                          |
+| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`                                                        |
+| Compose  | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, date)`                                  |
+| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` · `gap(a, b)`                              |
+| Edit     | `move(period, start)` · `resize(period, edge, date)` · `clamp(period, bounds)` · `snap(date, unit, { step, mode })` |
+| Ask      | `duration(period, unit)` · `length(period)` · `isToday(now, period)` · `isWeekday(period)` · `isWeekend(period)`    |
 
 ```ts
 import {

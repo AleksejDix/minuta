@@ -40,11 +40,12 @@ time.next(time.period(new Date(), "week"));
 | `isToday(adapter, now, period)`                 | `isToday(now, period)`                       | `isTodayWith(units, now, period)`                       |
 | `duration(period, unit)`                        | `duration(period, unit)`                     | `durationWith(units, period, unit)`                     |
 | `merge(periods, unit)`                          | `merge(periods, unit)`                       | `mergeWith(units, periods, unit)`                       |
+| `snap(date, 15 * 60_000, mode)`                 | `snap(date, "minute", { step: 15, mode })`   | `snapWith(units, date, "minute", { step: 15, mode })`   |
 | `duration(period)` (milliseconds)               | `length(period)`                             | `length(period)`                                        |
 | `isOverlapping(a, b)`                           | `overlaps(a, b)`                             | `overlaps(a, b)`                                        |
 
-`contains`, `gap`, `move`, `resize`, `clamp`, `split`, `snap`,
-`isWeekday` and `isWeekend` keep their names and take no units.
+`contains`, `gap`, `move`, `resize`, `clamp`, `split`, `isWeekday` and
+`isWeekend` keep their names and take no units.
 
 ## Results that change
 

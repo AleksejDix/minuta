@@ -70,7 +70,6 @@ const UNIT_FREE_OPERATIONS: readonly string[] = [
   "overlaps",
   "range",
   "resize",
-  "snap",
   "split",
 ];
 
@@ -84,6 +83,7 @@ const BOUND_OPERATIONS: readonly string[] = [
   "previous",
   "same",
   "shift",
+  "snap",
 ];
 
 const INTERNAL_DETAILS: readonly string[] = [

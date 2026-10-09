@@ -93,6 +93,16 @@ const same: Minuta["same"] = defaults.same;
  */
 const shift: Minuta["shift"] = defaults.shift;
 
+/**
+ * Snap a date to a boundary of `step` units. Native units, weeks start on
+ * Monday; `snapWith` in `minuta/core` takes your own units.
+ *
+ * @example
+ * snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
+ * snap(new Date(2026, 2, 15, 10, 37), "hour", { mode: "ceil" }); // 11:00
+ */
+const snap: Minuta["snap"] = defaults.snap;
+
 export {
   divide,
   duration,
@@ -103,6 +113,7 @@ export {
   previous,
   same,
   shift,
+  snap,
 };
 export {
   clamp,
@@ -115,11 +126,14 @@ export {
   overlaps,
   range,
   resize,
-  snap,
   split,
 } from "#src/operations/index";
 export { MinutaError } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
-export type { DivideOptions } from "#src/operations/index";
+export type {
+  DivideOptions,
+  SnapMode,
+  SnapOptions,
+} from "#src/operations/index";
 export type { Minuta } from "#src/with-units";
 export type { Period, Series, Unit, Units } from "#src/types";

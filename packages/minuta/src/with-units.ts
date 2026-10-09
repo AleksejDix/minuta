@@ -24,7 +24,7 @@ import {
   resize,
   sameWith,
   shiftWith,
-  snap,
+  snapWith,
   split,
 } from "#src/operations/index";
 import type { Bound } from "#src/bind";
@@ -53,7 +53,7 @@ type Minuta = Readonly<{
   resize: typeof resize;
   same: Bound<typeof sameWith>;
   shift: Bound<typeof shiftWith>;
-  snap: typeof snap;
+  snap: Bound<typeof snapWith>;
   split: typeof split;
 }>;
 
@@ -92,7 +92,7 @@ function withUnits(units: Units): Minuta {
     resize,
     same: (first, second, unit) => sameWith(units, first, second, unit),
     shift: (period, steps) => shiftWith(units, period, steps),
-    snap,
+    snap: (date, unit, options) => snapWith(units, date, unit, options),
     split,
   };
 }

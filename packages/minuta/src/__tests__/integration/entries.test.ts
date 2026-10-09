@@ -19,7 +19,6 @@ const UNIT_FREE_OPERATIONS: readonly string[] = [
   "overlaps",
   "range",
   "resize",
-  "snap",
   "split",
 ];
 
@@ -33,6 +32,7 @@ const CORE_OPERATIONS: readonly string[] = [
   "previousWith",
   "sameWith",
   "shiftWith",
+  "snapWith",
 ];
 
 const REMOVED_ENTRIES: readonly string[] = ["operations", "helpers"];

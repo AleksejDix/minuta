@@ -135,6 +135,20 @@ Move a period by `steps` of its own unit; negative moves back. Native units.
 shift(period(new Date(2026, 2, 15), "month"), 3); // June 2026
 ```
 
+### `snap`
+
+```ts
+snap(date: Readonly<Date>, unit: Unit, options: SnapOptions = {}): Date
+```
+
+Snap a date to a boundary of `step` units. Native units, weeks start on
+Monday; `snapWith` in `minuta/core` takes your own units.
+
+```ts
+snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
+snap(new Date(2026, 2, 15, 10, 37), "hour", { mode: "ceil" }); // 11:00
+```
+
 ### `clamp`
 
 ```ts
@@ -280,20 +294,6 @@ resize(meeting, 'end', new Date(2026, 2, 29, 11, 30))
 // → { start: 9:00, end: 11:30, unit: "custom" }
 ```
 
-### `snap`
-
-```ts
-snap(date: Readonly<Date>, intervalMs: number, mode: SnapMode = "nearest"): Date
-```
-
-Snap a date to the nearest interval boundary.
-
-```ts
-snap(new Date('2024-03-15T10:37:00'), 15 * 60000)          // → 10:45 (nearest)
-snap(new Date('2024-03-15T10:37:00'), 15 * 60000, 'floor') // → 10:30
-snap(new Date('2024-03-15T10:37:00'), 15 * 60000, 'ceil')  // → 10:45
-```
-
 ### `split`
 
 ```ts
@@ -334,6 +334,27 @@ type DivideOptions = Readonly<{
 
 Options for `divide` / `divideWith`.
 
+### `SnapMode`
+
+```ts
+type SnapMode = "ceil" | "floor" | "nearest";
+```
+
+How `snap` / `snapWith` picks the boundary.
+
+### `SnapOptions`
+
+```ts
+type SnapOptions = Readonly<{
+  /** `"floor"`, `"ceil"` or `"nearest"` (ties round up). Default: `"nearest"`. */
+  mode?: SnapMode | undefined;
+  /** How many units lie between boundaries. Default: 1. */
+  step?: number | undefined;
+}>;
+```
+
+Options for `snap` / `snapWith`.
+
 ### `Minuta`
 
 ```ts
@@ -357,7 +378,7 @@ type Minuta = Readonly<{
   resize: typeof resize;
   same: Bound<typeof sameWith>;
   shift: Bound<typeof shiftWith>;
-  snap: typeof snap;
+  snap: Bound<typeof snapWith>;
   split: typeof split;
 }>;
 ```
@@ -568,9 +589,22 @@ shiftWith(units, march, 2)  // May
 shiftWith(units, march, -1) // February
 ```
 
-### `snap`
+### `snapWith`
 
-Same as `snap` in `minuta`.
+```ts
+snapWith(units: Units, date: Readonly<Date>, unit: Unit, options: SnapOptions = {}): Date
+```
+
+Snap a date to a boundary of `step` units: the unit's start, or every
+`step`-th one counted from the start of the enclosing unit (minutes from
+the hour, hours from the day, days from the month, months and quarters
+from the year; weeks and years from 1970).
+
+```ts
+snapWith(units, new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
+snapWith(units, new Date(2026, 2, 15, 10, 37), "day", { mode: "ceil" }); // Mar 16
+snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // the week's start
+```
 
 ### `split`
 
@@ -658,6 +692,14 @@ A context-first function: unit specs first, then its own arguments.
 ### `DivideOptions`
 
 Same as `DivideOptions` in `minuta`.
+
+### `SnapMode`
+
+Same as `SnapMode` in `minuta`.
+
+### `SnapOptions`
+
+Same as `SnapOptions` in `minuta`.
 
 ### `Minuta`
 
