@@ -52,6 +52,10 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
 - `toDate` returns `undefined` while a slot is empty or the date is invalid,
   without touching what the user typed.
 - `dateMask` rejects display-only parts (weekday, era) — they cannot be typed.
+- Fields use the Gregorian calendar in every locale: `fa-IR` or `th-TH` get
+  their order and separators, with Gregorian years (not Persian or Buddhist).
+- Digits of any script can be typed or pasted (٣١, ۳۱, ३१, ３１); they are
+  stored as 0–9, so `toDate` always parses what is shown.
 
 See [docs/zero-cost-parsing.md](docs/zero-cost-parsing.md) for the design and
 [docs/date-formats.md](docs/date-formats.md) for formats by country.

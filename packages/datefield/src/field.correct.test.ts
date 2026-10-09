@@ -91,3 +91,17 @@ describe("characters JavaScript reads as numbers", () => {
     expect(toDate(parseSegments(DE, "1e.03.2026"))).toBeUndefined();
   });
 });
+
+describe("calendars", () => {
+  it.each([
+    ["fa-IR", "2026/03/31"],
+    ["th-TH", "31/03/2026"],
+    ["ja-JP-u-ca-japanese", "2026/03/31"],
+  ])("gives %s a Gregorian field", { timeout: 5000 }, (locale, text) => {
+    expect.hasAssertions();
+    const format = deriveFormat(locale);
+    expect(toDate(parseSegments(format, text))).toStrictEqual(
+      new Date("2026-03-31T00:00:00")
+    );
+  });
+});
