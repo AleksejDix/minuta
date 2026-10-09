@@ -7,7 +7,7 @@ const ONE = 1;
 const FIRST = 0;
 
 function weekdays(container: HTMLElement): string[] {
-  return [...container.querySelectorAll<HTMLElement>(".weekday-grid span")].map(
+  return [...container.querySelectorAll<HTMLElement>(".weekday-grid th")].map(
     (label: HTMLElement) => label.textContent
   );
 }

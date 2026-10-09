@@ -3,7 +3,6 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import { CalendarWeekdays } from "./CalendarWeekdays";
 import type { RenderResult } from "@testing-library/react";
 import type { WeekStart } from "./week-start";
 import { nativeUnits } from "minuta/native";
@@ -21,7 +20,6 @@ function renderCalendar(weekStartsOn: WeekStart = MONDAY): RenderResult {
       units={nativeUnits({ weekStartsOn })}
     >
       <CalendarHeader />
-      <CalendarWeekdays />
       <CalendarGrid />
     </CalendarRoot>
   );
@@ -66,14 +64,14 @@ describe("<CalendarHeader>", () => {
   });
 });
 
-describe("<CalendarWeekdays>", () => {
+describe("<CalendarWeekdays> in <CalendarGrid>", () => {
   afterEach(cleanup);
 
   it("should start on Monday by default", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { container } = renderCalendar();
 
-    expect(texts(container, ".weekday-grid span")).toStrictEqual([
+    expect(texts(container, ".weekday-grid th")).toStrictEqual([
       "Mon",
       "Tue",
       "Wed",
@@ -88,7 +86,7 @@ describe("<CalendarWeekdays>", () => {
     expect.hasAssertions();
     const { container } = renderCalendar(SUNDAY);
 
-    expect(texts(container, ".weekday-grid span")).toStrictEqual([
+    expect(texts(container, ".weekday-grid th")).toStrictEqual([
       "Sun",
       "Mon",
       "Tue",

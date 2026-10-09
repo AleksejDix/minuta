@@ -7,6 +7,8 @@ type CalendarRootProps = Readonly<{
   children?: ReactNode;
   /** Initially browsed date, default: now */
   date?: Readonly<Date> | undefined;
+  /** Whether a day can't be selected, default: none */
+  isDisabled?: ((day: Period) => boolean) | undefined;
   /** Called with the clicked day */
   onSelect?: ((day: Period) => void) | undefined;
   /** Unit specs, default: `nativeUnits()` (weeks start on Monday) */
@@ -21,6 +23,7 @@ type CalendarRootProps = Readonly<{
  * @param props - Component props
  * @param props.children - The calendar parts
  * @param props.date - Initially browsed date
+ * @param props.isDisabled - Whether a day can't be selected
  * @param props.onSelect - Called with the clicked day
  * @param props.units - Unit specs
  * @returns The calendar element
@@ -29,12 +32,15 @@ type CalendarRootProps = Readonly<{
 function CalendarRoot({
   children,
   date,
+  isDisabled,
   onSelect,
   units,
 }: CalendarRootProps): JSX.Element {
   return (
     <MinutaRoot date={date} unit="month" units={units}>
-      <CalendarSelection onSelect={onSelect}>{children}</CalendarSelection>
+      <CalendarSelection isDisabled={isDisabled} onSelect={onSelect}>
+        {children}
+      </CalendarSelection>
     </MinutaRoot>
   );
 }

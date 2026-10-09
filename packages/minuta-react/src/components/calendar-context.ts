@@ -3,10 +3,20 @@ import type { Context } from "react";
 import type { Period } from "minuta/core";
 
 type CalendarContextValue = Readonly<{
+  /** The one tabbable day of the browsed month */
+  active: Period;
+  /** Move the keyboard focus to a day, browsing to its month */
+  focus: (day: Period) => void;
+  /** Whether a day can't be selected */
+  isDisabled: (day: Period) => boolean;
+  /** Id of the month heading that labels the grid */
+  labelId: string;
   /** Select a day: browse to it and report it through `onSelect` */
   select: (day: Period) => void;
   /** The last selected day */
   selected: Period | undefined;
+  /** Whether the keyboard moved the focus to `day`; true only once */
+  takeFocus: (day: Period) => boolean;
 }>;
 
 const CalendarContext: Context<CalendarContextValue | undefined> =

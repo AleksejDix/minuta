@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { formatPeriod } from "minuta/format";
+import { useCalendarContext } from "./calendar-context";
 import { useCallback } from "react";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -11,9 +12,12 @@ type CalendarHeaderProps = Readonly<{
 const DEFAULT_LOCALE = "en-US";
 const PREVIOUS_LABEL = "← Previous";
 const NEXT_LABEL = "Next →";
+const PREVIOUS_NAME = "Previous month";
+const NEXT_NAME = "Next month";
 
 /**
- * The browsed month's label between previous and next buttons.
+ * The browsed month's label, which names the grid and is announced when it
+ * changes, between previous and next buttons.
  *
  * @param props - Component props
  * @param props.locale - Locale of the month label
@@ -29,6 +33,7 @@ function CalendarHeader({
     previous: previousPeriod,
     units,
   } = useMinutaContext();
+  const { labelId } = useCalendarContext();
 
   const handlePrevious = useCallback(() => {
     browse(previousPeriod(browsing));
@@ -40,13 +45,23 @@ function CalendarHeader({
 
   return (
     <header className="toolbar-row">
-      <button type="button" className="nav-button" onClick={handlePrevious}>
+      <button
+        type="button"
+        className="nav-button"
+        onClick={handlePrevious}
+        aria-label={PREVIOUS_NAME}
+      >
         {PREVIOUS_LABEL}
       </button>
-      <h2 aria-live="polite">
+      <h2 id={labelId} aria-live="polite">
         {formatPeriod(browsing, locale, { timeZone: units.timeZone })}
       </h2>
-      <button type="button" className="nav-button" onClick={handleNext}>
+      <button
+        type="button"
+        className="nav-button"
+        onClick={handleNext}
+        aria-label={NEXT_NAME}
+      >
         {NEXT_LABEL}
       </button>
     </header>
