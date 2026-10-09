@@ -17,7 +17,7 @@ type CalendarRootProps = Readonly<{
 
 /**
  * Owns the state of a month calendar: a `MinutaRoot` browsing months plus
- * the selected day. Compose it with `CalendarHeader`, `CalendarWeekdays`,
+ * the selected and the focused day. Compose it with `CalendarHeader`,
  * `CalendarGrid` and `CalendarDay`.
  *
  * @param props - Component props
