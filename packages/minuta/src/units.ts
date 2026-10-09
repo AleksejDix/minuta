@@ -11,6 +11,8 @@ import type { Unit, UnitSpec, Units } from "#src/types";
 const MinutaError = {
   /** A Date argument is invalid (`new Date("nope")`). */
   InvalidDate: "INVALID_DATE",
+  /** `divideWith` would create more chunks than `maxPeriods` allows. */
+  TooManyPeriods: "TOO_MANY_PERIODS",
   /** The `units` passed to a function have no spec for the requested unit. */
   UnitNotSupported: "UNIT_NOT_SUPPORTED",
 } as const;
@@ -21,6 +23,9 @@ type MinutaErrorCode = (typeof MinutaError)[keyof typeof MinutaError];
 /**
  * The spec for `unit`.
  *
+ * @example
+ * specFor(nativeUnits(), "week").startOf(new Date(2026, 2, 18)); // Monday Mar 16, 00:00
+ *
  * @param units - Available unit specs
  * @param unit - Unit to look up
  * @returns The spec
@@ -29,7 +34,11 @@ type MinutaErrorCode = (typeof MinutaError)[keyof typeof MinutaError];
 function specFor(units: Units, unit: Unit): UnitSpec {
   const spec = units[unit];
   if (spec === undefined) {
-    throw new RangeError(`${MinutaError.UnitNotSupported}: ${unit}`);
+    const available = Object.keys(units).join(", ") || "none";
+    throw new RangeError(
+      `${MinutaError.UnitNotSupported}: no "${unit}" spec in the units passed (available: ${available}). ` +
+        `Pass a full set such as nativeUnits(), or add a "${unit}" spec to your units.`
+    );
   }
   return spec;
 }
@@ -44,7 +53,10 @@ function specFor(units: Units, unit: Unit): UnitSpec {
  */
 function assertValidDate(date: Readonly<Date>, name: string): void {
   if (Number.isNaN(date.getTime())) {
-    throw new RangeError(`${MinutaError.InvalidDate}: ${name}`);
+    throw new RangeError(
+      `${MinutaError.InvalidDate}: ${name} is an invalid Date. ` +
+        `Pass a valid Date such as new Date(2026, 0, 31), and check the string or numbers it was built from.`
+    );
   }
 }
 
