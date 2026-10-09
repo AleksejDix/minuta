@@ -48,18 +48,6 @@ duration(period(new Date(2026, 9, 8), "day"), "hour"); // 24
 duration(period(new Date(2026, 1, 1), "month"), "day"); // 28
 ```
 
-### `isToday`
-
-```ts
-isToday(now: Readonly<Date>, period: Period): boolean
-```
-
-Whether `period` is the day containing `now`. Native units.
-
-```ts
-isToday(new Date(), period(new Date(), "day")); // true
-```
-
 ### `isWeekday`
 
 ```ts
@@ -361,7 +349,6 @@ type Minuta = Readonly<{
   divide: Bound<typeof divideWith>;
   duration: Bound<typeof durationWith>;
   gap: typeof gap;
-  isToday: Bound<typeof isTodayWith>;
   isWeekday: Bound<typeof isWeekdayWith>;
   isWeekend: Bound<typeof isWeekendWith>;
   length: typeof length;
@@ -483,18 +470,6 @@ durationWith(units, period(new Date(2026, 1, 1), "month"), "day"); // 28
 ### `gap`
 
 Same as `gap` in `minuta`.
-
-### `isTodayWith`
-
-```ts
-isTodayWith(units: Units, now: Readonly<Date>, period: Period): boolean
-```
-
-Whether `period` is the day that contains `now`.
-
-```ts
-isTodayWith(nativeUnits(), new Date(), periodWith(nativeUnits(), new Date(), "day")); // true
-```
 
 ### `isWeekdayWith`
 
@@ -797,10 +772,28 @@ A day of the week as `Date#getDay()` numbers it: 0 = Sunday … 6 = Saturday.
 ### `AllUnits`
 
 ```ts
-type AllUnits = Readonly<Record<Unit, UnitSpec>> & Settings;
+type AllUnits = Readonly<Record<BuiltInUnit, UnitSpec>> & Settings;
 ```
 
-A spec for every unit, as returned by the adapters.
+A spec for every built-in unit, as returned by the adapters. Add specs of
+your own units next to them: `Object.assign({ fortnight }, nativeUnits())`.
+
+### `BuiltInUnit`
+
+```ts
+type BuiltInUnit =
+  | "day"
+  | "hour"
+  | "minute"
+  | "month"
+  | "quarter"
+  | "second"
+  | "week"
+  | "year";
+```
+
+The units every adapter provides. Units added to `UnitRegistry` come with
+your own spec, so they are not part of `AllUnits`.
 
 ### `Period`
 

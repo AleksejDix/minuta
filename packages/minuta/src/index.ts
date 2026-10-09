@@ -10,7 +10,6 @@
 import {
   divideWith,
   durationWith,
-  isTodayWith,
   isWeekdayWith,
   isWeekendWith,
   mergeWith,
@@ -64,21 +63,6 @@ function duration(
   ...args: Readonly<Parameters<Minuta["duration"]>>
 ): ReturnType<Minuta["duration"]> {
   return durationWith(units, ...args);
-}
-
-/**
- * Whether `period` is the day containing `now`. Native units.
- *
- * @example
- * isToday(new Date(), period(new Date(), "day")); // true
- *
- * @param args - The arguments of `isTodayWith` after `units`
- * @returns Whether the period is the day containing `now`
- */
-function isToday(
-  ...args: Readonly<Parameters<Minuta["isToday"]>>
-): ReturnType<Minuta["isToday"]> {
-  return isTodayWith(units, ...args);
 }
 
 /**
@@ -227,7 +211,6 @@ function snap(
 export {
   divide,
   duration,
-  isToday,
   isWeekday,
   isWeekend,
   merge,

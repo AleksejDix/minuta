@@ -1,7 +1,6 @@
 import {
   next as defaultNext,
   divide,
-  isToday,
   period,
   previous,
   same,
@@ -74,7 +73,6 @@ const UNIT_FREE_OPERATIONS: readonly string[] = [
 const BOUND_OPERATIONS: readonly string[] = [
   "divide",
   "duration",
-  "isToday",
   "isWeekday",
   "isWeekend",
   "merge",
@@ -243,16 +241,6 @@ describe("default entry vs withUnits(nativeUnits()): comparisons", () => {
             explicit.same(first, second, unit)
           );
         }
-      }
-    }
-  });
-
-  it("isToday() gives the same answers", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    for (const now of DATES) {
-      for (const date of DATES) {
-        const day = explicit.period(date, "day");
-        expect(isToday(now, day)).toBe(explicit.isToday(now, day));
       }
     }
   });

@@ -1,13 +1,4 @@
-import {
-  contains,
-  gap,
-  isToday,
-  move,
-  period,
-  resize,
-  snap,
-  split,
-} from "#src/index";
+import { contains, gap, move, period, resize, snap, split } from "#src/index";
 import { describe, expect, it } from "vitest";
 import { monthGridWith, yearGridWith } from "#src/calendar";
 import { MinutaError } from "#src/units";
@@ -21,7 +12,6 @@ const CALLS: readonly (readonly [string, string, () => unknown])[] = [
   ["contains", "target", () => contains(day, INVALID)],
   ["gap", "from", () => gap(INVALID, day)],
   ["gap", "to", () => gap(day, INVALID)],
-  ["isToday", "now", () => isToday(INVALID, day)],
   ["move", "targetDate", () => move(day, INVALID)],
   ["resize", "newDate", () => resize(day, "end", INVALID)],
   ["split", "splitDate", () => split(day, INVALID)],

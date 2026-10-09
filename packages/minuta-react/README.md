@@ -34,7 +34,7 @@ Options (all optional):
 - `unit` – unit of the browsed period, default `"month"`
 
 Returns every operation of `withUnits(units)` (`period`, `next`, `previous`,
-`shift`, `divide`, `contains`, `same`, `isToday`, …; see the core README) plus:
+`shift`, `divide`, `contains`, `same`, …; see the core README) plus:
 
 - `units` – the bound units
 - `browsing: Period` – the browsed period of `unit`

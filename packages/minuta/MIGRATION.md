@@ -7,14 +7,14 @@ adapter at all. This guide lists every change that can affect existing code.
 
 ## Imports and entry points
 
-| Before                                                                                                                                                | Now                                                                                                              |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `import { next, divide } from "minuta/operations"` with an adapter argument                                                                           | `import { next, divide } from "minuta"` — bound to the native units, weeks start on Monday                       |
-| `minuta/operations`                                                                                                                                   | removed. Context-first functions live in `minuta/core`, bound ones in `minuta`                                   |
-| `minuta/helpers` (`isWeekend`, `isWeekday`, `isToday`, `isOverlapping`)                                                                               | removed. `isWeekend`, `isWeekday`, `overlaps` and `isToday` are regular operations in `minuta` and `minuta/core` |
-| `createNativeAdapter({ weekStartsOn })`                                                                                                               | `nativeUnits({ weekStartsOn })`                                                                                  |
-| `createDateFnsAdapter`, `createDateFnsTzAdapter`, `createDayjsAdapter`, `createLuxonAdapter`, `createMomentAdapter`, `createMinutaAdapter` (Temporal) | `dateFnsUnits`, `dateFnsTzUnits`, `dayjsUnits`, `luxonUnits`, `momentUnits`, `temporalUnits`                     |
-| Prebuilt instances `nativeFunctionalAdapter`, `dateFnsAdapter`, `dateFnsTzAdapter`, `luxonAdapter`, `minutaAdapter`                                   | removed. Call the factory                                                                                        |
+| Before                                                                                                                                                | Now                                                                                                                                                                        |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `import { next, divide } from "minuta/operations"` with an adapter argument                                                                           | `import { next, divide } from "minuta"` — bound to the native units, weeks start on Monday                                                                                 |
+| `minuta/operations`                                                                                                                                   | removed. Context-first functions live in `minuta/core`, bound ones in `minuta`                                                                                             |
+| `minuta/helpers` (`isWeekend`, `isWeekday`, `isToday`, `isOverlapping`)                                                                               | removed. `isWeekend`, `isWeekday` and `overlaps` are regular operations in `minuta` and `minuta/core`; for `isToday` use `contains(period, now)`, which works for any unit |
+| `createNativeAdapter({ weekStartsOn })`                                                                                                               | `nativeUnits({ weekStartsOn })`                                                                                                                                            |
+| `createDateFnsAdapter`, `createDateFnsTzAdapter`, `createDayjsAdapter`, `createLuxonAdapter`, `createMomentAdapter`, `createMinutaAdapter` (Temporal) | `dateFnsUnits`, `dateFnsTzUnits`, `dayjsUnits`, `luxonUnits`, `momentUnits`, `temporalUnits`                                                                               |
+| Prebuilt instances `nativeFunctionalAdapter`, `dateFnsAdapter`, `dateFnsTzAdapter`, `luxonAdapter`, `minutaAdapter`                                   | removed. Call the factory                                                                                                                                                  |
 
 Other week starts or other date libraries: bind your units once.
 
@@ -37,7 +37,7 @@ time.next(time.period(new Date(), "week"));
 | `previous(adapter, period)`                     | `previous(period)`                           | `previousWith(units, period)`                           |
 | `divide(adapter, period, unit, count, options)` | `divide(period, unit, { step, maxPeriods })` | `divideWith(units, period, unit, { step, maxPeriods })` |
 | `isSame(adapter, a, b, unit)`                   | `same(a, b, unit)`                           | `sameWith(units, a, b, unit)`                           |
-| `isToday(adapter, now, period)`                 | `isToday(now, period)`                       | `isTodayWith(units, now, period)`                       |
+| `isToday(adapter, now, period)`                 | `contains(period, now)`                      | `contains(period, now)`                                 |
 | `duration(period, unit)`                        | `duration(period, unit)`                     | `durationWith(units, period, unit)`                     |
 | `merge(periods, unit)`                          | `merge(periods, unit)`                       | `mergeWith(units, periods, unit)`                       |
 | `snap(date, 15 * 60_000, mode)`                 | `snap(date, "minute", { step: 15, mode })`   | `snapWith(units, date, "minute", { step: 15, mode })`   |

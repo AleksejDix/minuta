@@ -21,7 +21,7 @@ const dayNumber = computed(() =>
 const isOutside = computed(
   () => !minuta.contains(minuta.browsing.value, day.start)
 );
-const isToday = computed(() => minuta.isToday(minuta.now.value.start, day));
+const isToday = computed(() => minuta.contains(day, minuta.now.value.start));
 const isSelected = computed(() => {
   const selected = calendar.selected.value;
   return selected !== undefined && minuta.same(selected, day, "day");

@@ -13,7 +13,6 @@ export {
   divideWith,
   durationWith,
   gap,
-  isTodayWith,
   isWeekdayWith,
   isWeekendWith,
   length,

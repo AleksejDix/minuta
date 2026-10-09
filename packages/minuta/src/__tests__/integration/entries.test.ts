@@ -23,7 +23,6 @@ const UNIT_FREE_OPERATIONS: readonly string[] = [
 const CORE_OPERATIONS: readonly string[] = [
   "divideWith",
   "durationWith",
-  "isTodayWith",
   "isWeekdayWith",
   "isWeekendWith",
   "mergeWith",
