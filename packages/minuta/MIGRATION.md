@@ -38,22 +38,25 @@ time.next(time.period(new Date(), "week"));
 | `divide(adapter, period, unit, count, options)` | `divide(period, unit, { step, maxPeriods })` | `divideWith(units, period, unit, { step, maxPeriods })` |
 | `isSame(adapter, a, b, unit)`                   | `same(a, b, unit)`                           | `sameWith(units, a, b, unit)`                           |
 | `isToday(adapter, now, period)`                 | `isToday(now, period)`                       | `isTodayWith(units, now, period)`                       |
+| `duration(period, unit)`                        | `duration(period, unit)`                     | `durationWith(units, period, unit)`                     |
+| `duration(period)` (milliseconds)               | `length(period)`                             | `length(period)`                                        |
 | `isOverlapping(a, b)`                           | `overlaps(a, b)`                             | `overlaps(a, b)`                                        |
 
-`contains`, `gap`, `merge`, `move`, `resize`, `clamp`, `split`, `duration`,
-`snap`, `isWeekday` and `isWeekend` keep their names and take no units.
+`contains`, `gap`, `merge`, `move`, `resize`, `clamp`, `split`, `snap`,
+`isWeekday` and `isWeekend` keep their names and take no units.
 
 ## Results that change
 
-| Function                                                 | Before                                          | Now                                                         | What to do                                             |
-| -------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
-| `range` (was `createPeriod`)                             | Threw when `start` was after `end`              | Swaps the dates                                             | Nothing, unless you relied on the error                |
-| `period`, `range`                                        | Threw `Error("Period contains invalid date …")` | Throw `RangeError` whose message starts with `INVALID_DATE` | Match `MinutaError.InvalidDate` instead of the message |
-| `clamp`, `resize`                                        | Returned `null`                                 | Return `undefined`                                          | Check for `undefined`                                  |
-| Day grid `gapHour`, `ambiguousHour`                      | `null` when there is no DST hour                | `undefined`                                                 | Check for `undefined`                                  |
-| `merge([])`                                              | Threw                                           | Returns `undefined`                                         | Check for `undefined`                                  |
-| `divide` over `maxPeriods`                               | Threw `Error`                                   | Throws `RangeError`                                         | Catch `RangeError`                                     |
-| Any unit-aware function with a unit missing from `units` | —                                               | Throws `RangeError` starting with `UNIT_NOT_SUPPORTED`      | Pass the unit, or an adapter's full set                |
+| Function                                                 | Before                                                                                         | Now                                                          | What to do                                             |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------ |
+| `range` (was `createPeriod`)                             | Threw when `start` was after `end`                                                             | Swaps the dates                                              | Nothing, unless you relied on the error                |
+| `period`, `range`                                        | Threw `Error("Period contains invalid date …")`                                                | Throw `RangeError` whose message starts with `INVALID_DATE`  | Match `MinutaError.InvalidDate` instead of the message |
+| `clamp`, `resize`                                        | Returned `null`                                                                                | Return `undefined`                                           | Check for `undefined`                                  |
+| Day grid `gapHour`, `ambiguousHour`                      | `null` when there is no DST hour                                                               | `undefined`                                                  | Check for `undefined`                                  |
+| `duration(period, unit)`                                 | Truncated milliseconds: one unit short (a day was 0 days), DST ignored, only `day` to `second` | Counts complete units by the calendar, DST-aware, every unit | Drop any `+ 1` workaround                              |
+| `merge([])`                                              | Threw                                                                                          | Returns `undefined`                                          | Check for `undefined`                                  |
+| `divide` over `maxPeriods`                               | Threw `Error`                                                                                  | Throws `RangeError`                                          | Catch `RangeError`                                     |
+| Any unit-aware function with a unit missing from `units` | —                                                                                              | Throws `RangeError` starting with `UNIT_NOT_SUPPORTED`       | Pass the unit, or an adapter's full set                |
 
 ## Types
 

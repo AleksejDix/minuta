@@ -1,7 +1,7 @@
 export { clamp } from "./clamp";
 export { contains } from "./contains";
 export { divideWith } from "./divide";
-export { duration } from "./duration";
+export { durationWith, length } from "./duration";
 export { gap } from "./gap";
 export { merge } from "./merge";
 export { move } from "./move";

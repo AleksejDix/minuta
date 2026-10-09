@@ -1,39 +1,49 @@
-import type { Period } from "#src/types";
+import type { Period, Unit, Units } from "#src/types";
+import { specFor } from "#src/units";
 
-const MS_PER_SECOND = 1000;
-const MS_PER_MINUTE = 60_000;
-const MS_PER_HOUR = 3_600_000;
-const MS_PER_DAY = 86_400_000;
-
-const DIVISORS: Readonly<Record<"day" | "hour" | "minute" | "second", number>> =
-  {
-    day: MS_PER_DAY,
-    hour: MS_PER_HOUR,
-    minute: MS_PER_MINUTE,
-    second: MS_PER_SECOND,
-  };
+const NONE = 0;
+const ONE = 1;
 
 /**
- * Get the duration of a period in milliseconds, or in complete units.
+ * The period's length in milliseconds, measured over the half-open range
+ * `[start, end + 1 ms)`, so a whole day is exactly one day long.
  *
  * @example
- * duration(meeting)            // 5400000 (ms)
- * duration(meeting, 'hour')    // 1 (complete hours)
- * duration(meeting, 'minute')  // 90
+ * length(period(new Date(2026, 9, 8), "day")); // 86400000, outside a DST change
+ *
  * @param period - The period to measure
- * @param unit - Optional unit; when omitted the result is in milliseconds
- * @returns The duration in milliseconds or complete units
+ * @returns The length in milliseconds
  */
-function duration(
-  period: Period,
-  unit?: "day" | "hour" | "minute" | "second"
-): number {
-  const ms = period.end.getTime() - period.start.getTime();
-  if (unit === undefined) {
-    return ms;
-  }
-
-  return Math.trunc(ms / DIVISORS[unit]);
+function length(period: Period): number {
+  return period.end.getTime() + ONE - period.start.getTime();
 }
 
-export { duration };
+/**
+ * How many complete `unit`s fit into a period, measured over the half-open
+ * range `[start, end + 1 ms)` with the units' own calendar and DST rules.
+ *
+ * @example
+ * durationWith(units, period(new Date(2026, 9, 8), "day"), "hour"); // 24
+ * durationWith(units, period(new Date(2026, 1, 1), "month"), "day"); // 28
+ *
+ * @param units - Available unit specs
+ * @param period - The period to measure
+ * @param unit - The unit to count
+ * @returns The number of complete units from the start
+ */
+function durationWith(units: Units, period: Period, unit: Unit): number {
+  const spec = specFor(units, unit);
+  const { start } = period;
+  const end = period.end.getTime() + ONE;
+  // `diff` may count boundaries rather than complete units; correct it
+  let count = spec.diff(start, new Date(end));
+  while (count > NONE && spec.add(start, count).getTime() > end) {
+    count -= ONE;
+  }
+  while (spec.add(start, count + ONE).getTime() <= end) {
+    count += ONE;
+  }
+  return count;
+}
+
+export { durationWith, length };

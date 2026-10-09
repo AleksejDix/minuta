@@ -24,6 +24,16 @@ const defaults: Minuta = withUnits(nativeUnits());
 const divide: Minuta["divide"] = defaults.divide;
 
 /**
+ * How many complete `unit`s fit into a period. Native units, calendar- and
+ * DST-aware; `durationWith` in `minuta/core` takes your own units.
+ *
+ * @example
+ * duration(period(new Date(2026, 9, 8), "day"), "hour"); // 24
+ * duration(period(new Date(2026, 1, 1), "month"), "day"); // 28
+ */
+const duration: Minuta["duration"] = defaults.duration;
+
+/**
  * Whether `period` is the day containing `now`. Native units.
  *
  * @example
@@ -73,14 +83,14 @@ const same: Minuta["same"] = defaults.same;
  */
 const shift: Minuta["shift"] = defaults.shift;
 
-export { divide, isToday, next, period, previous, same, shift };
+export { divide, duration, isToday, next, period, previous, same, shift };
 export {
   clamp,
   contains,
-  duration,
   gap,
   isWeekday,
   isWeekend,
+  length,
   merge,
   move,
   overlaps,

@@ -8,11 +8,12 @@ import {
   clamp,
   contains,
   divideWith,
-  duration,
+  durationWith,
   gap,
   isTodayWith,
   isWeekday,
   isWeekend,
+  length,
   merge,
   move,
   nextWith,
@@ -36,11 +37,12 @@ type Minuta = Readonly<{
   clamp: typeof clamp;
   contains: typeof contains;
   divide: Bound<typeof divideWith>;
-  duration: typeof duration;
+  duration: Bound<typeof durationWith>;
   gap: typeof gap;
   isToday: Bound<typeof isTodayWith>;
   isWeekday: typeof isWeekday;
   isWeekend: typeof isWeekend;
+  length: typeof length;
   merge: typeof merge;
   move: typeof move;
   next: Bound<typeof nextWith>;
@@ -74,11 +76,12 @@ function withUnits(units: Units): Minuta {
     clamp,
     contains,
     divide: (period, unit, options) => divideWith(units, period, unit, options),
-    duration,
+    duration: (period, unit) => durationWith(units, period, unit),
     gap,
     isToday: (now, period) => isTodayWith(units, now, period),
     isWeekday,
     isWeekend,
+    length,
     merge,
     move,
     next: (period) => nextWith(units, period),

@@ -11,10 +11,10 @@ import { nativeUnits } from "#src/native";
 const UNIT_FREE_OPERATIONS: readonly string[] = [
   "clamp",
   "contains",
-  "duration",
   "gap",
   "isWeekday",
   "isWeekend",
+  "length",
   "merge",
   "move",
   "overlaps",
@@ -26,6 +26,7 @@ const UNIT_FREE_OPERATIONS: readonly string[] = [
 
 const CORE_OPERATIONS: readonly string[] = [
   "divideWith",
+  "durationWith",
   "isTodayWith",
   "nextWith",
   "periodWith",

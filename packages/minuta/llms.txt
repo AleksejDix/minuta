@@ -33,6 +33,20 @@ divide(period(new Date(2026, 2, 1), "month"), "day"); // 31 day periods
 divide(period(new Date(2026, 2, 1, 9), "hour"), "minute", { step: 15 }); // 4 periods
 ```
 
+### `duration`
+
+```ts
+duration(period: Period, unit: Unit): number
+```
+
+How many complete `unit`s fit into a period. Native units, calendar- and
+DST-aware; `durationWith` in `minuta/core` takes your own units.
+
+```ts
+duration(period(new Date(2026, 9, 8), "day"), "hour"); // 24
+duration(period(new Date(2026, 1, 1), "month"), "day"); // 28
+```
+
 ### `isToday`
 
 ```ts
@@ -137,20 +151,6 @@ contains(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 20)); // true
 contains(period(new Date(2026, 2, 1), "month"), period(new Date(2026, 3, 1), "day")); // false
 ```
 
-### `duration`
-
-```ts
-duration(period: Period, unit?: "day" | "hour" | "minute" | "second"): number
-```
-
-Get the duration of a period in milliseconds, or in complete units.
-
-```ts
-duration(meeting)            // 5400000 (ms)
-duration(meeting, 'hour')    // 1 (complete hours)
-duration(meeting, 'minute')  // 90
-```
-
 ### `gap`
 
 ```ts
@@ -195,6 +195,19 @@ Returns false for periods spanning more than 2 days.
 
 ```ts
 isWeekend(period(new Date(2026, 2, 21), "day")); // true (a Saturday)
+```
+
+### `length`
+
+```ts
+length(period: Period): number
+```
+
+The period's length in milliseconds, measured over the half-open range
+`[start, end + 1 ms)`, so a whole day is exactly one day long.
+
+```ts
+length(period(new Date(2026, 9, 8), "day")); // 86400000, outside a DST change
 ```
 
 ### `merge`
@@ -327,11 +340,12 @@ type Minuta = Readonly<{
   clamp: typeof clamp;
   contains: typeof contains;
   divide: Bound<typeof divideWith>;
-  duration: typeof duration;
+  duration: Bound<typeof durationWith>;
   gap: typeof gap;
   isToday: Bound<typeof isTodayWith>;
   isWeekday: typeof isWeekday;
   isWeekend: typeof isWeekend;
+  length: typeof length;
   merge: typeof merge;
   move: typeof move;
   next: Bound<typeof nextWith>;
@@ -415,9 +429,19 @@ divideWith(units, month, "day")                 // 28-31 day periods
 divideWith(units, hour, "minute", { step: 15 }) // 4 fifteen-minute periods
 ```
 
-### `duration`
+### `durationWith`
 
-Same as `duration` in `minuta`.
+```ts
+durationWith(units: Units, period: Period, unit: Unit): number
+```
+
+How many complete `unit`s fit into a period, measured over the half-open
+range `[start, end + 1 ms)` with the units' own calendar and DST rules.
+
+```ts
+durationWith(units, period(new Date(2026, 9, 8), "day"), "hour"); // 24
+durationWith(units, period(new Date(2026, 1, 1), "month"), "day"); // 28
+```
 
 ### `gap`
 
@@ -442,6 +466,10 @@ Same as `isWeekday` in `minuta`.
 ### `isWeekend`
 
 Same as `isWeekend` in `minuta`.
+
+### `length`
+
+Same as `length` in `minuta`.
 
 ### `merge`
 

@@ -36,17 +36,25 @@ Monday (ISO 8601), so there is nothing to configure.
 
 ## Operations
 
-| Family   | Functions                                                                                         |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| Create   | `period(date, unit)` · `range(start, end)`                                                        |
-| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`                                      |
-| Compose  | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, date)`                |
-| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` · `gap(a, b)`            |
-| Edit     | `move(period, start)` · `resize(period, edge, date)` · `clamp(period, bounds)` · `snap(date, ms)` |
-| Ask      | `duration(period, unit)` · `isToday(now, period)` · `isWeekday(period)` · `isWeekend(period)`     |
+| Family   | Functions                                                                                                        |
+| -------- | ---------------------------------------------------------------------------------------------------------------- |
+| Create   | `period(date, unit)` · `range(start, end)`                                                                       |
+| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`                                                     |
+| Compose  | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, date)`                               |
+| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` · `gap(a, b)`                           |
+| Edit     | `move(period, start)` · `resize(period, edge, date)` · `clamp(period, bounds)` · `snap(date, ms)`                |
+| Ask      | `duration(period, unit)` · `length(period)` · `isToday(now, period)` · `isWeekday(period)` · `isWeekend(period)` |
 
 ```ts
-import { contains, next, period, previous, range, shift } from "minuta";
+import {
+  contains,
+  duration,
+  next,
+  period,
+  previous,
+  range,
+  shift,
+} from "minuta";
 
 const march = period(new Date(2026, 2, 15), "month");
 next(march); // April
@@ -55,6 +63,9 @@ shift(march, 3); // June
 contains(march, new Date(2026, 2, 20)); // true
 
 range(new Date(2026, 0, 1), new Date(2026, 2, 31)); // { unit: "custom", … }
+
+duration(march, "day"); // 31
+duration(period(new Date(2026, 2, 29), "day"), "hour"); // 23 in Europe/Zurich (DST)
 ```
 
 No result is `undefined` (`clamp` without overlap, `merge([])`), never `null`.
