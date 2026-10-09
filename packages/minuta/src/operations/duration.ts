@@ -1,7 +1,7 @@
 import type { Period, Unit, Units } from "#src/types";
+import { countUnits } from "./utils/count-units";
 import { specFor } from "#src/units";
 
-const NONE = 0;
 const ONE = 1;
 
 /**
@@ -32,18 +32,8 @@ function length(period: Period): number {
  * @returns The number of complete units from the start
  */
 function durationWith(units: Units, period: Period, unit: Unit): number {
-  const spec = specFor(units, unit);
-  const { start } = period;
-  const end = period.end.getTime() + ONE;
-  // `diff` may count boundaries rather than complete units; correct it
-  let count = spec.diff(start, new Date(end));
-  while (count > NONE && spec.add(start, count).getTime() > end) {
-    count -= ONE;
-  }
-  while (spec.add(start, count + ONE).getTime() <= end) {
-    count += ONE;
-  }
-  return count;
+  const end = new Date(period.end.getTime() + ONE);
+  return countUnits(specFor(units, unit), period.start, end);
 }
 
 export { durationWith, length };
