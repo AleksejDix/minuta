@@ -11,7 +11,11 @@ defineSlots<Record<string, never>>();
 useCalendarContext();
 const minuta = useMinutaContext();
 const formatter = computed(
-  () => new Intl.DateTimeFormat(locale, { weekday: "short" })
+  () =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: minuta.units.value.timeZone,
+      weekday: "short",
+    })
 );
 const weekdays = computed(() =>
   minuta

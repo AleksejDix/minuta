@@ -873,7 +873,7 @@ in `units.timeZone` (the runtime's zone when unset).
 import { dateFnsTzUnits } from "minuta/date-fns-tz";
 import { dayGridWith } from "minuta/calendar";
 
-const units = dateFnsTzUnits({ timezone: "America/New_York" });
+const units = dateFnsTzUnits({ timeZone: "America/New_York" });
 const { periods, gapHour } = dayGridWith(units, new Date("2024-03-10T12:00:00Z"));
 periods.length; // 23
 gapHour; // 2
@@ -1069,7 +1069,7 @@ time.period(new Date(), "week");
 ### `dateFnsTzUnits`
 
 ```ts
-dateFnsTzUnits(options: WeekOptions & Readonly<{ timezone?: string }> = {}): AllUnits
+dateFnsTzUnits(options: WeekOptions & Readonly<{ timeZone?: string }> = {}): AllUnits
 ```
 
 Unit specs for every unit, computed with date-fns-tz in one IANA time zone (requires `date-fns` and `date-fns-tz`). Pass the result to
@@ -1082,7 +1082,7 @@ the days `isWeekend` counts (Saturday and Sunday unless set).
 import { dateFnsTzUnits } from "minuta/date-fns-tz";
 import { withUnits } from "minuta/core";
 
-const time = withUnits(dateFnsTzUnits({ timezone: "Europe/Zurich", weekStartsOn: "monday" }));
+const time = withUnits(dateFnsTzUnits({ timeZone: "Europe/Zurich", weekStartsOn: "monday" }));
 time.period(new Date(), "week");
 ```
 

@@ -2,6 +2,7 @@ import type { MinutaOptions, MinutaState } from "./types";
 import type { Period, Units } from "minuta/core";
 import { useCallback, useMemo, useState } from "react";
 import { nativeUnits } from "minuta/native";
+import { useClock } from "./use-clock";
 import { withUnits } from "minuta/core";
 
 const DEFAULT_UNITS: Units = nativeUnits();
@@ -31,10 +32,9 @@ function useMinuta(options: MinutaOptions = {}): MinutaState {
   const [browsedDate, setBrowsedDate] = useState<Readonly<Date>>(
     date ?? currentDate
   );
-  const fallbackNow = useMemo(() => new Date(), []);
-  const nowDate = nowOption ?? fallbackNow;
-
   const ops = useMemo(() => withUnits(units), [units]);
+  const clock = useClock(ops, nowOption !== undefined);
+  const nowDate = nowOption ?? clock;
   const browsing = useMemo(
     () => ops.period(browsedDate, unit),
     [ops, browsedDate, unit]

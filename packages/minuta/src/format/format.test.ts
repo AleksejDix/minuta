@@ -102,7 +102,7 @@ describe("formatRange()", () => {
 });
 
 describe("format options", () => {
-  const tokyo = dateFnsTzUnits({ timezone: "Asia/Tokyo" });
+  const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
   // 05:00 on March 21 in Tokyo, still March 20 in UTC and the Americas
   const tokyoDay = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
 

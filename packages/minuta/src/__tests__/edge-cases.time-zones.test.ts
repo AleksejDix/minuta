@@ -26,7 +26,7 @@ type FallBackCase = Readonly<{
  */
 
 describe("dst: Europe/Zurich (spring forward Mar 31, 2024)", () => {
-  const zurich = dateFnsTzUnits({ timezone: "Europe/Zurich" });
+  const zurich = dateFnsTzUnits({ timeZone: "Europe/Zurich" });
 
   it("mar 31 has 23 hours (spring forward)", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -61,7 +61,7 @@ describe("dst: Europe/Zurich (spring forward Mar 31, 2024)", () => {
 });
 
 describe("dst: Europe/Zurich (fall back Oct 27, 2024)", () => {
-  const zurich = dateFnsTzUnits({ timezone: "Europe/Zurich" });
+  const zurich = dateFnsTzUnits({ timeZone: "Europe/Zurich" });
 
   it("oct 27 has 25 hours (fall back)", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -89,7 +89,7 @@ describe("dst: Europe/Zurich (fall back Oct 27, 2024)", () => {
 });
 
 describe("dst: America/New_York (spring forward Mar 10, 2024)", () => {
-  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timeZone: "America/New_York" });
 
   it("mar 10 has 23 hours (spring forward)", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -107,7 +107,7 @@ describe("dst: America/New_York (spring forward Mar 10, 2024)", () => {
 });
 
 describe("dst: America/New_York (fall back Nov 3, 2024)", () => {
-  const ny = dateFnsTzUnits({ timezone: "America/New_York" });
+  const ny = dateFnsTzUnits({ timeZone: "America/New_York" });
 
   it("nov 3 has 25 hours (fall back)", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -120,7 +120,7 @@ describe("dst: America/New_York (fall back Nov 3, 2024)", () => {
 });
 
 describe("dst: Australia/Sydney (spring forward Oct 6, 2024)", () => {
-  const sydney = dateFnsTzUnits({ timezone: "Australia/Sydney" });
+  const sydney = dateFnsTzUnits({ timeZone: "Australia/Sydney" });
 
   it("oct 6 has 23 hours (spring forward)", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -131,7 +131,7 @@ describe("dst: Australia/Sydney (spring forward Oct 6, 2024)", () => {
 });
 
 describe("no DST: Asia/Tokyo", () => {
-  const tokyo = dateFnsTzUnits({ timezone: "Asia/Tokyo" });
+  const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
 
   it("every day has 24 hours (no DST)", { timeout: 5000 }, () => {
     expect.hasAssertions();
@@ -154,12 +154,12 @@ describe("bug: fall-back 25-hour day across all adapters", () => {
     {
       date: new Date("2024-10-27T00:00:00Z"),
       name: "date-fns-tz (Zurich)",
-      units: dateFnsTzUnits({ timezone: "Europe/Zurich" }),
+      units: dateFnsTzUnits({ timeZone: "Europe/Zurich" }),
     },
     {
       date: new Date("2024-11-03T05:00:00Z"),
       name: "date-fns-tz (New York)",
-      units: dateFnsTzUnits({ timezone: "America/New_York" }),
+      units: dateFnsTzUnits({ timeZone: "America/New_York" }),
     },
   ];
 

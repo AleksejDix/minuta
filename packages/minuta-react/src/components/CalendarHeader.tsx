@@ -27,6 +27,7 @@ function CalendarHeader({
     browsing,
     next: nextPeriod,
     previous: previousPeriod,
+    units,
   } = useMinutaContext();
 
   const handlePrevious = useCallback(() => {
@@ -42,7 +43,9 @@ function CalendarHeader({
       <button type="button" className="nav-button" onClick={handlePrevious}>
         {PREVIOUS_LABEL}
       </button>
-      <h2 aria-live="polite">{formatPeriod(browsing, locale)}</h2>
+      <h2 aria-live="polite">
+        {formatPeriod(browsing, locale, { timeZone: units.timeZone })}
+      </h2>
       <button type="button" className="nav-button" onClick={handleNext}>
         {NEXT_LABEL}
       </button>

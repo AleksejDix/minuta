@@ -37,8 +37,9 @@ function earlierOf(left: Readonly<Date>, right: Readonly<Date>): Date {
   return left;
 }
 
-function chunkUnit(ctx: DivideContext): Period["unit"] {
-  if (ctx.step === DEFAULT_STEP) {
+// A chunk is one whole unit only with a step of 1 and when clipping kept it whole
+function chunkUnit(ctx: DivideContext, isWhole: boolean): Period["unit"] {
+  if (ctx.step === DEFAULT_STEP && isWhole) {
     return ctx.unit;
   }
   return "custom";
@@ -65,7 +66,7 @@ function buildChunk(
   return {
     end: earlierOf(end, period.end),
     start: laterOf(start, period.start),
-    unit: chunkUnit(ctx),
+    unit: chunkUnit(ctx, start >= period.start && end <= period.end),
   };
 }
 
