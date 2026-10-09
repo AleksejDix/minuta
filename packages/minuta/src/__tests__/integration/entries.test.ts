@@ -136,7 +136,7 @@ describe("export verification: format.ts", () => {
     expect.hasAssertions();
     const formatExports = exportsOf(await import("#src/format"));
     expect(new Set(formatExports.keys())).toStrictEqual(
-      new Set(["formatPeriod", "formatPeriodWith", "formatRange"])
+      new Set(["formatPeriod", "formatRange"])
     );
   });
 });

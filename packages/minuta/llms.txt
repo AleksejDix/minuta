@@ -981,21 +981,6 @@ formatPeriod(weekPeriod, "ja-JP")
 formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone })
 ```
 
-### `formatPeriodWith`
-
-```ts
-formatPeriodWith(period: Period, locale: string, options: DisplayOptions): string
-```
-
-Format a period with explicit Intl options.
-
-Escape hatch for custom formatting needs.
-
-```ts
-formatPeriodWith(period, "de-CH", { weekday: "long", day: "numeric" })
-// → "Sonntag, 15."
-```
-
 ### `formatRange`
 
 ```ts
