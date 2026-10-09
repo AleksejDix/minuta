@@ -14,6 +14,9 @@ function isWeekdayIndex(day: number): boolean {
  * Checks if a period falls entirely within weekdays.
  * Returns false for periods spanning more than 2 days.
  *
+ * @example
+ * isWeekday(period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
+ *
  * @param period - The period to check
  * @returns True when both start and end fall on Monday to Friday
  */

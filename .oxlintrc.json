@@ -82,6 +82,11 @@
             "from": "package",
             "package": "@vue/reactivity",
             "name": ["ComputedRef", "Ref", "ShallowRef"]
+          },
+          {
+            "from": "package",
+            "package": "typescript",
+            "name": ["JSDocTagInfo", "Program", "Symbol", "TypeChecker"]
           }
         ]
       }

@@ -14,13 +14,29 @@ import { createWeekHandler } from "./units/week";
 const MONDAY = 1;
 const DEFAULT_TIMEZONE = "UTC";
 
-function dateFnsTzUnits({
-  timezone = DEFAULT_TIMEZONE,
-  weekStartsOn = MONDAY,
-}: Readonly<{
-  timezone?: string;
-  weekStartsOn?: Day;
-}> = {}): AllUnits {
+/**
+ * Unit specs for every unit, computed with date-fns-tz in one IANA time zone (requires `date-fns` and `date-fns-tz`). Pass the result to
+ * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
+ * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
+ * (0 = Sunday … 6 = Saturday).
+ *
+ * @example
+ * import { dateFnsTzUnits } from "minuta/date-fns-tz";
+ * import { withUnits } from "minuta/core";
+ *
+ * const time = withUnits(dateFnsTzUnits({ timezone: "Europe/Zurich", weekStartsOn: 1 }));
+ * time.period(new Date(), "week");
+ *
+ * @param options - Week start, time zone
+ * @returns A spec for every unit
+ */
+function dateFnsTzUnits(
+  options: Readonly<{
+    timezone?: string;
+    weekStartsOn?: Day;
+  }> = {}
+): AllUnits {
+  const { timezone = DEFAULT_TIMEZONE, weekStartsOn = MONDAY } = options;
   return {
     day: createDayHandler(timezone),
     hour: createHourHandler(timezone),

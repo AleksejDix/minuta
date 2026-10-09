@@ -19,9 +19,26 @@ if (!hasTemporal(globalThis)) {
   Object.assign(globalThis, { Temporal });
 }
 
-function temporalUnits({
-  weekStartsOn = MONDAY,
-}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits {
+/**
+ * Unit specs for every unit, computed with the TC39 Temporal API (installs `@js-temporal/polyfill` when the runtime has no Temporal). Pass the result to
+ * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
+ * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
+ * (0 = Sunday … 6 = Saturday).
+ *
+ * @example
+ * import { temporalUnits } from "minuta/temporal";
+ * import { withUnits } from "minuta/core";
+ *
+ * const time = withUnits(temporalUnits({ weekStartsOn: 1 }));
+ * time.period(new Date(), "week");
+ *
+ * @param options - Week start
+ * @returns A spec for every unit
+ */
+function temporalUnits(
+  options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}
+): AllUnits {
+  const { weekStartsOn = MONDAY } = options;
   if (!hasTemporal(globalThis)) {
     throw new Error("Temporal API is not available in this environment.");
   }

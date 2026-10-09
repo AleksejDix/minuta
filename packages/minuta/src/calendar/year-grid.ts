@@ -2,6 +2,10 @@ import type { Series, Units } from "#src/types";
 import { divideWith } from "#src/operations/divide";
 import { specFor } from "#src/units";
 
+/**
+ * The whole weeks covering a year (`periods`), the year's first day and the
+ * week start the grid was built with.
+ */
 type YearGrid = Series &
   Readonly<{
     weekStartsOn: number;
@@ -11,6 +15,9 @@ type YearGrid = Series &
 /**
  * A stable year grid: whole weeks from the week containing January 1 to the
  * week containing December 31. The week start comes from the `week` unit.
+ *
+ * @example
+ * yearGridWith(nativeUnits({ weekStartsOn: 1 }), new Date(2026, 5, 1)).periods; // 53 week periods
  *
  * @param units - Available unit specs (needs `year` and `week`)
  * @param date - Any date in the target year

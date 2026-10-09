@@ -2,6 +2,10 @@ import type { Series, Units } from "#src/types";
 import { divideWith } from "#src/operations/divide";
 import { specFor } from "#src/units";
 
+/**
+ * A 42-day month grid (`periods`), the month's first day and the week start
+ * the grid was built with.
+ */
 type MonthGrid = Series &
   Readonly<{
     monthStart: Readonly<Date>;

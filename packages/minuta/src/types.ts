@@ -35,6 +35,10 @@ interface UnitRegistry {
   second: true;
 }
 
+/**
+ * A unit name: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`,
+ * `"minute"` or `"second"`, plus any unit added to `UnitRegistry`.
+ */
 type Unit = keyof UnitRegistry;
 
 /**

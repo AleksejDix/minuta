@@ -28,9 +28,26 @@ type WeekStartsOn =
   | typeof FRIDAY
   | typeof SATURDAY;
 
-function momentUnits({
-  weekStartsOn = MONDAY,
-}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits {
+/**
+ * Unit specs for every unit, computed with Moment.js (requires the `moment` package). Pass the result to
+ * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
+ * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
+ * (0 = Sunday … 6 = Saturday).
+ *
+ * @example
+ * import { momentUnits } from "minuta/moment";
+ * import { withUnits } from "minuta/core";
+ *
+ * const time = withUnits(momentUnits({ weekStartsOn: 1 }));
+ * time.period(new Date(), "week");
+ *
+ * @param options - Week start
+ * @returns A spec for every unit
+ */
+function momentUnits(
+  options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}
+): AllUnits {
+  const { weekStartsOn = MONDAY } = options;
   return {
     day: dayHandler,
     hour: hourHandler,

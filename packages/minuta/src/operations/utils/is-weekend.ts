@@ -14,6 +14,9 @@ function isWeekendIndex(day: number): boolean {
  * Checks if a period falls entirely within a weekend.
  * Returns false for periods spanning more than 2 days.
  *
+ * @example
+ * isWeekend(period(new Date(2026, 2, 21), "day")); // true (a Saturday)
+ *
  * @param period - The period to check
  * @returns True when both start and end fall on Saturday or Sunday
  */

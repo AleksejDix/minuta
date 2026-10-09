@@ -36,6 +36,9 @@ function shiftWith(units: Units, period: Period, steps: number): Period {
 /**
  * The next period of the same unit.
  *
+ * @example
+ * nextWith(nativeUnits(), periodWith(nativeUnits(), new Date(2026, 2, 15), "month")); // April 2026
+ *
  * @param units - Available unit specs
  * @param period - Current period
  * @returns The following period
@@ -46,6 +49,9 @@ function nextWith(units: Units, period: Period): Period {
 
 /**
  * The previous period of the same unit.
+ *
+ * @example
+ * previousWith(nativeUnits(), periodWith(nativeUnits(), new Date(2026, 2, 15), "month")); // February 2026
  *
  * @param units - Available unit specs
  * @param period - Current period

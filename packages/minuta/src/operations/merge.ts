@@ -32,6 +32,11 @@ function latestEnd(first: Period, periods: readonly Period[]): number {
  * Merge multiple periods into a single period spanning
  * from the earliest start to the latest end.
  *
+ * @example
+ * merge([period(new Date(2026, 0, 1), "month"), period(new Date(2026, 2, 1), "month")]);
+ * // { start: Jan 1, end: Mar 31 23:59:59.999, unit: "custom" }
+ * merge([]); // undefined
+ *
  * @param periods - The periods to merge (at least one)
  * @param targetUnit - Optional unit type for the merged period
  * @returns The merged period, or undefined for an empty list

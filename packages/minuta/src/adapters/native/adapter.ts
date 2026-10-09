@@ -11,9 +11,26 @@ import { yearHandler } from "./units/year";
 
 const MONDAY = 1;
 
-function nativeUnits({
-  weekStartsOn = MONDAY,
-}: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}): AllUnits {
+/**
+ * Unit specs for every unit, computed with the built-in `Date` (zero dependencies). Pass the result to
+ * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
+ * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
+ * (0 = Sunday … 6 = Saturday).
+ *
+ * @example
+ * import { nativeUnits } from "minuta/native";
+ * import { withUnits } from "minuta/core";
+ *
+ * const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
+ * time.period(new Date(), "week");
+ *
+ * @param options - Week start
+ * @returns A spec for every unit
+ */
+function nativeUnits(
+  options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}
+): AllUnits {
+  const { weekStartsOn = MONDAY } = options;
   return {
     day: dayHandler,
     hour: hourHandler,

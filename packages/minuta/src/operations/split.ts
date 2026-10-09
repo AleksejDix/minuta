@@ -13,6 +13,10 @@ function withBounds(
 /**
  * Split a period at a specific date
  *
+ * @example
+ * const [before, after] = split(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 15));
+ * // before: Mar 1 – Mar 14 23:59:59.999, after: Mar 15 – Mar 31
+ *
  * @param period - The period to split
  * @param splitDate - The date at which the second half starts
  * @returns The part before the split date and the part from the split date on
