@@ -117,6 +117,27 @@ const ERRORS: readonly Case[] = [
   { expected: ParseError.WeekdayMismatch, text: "Monday, March 31, 2026" },
 ];
 
+const ERAS: readonly Readonly<{ text: string; year: number }>[] = [
+  { text: "15. März 44 v. Chr.", year: -43 },
+  { text: "15 March 500 BC", year: -499 },
+  { text: "15 March 2026 AD", year: 2026 },
+];
+
+function yearOf(text: string): number | undefined {
+  const result = parseDate(text);
+  if (!result.valid) {
+    return undefined;
+  }
+  return result.parts.year;
+}
+
+describe("parseDate() reads eras", () => {
+  it.each(ERAS)("$text as year $year", { timeout: 5000 }, ({ text, year }) => {
+    expect.hasAssertions();
+    expect(yearOf(text)).toBe(year);
+  });
+});
+
 describe("parseDate() reports", () => {
   it.each(ERRORS)(
     "$expected for $text",

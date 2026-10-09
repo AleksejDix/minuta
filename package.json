@@ -39,7 +39,7 @@
     "type-check": "npm run type-check --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
     "release": "npm run build && changeset publish",
-    "lint:packages": "for p in minuta minuta-react minuta-vue text-buffer input-state datefield input-dom; do publint packages/$p || exit 1; done"
+    "lint:packages": "for p in minuta minuta-react minuta-vue text-buffer input-state datefield input-dom fechita; do publint packages/$p || exit 1; done"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",

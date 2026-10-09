@@ -19,6 +19,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    },
+    "./locales/*": {
+      "types": "./dist/locales/*.d.ts",
+      "import": "./dist/locales/*.js"
     }
   },
   "imports": {
@@ -38,12 +46,16 @@
     "type-check": "tsc -p tsconfig.check.json",
     "clean": "rm -rf dist node_modules",
     "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\"",
-    "data": "node scripts/build-locales.mjs && oxfmt src/locales"
+    "data": "node scripts/build-locales.mjs && oxfmt src/locales",
+    "size": "size-limit"
   },
   "devDependencies": {
     "@minuta/tsconfig": "2.0.0-alpha.1",
+    "@size-limit/esbuild": "^14.0.0",
+    "@size-limit/file": "^14.0.0",
     "cldr-core": "48.2.0",
     "cldr-dates-full": "48.2.0",
+    "size-limit": "^14.0.0",
     "typescript": "^5.7.3",
     "vite": "^7.2.4",
     "vite-plugin-dts": "^4.4.0",
@@ -58,5 +70,21 @@
     "i18n",
     "iso-8601",
     "intl"
+  ],
+  "size-limit": [
+    {
+      "name": "fechita: parseDate, all 104 locales",
+      "path": "dist/index.js",
+      "import": "{ parseDate }",
+      "limit": "32 kB"
+    },
+    {
+      "name": "fechita/core + one locale",
+      "import": {
+        "dist/core.js": "{ withLocales }",
+        "dist/locales/de.js": "{ de }"
+      },
+      "limit": "4.5 kB"
+    }
   ]
 }

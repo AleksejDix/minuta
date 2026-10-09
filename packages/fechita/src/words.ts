@@ -164,5 +164,5 @@ function wordRuns(text: string): string[] {
   );
 }
 
-export { AD, AM, BC, PM, localeFor, rangeOf, wordRuns, wordsOf };
+export { BC, localeFor, rangeOf, wordRuns, wordsOf };
 export type { WordTable, Words };

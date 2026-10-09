@@ -3,7 +3,11 @@
  * `2026-03-31T10:00`, `2026-03-31 10:00:00.250+02:00`, `20260331T100000Z`.
  */
 
+import { failure, success } from "./choose";
+import type { ParseResult } from "./choose";
+import type { Reading } from "./candidates";
 import { groupsOf } from "./regex";
+import { problemOf } from "./date";
 
 const ISO =
   /^(?<year>[+-]?\d{4,6})-?(?<month>\d{2})-?(?<day>\d{2})(?:[t\s](?<hour>\d{2}):?(?<minute>\d{2})(?::?(?<second>\d{2})(?:[.,](?<fraction>\d{1,9}))?)?\s*(?<offset>z|[+-]\d{2}(?::?\d{2})?)?)?$/giu;
@@ -73,5 +77,32 @@ function isoFields(text: string): IsoFields | undefined {
   };
 }
 
-export { isoFields };
-export type { IsoFields };
+/**
+ * ISO 8601 read exactly. Eight digits without dashes may be a day-first
+ * date, so an impossible compact ISO date is read as numbers instead.
+ *
+ * @param text - Normalised text
+ * @returns The result, or undefined when the text is not (compact) ISO 8601
+ */
+function parseIso(text: string): ParseResult | undefined {
+  const fields = isoFields(text);
+  if (fields === undefined) {
+    return undefined;
+  }
+  const reading: Reading = {
+    day: fields.day,
+    month: fields.month,
+    order: "YMD",
+    year: fields.year,
+  };
+  const problem = problemOf(reading);
+  if (problem === undefined) {
+    return success(reading, fields);
+  }
+  if (text.includes("-")) {
+    return failure([problem]);
+  }
+  return undefined;
+}
+
+export { parseIso };

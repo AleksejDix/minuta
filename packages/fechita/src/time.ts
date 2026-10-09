@@ -5,6 +5,7 @@
  */
 
 import { rangeOf, wordRuns } from "./words";
+import { MIDNIGHT } from "./date";
 import type { Tables } from "./match";
 import type { WordTable } from "./words";
 import { groupsOf } from "./regex";
@@ -258,5 +259,22 @@ function timeIn(text: string, periods: Tables): TimeOfDay | undefined {
   };
 }
 
-export { timeIn };
-export type { TimeOfDay };
+/**
+ * The whole text at midnight, when it holds no time.
+ *
+ * @param text - Normalised text
+ * @returns Midnight with the text as the rest
+ */
+function untimed(text: string): TimeOfDay {
+  return {
+    hour: MIDNIGHT.hour,
+    millisecond: MIDNIGHT.millisecond,
+    minute: MIDNIGHT.minute,
+    offsetMinutes: MIDNIGHT.offsetMinutes,
+    rest: text,
+    second: MIDNIGHT.second,
+    valid: true,
+  };
+}
+
+export { timeIn, untimed };

@@ -32,4 +32,4 @@ function groupsOf(
   return match.groups ?? {};
 }
 
-export { firstMatch, groupsOf };
+export { groupsOf };

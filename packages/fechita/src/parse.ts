@@ -4,77 +4,28 @@
  * order or the locale leaves no doubt.
  */
 
-import { BC, localeFor, wordsOf } from "./words";
-import type { Found, Tables } from "./match";
-import type { LocaleData, Locales, ParseOptions } from "./types";
-import { MIDNIGHT, problemOf } from "./date";
-import { chosen, failure, success } from "./choose";
+import type { Locales, ParseOptions } from "./types";
+import { chosen, failure } from "./choose";
+import { contextOf, tablesOf, weekdayTables } from "./context";
 import { findWord, withoutWord } from "./match";
 import { namedReadings, numericReadings } from "./candidates";
+import { timeIn, untimed } from "./time";
+import { BC } from "./words";
+import type { Context } from "./context";
+import type { Found } from "./match";
 import type { ParseErrorCode } from "./errors";
 import type { ParseResult } from "./choose";
 import type { Reading } from "./candidates";
-import type { TimeOfDay } from "./time";
-import type { Words } from "./words";
-import { isoFields } from "./iso";
 import { normalized } from "./text";
-import { timeIn } from "./time";
+import { parseIso } from "./iso";
 
 const ONE = 1;
 const NONE = 0;
 const DIGIT_RUNS = /\d+/gu;
 const WORD_MINIMUMS = { all: 3, own: 1 } as const;
+const ERA_MINIMUMS = { all: 3, own: 1 } as const;
 // "日" is a Japanese weekday and part of every Japanese date
 const WEEKDAY_MINIMUMS = { all: 3, own: 2 } as const;
-
-/** What a parse reads with: the words of all and of the own locale. */
-type Context = Readonly<{
-  locales: Locales;
-  options: ParseOptions;
-  own: Words | undefined;
-  words: Words;
-}>;
-
-// Word indexes are built once per set of locales and per own locale
-const INDEXES = new WeakMap<Locales, Words>();
-const OWN_INDEXES = new WeakMap<LocaleData, Words>();
-
-function indexOf(locales: Locales): Words {
-  const cached = INDEXES.get(locales) ?? wordsOf(Object.values(locales));
-  INDEXES.set(locales, cached);
-  return cached;
-}
-
-function ownIndexOf(
-  locales: Locales,
-  tag: string | undefined
-): Words | undefined {
-  if (tag === undefined) {
-    return undefined;
-  }
-  const data = localeFor(locales, tag);
-  if (data === undefined) {
-    return undefined;
-  }
-  const cached = OWN_INDEXES.get(data) ?? wordsOf([data]);
-  OWN_INDEXES.set(data, cached);
-  return cached;
-}
-
-function tablesOf(context: Context, kind: keyof Words): Tables {
-  if (context.own === undefined) {
-    return { all: context.words[kind], own: undefined };
-  }
-  return { all: context.words[kind], own: context.own[kind] };
-}
-
-// With a known locale only its own weekdays count: "tháng" is no weekday
-function weekdayTables(context: Context): Tables {
-  if (context.own === undefined) {
-    return tablesOf(context, "weekdays");
-  }
-  return { all: context.own.weekdays, own: undefined };
-}
 
 /**
  * The month word, not taken from inside a weekday: in Welsh "Dydd Mawrth"
@@ -111,15 +62,36 @@ function beforeCommonEra(reading: Reading): Reading {
   };
 }
 
-// A BC era word turns the years before the common era (1 BC is year 0)
-function withEra(
-  readings: readonly Reading[],
+// The era word, if any: "v. Chr.", "BC", "n. Chr."
+function eraIn(rest: string, context: Context): Found | undefined {
+  return findWord(rest, tablesOf(context, "eras"), ERA_MINIMUMS);
+}
+
+/**
+ * The readings next to a month name. With an era the year is as written
+ * ("44 v. Chr."), and BC counts back: 1 BC is year 0.
+ *
+ * @param named - The digit groups and the month 1–12
+ * @param rest - Text without the time and the month word
+ * @param context - Words and options
+ * @returns The readings
+ */
+function namedWithEra(
+  named: Readonly<{ groups: readonly string[]; month: number }>,
   rest: string,
   context: Context
 ): Reading[] {
-  const era = findWord(rest, tablesOf(context, "eras"), WORD_MINIMUMS);
-  if (era === undefined || !era.values.has(BC)) {
-    return [...readings];
+  const era = eraIn(rest, context);
+  if (era === undefined) {
+    return namedReadings(
+      named.groups,
+      named.month,
+      context.options.referenceDate ?? new Date()
+    );
+  }
+  const readings = namedReadings(named.groups, named.month);
+  if (!era.values.has(BC)) {
+    return readings;
   }
   return readings.map((reading) => beforeCommonEra(reading));
 }
@@ -147,8 +119,8 @@ function readingsIn(
   if (month.values.size > ONE) {
     return "AMBIGUOUS_MONTH";
   }
-  return withEra(
-    namedReadings(groups, index + ONE, reference),
+  return namedWithEra(
+    { groups, month: index + ONE },
     withoutWord(rest, month),
     context
   );
@@ -166,56 +138,6 @@ function weekdayFits(
     WEEKDAY_MINIMUMS
   );
   return weekday === undefined || weekday.values.has(day);
-}
-
-// The whole text at midnight, when it holds no time
-function untimed(text: string): TimeOfDay {
-  return {
-    hour: MIDNIGHT.hour,
-    millisecond: MIDNIGHT.millisecond,
-    minute: MIDNIGHT.minute,
-    offsetMinutes: MIDNIGHT.offsetMinutes,
-    rest: text,
-    second: MIDNIGHT.second,
-    valid: true,
-  };
-}
-
-/**
- * ISO 8601 read exactly. Eight digits without dashes may be a day-first
- * date, so an impossible compact ISO date is read as numbers instead.
- *
- * @param text - Normalised text
- * @returns The result, or undefined when the text is not (compact) ISO 8601
- */
-function parseIso(text: string): ParseResult | undefined {
-  const fields = isoFields(text);
-  if (fields === undefined) {
-    return undefined;
-  }
-  const reading: Reading = {
-    day: fields.day,
-    month: fields.month,
-    order: "YMD",
-    year: fields.year,
-  };
-  const problem = problemOf(reading);
-  if (problem === undefined) {
-    return success(reading, fields);
-  }
-  if (text.includes("-")) {
-    return failure([problem]);
-  }
-  return undefined;
-}
-
-function contextOf(locales: Locales, options: ParseOptions): Context {
-  return {
-    locales,
-    options,
-    own: ownIndexOf(locales, options.locale),
-    words: indexOf(locales),
-  };
 }
 
 // The month word and the readings of the text without the time
