@@ -154,6 +154,14 @@ formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH"); // "März 2026"
 formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH"); // "30. März – 5. Apr. 2026"
 ```
 
+## For coding agents
+
+The package ships [`llms.txt`](llms.txt): every export with its signature,
+description and example, the naming rules and all error codes on one page.
+It is generated from the source and checked in CI (`npm run docs:llms`
+regenerates it). Error messages start with a `MinutaError` code and say how
+to fix the problem.
+
 ## Migrating
 
 See [MIGRATION.md](MIGRATION.md) for the changes from the adapter-based API.

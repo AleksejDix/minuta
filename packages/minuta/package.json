@@ -74,7 +74,8 @@
   },
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "llms.txt"
   ],
   "scripts": {
     "build": "vite build",
@@ -83,7 +84,8 @@
     "test:coverage": "vitest run --coverage --passWithNoTests",
     "type-check": "tsc -p tsconfig.check.json",
     "clean": "rm -rf dist node_modules",
-    "size": "size-limit"
+    "size": "size-limit",
+    "docs:llms": "cd ../.. && UPDATE_LLMS=1 vitest run --project minuta src/__tests__/docs/llms.test.ts"
   },
   "size-limit": [
     {

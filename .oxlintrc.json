@@ -87,9 +87,12 @@
             "from": "package",
             "package": "typescript",
             "name": [
+              "Declaration",
               "Diagnostic",
               "JSDocTagInfo",
+              "ParameterDeclaration",
               "Program",
+              "SignatureDeclaration",
               "Symbol",
               "TypeChecker"
             ]
