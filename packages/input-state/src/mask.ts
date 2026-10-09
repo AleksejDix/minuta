@@ -133,7 +133,8 @@ function asciiDigit(digit: string): string {
 
 /**
  * The character a slot of `charClass` stores for `char`: decimal digits of
- * any script become ASCII, so what is shown is what parses.
+ * any script become ASCII, so what is shown is what parses; letters outside
+ * the Basic Multilingual Plane do not fit one slot and are rejected.
  *
  * @param charClass - Class of the slot
  * @param char - Candidate character
@@ -145,6 +146,10 @@ function slotChar(charClass: CharClass, char: string): string | undefined {
   }
   if (CLASS_TESTS.digit.test(char)) {
     return asciiDigit(char);
+  }
+  // A slot holds one UTF-16 unit; a letter outside the BMP would need two
+  if (char.length !== ONE) {
+    return undefined;
   }
   return char;
 }

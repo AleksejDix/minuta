@@ -239,3 +239,20 @@ describe("replaceRange()", () => {
     expect(buffer.text).toBe("abZ");
   });
 });
+
+describe("deleting whole characters", () => {
+  it.each(["😀", "👨‍👩‍👧", "🇨🇭", "é"])(
+    "removes %s with one backspace and one delete",
+    { timeout: 5000 },
+    (char) => {
+      expect.hasAssertions();
+      const text = `a${char}b`;
+      const afterChar = ONE + char.length;
+      const backspaced = deleteBackward(
+        select(createTextBuffer(text), afterChar)
+      );
+      const deleted = deleteForward(select(createTextBuffer(text), ONE));
+      expect([backspaced.text, deleted.text]).toStrictEqual(["ab", "ab"]);
+    }
+  );
+});
