@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formatPeriod, formatRange } from "./format";
 import { periodWith, range } from "#src/operations/period";
+import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
 import { nativeUnits } from "#src/adapters/native/index";
 
 const units = nativeUnits();
@@ -97,5 +98,28 @@ describe("formatRange()", () => {
     const result = formatRange(period, "en-US");
     expect(result).toContain("2025");
     expect(result).toContain("2026");
+  });
+});
+
+describe("format options", () => {
+  const tokyo = dateFnsTzUnits({ timezone: "Asia/Tokyo" });
+  // 05:00 on March 21 in Tokyo, still March 20 in UTC and the Americas
+  const tokyoDay = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
+
+  it("formats in the units' time zone", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const options = { timeZone: tokyo.timeZone };
+    expect(formatPeriod(tokyoDay, "en-US", options)).toBe("March 21, 2026");
+    expect(formatRange(tokyoDay, "en-US", options)).toBe("March 21, 2026");
+  });
+
+  it("merges options over the unit's defaults", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(
+      formatPeriod(tokyoDay, "en-US", {
+        timeZone: "Asia/Tokyo",
+        weekday: "long",
+      })
+    ).toBe("Saturday, March 21, 2026");
   });
 });

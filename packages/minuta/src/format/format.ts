@@ -37,6 +37,15 @@ const PERIOD_OPTIONS: Readonly<Partial<Record<string, DisplayOptions>>> = {
   year: { year: "numeric" },
 };
 
+function optionsFor(period: Period, options: DisplayOptions): DisplayOptions {
+  const merged: Intl.DateTimeFormatOptions = {};
+  return Object.assign(
+    merged,
+    PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS,
+    options
+  );
+}
+
 /**
  * Format a period as a locale-aware range string.
  *
@@ -49,16 +58,19 @@ const PERIOD_OPTIONS: Readonly<Partial<Record<string, DisplayOptions>>> = {
  * // Cross year: "29. Dez. 2025 – 4. Jan. 2026"
  * @param period - Period to format
  * @param locale - BCP 47 locale
- * @param options - Intl options (defaults to the options for the period type)
+ * formatRange(period, "en-US", { timeZone: units.timeZone }); // in the units' zone
+ * @param period - Period to format
+ * @param locale - BCP 47 locale
+ * @param options - Intl options merged over the defaults for the period's unit,
+ *   e.g. `{ timeZone: units.timeZone }`
  * @returns The formatted range
  */
 function formatRange(
   period: Period,
   locale: string,
-  options?: DisplayOptions
+  options: DisplayOptions = {}
 ): string {
-  const opts = options ?? PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS;
-  const fmt = new Intl.DateTimeFormat(locale, opts);
+  const fmt = new Intl.DateTimeFormat(locale, optionsFor(period, options));
   return fmt.formatRange(period.start, period.end);
 }
 
@@ -80,18 +92,25 @@ function formatRange(
  * // week period, ja-JP
  * formatPeriod(weekPeriod, "ja-JP")
  * // → "2026/03/09～2026/03/15"
+ *
+ * // a period of time-zone units, in their zone
+ * formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone })
  * @param period - Period to format
  * @param locale - BCP 47 locale
+ * @param options - Intl options merged over the defaults for the period's unit,
+ *   e.g. `{ timeZone: units.timeZone }`
  * @returns The formatted period
  */
-function formatPeriod(period: Period, locale: string): string {
-  const options = PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS;
-
+function formatPeriod(
+  period: Period,
+  locale: string,
+  options: DisplayOptions = {}
+): string {
   if (period.unit === "week" || period.unit === "custom") {
     return formatRange(period, locale, options);
   }
 
-  const fmt = new Intl.DateTimeFormat(locale, options);
+  const fmt = new Intl.DateTimeFormat(locale, optionsFor(period, options));
   return fmt.format(period.start);
 }
 

@@ -963,7 +963,7 @@ week start the grid was built with.
 ### `formatPeriod`
 
 ```ts
-formatPeriod(period: Period, locale: string): string
+formatPeriod(period: Period, locale: string, options: DisplayOptions = {}): string
 ```
 
 Format a period as a locale-aware display string.
@@ -983,6 +983,9 @@ formatPeriod(dayPeriod, "en-US")
 // week period, ja-JP
 formatPeriod(weekPeriod, "ja-JP")
 // → "2026/03/09～2026/03/15"
+
+// a period of time-zone units, in their zone
+formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone })
 ```
 
 ### `formatPeriodWith`
@@ -1003,7 +1006,7 @@ formatPeriodWith(period, "de-CH", { weekday: "long", day: "numeric" })
 ### `formatRange`
 
 ```ts
-formatRange(period: Period, locale: string, options?: DisplayOptions): string
+formatRange(period: Period, locale: string, options: DisplayOptions = {}): string
 ```
 
 Format a period as a locale-aware range string.

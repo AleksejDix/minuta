@@ -182,6 +182,20 @@ formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH"); // "März 2026"
 formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH"); // "30. März – 5. Apr. 2026"
 ```
 
+Options are `Intl.DateTimeFormat` options merged over the defaults for the
+period's unit. Pass the units' `timeZone` to format periods of a time-zone
+adapter in its zone:
+
+```ts
+import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { formatPeriod } from "minuta/format";
+import { periodWith } from "minuta/core";
+
+const tokyo = dateFnsTzUnits({ timezone: "Asia/Tokyo" });
+const day = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
+formatPeriod(day, "en-US", { timeZone: tokyo.timeZone }); // "March 21, 2026"
+```
+
 ## For coding agents
 
 The package ships [`llms.txt`](llms.txt): every export with its signature,
