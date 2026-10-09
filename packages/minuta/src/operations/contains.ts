@@ -1,4 +1,5 @@
 import type { Period } from "#src/types";
+import { assertValidDate } from "#src/units";
 
 /**
  * Check if a period contains a date or another period.
@@ -22,6 +23,7 @@ function contains(period: Period, target: Readonly<Date> | Period): boolean {
     );
   }
 
+  assertValidDate(target, "target");
   const targetTime = target.getTime();
   return targetTime >= startTime && targetTime <= endTime;
 }

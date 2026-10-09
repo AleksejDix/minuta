@@ -3,6 +3,10 @@ import type { WeekOptions, WeekdayNumber } from "#src/weekday";
 import { weekStartOf, weekendOf } from "#src/weekday";
 
 const ONE = 1;
+
+function runtimeTimeZone(): string {
+  return new Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
 const AT_END = 0;
 
 /**
@@ -51,17 +55,19 @@ function withCompleteDiff(spec: UnitSpec): UnitSpec {
 }
 
 /**
- * Build an adapter's units: the week start and weekend from `options`, also
- * carried on the result, and
+ * Build an adapter's units: the time zone, and the week start and weekend
+ * from `options`, all carried on the result, and
  * every spec with an exact `diff` (see `withCompleteDiff`).
  *
  * @param options - The adapter's week options
  * @param specsFor - One spec per unit, given the week start
+ * @param timeZone - The zone the specs compute in, default the runtime's
  * @returns The adapter's units
  */
 function adapterUnits(
   options: WeekOptions,
-  specsFor: (weekStartsOn: WeekdayNumber) => Readonly<Record<Unit, UnitSpec>>
+  specsFor: (weekStartsOn: WeekdayNumber) => Readonly<Record<Unit, UnitSpec>>,
+  timeZone: string = runtimeTimeZone()
 ): AllUnits {
   const weekStartsOn = weekStartOf(options);
   const entries = Object.entries(specsFor(weekStartsOn)).map(
@@ -72,7 +78,11 @@ function adapterUnits(
   );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries returns any; the keys are the units of specsFor
   const specs = Object.fromEntries(entries) as Readonly<Record<Unit, UnitSpec>>;
-  return Object.assign(specs, { weekStartsOn, weekend: weekendOf(options) });
+  return Object.assign(specs, {
+    timeZone,
+    weekStartsOn,
+    weekend: weekendOf(options),
+  });
 }
 
 export { adapterUnits };

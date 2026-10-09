@@ -1,4 +1,5 @@
 import type { Period } from "#src/types";
+import { assertValidDate } from "#src/units";
 
 const ONE_MS = 1;
 
@@ -24,6 +25,7 @@ function split(
   period: Period,
   splitDate: Readonly<Date>
 ): [Period, Period] | undefined {
+  assertValidDate(splitDate, "splitDate");
   const splitTime = splitDate.getTime();
   if (splitTime <= period.start.getTime() || splitTime > period.end.getTime()) {
     return undefined;

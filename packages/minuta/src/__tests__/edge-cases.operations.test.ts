@@ -76,33 +76,27 @@ describe("overlaps() with identical or nested periods", () => {
 });
 
 describe("gap edge cases", () => {
-  it("gap between same period is zero-duration", { timeout: 5000 }, () => {
+  it("no gap between a period and itself", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
-    const between = gap(jan, jan);
-    expect(between.start.getTime()).toBe(between.end.getTime());
+    expect(gap(jan, jan)).toBeUndefined();
   });
 
-  it(
-    "gap between overlapping periods is zero-duration",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
-      const janMid = range(
-        new Date("2024-01-15T00:00:00"),
-        new Date("2024-02-15T00:00:00")
-      );
-      const between = gap(jan, janMid);
-      expect(between.start.getTime()).toBe(between.end.getTime());
-    }
-  );
+  it("no gap between overlapping periods", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
+    const janMid = range(
+      new Date("2024-01-15T00:00:00"),
+      new Date("2024-02-15T00:00:00")
+    );
+    expect(gap(jan, janMid)).toBeUndefined();
+  });
 
   it("gap result is always passable to contains()", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const jan = periodWith(units, new Date("2024-01-15T00:00:00"), "month");
     const mar = periodWith(units, new Date("2024-03-15T00:00:00"), "month");
-    const between = gap(jan, mar);
+    const between = required(gap(jan, mar));
     // February should be inside the gap
     expect(contains(between, new Date("2024-02-15T00:00:00"))).toBe(true);
   });

@@ -1,87 +1,49 @@
 import type { Period } from "#src/types";
+import { assertValidDate } from "#src/units";
 
 const ONE_MS = 1;
 
 type TimePoint = Period | Readonly<Date>;
 
-type Bounds = Readonly<{ end: Date; start: Date }>;
+type Span = Readonly<{ end: number; start: number }>;
 
-function startOfPoint(point: TimePoint): Date {
+function spanOf(point: TimePoint, name: string): Span {
   if ("start" in point) {
-    return point.start;
+    return { end: point.end.getTime(), start: point.start.getTime() };
   }
-  return point;
+  assertValidDate(point, name);
+  return { end: point.getTime(), start: point.getTime() };
 }
 
-function afterEnd(point: Period): Date {
-  return new Date(point.end.getTime() + ONE_MS);
-}
-
-function beforeStart(point: Period): Date {
-  return new Date(point.start.getTime() - ONE_MS);
-}
-
-function boundsFromDate(from: Readonly<Date>, to: TimePoint): Bounds {
-  if (!("start" in to)) {
-    if (from.getTime() <= to.getTime()) {
-      return { end: to, start: from };
-    }
-    return { end: from, start: to };
+function inOrder(left: Span, right: Span): readonly [Span, Span] {
+  if (right.start < left.start) {
+    return [right, left];
   }
-  if (from.getTime() <= to.start.getTime()) {
-    return { end: beforeStart(to), start: from };
-  }
-  return { end: from, start: to.end };
-}
-
-function boundsFromPeriod(from: Period, to: TimePoint): Bounds {
-  const isForward = from.start.getTime() <= startOfPoint(to).getTime();
-  if (!("start" in to)) {
-    if (isForward) {
-      return { end: to, start: afterEnd(from) };
-    }
-    return { end: from.start, start: to };
-  }
-  if (isForward) {
-    return { end: beforeStart(to), start: afterEnd(from) };
-  }
-  return { end: beforeStart(from), start: afterEnd(to) };
-}
-
-function computeBounds(from: TimePoint, to: TimePoint): Bounds {
-  if ("start" in from) {
-    return boundsFromPeriod(from, to);
-  }
-  return boundsFromDate(from, to);
+  return [left, right];
 }
 
 /**
- * Calculate the gap or span between two time points.
- *
- * - Date + Date → span between them (normalized: start <= end)
- * - Period + Period → gap between them (from end of first to start of second)
- * - Mixed → gap from the date/period boundary to the other
- *
- * Returns a custom Period. Always start <= end.
- * If periods overlap or touch, returns a zero-duration period at the boundary.
+ * The time strictly between two dates or periods: from the millisecond after
+ * the earlier one ends to the millisecond before the later one starts. A date
+ * counts as its own millisecond. Order does not matter.
  *
  * @example
  * gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 5), "day"));
  * // { start: Mar 3, end: Mar 4 23:59:59.999, unit: "custom" }
+ * gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 3), "day")); // undefined: they touch
  *
- * @param from - The first date or period
- * @param to - The second date or period
- * @returns A custom period spanning the gap
+ * @param from - One date or period
+ * @param to - The other date or period
+ * @returns The custom period between them, or undefined when they touch or overlap
  */
-function gap(from: TimePoint, to: TimePoint): Period {
-  const { end, start } = computeBounds(from, to);
-
-  // Normalize: if periods overlap, there's no gap — return zero-duration at boundary
-  if (start.getTime() > end.getTime()) {
-    return { end: start, start, unit: "custom" };
+function gap(from: TimePoint, to: TimePoint): Period | undefined {
+  const [first, second] = inOrder(spanOf(from, "from"), spanOf(to, "to"));
+  const start = first.end + ONE_MS;
+  const end = second.start - ONE_MS;
+  if (start > end) {
+    return undefined;
   }
-
-  return { end, start, unit: "custom" };
+  return { end: new Date(end), start: new Date(start), unit: "custom" };
 }
 
 export { gap };

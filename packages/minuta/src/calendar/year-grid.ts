@@ -1,7 +1,7 @@
 import type { Series, Units } from "#src/types";
+import { assertValidDate, specFor } from "#src/units";
 import { DEFAULT_WEEK_START } from "#src/weekday";
 import { divideWith } from "#src/operations/divide";
-import { specFor } from "#src/units";
 
 /**
  * The whole weeks covering a year (`periods`), the year's first day and the
@@ -25,6 +25,7 @@ type YearGrid = Series &
  * @returns The week periods with grid metadata
  */
 function yearGridWith(units: Units, date: Readonly<Date>): YearGrid {
+  assertValidDate(date, "date");
   const year = specFor(units, "year");
   const week = specFor(units, "week");
   const yearStart = year.startOf(date);
