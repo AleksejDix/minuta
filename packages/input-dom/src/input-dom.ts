@@ -26,6 +26,8 @@ const ONE = 1;
 type AttachOptions = Readonly<{
   /** Digits to show for 0–9, e.g. `localeDigits("ar-EG")`; the state keeps ASCII */
   digits?: readonly string[] | undefined;
+  /** Applies typed, pasted and dropped text, default `paste`; e.g. `typeDate` */
+  insert?: Insert | undefined;
   normalize?: ((state: InputState) => InputState) | undefined;
   onChange?: ((state: InputState) => void) | undefined;
   onKeyDown?:
@@ -81,18 +83,22 @@ function eventText(event: InputEvent): string {
  *
  * @param state - Current state
  * @param event - The beforeinput event
+ * @param insert - How typed, pasted and dropped text is applied
  * @returns The next state, or undefined for input types that are ignored
  */
+type Insert = (state: InputState, text: string) => InputState;
+
 function applyInputEvent(
   state: InputState,
-  event: InputEvent
+  event: InputEvent,
+  insert: Insert = paste
 ): InputState | undefined {
   switch (event.inputType) {
     case "insertText":
     case "insertReplacementText":
     case "insertFromPaste":
     case "insertFromDrop": {
-      return paste(state, eventText(event));
+      return insert(state, eventText(event));
     }
     case "deleteContentBackward":
     case "deleteWordBackward":
@@ -193,7 +199,10 @@ function listen(
     "beforeinput",
     (event) => {
       event.preventDefault();
-      session.commit(event, applyInputEvent(session.current(), event));
+      session.commit(
+        event,
+        applyInputEvent(session.current(), event, session.options.insert)
+      );
     },
     { signal }
   );

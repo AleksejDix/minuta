@@ -239,3 +239,15 @@ describe("locale digits", () => {
     ]);
   });
 });
+
+describe("insert option", () => {
+  it("applies typed text through the given function", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const insert = vi.fn<(state: InputState, text: string) => InputState>(
+      (state) => state
+    );
+    const { element } = setup(createInputState({ mask: DATE }), { insert });
+    beforeInput(element, "insertFromPaste", "1.3.2026");
+    expect(insert).toHaveBeenCalledWith(expect.anything(), "1.3.2026");
+  });
+});
