@@ -37,7 +37,8 @@
     "test": "vitest run",
     "type-check": "tsc -p tsconfig.check.json && tsc -p examples/tsconfig.json",
     "clean": "rm -rf dist node_modules",
-    "demo:build": "vite build --mode demo"
+    "demo:build": "vite build --mode demo",
+    "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
   },
   "devDependencies": {
     "@minuta/tsconfig": "2.0.0-alpha.1",
