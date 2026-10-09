@@ -1,22 +1,23 @@
 import type { Period, Unit } from "#src/types";
 import {
-  clamp,
   contains,
   period as derivePeriod,
   divide,
-  gap,
-  merge,
-  move,
   next as nextPeriod,
   previous,
   range,
   same,
   shift,
-  snap,
-  split,
 } from "#src/index";
 import { describe, expect, it } from "vitest";
 import { format, formatAsRange } from "#src/test/format";
+import { intervals } from "#src/intervals";
+import { nativeUnits } from "#src/native";
+import { withUnits } from "#src/core";
+
+const { clamp, gap, merge, move, snap, split } = withUnits(nativeUnits(), {
+  plugins: [intervals],
+});
 
 const FORWARD_TWO = 2;
 const BACKWARD_THREE = -3;

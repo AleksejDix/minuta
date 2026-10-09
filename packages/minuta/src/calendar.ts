@@ -1,5 +1,6 @@
 /**
- * Calendar grids as a plugin: context-first functions, plus the `calendar`
+ * Calendar grids and weekday checks (`isWeekday`, `isWeekend` with the
+ * units' weekend) as a plugin: context-first functions, plus the `calendar`
  * object to pass to `withUnits` (or `bind`) with your units.
  *
  * @example
@@ -12,6 +13,7 @@
  * @module minuta/calendar
  */
 import { dayGridWith, monthGridWith, yearGridWith } from "#src/calendar/index";
+import { isWeekdayWith, isWeekendWith } from "#src/operations/index";
 
 /**
  * The calendar plugin: pass it to `withUnits(units, { plugins: [calendar] })`
@@ -19,16 +21,21 @@ import { dayGridWith, monthGridWith, yearGridWith } from "#src/calendar/index";
  */
 const calendar: Readonly<{
   dayGrid: typeof dayGridWith;
+  isWeekday: typeof isWeekdayWith;
+  isWeekend: typeof isWeekendWith;
   monthGrid: typeof monthGridWith;
   yearGrid: typeof yearGridWith;
 }> = {
   dayGrid: dayGridWith,
+  isWeekday: isWeekdayWith,
+  isWeekend: isWeekendWith,
   monthGrid: monthGridWith,
   yearGrid: yearGridWith,
 };
 
 export { calendar };
 export { dayGridWith, monthGridWith, yearGridWith } from "#src/calendar/index";
+export { isWeekdayWith, isWeekendWith } from "#src/operations/index";
 export type {
   DayGrid,
   HourSlot,

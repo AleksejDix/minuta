@@ -59,29 +59,20 @@ const DIVIDE_STEP = 2;
 const MONDAY = 1;
 
 const UNIT_FREE_OPERATIONS: readonly string[] = [
-  "clamp",
   "contains",
-  "gap",
   "length",
-  "move",
   "overlaps",
   "range",
-  "resize",
-  "split",
 ];
 
 const BOUND_OPERATIONS: readonly string[] = [
   "divide",
   "duration",
-  "isWeekday",
-  "isWeekend",
-  "merge",
   "next",
   "period",
   "previous",
   "same",
   "shift",
-  "snap",
 ];
 
 const INTERNAL_DETAILS: readonly string[] = [

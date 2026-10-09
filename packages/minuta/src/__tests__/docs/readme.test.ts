@@ -19,6 +19,7 @@ const ENTRY_FILES: Readonly<Record<string, string>> = {
   "minuta/date-fns-tz": "date-fns-tz",
   "minuta/dayjs": "dayjs",
   "minuta/format": "format",
+  "minuta/intervals": "intervals",
   "minuta/luxon": "luxon",
   "minuta/moment": "moment",
   "minuta/native": "native",

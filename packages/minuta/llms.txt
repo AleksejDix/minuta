@@ -5,7 +5,7 @@
 ## Rules
 
 - Every unit-aware function exists twice: `xWith(units, …)` in `minuta/core` takes the units first; `x(…)` in `minuta` is the same function bound to the native `Date` units with weeks starting on Monday. Unit-free functions have one form and take no units.
-- `withUnits(units, { plugins })` (from `minuta/core`) binds every operation, and the functions of plugins such as `calendar` from `minuta/calendar`, to your units, e.g. `withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
+- `withUnits(units, { plugins })` (from `minuta/core`) binds every core operation, and the functions of plugins such as `calendar` (`minuta/calendar`: grids, `isWeekday`, `isWeekend`) and `intervals` (`minuta/intervals`: `gap`, `clamp`, `merge`, `split`, `resize`, `move`, `snap`), to your units, e.g. `withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
 - `Units` is a partial map of unit specs; pass only the units you use (`{ day, month }`) to keep the bundle small.
 - No result is `undefined`, never `null` (`clamp` without overlap, `merge([])`, …).
 - Invalid input throws `RangeError`; the message starts with one of the error codes below and says how to fix it.
@@ -46,46 +46,6 @@ DST-aware; `durationWith` in `minuta/core` takes your own units.
 ```ts
 duration(period(new Date(2026, 9, 8), "day"), "hour"); // 24
 duration(period(new Date(2026, 1, 1), "month"), "day"); // 28
-```
-
-### `isWeekday`
-
-```ts
-isWeekday(period: Period): boolean
-```
-
-Whether every day the period touches is a working day (Monday to Friday).
-Native units; for another weekend use `withUnits(nativeUnits({ weekend }))`.
-
-```ts
-isWeekday(period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
-```
-
-### `isWeekend`
-
-```ts
-isWeekend(period: Period): boolean
-```
-
-Whether every day the period touches is Saturday or Sunday. Native units;
-for another weekend use `withUnits(nativeUnits({ weekend }))`.
-
-```ts
-isWeekend(period(new Date(2026, 2, 21), "day")); // true (a Saturday)
-```
-
-### `merge`
-
-```ts
-merge(periods: readonly Period[], unit?: Unit): Period | undefined
-```
-
-Merge periods into one; keeps `unit` only when the result is exactly one
-period of it, otherwise `"custom"`. Native units.
-
-```ts
-merge([period(new Date(2026, 0, 5), "day"), period(new Date(2026, 0, 9), "day")]); // Jan 5–9, "custom"
-merge(divide(period(new Date(2026, 0, 1), "month"), "day"), "month"); // January, "month"
 ```
 
 ### `next`
@@ -150,37 +110,6 @@ Move a period by `steps` of its own unit; negative moves back. Native units.
 shift(period(new Date(2026, 2, 15), "month"), 3); // June 2026
 ```
 
-### `snap`
-
-```ts
-snap(date: Readonly<Date>, unit: Unit, options: SnapOptions = {}): Date
-```
-
-Snap a date to a boundary of `step` units. Native units, weeks start on
-Monday; `snapWith` in `minuta/core` takes your own units.
-
-```ts
-snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
-snap(new Date(2026, 2, 15, 10, 37), "hour", { mode: "ceil" }); // 11:00
-```
-
-### `clamp`
-
-```ts
-clamp(period: Period, bounds: Period): Period | undefined
-```
-
-Constrain a period to fit within bounds.
-
-Returns undefined if the period is entirely outside bounds.
-
-```ts
-const selection = range(new Date(2026, 0, 5), new Date(2026, 0, 25))
-const allowed = range(new Date(2026, 0, 10), new Date(2026, 0, 20))
-clamp(selection, allowed)
-// → { start: Jan 10, end: Jan 20, unit: "custom" }
-```
-
 ### `contains`
 
 ```ts
@@ -194,22 +123,6 @@ contains(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 20)); // true
 contains(period(new Date(2026, 2, 1), "month"), period(new Date(2026, 3, 1), "day")); // false
 ```
 
-### `gap`
-
-```ts
-gap(from: TimePoint, to: TimePoint): Period | undefined
-```
-
-The time strictly between two dates or periods: from the millisecond after
-the earlier one ends to the millisecond before the later one starts. A date
-counts as its own millisecond. Order does not matter.
-
-```ts
-gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 5), "day"));
-// { start: Mar 3, end: Mar 4 23:59:59.999, unit: "custom" }
-gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 3), "day")); // undefined: they touch
-```
-
 ### `length`
 
 ```ts
@@ -221,20 +134,6 @@ The period's length in milliseconds, measured over the half-open range
 
 ```ts
 length(period(new Date(2026, 9, 8), "day")); // 86400000, outside a DST change
-```
-
-### `move`
-
-```ts
-move(period: Period, targetDate: Readonly<Date>): Period
-```
-
-Relocate a period to a target date, preserving its duration.
-
-```ts
-const appointment = range(new Date(2026, 2, 29, 9, 0), new Date(2026, 2, 29, 10, 0))
-const relocated = move(appointment, new Date(2026, 3, 2, 14, 0))
-// → { start: Apr 2 14:00, end: Apr 2 15:00, unit: "custom" }
 ```
 
 ### `overlaps`
@@ -263,37 +162,6 @@ range(new Date(2026, 0, 1), new Date(2026, 2, 31))
 // { start: Jan 1, end: Mar 31, unit: "custom" }
 ```
 
-### `resize`
-
-```ts
-resize(period: Period, edge: "start" | "end", newDate: Readonly<Date>): Period | undefined
-```
-
-Move one edge of a period while keeping the other fixed.
-
-Returns undefined if the new edge crosses the fixed edge.
-
-```ts
-const meeting = range(new Date(2026, 2, 29, 9, 0), new Date(2026, 2, 29, 10, 0))
-resize(meeting, 'end', new Date(2026, 2, 29, 11, 30))
-// → { start: 9:00, end: 11:30, unit: "custom" }
-```
-
-### `split`
-
-```ts
-split(period: Period, splitDate: Readonly<Date>): [Period, Period] | undefined
-```
-
-Split a period at a date inside it. Both parts are `"custom"` periods:
-half a month is not a month.
-
-```ts
-const parts = split(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 15));
-// [Mar 1 – Mar 14 23:59:59.999, Mar 15 – Mar 31 23:59:59.999]
-split(period(new Date(2026, 2, 1), "month"), new Date(2027, 0, 1)); // undefined
-```
-
 ### `MinutaError`
 
 Codes at the start of the messages of errors minuta throws.
@@ -319,51 +187,21 @@ type DivideOptions = Readonly<{
 
 Options for `divide` / `divideWith`.
 
-### `SnapMode`
-
-```ts
-type SnapMode = "ceil" | "floor" | "nearest";
-```
-
-How `snap` / `snapWith` picks the boundary.
-
-### `SnapOptions`
-
-```ts
-type SnapOptions = Readonly<{
-  /** `"floor"`, `"ceil"` or `"nearest"` (ties round up). Default: `"nearest"`. */
-  mode?: SnapMode | undefined;
-  /** How many units lie between boundaries. Default: 1. */
-  step?: number | undefined;
-}>;
-```
-
-Options for `snap` / `snapWith`.
-
 ### `Minuta`
 
 ```ts
 type Minuta = Readonly<{
-  clamp: typeof clamp;
   contains: typeof contains;
   divide: Bound<typeof divideWith>;
   duration: Bound<typeof durationWith>;
-  gap: typeof gap;
-  isWeekday: Bound<typeof isWeekdayWith>;
-  isWeekend: Bound<typeof isWeekendWith>;
   length: typeof length;
-  merge: Bound<typeof mergeWith>;
-  move: typeof move;
   next: Bound<typeof nextWith>;
   overlaps: typeof overlaps;
   period: Bound<typeof periodWith>;
   previous: Bound<typeof previousWith>;
   range: typeof range;
-  resize: typeof resize;
   same: Bound<typeof sameWith>;
   shift: Bound<typeof shiftWith>;
-  snap: Bound<typeof snapWith>;
-  split: typeof split;
   /** The units every member is bound to */
   units: Units;
 }>;
@@ -422,10 +260,6 @@ A day of the week by name.
 
 ## `minuta/core`
 
-### `clamp`
-
-Same as `clamp` in `minuta`.
-
 ### `contains`
 
 Same as `contains` in `minuta`.
@@ -457,61 +291,9 @@ durationWith(units, period(new Date(2026, 9, 8), "day"), "hour"); // 24
 durationWith(units, period(new Date(2026, 1, 1), "month"), "day"); // 28
 ```
 
-### `gap`
-
-Same as `gap` in `minuta`.
-
-### `isWeekdayWith`
-
-```ts
-isWeekdayWith(units: Units, period: Period): boolean
-```
-
-Whether every day the period touches is a working day: not in the units'
-`weekend` (Saturday and Sunday unless set).
-
-```ts
-isWeekdayWith(nativeUnits(), period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
-isWeekdayWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 22), "day")); // true (a Sunday)
-```
-
-### `isWeekendWith`
-
-```ts
-isWeekendWith(units: Units, period: Period): boolean
-```
-
-Whether every day the period touches is a weekend day, as configured by
-the units' `weekend` (Saturday and Sunday unless set).
-
-```ts
-isWeekendWith(nativeUnits(), period(new Date(2026, 2, 21), "day")); // true (a Saturday)
-isWeekendWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 20), "day")); // true (a Friday)
-```
-
 ### `length`
 
 Same as `length` in `minuta`.
-
-### `mergeWith`
-
-```ts
-mergeWith(units: Units, periods: readonly Period[], unit?: Unit): Period | undefined
-```
-
-Merge periods into one spanning the earliest start to the latest end. The
-result keeps `unit` (by default the first period's unit) only when it is
-exactly one period of that unit; otherwise its unit is `"custom"`.
-
-```ts
-mergeWith(units, [januaryFirstHalf, januarySecondHalf], "month"); // January, unit "month"
-mergeWith(units, [january, march]); // Jan 1 – Mar 31, unit "custom"
-mergeWith(units, []); // undefined
-```
-
-### `move`
-
-Same as `move` in `minuta`.
 
 ### `nextWith`
 
@@ -558,10 +340,6 @@ previousWith(nativeUnits(), periodWith(nativeUnits(), new Date(2026, 2, 15), "mo
 
 Same as `range` in `minuta`.
 
-### `resize`
-
-Same as `resize` in `minuta`.
-
 ### `sameWith`
 
 ```ts
@@ -588,27 +366,6 @@ length.
 shiftWith(units, march, 2)  // May
 shiftWith(units, march, -1) // February
 ```
-
-### `snapWith`
-
-```ts
-snapWith(units: Units, date: Readonly<Date>, unit: Unit, options: SnapOptions = {}): Date
-```
-
-Snap a date to a boundary of `step` units: the unit's start, or every
-`step`-th one counted from the start of the enclosing unit (minutes from
-the hour, hours from the day, days from the month, months and quarters
-from the year; weeks and years from 1970).
-
-```ts
-snapWith(units, new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
-snapWith(units, new Date(2026, 2, 15, 10, 37), "day", { mode: "ceil" }); // Mar 16
-snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // the week's start
-```
-
-### `split`
-
-Same as `split` in `minuta`.
 
 ### `bind`
 
@@ -703,14 +460,6 @@ A context-first function: unit specs first, then its own arguments.
 ### `DivideOptions`
 
 Same as `DivideOptions` in `minuta`.
-
-### `SnapMode`
-
-Same as `SnapMode` in `minuta`.
-
-### `SnapOptions`
-
-Same as `SnapOptions` in `minuta`.
 
 ### `Minuta`
 
@@ -830,6 +579,8 @@ How one unit behaves — plain data, like a country spec in ibanita.
 ```ts
 const calendar: Readonly<{
   dayGrid: typeof dayGridWith;
+  isWeekday: typeof isWeekdayWith;
+  isWeekend: typeof isWeekendWith;
   monthGrid: typeof monthGridWith;
   yearGrid: typeof yearGridWith;
 }>
@@ -882,6 +633,34 @@ week containing December 31. The week start comes from the `week` unit.
 
 ```ts
 yearGridWith(nativeUnits({ weekStartsOn: "monday" }), new Date(2026, 5, 1)).periods; // 53 week periods
+```
+
+### `isWeekdayWith`
+
+```ts
+isWeekdayWith(units: Units, period: Period): boolean
+```
+
+Whether every day the period touches is a working day: not in the units'
+`weekend` (Saturday and Sunday unless set).
+
+```ts
+isWeekdayWith(nativeUnits(), period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
+isWeekdayWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 22), "day")); // true (a Sunday)
+```
+
+### `isWeekendWith`
+
+```ts
+isWeekendWith(units: Units, period: Period): boolean
+```
+
+Whether every day the period touches is a weekend day, as configured by
+the units' `weekend` (Saturday and Sunday unless set).
+
+```ts
+isWeekendWith(nativeUnits(), period(new Date(2026, 2, 21), "day")); // true (a Saturday)
+isWeekendWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 20), "day")); // true (a Friday)
 ```
 
 ### `DayGrid`
@@ -938,6 +717,172 @@ type YearGrid = Readonly<{
 
 The whole weeks covering a year (`periods`), the year's first day and the
 week start the grid was built with.
+
+## `minuta/intervals`
+
+### `intervals`
+
+```ts
+const intervals: Readonly<{
+  clamp: (
+    units: Units,
+    ...args: Readonly<Parameters<typeof clamp>>
+  ) => ReturnType<typeof clamp>;
+  gap: (
+    units: Units,
+    ...args: Readonly<Parameters<typeof gap>>
+  ) => ReturnType<typeof gap>;
+  merge: typeof mergeWith;
+  move: (
+    units: Units,
+    ...args: Readonly<Parameters<typeof move>>
+  ) => ReturnType<typeof move>;
+  resize: (
+    units: Units,
+    ...args: Readonly<Parameters<typeof resize>>
+  ) => ReturnType<typeof resize>;
+  snap: typeof snapWith;
+  split: (
+    units: Units,
+    ...args: Readonly<Parameters<typeof split>>
+  ) => ReturnType<typeof split>;
+}>
+```
+
+The intervals plugin: pass it to `withUnits(units, { plugins: [intervals] })`
+or to `bind(units, intervals)`.
+
+### `clamp`
+
+```ts
+clamp(period: Period, bounds: Period): Period | undefined
+```
+
+Constrain a period to fit within bounds.
+
+Returns undefined if the period is entirely outside bounds.
+
+```ts
+const selection = range(new Date(2026, 0, 5), new Date(2026, 0, 25))
+const allowed = range(new Date(2026, 0, 10), new Date(2026, 0, 20))
+clamp(selection, allowed)
+// → { start: Jan 10, end: Jan 20, unit: "custom" }
+```
+
+### `gap`
+
+```ts
+gap(from: TimePoint, to: TimePoint): Period | undefined
+```
+
+The time strictly between two dates or periods: from the millisecond after
+the earlier one ends to the millisecond before the later one starts. A date
+counts as its own millisecond. Order does not matter.
+
+```ts
+gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 5), "day"));
+// { start: Mar 3, end: Mar 4 23:59:59.999, unit: "custom" }
+gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 3), "day")); // undefined: they touch
+```
+
+### `mergeWith`
+
+```ts
+mergeWith(units: Units, periods: readonly Period[], unit?: Unit): Period | undefined
+```
+
+Merge periods into one spanning the earliest start to the latest end. The
+result keeps `unit` (by default the first period's unit) only when it is
+exactly one period of that unit; otherwise its unit is `"custom"`.
+
+```ts
+mergeWith(units, [januaryFirstHalf, januarySecondHalf], "month"); // January, unit "month"
+mergeWith(units, [january, march]); // Jan 1 – Mar 31, unit "custom"
+mergeWith(units, []); // undefined
+```
+
+### `move`
+
+```ts
+move(period: Period, targetDate: Readonly<Date>): Period
+```
+
+Relocate a period to a target date, preserving its duration.
+
+```ts
+const appointment = range(new Date(2026, 2, 29, 9, 0), new Date(2026, 2, 29, 10, 0))
+const relocated = move(appointment, new Date(2026, 3, 2, 14, 0))
+// → { start: Apr 2 14:00, end: Apr 2 15:00, unit: "custom" }
+```
+
+### `resize`
+
+```ts
+resize(period: Period, edge: "start" | "end", newDate: Readonly<Date>): Period | undefined
+```
+
+Move one edge of a period while keeping the other fixed.
+
+Returns undefined if the new edge crosses the fixed edge.
+
+```ts
+const meeting = range(new Date(2026, 2, 29, 9, 0), new Date(2026, 2, 29, 10, 0))
+resize(meeting, 'end', new Date(2026, 2, 29, 11, 30))
+// → { start: 9:00, end: 11:30, unit: "custom" }
+```
+
+### `snapWith`
+
+```ts
+snapWith(units: Units, date: Readonly<Date>, unit: Unit, options: SnapOptions = {}): Date
+```
+
+Snap a date to a boundary of `step` units: the unit's start, or every
+`step`-th one counted from the start of the enclosing unit (minutes from
+the hour, hours from the day, days from the month, months and quarters
+from the year; weeks and years from 1970).
+
+```ts
+snapWith(units, new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
+snapWith(units, new Date(2026, 2, 15, 10, 37), "day", { mode: "ceil" }); // Mar 16
+snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // the week's start
+```
+
+### `split`
+
+```ts
+split(period: Period, splitDate: Readonly<Date>): [Period, Period] | undefined
+```
+
+Split a period at a date inside it. Both parts are `"custom"` periods:
+half a month is not a month.
+
+```ts
+const parts = split(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 15));
+// [Mar 1 – Mar 14 23:59:59.999, Mar 15 – Mar 31 23:59:59.999]
+split(period(new Date(2026, 2, 1), "month"), new Date(2027, 0, 1)); // undefined
+```
+
+### `SnapMode`
+
+```ts
+type SnapMode = "ceil" | "floor" | "nearest";
+```
+
+How `snap` / `snapWith` picks the boundary.
+
+### `SnapOptions`
+
+```ts
+type SnapOptions = Readonly<{
+  /** `"floor"`, `"ceil"` or `"nearest"` (ties round up). Default: `"nearest"`. */
+  mode?: SnapMode | undefined;
+  /** How many units lie between boundaries. Default: 1. */
+  step?: number | undefined;
+}>;
+```
+
+Options for `snap` / `snapWith`.
 
 ## `minuta/format`
 

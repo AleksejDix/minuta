@@ -6,26 +6,17 @@
 
 import type { Bound, BoundPlugin, Plugin } from "#src/bind";
 import {
-  clamp,
   contains,
   divideWith,
   durationWith,
-  gap,
-  isWeekdayWith,
-  isWeekendWith,
   length,
-  mergeWith,
-  move,
   nextWith,
   overlaps,
   periodWith,
   previousWith,
   range,
-  resize,
   sameWith,
   shiftWith,
-  snapWith,
-  split,
 } from "#src/operations/index";
 import type { Units } from "#src/types";
 import { bind } from "#src/bind";
@@ -34,26 +25,17 @@ import { bind } from "#src/bind";
  * All operations, bound to one set of units.
  */
 type Minuta = Readonly<{
-  clamp: typeof clamp;
   contains: typeof contains;
   divide: Bound<typeof divideWith>;
   duration: Bound<typeof durationWith>;
-  gap: typeof gap;
-  isWeekday: Bound<typeof isWeekdayWith>;
-  isWeekend: Bound<typeof isWeekendWith>;
   length: typeof length;
-  merge: Bound<typeof mergeWith>;
-  move: typeof move;
   next: Bound<typeof nextWith>;
   overlaps: typeof overlaps;
   period: Bound<typeof periodWith>;
   previous: Bound<typeof previousWith>;
   range: typeof range;
-  resize: typeof resize;
   same: Bound<typeof sameWith>;
   shift: Bound<typeof shiftWith>;
-  snap: Bound<typeof snapWith>;
-  split: typeof split;
   /** The units every member is bound to */
   units: Units;
 }>;
@@ -97,26 +79,17 @@ type BoundPlugins<Plugins> = Plugins extends readonly [
 
 function operationsFor(units: Units): Minuta {
   return {
-    clamp,
     contains,
     divide: (period, unit, options) => divideWith(units, period, unit, options),
     duration: (period, unit) => durationWith(units, period, unit),
-    gap,
-    isWeekday: (period) => isWeekdayWith(units, period),
-    isWeekend: (period) => isWeekendWith(units, period),
     length,
-    merge: (periods, unit) => mergeWith(units, periods, unit),
-    move,
     next: (period) => nextWith(units, period),
     overlaps,
     period: (date, unit) => periodWith(units, date, unit),
     previous: (period) => previousWith(units, period),
     range,
-    resize,
     same: (first, second, unit) => sameWith(units, first, second, unit),
     shift: (period, steps) => shiftWith(units, period, steps),
-    snap: (date, unit, options) => snapWith(units, date, unit, options),
-    split,
     units,
   };
 }

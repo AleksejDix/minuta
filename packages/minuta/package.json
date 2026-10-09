@@ -28,6 +28,10 @@
       "types": "./dist/calendar.d.ts",
       "import": "./dist/calendar.js"
     },
+    "./intervals": {
+      "types": "./dist/intervals.d.ts",
+      "import": "./dist/intervals.js"
+    },
     "./format": {
       "types": "./dist/format.d.ts",
       "import": "./dist/format.js"
@@ -115,6 +119,13 @@
         "dist/native.js": "{ nativeUnits }"
       },
       "limit": "2.5 kB"
+    },
+    {
+      "name": "minuta/intervals: merge + snap",
+      "import": {
+        "dist/intervals.js": "{ mergeWith, snapWith }"
+      },
+      "limit": "2 kB"
     },
     {
       "name": "minuta/format",

@@ -14,6 +14,7 @@ const ENTRIES: readonly string[] = [
   "index",
   "core",
   "calendar",
+  "intervals",
   "format",
   "native",
   "date-fns",
