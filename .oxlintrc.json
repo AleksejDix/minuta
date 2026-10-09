@@ -86,7 +86,13 @@
           {
             "from": "package",
             "package": "typescript",
-            "name": ["JSDocTagInfo", "Program", "Symbol", "TypeChecker"]
+            "name": [
+              "Diagnostic",
+              "JSDocTagInfo",
+              "Program",
+              "Symbol",
+              "TypeChecker"
+            ]
           }
         ]
       }
@@ -136,7 +142,11 @@
         "vitest/prefer-to-be-truthy": "off",
         "vitest/prefer-to-be-falsy": "off",
         "vitest/no-hooks": "off",
-        "vitest/no-importing-vitest-globals": "off"
+        "vitest/no-importing-vitest-globals": "off",
+        "import/no-nodejs-modules": "off"
+      },
+      "env": {
+        "node": true
       }
     }
   ],

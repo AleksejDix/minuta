@@ -93,7 +93,7 @@ the two cannot drift apart.
 units first; unit-free functions take none:
 
 ```ts
-import { divideWith, nextWith, periodWith } from "minuta/core";
+import { nextWith, periodWith } from "minuta/core";
 import { nativeUnits } from "minuta/native";
 
 const { day, month } = nativeUnits();
@@ -126,6 +126,8 @@ Write your own the same way:
 ```ts
 import type { Period, Units } from "minuta/core";
 import { bind, divideWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import { period } from "minuta";
 
 const workdays = {
   workdaysIn: (units: Units, month: Period) =>
@@ -134,7 +136,8 @@ const workdays = {
     ),
 };
 
-bind(nativeUnits(), workdays).workdaysIn(march);
+const march = period(new Date(2026, 2, 1), "month");
+bind(nativeUnits(), workdays).workdaysIn(march); // 22 day periods
 ```
 
 Custom units are data too: add the name to `UnitRegistry` through module
@@ -145,8 +148,10 @@ your units.
 
 ```ts
 import { formatPeriod, formatRange } from "minuta/format";
+import { period, range } from "minuta";
 
-formatPeriod(march, "de-CH"); // "März 2026"
+formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH"); // "März 2026"
+formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH"); // "30. März – 5. Apr. 2026"
 ```
 
 ## Migrating

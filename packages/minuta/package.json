@@ -69,7 +69,8 @@
       "source": "./src/*.ts",
       "types": "./dist/*.d.ts",
       "default": "./src/*.ts"
-    }
+    },
+    "#readme": "./README.md"
   },
   "types": "./dist/index.d.ts",
   "files": [
