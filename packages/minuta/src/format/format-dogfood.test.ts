@@ -271,17 +271,14 @@ describe("dogfood move() and gap()", () => {
     expect.hasAssertions();
     const jan = period("2024-01-01", "month");
     const mar = period("2024-03-01", "month");
-    const between = gap(jan, mar);
-    expect(between).toBeDefined();
+    const between = required(gap(jan, mar));
     expect(formatAsRange(between)).toContain("Feb");
   });
 
-  it("returns zero-duration for adjacent periods", { timeout: 5000 }, () => {
+  it("finds no gap between adjacent periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const jan = period("2024-01-01", "month");
     const feb = period("2024-02-01", "month");
-    const between = gap(jan, feb);
-    // Adjacent months: gap is zero-duration (start === end)
-    expect(between.start.getTime()).toBe(between.end.getTime());
+    expect(gap(jan, feb)).toBeUndefined();
   });
 });

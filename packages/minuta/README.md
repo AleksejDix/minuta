@@ -69,7 +69,7 @@ duration(period(new Date(2026, 2, 29), "day"), "hour"); // 23 in Europe/Zurich (
 ```
 
 No result is `undefined` (`clamp` without overlap, `merge([])`, `split` outside
-the period), never `null`.
+the period, `gap` between touching periods), never `null`.
 Invalid dates throw a `RangeError` whose message starts with a `MinutaError`
 code such as `INVALID_DATE`.
 
