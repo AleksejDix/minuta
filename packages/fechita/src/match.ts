@@ -20,8 +20,12 @@ const HEBREW = /\p{sc=Hebrew}/u;
 /** The own locale's table, if a locale is known, and the shared one. */
 type Tables = Readonly<{ all: WordTable; own: WordTable | undefined }>;
 
-/** A word found in text: its key and the values it names. */
-type Found = Readonly<{ key: string; values: ReadonlySet<number> }>;
+/** A word found in text: its key, the values it names, and whether it is a whole word. */
+type Found = Readonly<{
+  key: string;
+  values: ReadonlySet<number>;
+  whole: boolean;
+}>;
 
 function isLetter(char: string | undefined): boolean {
   return char !== undefined && LETTER.test(char);
@@ -53,6 +57,12 @@ function indexIn(text: string, key: string): number {
   return index;
 }
 
+// Whether the word found at `index` ends there, rather than going on ("Mar" in "marraskuuta")
+function endsWord(text: string, index: number, key: string): boolean {
+  const after = text[index + key.length];
+  return !isLetter(after) || NO_SPACES.test(after ?? "");
+}
+
 /**
  * The longest name of `table` in `text` that is at least `minLength`
  * characters long.
@@ -69,15 +79,43 @@ function longestIn(
 ): Found | undefined {
   for (const key of table.keys) {
     const values = table.valuesOf(key);
+    const index = indexIn(text, key);
     if (
       key.length >= minLength &&
       values !== undefined &&
-      indexIn(text, key) !== NOT_FOUND
+      index !== NOT_FOUND
     ) {
-      return { key, values };
+      return { key, values, whole: endsWord(text, index, key) };
     }
   }
   return undefined;
+}
+
+/**
+ * The own word, unless it is only the start of a longer word that another
+ * language has whole: the Finnish "marraskuuta" (November) is not the
+ * English "Mar".
+ *
+ * @param own - The word found among the own locale's words
+ * @param all - The word found among every loaded locale's words
+ * @returns The word to use
+ */
+function preferred(
+  own: Found | undefined,
+  all: Found | undefined
+): Found | undefined {
+  if (own === undefined) {
+    return all;
+  }
+  if (
+    all !== undefined &&
+    all.whole &&
+    !own.whole &&
+    all.key.length > own.key.length
+  ) {
+    return all;
+  }
+  return own;
 }
 
 /**
@@ -96,13 +134,11 @@ function findWord(
   minimums: Readonly<{ all: number; own: number }>
 ): Found | undefined {
   const key = wordKey(text);
-  if (tables.own !== undefined) {
-    const own = longestIn(key, tables.own, minimums.own);
-    if (own !== undefined) {
-      return own;
-    }
+  const all = longestIn(key, tables.all, minimums.all);
+  if (tables.own === undefined) {
+    return all;
   }
-  return longestIn(key, tables.all, minimums.all);
+  return preferred(longestIn(key, tables.own, minimums.own), all);
 }
 
 /**
