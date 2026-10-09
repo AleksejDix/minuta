@@ -44,6 +44,20 @@ interface UnitRegistry {
 type Unit = keyof UnitRegistry;
 
 /**
+ * The units every adapter provides. Units added to `UnitRegistry` come with
+ * your own spec, so they are not part of `AllUnits`.
+ */
+type BuiltInUnit =
+  | "day"
+  | "hour"
+  | "minute"
+  | "month"
+  | "quarter"
+  | "second"
+  | "week"
+  | "year";
+
+/**
  * How one unit behaves — plain data, like a country spec in ibanita.
  *
  * - startOf: earliest millisecond of the unit containing `date`
@@ -81,8 +95,18 @@ type Settings = Readonly<{
 type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & Settings;
 
 /**
- * A spec for every unit, as returned by the adapters.
+ * A spec for every built-in unit, as returned by the adapters. Add specs of
+ * your own units next to them: `Object.assign({ fortnight }, nativeUnits())`.
  */
-type AllUnits = Readonly<Record<Unit, UnitSpec>> & Settings;
+type AllUnits = Readonly<Record<BuiltInUnit, UnitSpec>> & Settings;
 
-export type { AllUnits, Period, Series, Unit, UnitRegistry, Units, UnitSpec };
+export type {
+  AllUnits,
+  BuiltInUnit,
+  Period,
+  Series,
+  Unit,
+  UnitRegistry,
+  Units,
+  UnitSpec,
+};
