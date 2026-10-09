@@ -1,13 +1,17 @@
+import { useCallback, useMemo } from "react";
 import type { JSX } from "react";
 import type { Period } from "minuta/core";
 import { useCalendarContext } from "./calendar-context";
-import { useCallback } from "react";
 import { useMinutaContext } from "#src/minuta-context";
 
 type CalendarDayProps = Readonly<{
   /** The day period of this cell */
   day: Period;
+  /** Locale of the day number and weekday title, default: `"en-US"` */
+  locale?: string | undefined;
 }>;
+
+type DayLabels = Readonly<{ number: string; weekday: string }>;
 
 type DayState = Readonly<{
   isOutside: boolean;
@@ -15,9 +19,32 @@ type DayState = Readonly<{
   isToday: boolean;
 }>;
 
-const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
-  weekday: "short",
-});
+const DEFAULT_LOCALE = "en-US";
+
+/**
+ * The day number and weekday of `date` in `timeZone`.
+ *
+ * @param date - The day's start
+ * @param locale - BCP 47 locale
+ * @param timeZone - The units' time zone, undefined for the runtime's
+ * @returns Both labels
+ */
+function dayLabels(
+  date: Readonly<Date>,
+  locale: string,
+  timeZone: string | undefined
+): DayLabels {
+  return {
+    number: new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      timeZone,
+    }).format(date),
+    weekday: new Intl.DateTimeFormat(locale, {
+      timeZone,
+      weekday: "short",
+    }).format(date),
+  };
+}
 
 function dayClassName({ isOutside, isSelected, isToday }: DayState): string {
   const classes = ["day-cell"];
@@ -46,17 +73,24 @@ function ariaCurrent(isToday: boolean): "date" | undefined {
  *
  * @param props - Component props
  * @param props.day - The day period of this cell
+ * @param props.locale - Locale of the labels
  * @returns The day button
  */
-function CalendarDay({ day }: CalendarDayProps): JSX.Element {
-  const { browsing, contains, isToday, now, same } = useMinutaContext();
+function CalendarDay({
+  day,
+  locale = DEFAULT_LOCALE,
+}: CalendarDayProps): JSX.Element {
+  const { browsing, contains, isToday, now, same, units } = useMinutaContext();
   const { select, selected } = useCalendarContext();
   const state: DayState = {
     isOutside: !contains(browsing, day.start),
     isSelected: selected !== undefined && same(selected, day, "day"),
     isToday: isToday(now.start, day),
   };
-  const weekday = weekdayFormatter.format(day.start);
+  const labels = useMemo(
+    () => dayLabels(day.start, locale, units.timeZone),
+    [day, locale, units]
+  );
 
   const handleClick = useCallback(() => {
     select(day);
@@ -67,12 +101,12 @@ function CalendarDay({ day }: CalendarDayProps): JSX.Element {
       type="button"
       className={dayClassName(state)}
       onClick={handleClick}
-      title={weekday}
+      title={labels.weekday}
       aria-pressed={state.isSelected}
       aria-current={ariaCurrent(state.isToday)}
     >
-      <span className="date-number">{day.start.getDate()}</span>
-      <span className="weekday-label">{weekday}</span>
+      <span className="date-number">{labels.number}</span>
+      <span className="weekday-label">{labels.weekday}</span>
     </button>
   );
 }

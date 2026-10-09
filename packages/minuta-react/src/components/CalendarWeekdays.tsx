@@ -19,13 +19,16 @@ const DEFAULT_LOCALE = "en-US";
 function CalendarWeekdays({
   locale = DEFAULT_LOCALE,
 }: CalendarWeekdaysProps): JSX.Element {
-  const { browsing, divide, period } = useMinutaContext();
+  const { browsing, divide, period, units } = useMinutaContext();
 
   const labels = useMemo(() => {
-    const formatter = new Intl.DateTimeFormat(locale, { weekday: "short" });
+    const formatter = new Intl.DateTimeFormat(locale, {
+      timeZone: units.timeZone,
+      weekday: "short",
+    });
     const week = period(browsing.start, "week");
     return divide(week, "day").map((day) => formatter.format(day.start));
-  }, [browsing, divide, locale, period]);
+  }, [browsing, divide, locale, period, units]);
 
   return (
     <div className="weekday-grid">
