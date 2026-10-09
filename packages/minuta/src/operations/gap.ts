@@ -1,4 +1,5 @@
 import type { Period } from "#src/types";
+import { assertValidDate } from "#src/units";
 
 const ONE_MS = 1;
 
@@ -6,10 +7,11 @@ type TimePoint = Period | Readonly<Date>;
 
 type Span = Readonly<{ end: number; start: number }>;
 
-function spanOf(point: TimePoint): Span {
+function spanOf(point: TimePoint, name: string): Span {
   if ("start" in point) {
     return { end: point.end.getTime(), start: point.start.getTime() };
   }
+  assertValidDate(point, name);
   return { end: point.getTime(), start: point.getTime() };
 }
 
@@ -35,7 +37,7 @@ function inOrder(left: Span, right: Span): readonly [Span, Span] {
  * @returns The custom period between them, or undefined when they touch or overlap
  */
 function gap(from: TimePoint, to: TimePoint): Period | undefined {
-  const [first, second] = inOrder(spanOf(from), spanOf(to));
+  const [first, second] = inOrder(spanOf(from, "from"), spanOf(to, "to"));
   const start = first.end + ONE_MS;
   const end = second.start - ONE_MS;
   if (start > end) {

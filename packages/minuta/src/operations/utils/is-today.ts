@@ -1,4 +1,5 @@
 import type { Period, Units } from "#src/types";
+import { assertValidDate } from "#src/units";
 import { periodWith } from "#src/operations/period";
 import { sameWith } from "#src/operations/same";
 
@@ -18,6 +19,7 @@ function isTodayWith(
   now: Readonly<Date>,
   period: Period
 ): boolean {
+  assertValidDate(now, "now");
   if (period.unit !== "day") {
     return false;
   }

@@ -1,4 +1,5 @@
 import type { Period } from "#src/types";
+import { assertValidDate } from "#src/units";
 
 /**
  * Move one edge of a period while keeping the other fixed.
@@ -20,6 +21,7 @@ function resize(
   edge: "start" | "end",
   newDate: Readonly<Date>
 ): Period | undefined {
+  assertValidDate(newDate, "newDate");
   let { end, start } = period;
   if (edge === "start") {
     start = newDate;

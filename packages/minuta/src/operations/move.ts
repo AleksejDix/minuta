@@ -1,4 +1,5 @@
 import type { Period } from "#src/types";
+import { assertValidDate } from "#src/units";
 
 /**
  * Relocate a period to a target date, preserving its duration.
@@ -13,6 +14,7 @@ import type { Period } from "#src/types";
  * // → { start: Apr 2 14:00, end: Apr 2 15:00, unit: "custom" }
  */
 function move(period: Period, targetDate: Readonly<Date>): Period {
+  assertValidDate(targetDate, "targetDate");
   const durationMs = period.end.getTime() - period.start.getTime();
   return {
     end: new Date(targetDate.getTime() + durationMs),

@@ -1,7 +1,7 @@
 import type { Series, Units } from "#src/types";
+import { assertValidDate, specFor } from "#src/units";
 import { DEFAULT_WEEK_START } from "#src/weekday";
 import { divideWith } from "#src/operations/divide";
-import { specFor } from "#src/units";
 
 /**
  * A 42-day month grid (`periods`), the month's first day and the week start
@@ -27,6 +27,7 @@ const LAST_GRID_DAY_OFFSET = 41;
  * @returns The 42 day periods with grid metadata
  */
 function monthGridWith(units: Units, date: Readonly<Date>): MonthGrid {
+  assertValidDate(date, "date");
   const day = specFor(units, "day");
   const monthStart = specFor(units, "month").startOf(date);
   const gridStart = specFor(units, "week").startOf(monthStart);
