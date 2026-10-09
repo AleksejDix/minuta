@@ -1,6 +1,7 @@
 import {
   clampDay,
   dateMask,
+  dateOrder,
   deriveFormat,
   parseSegments,
   rotateSegment,
@@ -13,6 +14,7 @@ import { createInputState, isComplete, parseMask } from "input-state";
 import type { DateFormat } from "datefield";
 import type { InputState } from "input-state";
 import { attachInput } from "input-dom";
+import { parseDate } from "fechita";
 
 const UP = 1;
 const DOWN = -1;
@@ -82,6 +84,19 @@ function rotated(
   return withSegments(state, rotateSegment(segments, index, DOWN));
 }
 
+// The demo reads pastes in every locale; an app loads only the ones it needs
+function pastedDate(
+  text: string,
+  locale: string,
+  format: Readonly<DateFormat>
+): Date | undefined {
+  const result = parseDate(text, { locale, order: dateOrder(format) });
+  if (result.valid) {
+    return result.date;
+  }
+  return undefined;
+}
+
 function describeDate(format: Readonly<DateFormat>, state: InputState): string {
   const date = toDate(parseSegments(format, state.buffer.text));
   if (date === undefined) {
@@ -99,7 +114,10 @@ function mountDate(): void {
     input,
     createInputState({ mask: dateMask(format) }),
     {
-      insert: (state, text) => typeDate(format, state, text, locale.value),
+      insert: (state, text) =>
+        typeDate(format, state, text, {
+          parse: (pasted) => pastedDate(pasted, locale.value, format),
+        }),
       normalize: (state) => clampedDate(format, state),
       onChange: (state) => {
         output.textContent = describeDate(format, state);

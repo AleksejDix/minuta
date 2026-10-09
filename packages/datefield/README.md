@@ -49,13 +49,30 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
 - `clampDay(segments, cursor)` keeps the day valid after a month/year edit
   (31.02 → 28.02) once the cursor has left the part being typed; without a
   cursor (e.g. on blur) it clamps right away.
-- `typeDate(format, state, text)` types the way people type dates: digits fill
-  slots and a separator finishes the part being typed, so "1.3.2026" becomes
-  01.03.2026 (call `finishSegment` on blur for typed input). A paste is read
-  with `recognizeDate`: ISO 8601 (`2026-03-31`, timestamps), month names in
-  the locale or English (`31. März 2026`, `March 31, 2026`) and numbers in any
-  order (`3/31/2026` in a de-CH field: 31 can only be the day) all fill the
-  field in its format; an ambiguous `04/05/2026` follows the field's order.
+- `typeDate(format, state, text, { parse })` types the way people type dates:
+  digits fill slots and a separator finishes the part being typed, so
+  "1.3.2026" becomes 01.03.2026 (call `finishSegment` on blur for typed
+  input). With `parse`, a pasted date in any form fills the field in its
+  format; without it a paste is typed like keystrokes. datefield has no parser
+  of its own: pass [fechita](../fechita) with the locales you need, and
+  `dateOrder(format)` so an ambiguous `04/05/2026` follows the field's order:
+
+  ```ts
+  import { withLocales } from "fechita/core";
+  import { de } from "fechita/locales/de";
+  import { en } from "fechita/locales/en";
+
+  const { parseDate } = withLocales({ de, en });
+  const parse = (text: string) => {
+    const result = parseDate(text, {
+      locale: "de-CH",
+      order: dateOrder(format),
+    });
+    return result.valid ? result.date : undefined;
+  };
+  field = typeDate(format, field, "2026-03-31", { parse }); // 31.03.2026
+  ```
+
 - `toDate` returns `undefined` while a slot is empty or the date is invalid,
   without touching what the user typed.
 - `dateMask` rejects display-only parts (weekday, era) — they cannot be typed.

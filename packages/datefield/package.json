@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@minuta/tsconfig": "2.0.0-alpha.1",
+    "fechita": "^0.1.0",
     "typescript": "^5.7.3",
     "vite": "^7.2.4",
     "vite-plugin-dts": "^4.4.0",

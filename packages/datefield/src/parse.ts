@@ -177,4 +177,41 @@ function formatLength(format: Readonly<DateFormat>): number {
   return total;
 }
 
-export { deriveFormat, formatLength, parseSegments, placeholder };
+type DateOrder = "DMY" | "MDY" | "YMD";
+
+const ORDER_LETTERS: Readonly<Record<string, string>> = {
+  day: "D",
+  month: "M",
+  year: "Y",
+};
+const ORDERS: ReadonlySet<string> = new Set(["DMY", "MDY", "YMD"]);
+const DEFAULT_ORDER: DateOrder = "DMY";
+
+function isDateOrder(letters: string): letters is DateOrder {
+  return ORDERS.has(letters);
+}
+
+/**
+ * The order of day, month and year in a format, e.g. to tell a date parser
+ * how to read an ambiguous paste (fechita's `order` option).
+ *
+ * @example
+ * dateOrder(deriveFormat("de-CH")); // "DMY"
+ * dateOrder(deriveFormat("en-US")); // "MDY"
+ * dateOrder(deriveFormat("ja-JP")); // "YMD"
+ *
+ * @param format - Format from `deriveFormat`
+ * @returns `DMY`, `MDY` or `YMD` (`DMY` for formats without all three)
+ */
+function dateOrder(format: Readonly<DateFormat>): DateOrder {
+  const letters = format
+    .map((token) => ORDER_LETTERS[token.type] ?? "")
+    .join("");
+  if (isDateOrder(letters)) {
+    return letters;
+  }
+  return DEFAULT_ORDER;
+}
+
+export { dateOrder, deriveFormat, formatLength, parseSegments, placeholder };
+export type { DateOrder };
