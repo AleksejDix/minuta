@@ -45,9 +45,9 @@ function useMinuta(options: MinutaOptions = {}): MinutaState {
   }, []);
 
   return useMemo(() => {
-    const state = { browse, browsing, now, units };
+    const state = { browse, browsing, now };
     return Object.assign(state, ops);
-  }, [browse, browsing, now, ops, units]);
+  }, [browse, browsing, now, ops]);
 }
 
 export { useMinuta };

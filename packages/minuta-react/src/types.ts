@@ -15,8 +15,8 @@ type MinutaOptions = Readonly<{
 }>;
 
 /**
- * What `useMinuta()` returns and `MinutaRoot` provides: every operation of
- * `withUnits(units)` plus the browsing state.
+ * What `useMinuta()` returns and `MinutaRoot` provides: `withUnits(units)`,
+ * with its `units`, plus the browsing state.
  */
 type MinutaState = Minuta &
   Readonly<{
@@ -26,8 +26,6 @@ type MinutaState = Minuta &
     browsing: Period;
     /** The second containing the `now` date */
     now: Period;
-    /** The units every operation is bound to */
-    units: Units;
   }>;
 
 export type { MinutaOptions, MinutaState };
