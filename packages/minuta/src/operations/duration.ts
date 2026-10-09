@@ -1,5 +1,4 @@
 import type { Period, Unit, Units } from "#src/types";
-import { countUnits } from "./utils/count-units";
 import { specFor } from "#src/units";
 
 const ONE = 1;
@@ -33,7 +32,7 @@ function length(period: Period): number {
  */
 function durationWith(units: Units, period: Period, unit: Unit): number {
   const end = new Date(period.end.getTime() + ONE);
-  return countUnits(specFor(units, unit), period.start, end);
+  return specFor(units, unit).diff(period.start, end);
 }
 
 export { durationWith, length };

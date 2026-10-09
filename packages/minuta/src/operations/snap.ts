@@ -1,6 +1,5 @@
 import type { Unit, UnitSpec, Units } from "#src/types";
 import { assertValidDate, specFor } from "#src/units";
-import { countUnits } from "./utils/count-units";
 
 const DEFAULT_STEP = 1;
 const ONE = 1;
@@ -62,7 +61,7 @@ function gridOf(ctx: StepContext): Grid {
 function stepBounds(ctx: StepContext): Bounds {
   const { date, spec, step } = ctx;
   const { anchor, limit } = gridOf(ctx);
-  const first = Math.floor(countUnits(spec, anchor, date) / step) * step;
+  const first = Math.floor(spec.diff(anchor, date) / step) * step;
   const next = spec.add(anchor, first + step);
   if (limit !== undefined && next > limit) {
     return { floor: spec.add(anchor, first), next: limit };
