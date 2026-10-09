@@ -6,4 +6,3 @@ export { monthHandler } from "./month";
 export { quarterHandler } from "./quarter";
 export { secondHandler } from "./second";
 export { yearHandler } from "./year";
-export type { WeekStartsOn } from "./week";

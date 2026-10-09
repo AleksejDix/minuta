@@ -1,5 +1,6 @@
+import { weekStartOf, weekendOf } from "#src/weekday";
 import type { AllUnits } from "#src/types";
-import type { WeekStartsOn } from "./units/week";
+import type { WeekOptions } from "#src/weekday";
 import { createWeekHandler } from "./units/week";
 import { dayHandler } from "./units/day";
 import { hourHandler } from "./units/hour";
@@ -9,28 +10,24 @@ import { quarterHandler } from "./units/quarter";
 import { secondHandler } from "./units/second";
 import { yearHandler } from "./units/year";
 
-const MONDAY = 1;
-
 /**
  * Unit specs for every unit, computed with the built-in `Date` (zero dependencies). Pass the result to
  * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
  * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
- * (0 = Sunday … 6 = Saturday).
+ * (`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+ * the days `isWeekend` counts (Saturday and Sunday unless set).
  *
  * @example
  * import { nativeUnits } from "minuta/native";
  * import { withUnits } from "minuta/core";
  *
- * const time = withUnits(nativeUnits({ weekStartsOn: 0 }));
+ * const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
  * time.period(new Date(), "week");
  *
- * @param options - Week start
+ * @param options - Week start and weekend
  * @returns A spec for every unit
  */
-function nativeUnits(
-  options: Readonly<{ weekStartsOn?: WeekStartsOn }> = {}
-): AllUnits {
-  const { weekStartsOn = MONDAY } = options;
+function nativeUnits(options: WeekOptions = {}): AllUnits {
   return {
     day: dayHandler,
     hour: hourHandler,
@@ -38,7 +35,8 @@ function nativeUnits(
     month: monthHandler,
     quarter: quarterHandler,
     second: secondHandler,
-    week: createWeekHandler(weekStartsOn),
+    week: createWeekHandler(weekStartOf(options)),
+    weekend: weekendOf(options),
     year: yearHandler,
   };
 }

@@ -1,3 +1,5 @@
+import type { WeekdayNumber } from "#src/weekday";
+
 /**
  * The primitive: every time range is a Period. Plain, deeply readonly data.
  *
@@ -57,14 +59,23 @@ type UnitSpec = Readonly<{
 }>;
 
 /**
- * The unit specs available to unit-aware functions. Partial, so a bundle can
- * carry only the units it uses; adapters such as `nativeUnits()` return all.
+ * Calendar settings that travel with the unit specs.
  */
-type Units = Readonly<Partial<Record<Unit, UnitSpec>>>;
+type WeekSettings = Readonly<{
+  /** Weekend days as `Date#getDay()` numbers. Default: Saturday and Sunday. */
+  weekend?: readonly WeekdayNumber[] | undefined;
+}>;
+
+/**
+ * The unit specs available to unit-aware functions. Partial, so a bundle can
+ * carry only the units it uses; adapters such as `nativeUnits()` return all,
+ * plus the `weekend`.
+ */
+type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & WeekSettings;
 
 /**
  * A spec for every unit, as returned by the adapters.
  */
-type AllUnits = Readonly<Record<Unit, UnitSpec>>;
+type AllUnits = Readonly<Record<Unit, UnitSpec>> & WeekSettings;
 
 export type { AllUnits, Period, Series, Unit, UnitRegistry, Units, UnitSpec };

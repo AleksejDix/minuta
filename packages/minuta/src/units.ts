@@ -34,7 +34,10 @@ type MinutaErrorCode = (typeof MinutaError)[keyof typeof MinutaError];
 function specFor(units: Units, unit: Unit): UnitSpec {
   const spec = units[unit];
   if (spec === undefined) {
-    const available = Object.keys(units).join(", ") || "none";
+    const available =
+      Object.keys(units)
+        .filter((name) => name !== "weekend")
+        .join(", ") || "none";
     throw new RangeError(
       `${MinutaError.UnitNotSupported}: no "${unit}" spec in the units passed (available: ${available}). ` +
         `Pass a full set such as nativeUnits(), or add a "${unit}" spec to your units.`

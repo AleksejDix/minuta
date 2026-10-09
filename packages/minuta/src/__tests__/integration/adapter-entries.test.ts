@@ -62,7 +62,9 @@ describe("export verification: adapter entries", () => {
     { timeout: 5000 },
     (_entry: string, _factoryName: string, factory: () => AllUnits) => {
       expect.hasAssertions();
-      const unitNames = new Set(Object.keys(factory()));
+      const unitNames = new Set(
+        Object.keys(factory()).filter((name) => name !== "weekend")
+      );
       expect(unitNames).toStrictEqual(new Set(UNIT_NAMES));
     }
   );
