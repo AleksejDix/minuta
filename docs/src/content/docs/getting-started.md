@@ -1,44 +1,106 @@
 ---
-title: Getting started
-description: Install minuta and divide your first year into months and days.
+title: Quick start
+description: Your first periods in five minutes — create a month, split it into days, step to the next month and label it.
 ---
 
-## Install
+This page walks through the core idea in five small steps. Install minuta
+first:
 
 ```sh
 npm install minuta
 ```
 
-## Divide time
+All examples run on the built-in `Date`, with weeks starting on Monday. The
+results are shown as comments.
 
-A period is a span of time in a unit. `divide` splits it into smaller periods.
+## 1. Create a period
+
+A period is a stretch of time around a date, in a unit. Ask for the month
+around October 12:
 
 ```ts
-import { divide, period } from "minuta";
+import { period } from "minuta";
 
-const year = period(new Date(), "year");
-const months = divide(year, "month"); // 12 periods
-const days = divide(months[0], "day"); // 31 periods
-const hours = divide(days[0], "hour"); // 24 periods
+const today = new Date(2026, 9, 12, 14, 30);
+const month = period(today, "month");
+// → start: Thu Oct 1 2026, 00:00:00
+//   end:   Sat Oct 31 2026, 23:59:59.999
+//   unit:  "month"
 ```
 
-## Packages
+The time of day doesn't matter: any date in October gives the same month. The
+end is the **last millisecond** of the month, so a period covers its whole
+range and nothing more.
 
-| Package              | Description                           |
-| -------------------- | ------------------------------------- |
-| `minuta`             | Core operations, native units bound   |
-| `minuta/native`      | Zero-dep adapter (built-in Date)      |
-| `minuta/date-fns`    | date-fns adapter                      |
-| `minuta/date-fns-tz` | Timezone-aware adapter                |
-| `minuta/luxon`       | Luxon adapter                         |
-| `minuta/temporal`    | TC39 Temporal adapter                 |
-| `fechita`            | Date parser for every CLDR locale     |
-| `minuta/calendar`    | Calendar grids, weekdays and weekends |
-| `minuta/intervals`   | Merge, split, clamp, snap and more    |
-| `minuta/format`      | Locale-aware period labels            |
-| `minuta-vue`         | Vue 3 integration                     |
-| `minuta-react`       | React 18+ integration                 |
-| `datefield`          | Headless segmented date input         |
-| `text-buffer`        | Immutable text + selection model      |
-| `input-state`        | Masks + insert/overwrite modes        |
-| `input-dom`          | Vanilla DOM binding for inputs        |
+## 2. Split it
+
+`divide` cuts a period into smaller ones. A month into days:
+
+```ts
+import { divide } from "minuta";
+
+const days = divide(month, "day");
+// → 31 periods: Oct 1, Oct 2, … Oct 31
+```
+
+Split into weeks and the edges are cut to fit the month. Those pieces get the
+unit `"custom"`, because they are not whole weeks:
+
+```ts
+divide(month, "week");
+// → Oct 1–4    "custom"  (the week started in September)
+//   Oct 5–11   "week"
+//   Oct 12–18  "week"
+//   Oct 19–25  "week"
+//   Oct 26–31  "custom"  (the week ends in November)
+```
+
+## 3. Step through time
+
+`next` and `previous` move to the neighbouring period of the same unit:
+
+```ts
+import { next, previous } from "minuta";
+
+next(month); //     → November 2026 (Nov 1 – Nov 30)
+previous(month); // → September 2026
+```
+
+No arithmetic on days: months of 28, 30 or 31 days, years with leap days and
+clock changes are handled for you.
+
+## 4. Ask questions
+
+```ts
+import { contains, duration, same } from "minuta";
+
+contains(month, today); //                  → true
+contains(month, new Date(2026, 10, 1)); //  → false
+
+duration(month, "day"); //                  → 31
+duration(period(today, "day"), "hour"); //  → 24
+
+same(period(today, "day"), period(new Date(2026, 9, 30), "day"), "month");
+// → true: both days are in October
+```
+
+## 5. Label it
+
+`formatPeriod` from `minuta/format` writes a period the way the locale reads
+it:
+
+```ts
+import { formatPeriod } from "minuta/format";
+
+formatPeriod(month, "en-US"); //               → "October 2026"
+formatPeriod(month, "de-CH"); //               → "Oktober 2026"
+formatPeriod(period(today, "day"), "en-US"); // → "October 12, 2026"
+```
+
+## What's next
+
+- [Periods and units](../concepts/periods-and-units/) — the model behind all of this.
+- [Weeks and calendars](../concepts/weeks-and-calendars/) — month grids, week start, weekends.
+- [Date engines](../concepts/date-engines/) — run on date-fns, Luxon, Day.js, Moment or Temporal.
+- The [reference](../api/minuta/overview/) — every function, explained.
+- The [live demo](../demo/) — a date field and calendar built on minuta.

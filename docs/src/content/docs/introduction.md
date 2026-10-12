@@ -1,0 +1,65 @@
+---
+title: Introduction
+description: What minuta is, the idea behind it, and which package you need.
+---
+
+minuta is a set of small libraries for working with dates the way people
+think about them: as **this month**, **next week**, **the 15-minute slot at
+9:30**, not as millisecond timestamps.
+
+## The idea: periods
+
+Most date libraries give you a point in time and a pile of helpers. minuta
+gives you a **period**: a stretch of time with a start, an end and a unit.
+
+```ts
+import { period } from "minuta";
+
+const october = period(new Date(2026, 9, 12), "month");
+// → start: Oct 1 2026, 00:00:00.000
+//   end:   Oct 31 2026, 23:59:59.999
+//   unit:  "month"
+```
+
+Every operation works on periods. You split them (`divide`), step through them
+(`next`, `previous`, `shift`), compare them (`same`, `contains`, `overlaps`)
+and count them (`duration`). The rest — calendars, intervals, formatting,
+date fields — builds on that one idea.
+
+Read [Periods and units](../concepts/periods-and-units/) for the full picture.
+
+## What you get
+
+- **Pure functions over plain data.** A period is a plain object. Nothing is
+  mutated, nothing hides state, everything is easy to test.
+- **Any date engine.** minuta runs on the built-in `Date` out of the box, and
+  on date-fns, Luxon, Day.js, Moment or Temporal if your app already uses one.
+  Your code stays the same. See [Date engines](../concepts/date-engines/).
+- **Calendars.** Month, year and day grids with the right week start, weekends
+  and outside days, ready to render.
+- **A date field people can type in.** A segmented input that accepts typed
+  and pasted dates in any locale (`Wed Oct 28 2026`, `2026-10-28`,
+  `28. Oktober 2026`), with arrow-key stepping and day clamping.
+- **React and Vue.** Headless roots, hooks/composables and accessible calendar
+  parts, so you control the markup and the styling.
+
+## Which package do I need?
+
+| You want to…                                      | Install                                             |
+| ------------------------------------------------- | --------------------------------------------------- |
+| Work with periods, calendars, intervals, labels   | `minuta`                                            |
+| Build a calendar in React                         | `minuta` + `minuta-react`                           |
+| Build a calendar in Vue                           | `minuta` + `minuta-vue`                             |
+| Parse dates people type or paste, in any language | `fechita`                                           |
+| Build a segmented date input                      | `datefield` + `input-dom` (+ `fechita` for pasting) |
+
+`minuta` itself has several entry points — `minuta`, `minuta/core`,
+`minuta/calendar`, `minuta/intervals`, `minuta/format` and one per date
+engine — so you only load what you use. [Installation](../installation/) shows
+the details.
+
+## Next
+
+- [Installation](../installation/)
+- [Quick start](../getting-started/): your first periods in five minutes
+- [Live demo](../demo/): the date field and calendar, working
