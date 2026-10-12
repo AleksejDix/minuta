@@ -1,6 +1,7 @@
 import {
   clampDay,
   dateMask,
+  dateOrder,
   deriveFormat,
   fromDate,
   parseSegments,
@@ -8,6 +9,7 @@ import {
   segmentAtPosition,
   segmentsToString,
   toDate,
+  typeDate,
   withSegments,
 } from "datefield";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -17,6 +19,7 @@ import type { InputState } from "input-state";
 import type { RefObject } from "react";
 import { attachInput } from "input-dom";
 import { createInputState } from "input-state";
+import { parseDate } from "fechita";
 
 type DateField = Readonly<{
   date: Readonly<Date> | undefined;
@@ -66,12 +69,26 @@ function rotated(
   );
 }
 
+// The demo reads pastes in every locale; an app loads only the ones it needs
+function pastedDate(
+  text: string,
+  locale: string,
+  format: Readonly<DateFormat>
+): Readonly<Date> | undefined {
+  const result = parseDate(text, { locale, order: dateOrder(format) });
+  if (result.valid) {
+    return result.date;
+  }
+  return undefined;
+}
+
 /**
- * Attach input-dom with the date rules: day clamping after every change and
- * segment rotation on the arrow keys.
+ * Attach input-dom with the date rules: typing and pasting the way people
+ * write dates, day clamping after every change and segment rotation on the
+ * arrow keys.
  *
  * @param element - The input to control
- * @param field - Date format, initial state and change callback
+ * @param field - Date format, locale, initial state and change callback
  * @returns The input-dom controller
  */
 function attachField(
@@ -79,11 +96,16 @@ function attachField(
   field: Readonly<{
     format: Readonly<DateFormat>;
     initial: InputState;
+    locale: string;
     onChange: (next: InputState) => void;
   }>
 ): InputController {
-  const { format, initial, onChange } = field;
+  const { format, initial, locale, onChange } = field;
   return attachInput(element, initial, {
+    insert: (state, text) =>
+      typeDate(format, state, text, {
+        parse: (pasted) => pastedDate(pasted, locale, format),
+      }),
     normalize: (next) =>
       withSegments(next, clampDay(parseSegments(format, next.buffer.text))),
     onChange,
@@ -120,6 +142,7 @@ function useDateField(
     const attached = attachField(element, {
       format,
       initial: fieldFor(format, lastDate.current, locale),
+      locale,
       onChange: (next) => {
         lastDate.current = toDate(parseSegments(format, next.buffer.text));
         setState(next);
