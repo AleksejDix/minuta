@@ -1,53 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
-/* shadcn/ui theme: new-york-v4, neutral */
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-}
-
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-}
+@import "./theme.css";
+@import "./calendar.css";
 
 @layer base {
   * {
@@ -57,58 +11,4 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
-}
-
-/* minuta's calendar, styled like shadcn's Calendar */
-.calendar-shell {
-  @apply flex w-fit flex-col gap-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm;
-}
-
-.calendar-shell .toolbar-row {
-  @apply flex items-center justify-between gap-4;
-}
-
-.calendar-shell .toolbar-row h2 {
-  @apply text-sm font-medium;
-}
-
-.calendar-shell .toolbar-row .nav-button {
-  @apply inline-flex h-8 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium shadow-xs transition-all outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
-}
-
-.calendar-shell .weeks-grid {
-  @apply border-collapse;
-}
-
-.calendar-shell .weekday-grid th {
-  @apply h-8 w-9 text-[0.8rem] font-normal text-muted-foreground;
-}
-
-.calendar-shell .grid-cell {
-  @apply p-0;
-}
-
-.calendar-shell .grid-cell .day-cell {
-  @apply inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-sm font-normal transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50;
-}
-
-.calendar-shell .grid-cell .day-cell.is-outside {
-  @apply text-muted-foreground;
-}
-
-.calendar-shell .grid-cell .day-cell.is-today {
-  @apply bg-accent text-accent-foreground;
-}
-
-.calendar-shell .grid-cell .day-cell.is-selected {
-  @apply bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground;
-}
-
-.calendar-shell .grid-cell .day-cell.is-disabled {
-  @apply pointer-events-none opacity-50;
-}
-
-/* The day button's aria-label already names the weekday */
-.calendar-shell .grid-cell .weekday-label {
-  @apply sr-only;
 }
