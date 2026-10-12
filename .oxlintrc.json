@@ -196,6 +196,7 @@
     "coverage",
     "*.min.js",
     "*.d.ts",
+    ".astro",
     "packages/*/examples/src/components/ui/**",
     "packages/*/examples/src/lib/**"
   ]
