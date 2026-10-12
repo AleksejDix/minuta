@@ -1,0 +1,95 @@
+---
+title: input-state
+description: The state of an input field — text, selection, an optional mask and insert or overwrite mode — with pure keyboard functions.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+`input-state` is the state of one input field: the text and cursor (a
+[text buffer](../../text-buffer/overview/)), an optional **mask** such as
+`__.__.____`, and a **mode**, insert or overwrite. Each key press is a plain
+function that returns a new state. There is no DOM.
+
+```sh
+npm install input-state text-buffer
+```
+
+## Where it sits
+
+1. [text-buffer](../../text-buffer/overview/) — text and selection.
+2. **input-state** — masks and modes on top of the buffer.
+3. [datefield](../../datefield/overview/) — date segments (day, month, year)
+   on top of a mask.
+4. [input-dom](../../input-dom/overview/) — connects a state to a real
+   `<input>` element.
+
+See [The input stack](../../../concepts/the-input-stack/) for the whole
+picture.
+
+## Two kinds of field
+
+**Free text.** Without a mask the field holds any text. It starts in
+**insert** mode: typing pushes the text after the cursor to the right. In
+**overwrite** mode typing replaces the character at the cursor instead, like
+pressing the Insert key in an editor. [`toggleMode`](../toggle-mode/)
+switches between the two.
+
+**Masked.** A mask is a fixed template of **slots** and **literals**. In
+`99.99.9999` each `9` is a slot for one digit and each `.` is a literal that
+is always there. The text always has the full length of the template; empty
+slots show a **placeholder** character, `_` by default. A masked field is
+always in overwrite mode: typing fills the next slot, deleting empties a
+slot, and nothing ever shifts. That keeps a half-corrected date in place.
+
+## Example
+
+```ts
+import {
+  backspace,
+  createInputState,
+  isComplete,
+  parseMask,
+  paste,
+  typeChar,
+} from "input-state";
+
+let field = createInputState({ mask: parseMask("99.99.9999") });
+field.buffer.text; // → "__.__.____"
+
+field = typeChar(field, "3"); // → "3_.__.____"
+field = typeChar(field, "1"); // → "31.__.____", the cursor jumps over the "."
+field = paste(field, "032026"); // → "31.03.2026"
+isComplete(field); // → true
+
+field = backspace(field); // → "31.03.202_", the slot empties, nothing shifts
+```
+
+Every function returns a new state, or the same state when nothing changed.
+The current text is `state.buffer.text` and the selection is
+`state.buffer.selection`.
+
+## Exports
+
+### Field functions
+
+| Function                                     | What it does                                                  |
+| -------------------------------------------- | ------------------------------------------------------------- |
+| [`createInputState`](../create-input-state/) | Create a field, free or masked, with an optional start value. |
+| [`typeChar`](../type-char/)                  | Type one character.                                           |
+| [`paste`](../paste/)                         | Paste text; in a masked field, fill the slots one by one.     |
+| [`backspace`](../backspace/)                 | The Backspace key.                                            |
+| [`deleteForward`](../delete-forward/)        | The Delete key.                                               |
+| [`setSelection`](../set-selection/)          | Move the cursor or select text.                               |
+| [`toggleMode`](../toggle-mode/)              | Switch between insert and overwrite (free text only).         |
+| [`isComplete`](../is-complete/)              | Whether every slot of the mask is filled.                     |
+
+### Mask functions
+
+| Function                              | What it does                                            |
+| ------------------------------------- | ------------------------------------------------------- |
+| [`parseMask`](../parse-mask/)         | Turn a pattern such as `99.99.9999` into a mask.        |
+| [`emptyText`](../empty-text/)         | The text of a mask with every slot empty: `__.__.____`. |
+| [`slotPositions`](../slot-positions/) | The positions of the slots in the text.                 |
+| [`accepts`](../accepts/)              | Whether a kind of slot takes a character.               |
+| [`slotChar`](../slot-char/)           | The character a slot stores for a typed character.      |

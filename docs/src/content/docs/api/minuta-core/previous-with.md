@@ -1,0 +1,64 @@
+---
+title: previousWith
+description: Get the period right before a period — the day, week or month before — with the units you pass.
+---
+
+Get the period right before a period (the day, week or month before),
+computed with the units you pass.
+
+```ts
+import { previousWith } from "minuta/core";
+```
+
+```ts
+previousWith(units, period);
+```
+
+## Example
+
+```ts
+import { periodWith, previousWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const units = nativeUnits({ weekStartsOn: "sunday" });
+const week = periodWith(units, new Date(2026, 2, 18), "week");
+// → Sun Mar 15 – Sat Mar 21
+
+previousWith(units, week);
+// → Sun Mar 8 00:00:00.000 – Sat Mar 14 23:59:59.999, unit "week"
+```
+
+## Parameters
+
+| Name     | What it is                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. `nativeUnits()`. See [Date engines](../../../concepts/date-engines/). |
+| `period` | The current period.                                                                                   |
+
+## Returns
+
+A new, whole period of the same unit that ends right before `period` starts.
+`previousWith(units, p)` is the same as
+[`shiftWith(units, p, -1)`](../shift-with/).
+
+It works exactly like [`previous`](../../minuta/previous/), which is
+`previousWith` with `nativeUnits()` bound. Read that page for year ends,
+daylight saving and custom periods, which move by their own length.
+
+Pass the units the period was made with; see
+[`nextWith`](../next-with/#use-the-same-units-as-the-period) for why.
+
+## Errors
+
+`previousWith` throws a `RangeError` whose message starts with a code:
+
+| Code                 | When                                   |
+| -------------------- | -------------------------------------- |
+| `INVALID_DATE`       | `period.start` is an invalid `Date`.   |
+| `UNIT_NOT_SUPPORTED` | `units` has no spec for `period.unit`. |
+
+## Related
+
+- [`previous`](../../minuta/previous/) (`minuta`) — the same, ready to use.
+- [`nextWith`](../next-with/) — the period after.
+- [`shiftWith`](../shift-with/) — move by any number of periods.

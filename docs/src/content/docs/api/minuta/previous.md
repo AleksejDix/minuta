@@ -1,0 +1,88 @@
+---
+title: previous
+description: Get the period right before a period — the day before, the week before, the month before.
+---
+
+Get the period right before a period: the day before a day, the week before
+a week, the month before a month.
+
+```ts
+import { previous } from "minuta";
+```
+
+```ts
+previous(period);
+```
+
+## Example
+
+```ts
+import { period, previous } from "minuta";
+
+const march = period(new Date(2026, 2, 15), "month");
+
+previous(march);
+// → Sun Feb 1 00:00:00.000 – Sat Feb 28 23:59:59.999, unit "month"
+```
+
+## Parameters
+
+| Name     | What it is                                        |
+| -------- | ------------------------------------------------- |
+| `period` | The current period, e.g. a month from `period()`. |
+
+## Returns
+
+A new period of the same unit that ends right before `period` starts. It is a
+whole unit, with its own length: before March (31 days) comes February
+(28 days in 2026).
+
+`previous(p)` is the same as [`shift(p, -1)`](../shift/).
+
+## Across years and clock changes
+
+The previous period is found on the calendar, so it crosses year ends and
+daylight-saving changes without surprises:
+
+```ts
+previous(period(new Date(2026, 2, 18), "year"));
+// → Wed Jan 1 2025 00:00:00.000 – Wed Dec 31 2025 23:59:59.999
+
+previous(period(new Date(2026, 2, 30), "day"));
+// → Sun Mar 29 00:00:00.000 – 23:59:59.999 (23 hours long in Europe/Zurich)
+```
+
+## Custom periods move by their own length
+
+A period with the unit `"custom"` (from [`range`](../range/), or a piece cut
+by [`divide`](../divide/)) moves back by exactly its own length in
+milliseconds. The clipped one-day week at the start of March 2026 moves back
+one day, not one week:
+
+```ts
+import { divide, period, previous } from "minuta";
+
+const [firstPiece] = divide(period(new Date(2026, 2, 1), "month"), "week");
+// → Sun Mar 1 00:00:00.000 – 23:59:59.999, unit "custom"
+
+previous(firstPiece);
+// → Sat Feb 28 00:00:00.000 – 23:59:59.999, unit "custom"
+```
+
+See [`next`](../next/#custom-periods-move-by-their-own-length) for more on
+custom periods, including ranges that end on a round time.
+
+## Errors
+
+`previous` throws a `RangeError` whose message starts with a code:
+
+| Code                 | When                                 |
+| -------------------- | ------------------------------------ |
+| `INVALID_DATE`       | `period.start` is an invalid `Date`. |
+| `UNIT_NOT_SUPPORTED` | `period.unit` is not a known unit.   |
+
+## Related
+
+- [`next`](../next/) — the period after.
+- [`shift`](../shift/) — move by any number of periods.
+- [`previousWith`](../../minuta-core/previous-with/) (`minuta/core`) — the same, with your own units and week start.

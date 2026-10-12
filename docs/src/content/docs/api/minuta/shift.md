@@ -1,0 +1,106 @@
+---
+title: shift
+description: Move a period forward or back by a number of its own unit — three months ahead, two weeks back.
+---
+
+Move a period forward or back by a number of its own unit: three months
+ahead, two weeks back, one year back.
+
+```ts
+import { shift } from "minuta";
+```
+
+```ts
+shift(period, steps);
+```
+
+## Example
+
+```ts
+import { period, shift } from "minuta";
+
+const march = period(new Date(2026, 2, 15), "month");
+
+shift(march, 3);
+// → Mon Jun 1 00:00:00.000 – Tue Jun 30 23:59:59.999, unit "month"
+
+shift(march, -14);
+// → Wed Jan 1 2025 00:00:00.000 – Fri Jan 31 2025 23:59:59.999, unit "month"
+```
+
+## Parameters
+
+| Name     | What it is                                                                          |
+| -------- | ----------------------------------------------------------------------------------- |
+| `period` | The period to move, e.g. a month from `period()`.                                   |
+| `steps`  | How many periods to move, as a whole number. Positive moves forward, negative back. |
+
+## Returns
+
+A new, whole period of the same unit, `steps` periods away. It has its own
+length: three months after March is June, with 30 days.
+
+With `steps` of `0`, `shift` returns the very same `period` object.
+
+[`next`](../next/) is `shift(period, 1)`, [`previous`](../previous/) is
+`shift(period, -1)`.
+
+## The unit is the period's own
+
+`shift` has no unit argument. It always steps by the unit stored in
+`period.unit`. A week moves by weeks, a day by days:
+
+```ts
+shift(period(new Date(2026, 2, 18), "week"), -1);
+// → Mon Mar 9 00:00:00.000 – Sun Mar 15 23:59:59.999, unit "week"
+```
+
+To move a day period by months, first get the month with
+[`period`](../period/): `shift(period(day.start, "month"), 2)`.
+
+## Custom periods move by their own length
+
+A period with the unit `"custom"` (from [`range`](../range/), or a piece cut
+by [`divide`](../divide/)) moves by `steps` times its own length in
+milliseconds:
+
+```ts
+import { range, shift } from "minuta";
+
+const slot = range(
+  new Date(2026, 2, 2, 9),
+  new Date(2026, 2, 2, 9, 59, 59, 999)
+);
+
+shift(slot, 2);
+// → Mon Mar 2 11:00:00.000 – 11:59:59.999, unit "custom"
+```
+
+This is elapsed time, not calendar time: across a daylight-saving change, a
+custom period ends up an hour off the clock. And a range that ends on a round
+time (9:00 to 10:00) is one millisecond longer than it looks, so every step
+adds a millisecond. See [`next`](../next/#custom-periods-move-by-their-own-length)
+for examples of both.
+
+:::caution
+Pass whole numbers. `steps` is not checked: a fraction gives different
+results for different units (a custom period moves by 1.5 lengths, a month
+by one month), so do not rely on it.
+:::
+
+## Errors
+
+`shift` throws a `RangeError` whose message starts with a code:
+
+| Code                 | When                                                      |
+| -------------------- | --------------------------------------------------------- |
+| `INVALID_DATE`       | `period.start` is an invalid `Date`, or `steps` is `NaN`. |
+| `UNIT_NOT_SUPPORTED` | `period.unit` is not a known unit.                        |
+
+With `steps` of `0` nothing is checked: the period comes back as it is.
+
+## Related
+
+- [`next`](../next/) and [`previous`](../previous/) — move by one.
+- [`period`](../period/) — create the period to move.
+- [`shiftWith`](../../minuta-core/shift-with/) (`minuta/core`) — the same, with your own units and week start.

@@ -1,0 +1,280 @@
+---
+title: parseDate
+description: Read the date in a text — ISO, numbers in any order, month and weekday names in 104 languages — and report when it is ambiguous.
+---
+
+Read the date in a piece of text, written in almost any way and in any of 104
+languages. You get a date only when the text means exactly one date.
+Otherwise you get the reason and the dates it could mean.
+
+```ts
+import { parseDate } from "fechita";
+```
+
+```ts
+parseDate(text, options?)
+```
+
+## Example
+
+```ts
+import { parseDate } from "fechita";
+
+parseDate("2026-03-31");
+// → { valid: true, date: 31 March 2026 00:00 local time, parts: { … } }
+
+parseDate("31. März 2026"); // → valid: 31 March 2026
+parseDate("31 de marzo de 2026"); // → valid: 31 March 2026
+parseDate("3/31/2026"); // → valid: 31 March 2026, only 31 can be the day
+
+parseDate("04/05/2026");
+// → { valid: false, errorCodes: ["AMBIGUOUS_DAY_MONTH"],
+//     candidates: [4 May 2026, 5 April 2026] }
+
+parseDate("04/05/2026", { locale: "de-CH" }); // → valid: 4 May 2026
+parseDate("04/05/2026", { order: "MDY" }); // → valid: 5 April 2026
+```
+
+All results on this page were made in the time zone Europe/Zurich, with today
+being in 2026.
+
+## Parameters
+
+| Name      | What it is                                                                |
+| --------- | ------------------------------------------------------------------------- |
+| `text`    | The text to read. It may contain other words around the date.             |
+| `options` | Optional. `locale`, `order` and `referenceDate`, see [Options](#options). |
+
+## Options
+
+| Option          | Default | What it does                                                                                                                                                                                          |
+| --------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `locale`        | none    | The language and region the text was written in, e.g. `"de-CH"` or `"en-US"`. Its usual date order settles ambiguous numbers, and its words win when two languages use one word for different months. |
+| `order`         | none    | `"DMY"`, `"MDY"` or `"YMD"`: how to read numbers that fit more than one order. Wins over `locale`.                                                                                                    |
+| `referenceDate` | now     | The date two-digit years are counted from, see [Two-digit years](#two-digit-years).                                                                                                                   |
+
+## Returns
+
+An object whose `valid` field tells you which of two shapes it has.
+
+When the text means exactly one date:
+
+| Field   | What it is                                                                                                                                        |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `valid` | `true`.                                                                                                                                           |
+| `date`  | A `Date`. Local time, or the exact moment when the text has a UTC offset (`Z`, `+02:00`, `GMT+1`).                                                |
+| `parts` | The fields as written: `year`, `month` (1–12), `day`, `hour`, `minute`, `second`, `millisecond`, and `offsetMinutes` when the text has an offset. |
+
+When it does not:
+
+| Field        | What it is                                                                          |
+| ------------ | ----------------------------------------------------------------------------------- |
+| `valid`      | `false`.                                                                            |
+| `errorCodes` | Why there is no single date, e.g. `["AMBIGUOUS_DAY_MONTH"]`. See [Errors](#errors). |
+| `candidates` | The dates the text could mean. Filled for `AMBIGUOUS_DAY_MONTH`, empty otherwise.   |
+
+```ts
+const result = parseDate(text);
+if (result.valid) {
+  save(result.date);
+} else if (result.candidates.length > 0) {
+  askWhichOne(result.candidates);
+}
+```
+
+## Ambiguous dates
+
+`3/4/2026` is 3 April in Germany and March 4 in the United States. fechita
+does not guess. It works out every way to read the numbers (day first, month
+first, year first), drops the ones that are no real date, and looks at what
+is left:
+
+- **One reading left**: that is the date. `3/31/2026` can only be March 31,
+  because there is no month 31.
+- **Several readings of the same day**: still one date. `1/1/2026` is
+  1 January either way.
+- **Several different days**: the result is `AMBIGUOUS_DAY_MONTH`, with all
+  of them as `candidates`, unless `order` or `locale` picks one.
+
+```ts
+parseDate("3/4/2026");
+// → invalid: AMBIGUOUS_DAY_MONTH, candidates [3 April 2026, 4 March 2026]
+
+parseDate("3/4/2026", { order: "DMY" }); // → 3 April 2026
+parseDate("3/4/2026", { order: "MDY" }); // → 4 March 2026
+parseDate("1/1/2026"); // → valid: 1 January 2026
+```
+
+### `order` and `locale`
+
+`order` says directly which reading to take. `locale` uses the usual order of
+that locale and region: `de-CH` and `en-GB` write day first, `en-US` writes
+month first. A region falls back to its language, so `de-CH` uses the German
+data. When both are given, `order` wins.
+
+```ts
+parseDate("04/05/2026", { locale: "en-GB" }); // → 4 May 2026
+parseDate("04/05/2026", { locale: "en-US" }); // → 5 April 2026
+parseDate("04/05/2026", { order: "DMY", locale: "en-US" }); // → 4 May 2026
+```
+
+The order only picks among real readings. If it matches none of them, the
+result stays ambiguous. Japanese writes year first, so `ja` does not help
+with `04/05/2026`, where the year comes last. An unknown locale is ignored.
+
+```ts
+parseDate("04/05/2026", { locale: "ja" }); // → still AMBIGUOUS_DAY_MONTH
+parseDate("04/05/2026", { order: "YMD" }); // → still AMBIGUOUS_DAY_MONTH
+```
+
+## Numbers in any order
+
+Day, month and year may be separated by any characters, or not at all when
+they form one run of eight digits.
+
+```ts
+parseDate("31.3.2026"); // → 31 March 2026
+parseDate("2026/3/31"); // → 31 March 2026
+parseDate("3.31.2026"); // → 31 March 2026
+parseDate("31032026"); // → 31 March 2026
+parseDate("Due on 31.03.2026, thanks"); // → 31 March 2026
+```
+
+A year must have two or four digits, a day or a month one or two.
+
+## Two-digit years
+
+A two-digit year is placed in a window of 100 years: from 80 years before
+`referenceDate` to 19 years after it. With today in 2026 that window is
+1946–2045.
+
+```ts
+parseDate("31.03.68"); // → 31 March 1968
+parseDate("31.03.45"); // → 31 March 2045
+parseDate("31.03.46"); // → 31 March 1946
+
+parseDate("31.03.70", { referenceDate: new Date(2026, 0, 1) }); // → 31 March 1970
+```
+
+With two digits, the year can also be the first number, so short dates are
+more often ambiguous than you expect:
+
+```ts
+parseDate("31.03.26");
+// → invalid: AMBIGUOUS_DAY_MONTH,
+//   candidates [26 March 2031 (year first), 31 March 2026 (day first)]
+
+parseDate("31.03.26", { order: "DMY" }); // → 31 March 2026
+```
+
+## Month names in many languages
+
+Month names are read in all 104 locales, in their full and short forms.
+Case, accents and abbreviation dots do not matter.
+
+```ts
+parseDate("March 31, 2026"); // → 31 March 2026
+parseDate("31 марта 2026"); // → 31 March 2026
+parseDate("31 Marz 2026"); // → 31 March 2026, "März" without the umlaut
+parseDate("MÄRZ 31 2026"); // → 31 March 2026
+parseDate("2026年3月31日"); // → 31 March 2026
+```
+
+A few words name different months in different languages. `listopad` is
+November in Polish and October in Croatian. Then you get `AMBIGUOUS_MONTH`,
+and `locale` settles it:
+
+```ts
+parseDate("12 listopad 2026"); // → invalid: AMBIGUOUS_MONTH
+parseDate("12 listopad 2026", { locale: "pl" }); // → 12 November 2026
+parseDate("12 listopad 2026", { locale: "hr" }); // → 12 October 2026
+```
+
+A month name needs a year next to it. `31 March` and `March 2026` give
+`NO_DATE`.
+
+## Weekday names are checked
+
+A weekday in the text must match the date. A wrong one is reported, not
+ignored, because it usually means the date was mistyped.
+
+```ts
+parseDate("Tuesday 31 March 2026"); // → 31 March 2026
+parseDate("mardi 31 mars 2026"); // → 31 March 2026
+parseDate("Monday 31 March 2026"); // → invalid: WEEKDAY_MISMATCH
+```
+
+## ISO dates and times
+
+ISO 8601 and RFC 3339 are read exactly, so `2026-04-05` is never ambiguous.
+Without an offset the time is local; with one, `date` is that exact moment.
+
+```ts
+parseDate("2026-03-31T10:00");
+// → 31 March 2026 10:00 local time
+
+parseDate("2026-03-31T10:00:00.250+02:00");
+// → the moment 2026-03-31T08:00:00.250Z,
+//   parts.offsetMinutes: 120, parts.millisecond: 250
+
+parseDate("Tue, 31 Mar 2026 10:00:00 +0200");
+// → the moment 2026-03-31T08:00:00Z (an email date, RFC 2822)
+```
+
+Times are also found in free text: 24-hour, 12-hour with AM/PM, the day
+period words of other languages, and offsets such as `UTC` or `GMT+1`.
+
+```ts
+parseDate("31.03.2026 14:05"); // → 31 March 2026 14:05
+parseDate("2:05 PM 31.03.2026"); // → 31 March 2026 14:05
+parseDate("2026年3月31日 晚上11:59"); // → 31 March 2026 23:59 ("晚上" is evening)
+parseDate("31.03.2026 23:59 UTC"); // → the moment 2026-03-31T23:59:00Z
+```
+
+## Invalid dates
+
+A date that does not exist is not rolled over to the next month. You get the
+reason instead.
+
+```ts
+parseDate("2026-02-30"); // → invalid: INVALID_DAY
+parseDate("29.02.2026"); // → invalid: INVALID_DAY, INVALID_MONTH
+parseDate("29.02.2028"); // → valid: 29 February 2028, a leap year
+parseDate("13/13/2026"); // → invalid: INVALID_MONTH
+parseDate("31.03.2026 10:61"); // → invalid: INVALID_TIME
+```
+
+`29.02.2026` gets two codes because it was tried in every order: day first
+gives a day that does not exist, month first gives month 29. Each problem is
+listed once.
+
+## More that it reads
+
+- Digits of every script: `٣١/٠٣/٢٠٢٦` is 31 March 2026.
+- Years with an era: `15 March 44 BC` is year −43, counted the astronomical
+  way (1 BC is year 0).
+- All dates are in the Gregorian calendar.
+
+## Errors
+
+`parseDate` never throws. It returns `valid: false` with one or more of these
+codes in `errorCodes`. [`ParseError`](../parse-error/) has them as named
+constants.
+
+| Code                  | When                                                                       |
+| --------------------- | -------------------------------------------------------------------------- |
+| `AMBIGUOUS_DAY_MONTH` | The numbers make more than one real date. Pass `order` or `locale`.        |
+| `AMBIGUOUS_MONTH`     | A month word means different months in different languages. Pass `locale`. |
+| `INVALID_DAY`         | The day does not exist in that month: 31 April, 29 February 2026.          |
+| `INVALID_MONTH`       | The month is not 1–12.                                                     |
+| `INVALID_TIME`        | The time is out of range: `25:00`, `10:61`.                                |
+| `NO_DATE`             | No day, month and year were found: `hello`, `""`, `March 2026`.            |
+| `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                    |
+
+## Related
+
+- [`ParseError`](../parse-error/) — the error codes as constants.
+- [`withLocales`](../with-locales/) — the same function with only the locales you need.
+- [`parseDateWith`](../parse-date-with/) — the same, with the locales as an argument.
+- [`typeDate`](../../datefield/type-date/) — uses `parseDate` to read a pasted date into a date field.
+- [Parsing dates](../../../concepts/parsing-dates/) — why reading dates is hard, and how fechita decides.

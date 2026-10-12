@@ -1,0 +1,155 @@
+---
+title: datefield
+description: The rules of a segmented date input like __.__.____ — locale formats, typing, pasting, arrow keys and day clamping, with no DOM.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+datefield is the logic of a date input that is split into segments, like
+`__.__.____` in Switzerland or `__/__/____` in the US. It knows how each locale
+writes a date, how people type and paste dates, what the arrow keys do, and
+when a day like 31 February must become 28. It has no DOM and no framework:
+every function takes data and returns new data.
+
+```bash
+npm install datefield input-state
+```
+
+## Where it sits
+
+datefield is layer 3 of the [input stack](../../../concepts/the-input-stack/):
+
+1. [text-buffer](../../text-buffer/overview/) — text and a cursor.
+2. [input-state](../../input-state/overview/) — modes and masks: `__.__.____`
+   with slots that only take digits, and nothing ever shifts.
+3. **datefield** — dates on top of a mask: locale formats, segments, typing
+   rules, rotation, clamping.
+4. [input-dom](../../input-dom/overview/) — binds the field to an `<input>`.
+
+The field itself is an input-state. datefield builds its mask and gives you
+functions to change it the way a date field should change.
+
+## Example
+
+```ts
+import {
+  clampDay,
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  parseSegments,
+  toDate,
+  typeDate,
+  withSegments,
+} from "datefield";
+import { createInputState } from "input-state";
+import { parseDate } from "fechita";
+
+// 1. How does this locale write a date?
+const format = deriveFormat("de-CH");
+
+// 2. An empty field with that format as its mask
+let field = createInputState({ mask: dateMask(format) });
+field.buffer.text; // → "__.__.____"
+
+// 3. Type the way people type: a "." finishes the part
+field = typeDate(format, field, "1.3.2026");
+field.buffer.text; // → "01.03.2026"
+
+// 4. Paste a date in any form, read by fechita in the field's order
+const parse = (text) => {
+  const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+};
+field = createInputState({ mask: dateMask(format) });
+field = typeDate(format, field, "31. Januar 2026", { parse });
+field.buffer.text; // → "31.01.2026"
+
+// 5. The user changes the month to 02: keep the day valid
+field = createInputState({ mask: dateMask(format), value: "31.02.2026" });
+field = withSegments(field, clampDay(parseSegments(format, field.buffer.text)));
+field.buffer.text; // → "28.02.2026"
+
+// 6. Read the date
+toDate(parseSegments(format, field.buffer.text)); // → Sat Feb 28 2026
+```
+
+In a browser, [input-dom](../../input-dom/overview/) runs these steps for you
+on every key press and paste.
+
+## Words used on these pages
+
+- **Format** — how a locale writes a date: a list of segments and separators,
+  from [`deriveFormat`](../derive-format/).
+- **Segment** — one part of the date text: the day `31`, the month `03`, the
+  year `2026`, or a separator like `.`. Each knows its position in the text.
+- **Field** — the input state: text, cursor and mask. It is never changed in
+  place; every function returns a new one.
+- **Mask** — the template the text must match: digit slots and fixed
+  separators. With a mask the field is in **overwrite mode**: typing replaces
+  the slot at the cursor, so correcting one digit never shifts the rest.
+- **Cursor** — `field.buffer.selection.head`, a position between characters,
+  counted from 0.
+
+## Functions
+
+### Formats
+
+| Function                            | What it does                                               |
+| ----------------------------------- | ---------------------------------------------------------- |
+| [`deriveFormat`](../derive-format/) | How a locale writes a date, from the browser.              |
+| [`dateMask`](../date-mask/)         | Turn a format into an input mask, `__.__.____`.            |
+| [`dateOrder`](../date-order/)       | `"DMY"`, `"MDY"` or `"YMD"`, to read pastes the right way. |
+| [`placeholder`](../placeholder/)    | The empty text of a format.                                |
+| [`formatLength`](../format-length/) | How many characters a date in the format takes.            |
+| [`localeDigits`](../locale-digits/) | The digits a locale writes, to show the field in them.     |
+
+### Converting
+
+| Function                                     | What it does                                   |
+| -------------------------------------------- | ---------------------------------------------- |
+| [`parseSegments`](../parse-segments/)        | Cut field text into segments.                  |
+| [`segmentsToString`](../segments-to-string/) | Join segments back into text.                  |
+| [`toDate`](../to-date/)                      | Read a `Date` from segments, or `undefined`.   |
+| [`fromDate`](../from-date/)                  | Write a `Date` as segments.                    |
+| [`withSegments`](../with-segments/)          | Put segments back into the field, cursor kept. |
+
+### Typing
+
+| Function                              | What it does                                                   |
+| ------------------------------------- | -------------------------------------------------------------- |
+| [`typeDate`](../type-date/)           | Type or paste into the field; `1.3.2026` becomes `01.03.2026`. |
+| [`finishSegment`](../finish-segment/) | Pad the half-typed segment and move on; call it on blur.       |
+| [`inputDigit`](../input-digit/)       | Type one digit into a segment, calculator style (lower level). |
+
+### Navigating
+
+| Function                                         | What it does                            |
+| ------------------------------------------------ | --------------------------------------- |
+| [`segmentAtPosition`](../segment-at-position/)   | Which segment the cursor is in.         |
+| [`nextSegment`](../next-segment/)                | The next segment you can type into.     |
+| [`previousSegment`](../previous-segment/)        | The previous segment you can type into. |
+| [`firstEditableIndex`](../first-editable-index/) | The first segment you can type into.    |
+| [`lastEditableIndex`](../last-editable-index/)   | The last segment you can type into.     |
+
+### Editing
+
+| Function                              | What it does                                                  |
+| ------------------------------------- | ------------------------------------------------------------- |
+| [`rotateSegment`](../rotate-segment/) | Arrow keys: step a segment up or down, wrapping in its range. |
+| [`clampDay`](../clamp-day/)           | Keep the day within the month: `31.02` becomes `28.02`.       |
+| [`clearSegment`](../clear-segment/)   | Empty one segment.                                            |
+
+## Good to know
+
+- **No locale data to ship.** Formats come from `Intl.DateTimeFormat`, so
+  every locale the browser knows works.
+- **Gregorian, Latin digits inside.** `fa-IR` and `th-TH` get their order and
+  separators with Gregorian years. Digits of any script can be typed and are
+  stored as `0`–`9`; show them with [`localeDigits`](../locale-digits/).
+- **No parser inside.** Pasting dates in other forms needs a parser; use
+  [fechita](../../fechita/parse-date/). See
+  [Parsing dates](../../../concepts/parsing-dates/).
+- **Never guesses on its own.** [`toDate`](../to-date/) returns `undefined`
+  until the date is complete and real; it never changes what the user typed.

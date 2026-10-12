@@ -1,0 +1,93 @@
+---
+title: withLocales
+description: Get a parseDate that knows only the locales you load, for a smaller bundle.
+---
+
+Get a `parseDate` function that knows only the languages you pass in. Your
+bundle then contains only their data, not all 104 locales.
+
+```ts
+import { withLocales } from "fechita/core";
+```
+
+```ts
+withLocales(locales);
+```
+
+## Example
+
+```ts
+import { withLocales } from "fechita/core";
+import { de } from "fechita/locales/de";
+import { en } from "fechita/locales/en";
+
+const { parseDate } = withLocales({ de, en });
+
+parseDate("31. März 2026"); // → valid: 31 March 2026
+parseDate("March 31, 2026"); // → valid: 31 March 2026
+parseDate("31 марта 2026"); // → invalid: NO_DATE, Russian is not loaded
+parseDate("04/05/2026", { locale: "de-CH" }); // → valid: 4 May 2026
+```
+
+## Parameters
+
+| Name      | What it is                                                                                                                              |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `locales` | An object of locale data, keyed by locale tag: `{ de, en }`. Each value comes from `fechita/locales/<tag>`. See [Locales](../locales/). |
+
+## Returns
+
+An object with two fields:
+
+| Field       | What it is                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `parseDate` | Works exactly like [`parseDate`](../parse-date/) from `fechita`, with the same options and results, but reads only the words of `locales`. |
+| `locales`   | The `locales` object you passed in.                                                                                                        |
+
+## What the locales are needed for
+
+Only words need locale data: month names, weekday names, AM/PM and other day
+period words, and era names. The `locale` option also needs the data, to look
+up the usual date order of that language and region.
+
+ISO dates and plain numbers work with no locales at all:
+
+```ts
+const { parseDate } = withLocales({});
+
+parseDate("2026-03-31"); // → valid
+parseDate("31.03.2026"); // → valid
+parseDate("March 31 2026"); // → invalid: NO_DATE
+```
+
+## The `locale` option needs a loaded locale
+
+`locale` is matched against the keys of the object you passed in. `de-CH`
+finds `de`; a locale that is not loaded is ignored, so the date stays
+ambiguous.
+
+```ts
+const { parseDate } = withLocales({ de, en });
+
+parseDate("04/05/2026", { locale: "en-US" }); // → valid: 5 April 2026
+parseDate("04/05/2026", { locale: "fr" }); // → invalid: AMBIGUOUS_DAY_MONTH
+```
+
+:::caution
+The keys must be the locale tags. Locales with a hyphen in their tag are
+exported in camel case, so write the key out:
+`withLocales({ "sr-Latn": srLatn })`, not `withLocales({ srLatn })`.
+Otherwise `{ locale: "sr-Latn" }` finds nothing.
+:::
+
+## Call it once
+
+Create the bound function once, at the top of a module, and reuse it. fechita
+builds its word index once per locales object and keeps it, so creating a new
+object for every call throws that work away.
+
+## Related
+
+- [`parseDateWith`](../parse-date-with/) — the same in a single call.
+- [Locales](../locales/) — which locales exist and how to import them.
+- [`parseDate`](../parse-date/) — all options and results.

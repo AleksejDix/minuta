@@ -1,0 +1,81 @@
+---
+title: move
+description: Move a period to a new start and keep its length — e.g. drag an appointment to another day.
+---
+
+Move a period so it starts at a new date, and keep its length. Use it to
+drag an appointment to another time.
+
+```ts
+import { move } from "minuta/intervals";
+```
+
+```ts
+move(period, targetDate);
+```
+
+## Example
+
+```ts
+import { move } from "minuta/intervals";
+import { range } from "minuta";
+
+const appointment = range(
+  new Date(2026, 2, 29, 9, 0),
+  new Date(2026, 2, 29, 10, 0)
+);
+
+move(appointment, new Date(2026, 3, 2, 14, 0));
+// → { start: Thu Apr 2 14:00, end: Thu Apr 2 15:00, unit: "custom" }
+```
+
+## Parameters
+
+| Name         | What it is                     |
+| ------------ | ------------------------------ |
+| `period`     | The period to move.            |
+| `targetDate` | Where the moved period starts. |
+
+## Returns
+
+A new period that starts at `targetDate` and lasts exactly as many
+milliseconds as `period`. Its unit is always `"custom"`. The original period
+is not changed.
+
+## The length is kept in milliseconds
+
+`move` keeps the exact length, not the calendar meaning. That makes a
+difference for months and for days when the clocks change.
+
+February 2026 has 28 days. Moved to March 1, it still lasts 28 days:
+
+```ts
+import { period } from "minuta";
+
+move(period(new Date(2026, 1, 1), "month"), new Date(2026, 2, 1));
+// → Mar 1 00:00 – Mar 28 23:59:59.999, unit "custom" (not all of March)
+```
+
+Mar 28 2026 is a normal 24-hour day. Moved to Mar 29, when the clocks in
+Europe/Zurich go forward, it still lasts 24 hours and ends one hour into the
+next day:
+
+```ts
+move(period(new Date(2026, 2, 28), "day"), new Date(2026, 2, 29));
+// → Mar 29 00:00 – Mar 30 00:59:59.999 (in Europe/Zurich)
+```
+
+To move by whole calendar units instead, use
+[`shift`](../../minuta/shift/), e.g. `shift(february, 1)` gives all of March.
+
+## Errors
+
+`move` throws a `RangeError` starting with `INVALID_DATE` when `targetDate`
+is an invalid Date.
+
+## Related
+
+- [`shift`](../../minuta/shift/) — move by whole units of the period's own kind.
+- [`resize`](../resize/) — move only one edge.
+- [`snapWith`](../snap-with/) — round the target to a neat time first.
+- [`intervals`](../intervals/) — use it as `time.move(period, date)` with `withUnits`.

@@ -1,0 +1,71 @@
+---
+title: localeDigits
+description: The ten digits a locale writes numbers with, such as ٠–٩ for ar-EG, to show a date field in them.
+---
+
+Get the ten digits a locale writes numbers with: `٠`–`٩` for `ar-EG`, `۰`–`۹`
+for `fa-IR`, plain `0`–`9` for `de-CH`.
+
+```ts
+import { localeDigits } from "datefield";
+```
+
+```ts
+localeDigits(locale);
+```
+
+## Example
+
+```ts
+import { localeDigits } from "datefield";
+
+localeDigits("ar-EG")[3]; // → "٣"
+localeDigits("de-CH")[3]; // → "3"
+localeDigits("hi-IN-u-nu-deva")[3]; // → "३"
+localeDigits("th-TH-u-nu-thai")[3]; // → "๓"
+```
+
+## Parameters
+
+| Name     | What it is                                                                               |
+| -------- | ---------------------------------------------------------------------------------------- |
+| `locale` | A language tag. It may pick a numbering system with `-u-nu-…`, like `"th-TH-u-nu-thai"`. |
+
+## Returns
+
+A list of ten characters: the locale's digit for 0, for 1, … up to 9.
+
+## Stored as 0–9, shown the locale's way
+
+A date field always _stores_ the digits `0`–`9`, so
+[`toDate`](../to-date/) and every other function can read it. Users can still
+type or paste digits of any script; they are stored as `0`–`9`.
+
+`localeDigits` is for _showing_ the field. Pass it to
+[`attachInput`](../../input-dom/attach-input/) as `digits`, and the element
+shows the locale's digits while the state keeps `0`–`9`:
+
+```ts
+import { attachInput } from "input-dom";
+
+attachInput(element, field, { digits: localeDigits("ar-EG") });
+// the element shows   ٣١‏/٠٣‏/٢٠٢٦
+// field.buffer.text   31‏/03‏/2026
+```
+
+Each digit is one character, so cursor positions in the element and in the
+state stay the same.
+
+## Locales that use Latin digits
+
+Many locales write `0`–`9` by default, even when they have digits of their
+own. `hi-IN` gives Latin digits; ask for `hi-IN-u-nu-deva` to get Devanagari.
+
+Some numbering systems, such as Adlam, use digits that take two UTF-16
+characters each. They would break the one-character-per-slot rule, so you get
+`0`–`9` for them.
+
+## Related
+
+- [`attachInput`](../../input-dom/attach-input/) (input-dom) — the `digits` option.
+- [`deriveFormat`](../derive-format/) — the format always uses Latin digits inside.

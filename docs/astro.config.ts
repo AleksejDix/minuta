@@ -50,11 +50,39 @@ const demoAlias: VitePlugin = {
   },
 };
 
+// One reference group per entry point: [directory under api/, label]
+const API_GROUPS: readonly (readonly [string, string])[] = [
+  ["minuta", "minuta"],
+  ["minuta-core", "minuta/core"],
+  ["minuta-calendar", "minuta/calendar"],
+  ["minuta-intervals", "minuta/intervals"],
+  ["minuta-format", "minuta/format"],
+  ["adapters", "Date engines"],
+  ["minuta-react", "minuta-react"],
+  ["minuta-vue", "minuta-vue"],
+  ["datefield", "datefield"],
+  ["input-dom", "input-dom"],
+  ["input-state", "input-state"],
+  ["text-buffer", "text-buffer"],
+  ["fechita", "fechita"],
+];
+
 const docs: AstroIntegration = starlight({
   customCss: ["./src/styles/global.css"],
   sidebar: [
-    { items: ["getting-started"], label: "Start here" },
-    { items: ["demo"], label: "Try it" },
+    {
+      items: ["introduction", "installation", "getting-started", "demo"],
+      label: "Start here",
+    },
+    { items: [{ autogenerate: { directory: "concepts" } }], label: "Concepts" },
+    {
+      items: API_GROUPS.map(([directory, label]) => ({
+        collapsed: true,
+        items: [{ autogenerate: { directory: `api/${directory}` } }],
+        label,
+      })),
+      label: "Reference",
+    },
   ],
   social: [
     {
@@ -67,6 +95,9 @@ const docs: AstroIntegration = starlight({
 });
 
 export default defineConfig({
+  // Served by GitHub Pages under the account's domain: https://dix.consulting/minuta/
+  base: "/minuta",
   integrations: [docs, react(), vue()],
+  site: "https://dix.consulting",
   vite: { plugins: [demoAlias, tailwindcss()] },
 });

@@ -1,0 +1,128 @@
+---
+title: withUnits
+description: Bind every operation to one set of units once, and get them back ready to use.
+---
+
+Bind every operation to one set of units once, and get them all back ready to
+use. This is how you get weeks from Sunday, another date library or a time
+zone, with the same easy calls as `minuta`.
+
+```ts
+import { withUnits } from "minuta/core";
+```
+
+```ts
+withUnits(units, options?)
+```
+
+## Example
+
+```ts
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+
+const week = time.period(new Date(2026, 2, 18), "week");
+// → Sun Mar 15 00:00:00.000 – Sat Mar 21 23:59:59.999, unit "week"
+
+time.next(week);
+// → Sun Mar 22 – Sat Mar 28
+```
+
+Do this once, for example in a module of its own, and import `time` wherever
+you need it.
+
+## Parameters
+
+| Name      | What it is                                                                                    |
+| --------- | --------------------------------------------------------------------------------------------- |
+| `units`   | The units to compute with, usually from an adapter such as `nativeUnits()` or `luxonUnits()`. |
+| `options` | Optional. `plugins`, see [Options](#options) below.                                           |
+
+_Units_ are the rules for each unit of time: where a week starts, how to add a
+month. An adapter makes them for one date library. See
+[Date engines](../../../concepts/date-engines/).
+
+## Options
+
+| Option    | Default | What it does                                                                            |
+| --------- | ------- | --------------------------------------------------------------------------------------- |
+| `plugins` | none    | A list of plugins. Their functions are bound to the same units and added to the result. |
+
+```ts
+import { calendar } from "minuta/calendar";
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
+  plugins: [calendar],
+});
+
+time.monthGrid(new Date(2026, 2, 18)).periods;
+// → 42 days, starting Sun Mar 1
+time.isWeekend(time.period(new Date(2026, 2, 21), "day"));
+// → true, a Saturday
+```
+
+## Returns
+
+An object with every operation of `minuta`, already bound to `units`:
+
+`period`, `range`, `next`, `previous`, `shift`, `divide`, `contains`,
+`overlaps`, `same`, `duration`, `length`.
+
+They take the same arguments as the functions of [`minuta`](../../minuta/overview/).
+`time.period(date, "week")` is `periodWith(units, date, "week")`.
+
+The object also has:
+
+- `units` — the very units you passed in, so other code can reuse them.
+- every function of every plugin, without its `units` argument.
+
+```ts
+const units = nativeUnits();
+withUnits(units).units === units; // → true
+```
+
+## Pass only the units you need
+
+`units` may contain only some units. Operations then work for those and throw
+for the rest. This keeps the other units out of your bundle:
+
+```ts
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const { day, month } = nativeUnits();
+const time = withUnits({ day, month });
+
+time.period(new Date(2026, 2, 18), "month"); // works
+time.period(new Date(2026, 2, 18), "week");
+// RangeError: UNIT_NOT_SUPPORTED: no "week" spec in the units passed (available: day, month). …
+```
+
+Taking `{ day, month }` out of the adapter drops its settings (`weekStartsOn`,
+`weekend`, `timeZone`), which some plugin functions read. Keep the full set
+when you use plugins.
+
+## Names must be unique
+
+A plugin function may not have the name of an operation or of another plugin's
+function. TypeScript reports this as a type error. Without TypeScript nothing
+stops you, and the later one silently wins: a plugin function named `next`
+replaces the built-in `next`.
+
+## Errors
+
+`withUnits` itself does not throw. The bound functions throw the same errors as
+their [`minuta`](../../minuta/overview/) counterparts; a unit missing from
+`units` gives `UNIT_NOT_SUPPORTED`.
+
+## Related
+
+- [`bind`](../bind/) — bind one plugin on its own.
+- [`calendar`](../../minuta-calendar/calendar/) and [`intervals`](../../minuta-intervals/intervals/) — the plugins that ship with minuta.
+- [`periodWith`](../period-with/) and the other `…With` functions — the same operations, unbound.
+- [Date engines](../../../concepts/date-engines/) — where units come from.
+- [`nativeUnits`](../../adapters/native-units/) — units for the built-in `Date`.

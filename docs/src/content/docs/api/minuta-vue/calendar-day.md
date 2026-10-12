@@ -1,0 +1,109 @@
+---
+title: CalendarDay
+description: A Vue component that renders one day of the calendar as a button that selects the day and handles the arrow keys.
+---
+
+A component that renders one day as a button. A click, Enter or Space selects
+the day; the arrow keys and Home, End, PageUp, PageDown move the focus.
+
+```js
+import { CalendarDay } from "minuta-vue/components";
+```
+
+```vue
+<CalendarDay :day="day" locale="en-US" />
+```
+
+## Example
+
+[`CalendarGrid`](../calendar-grid/) renders a `CalendarDay` for every day by
+default. Render it yourself in the `#day` slot to change the locale or to add
+something next to it.
+
+```vue
+<script setup>
+import { CalendarDay, CalendarGrid, CalendarRoot } from "minuta-vue/components";
+</script>
+
+<template>
+  <CalendarRoot :date="new Date(2024, 0, 15)">
+    <CalendarGrid locale="fr">
+      <template #day="{ day }">
+        <CalendarDay :day="day" locale="fr" />
+      </template>
+    </CalendarGrid>
+  </CalendarRoot>
+</template>
+```
+
+It shows January 2024 with French weekday names. The button of January 15
+shows "15" and is named "lundi 15 janvier 2024" for screen readers.
+
+## Props
+
+| Name     | What it is                                                                   | Default   |
+| -------- | ---------------------------------------------------------------------------- | --------- |
+| `day`    | The day [period](../../minuta/period/) to show, as given by the `#day` slot. | —         |
+| `locale` | The language of the day number and of the full date label.                   | `"en-US"` |
+
+It has no slots and emits no events; selection is reported by `select` on
+[`CalendarRoot`](../calendar-root/). All labels use the time zone of the units
+(`units.timeZone`).
+
+## CSS classes
+
+The button always has the class `calendar-day`. These classes are added when
+they apply:
+
+| Class         | When                                                                       |
+| ------------- | -------------------------------------------------------------------------- |
+| `is-outside`  | The day is not in the browsed month (the grey days).                       |
+| `is-today`    | The day contains "now".                                                    |
+| `is-selected` | The day is the selected day.                                               |
+| `is-disabled` | `isDisabled` of [`CalendarRoot`](../calendar-root/) returns `true` for it. |
+| `is-weekend`  | The day is a weekend day of the units (Saturday and Sunday by default).    |
+
+The button holds only the day number.
+
+The styles in `minuta-vue/style.css` are scoped to the component. Vue adds a
+`data-v-…` attribute to them, so they win over plain rules with the same
+selector in your own CSS. To restyle the days fully, leave the stylesheet out
+and write your own:
+
+```css
+.calendar-day.is-outside {
+  opacity: 0.4;
+}
+.calendar-day.is-selected {
+  background: navy;
+  color: white;
+}
+```
+
+## Behaviour
+
+- **Click, Enter, Space** select the day, emit `select` on
+  [`CalendarRoot`](../calendar-root/) and browse to its month. A disabled day
+  is not selected, but becomes the focused day.
+- **Navigation keys** move the focus; see [Keyboard](../calendar-grid/#keyboard).
+  They don't select anything. Other keys are left alone.
+- **Tab order:** only one day in the grid has `tabindex="0"`, all others have
+  `tabindex="-1"`.
+
+## Accessibility
+
+- The button is named with the full date (`aria-label`), e.g. "Wednesday,
+  January 17, 2024".
+- Today has `aria-current="date"`; other days have `aria-current="false"`.
+- A disabled day has `aria-disabled="true"`. It stays focusable, so keyboard
+  users can still move past it.
+
+## Errors
+
+Outside a [`CalendarRoot`](../calendar-root/) — even inside a plain
+`MinutaRoot` — it throws `Calendar parts must be used within <CalendarRoot>`.
+
+## Related
+
+- [`CalendarGrid`](../calendar-grid/) — renders the days and documents the keys.
+- [`CalendarRoot`](../calendar-root/) — the `select` event and `isDisabled`.

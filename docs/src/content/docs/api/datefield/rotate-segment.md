@@ -1,0 +1,144 @@
+---
+title: rotateSegment
+description: Step one segment up or down with the arrow keys, wrapping around in its own range — day 31 goes to 01 and keeps the month.
+---
+
+Step one segment up or down, like the arrow keys of a native date input. The
+segment wraps in its own range and never changes its neighbours: day `31` goes
+up to `01` and the month stays the same.
+
+```ts
+import { rotateSegment } from "datefield";
+```
+
+```ts
+rotateSegment(segments, index, direction, today?)
+```
+
+## Example
+
+```ts
+import {
+  deriveFormat,
+  parseSegments,
+  rotateSegment,
+  segmentsToString,
+} from "datefield";
+
+const format = deriveFormat("de-CH");
+const segments = parseSegments(format, "31.03.2026");
+// index:   0 = day, 1 = ".", 2 = month, 3 = ".", 4 = year
+
+segmentsToString(rotateSegment(segments, 0, 1)); // → "01.03.2026"   day up, wraps
+segmentsToString(rotateSegment(segments, 2, 1)); // → "30.04.2026"   month up, day fits April
+segmentsToString(rotateSegment(segments, 4, -1)); // → "31.03.2025"   year down
+```
+
+## Parameters
+
+| Name        | What it is                                                                        |
+| ----------- | --------------------------------------------------------------------------------- |
+| `segments`  | The current segments, from [`parseSegments`](../parse-segments/).                 |
+| `index`     | The segment to step, usually from [`segmentAtPosition`](../segment-at-position/). |
+| `direction` | `1` to go up (ArrowUp), `-1` to go down (ArrowDown).                              |
+| `today`     | Optional. The date an empty year starts from. Default: now.                       |
+
+## Returns
+
+New segments with that segment one step further, padded with zeros. When
+`index` points at a separator or a display-only part, the same segments come
+back unchanged.
+
+## Ranges and wrapping
+
+| Segment | Range                         | Past the end            |
+| ------- | ----------------------------- | ----------------------- |
+| day     | 1 to the month's real length  | wraps: 31 ↑ 01, 01 ↓ 31 |
+| month   | 1 to 12                       | wraps: 12 ↑ 01, 01 ↓ 12 |
+| year    | 1 to 9999 (99 for two digits) | stops: does not wrap    |
+| hour    | 0 to 23                       | wraps: 23 ↑ 00          |
+| minute  | 0 to 59                       | wraps: 59 ↑ 00          |
+| second  | 0 to 59                       | wraps: 59 ↑ 00          |
+
+Nothing carries over. Day 31 up is day 01 of the _same_ month, and minute 59
+up does not change the hour. This is how native date inputs behave, and it
+means one key changes one segment.
+
+```ts
+const s = (text) => parseSegments(format, text);
+
+segmentsToString(rotateSegment(s("15.12.2026"), 2, 1)); // → "15.01.2026"  year stays 2026
+segmentsToString(rotateSegment(s("01.03.2026"), 0, -1)); // → "31.03.2026"
+```
+
+## The day follows the month
+
+The day's range is the real length of the month, leap years included:
+
+```ts
+segmentsToString(rotateSegment(s("28.02.2026"), 0, 1)); // → "01.02.2026"
+segmentsToString(rotateSegment(s("28.02.2024"), 0, 1)); // → "29.02.2024"
+segmentsToString(rotateSegment(s("01.02.2026"), 0, -1)); // → "28.02.2026"
+```
+
+When the month or the year changes, a day that no longer fits is cut to the
+last day of the month:
+
+```ts
+segmentsToString(rotateSegment(s("31.01.2026"), 2, 1)); // → "28.02.2026"
+segmentsToString(rotateSegment(s("31.01.2024"), 2, 1)); // → "29.02.2024"
+segmentsToString(rotateSegment(s("29.02.2024"), 4, 1)); // → "28.02.2025"
+```
+
+While the month is empty, the day goes up to 31. While the year is empty,
+February goes up to 29.
+
+## Empty and impossible values
+
+An empty segment starts like a native date input does:
+
+| Segment | ↑ (1)     | ↓ (−1)    |
+| ------- | --------- | --------- |
+| day     | `01`      | `31`      |
+| month   | `01`      | `12`      |
+| year    | this year | this year |
+
+```ts
+segmentsToString(rotateSegment(s("__.__.____"), 0, 1)); // → "01.__.____"
+segmentsToString(rotateSegment(s("__.__.____"), 2, -1)); // → "__.12.____"
+segmentsToString(rotateSegment(s("__.__.____"), 4, 1)); // → "__.__.2026"  (in 2026)
+```
+
+A half-typed segment (`3_`) counts as empty. A value out of range, like day
+`99` or month `13`, jumps to the start (↑) or end (↓) of the range.
+
+## The year
+
+The year steps by one and stops at the ends instead of wrapping: up from
+`9999` stays `9999`, down from `0001` stays `0001`. Pass `today` to choose the
+year an empty year segment starts from, for example in tests:
+
+```ts
+rotateSegment(s("__.__.____"), 4, 1, new Date(2030, 0, 1)); // year → "2030"
+```
+
+In a two-digit year segment (`year: "2-digit"`) the empty year starts at the
+last two digits of this year (`26`), and the range is `01` to `99`.
+
+## With a field and arrow keys
+
+```ts
+const segments = parseSegments(format, field.buffer.text);
+const index = segmentAtPosition(segments, field.buffer.selection.head);
+field = withSegments(field, rotateSegment(segments, index, 1));
+```
+
+[`withSegments`](../with-segments/) writes the result back and keeps the
+cursor in the segment, so pressing ArrowUp again steps the same segment. See
+[`attachInput`](../../input-dom/attach-input/) for wiring it to `onKeyDown`.
+
+## Related
+
+- [`segmentAtPosition`](../segment-at-position/) — which segment the cursor is in.
+- [`clampDay`](../clamp-day/) — the same day cut, after typing.
+- [`withSegments`](../with-segments/) — write the segments back into the field.

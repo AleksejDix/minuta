@@ -1,0 +1,75 @@
+---
+title: MinutaError
+description: The error codes that start the message of every error minuta throws.
+---
+
+The error codes that minuta puts at the start of every error message. Use them
+to tell one kind of error from another.
+
+```ts
+import { MinutaError } from "minuta";
+```
+
+## Example
+
+```ts
+import { MinutaError, period } from "minuta";
+
+try {
+  period(new Date("nope"), "day");
+} catch (error) {
+  if (
+    error instanceof RangeError &&
+    error.message.startsWith(MinutaError.InvalidDate)
+  ) {
+    // the date was invalid
+  }
+}
+```
+
+## What it is
+
+`MinutaError` is a plain object of strings, not an error class. minuta always
+throws a normal `RangeError`. Its message starts with one of these codes,
+followed by a colon, what went wrong, and how to fix it:
+
+```ts
+// RangeError: INVALID_DATE: date is an invalid Date. Pass a valid Date such as
+// new Date(2026, 0, 31), and check the string or numbers it was built from.
+```
+
+:::caution
+`error instanceof MinutaError` does not work, because `MinutaError` is not a
+class. Check `error instanceof RangeError` and the start of `error.message`.
+:::
+
+## The codes
+
+| Key                            | Code                 | When                                                                                               |
+| ------------------------------ | -------------------- | -------------------------------------------------------------------------------------------------- |
+| `MinutaError.InvalidDate`      | `INVALID_DATE`       | A `Date` argument is invalid, such as `new Date("nope")`.                                          |
+| `MinutaError.InvalidOption`    | `INVALID_OPTION`     | An option such as `step` or `maxPeriods` of [`divide`](../divide/) is not a positive whole number. |
+| `MinutaError.TooManyPeriods`   | `TOO_MANY_PERIODS`   | [`divide`](../divide/) would create more pieces than `maxPeriods` allows.                          |
+| `MinutaError.UnitNotSupported` | `UNIT_NOT_SUPPORTED` | There is no such unit, e.g. `"fortnight"`, or the units you passed in `minuta/core` lack it.       |
+
+## Which functions check what
+
+| Function                                                             | Codes it can throw                                         |
+| -------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [`period`](../period/)                                               | `INVALID_DATE`, `UNIT_NOT_SUPPORTED`                       |
+| [`range`](../range/)                                                 | `INVALID_DATE`                                             |
+| [`contains`](../contains/)                                           | `INVALID_DATE` (when the target is a date)                 |
+| [`next`](../next/), [`previous`](../previous/), [`shift`](../shift/) | `INVALID_DATE`, `UNIT_NOT_SUPPORTED`                       |
+| [`divide`](../divide/)                                               | `INVALID_OPTION`, `TOO_MANY_PERIODS`, `UNIT_NOT_SUPPORTED` |
+| [`duration`](../duration/), [`same`](../same/)                       | `UNIT_NOT_SUPPORTED`                                       |
+| [`length`](../length/), [`overlaps`](../overlaps/)                   | never throw                                                |
+
+Dates are checked where they come in: in `period` and `range`. Most other
+functions trust the periods they get. A period you build by hand with an
+invalid date gives `[]` from `divide`, `NaN` from `duration` and `length`, and
+`false` from `overlaps`, `contains` and `same`; only `next`, `previous` and
+`shift` (with steps other than `0`) throw `INVALID_DATE` for it.
+
+## Related
+
+- [`MinutaError` in `minuta/core`](../../minuta-core/overview/) — the same object, also exported there.

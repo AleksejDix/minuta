@@ -1,0 +1,62 @@
+---
+title: previousSegment
+description: The index of the previous segment you can type into, skipping separators.
+---
+
+Find the previous segment you can type into, skipping separators: before the
+year of `31.03.2026` comes the month.
+
+```ts
+import { previousSegment } from "datefield";
+```
+
+```ts
+previousSegment(segments, current);
+```
+
+## Example
+
+```ts
+import { deriveFormat, parseSegments, previousSegment } from "datefield";
+
+const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
+// index:   0 = day, 1 = ".", 2 = month, 3 = ".", 4 = year
+
+previousSegment(segments, 4); // → 2   year → month
+previousSegment(segments, 2); // → 0   month → day
+previousSegment(segments, 0); // → 0   the day is first: stays
+```
+
+## Parameters
+
+| Name       | What it is                                                        |
+| ---------- | ----------------------------------------------------------------- |
+| `segments` | The field's segments, from [`parseSegments`](../parse-segments/). |
+| `current`  | The index of the segment you are in.                              |
+
+## Returns
+
+The index of the closest editable segment (day, month, year, hour, minute or
+second) before `current`. Separators and display-only parts are skipped. When
+there is none, `current` comes back: it does not wrap around to the last
+segment.
+
+The order is the locale's order: in `en-US` (`MM/DD/YYYY`) the segment before
+the day is the month, and the month itself is first.
+
+## Move the cursor back
+
+```ts
+import { setSelection } from "input-state";
+
+const segments = parseSegments(format, field.buffer.text);
+const here = segmentAtPosition(segments, field.buffer.selection.head);
+const previous = segments[previousSegment(segments, here)];
+field = setSelection(field, previous.start);
+```
+
+## Related
+
+- [`nextSegment`](../next-segment/) — the other direction.
+- [`segmentAtPosition`](../segment-at-position/) — the segment under the cursor.
+- [`firstEditableIndex`](../first-editable-index/) — jump to the first segment.

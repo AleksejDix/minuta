@@ -1,0 +1,193 @@
+---
+title: typeDate
+description: Type or paste text into a date field the way people write dates, so 1.3.2026 becomes 01.03.2026.
+---
+
+Type text into a date field the way people write dates: digits fill the slots,
+and a separator finishes the part being typed, so `1.3.2026` becomes
+`01.03.2026` instead of `13.20.26__`. With a parser, a pasted date in any form
+fills the field.
+
+```ts
+import { typeDate } from "datefield";
+```
+
+```ts
+typeDate(format, state, text, options?)
+```
+
+## Example
+
+```ts
+import { dateMask, deriveFormat, typeDate } from "datefield";
+import { createInputState } from "input-state";
+
+const format = deriveFormat("de-CH");
+const field = createInputState({ mask: dateMask(format) });
+
+typeDate(format, field, "1.3.2026").buffer.text; // → "01.03.2026"
+typeDate(format, field, "31032026").buffer.text; // → "31.03.2026"
+typeDate(format, field, "1.3.26").buffer.text; // → "01.03.2026"
+```
+
+## Parameters
+
+| Name      | What it is                                                                                                                       |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `format`  | The field's format, from [`deriveFormat`](../derive-format/).                                                                    |
+| `state`   | The field: an input state made with [`createInputState`](../../input-state/create-input-state/) and [`dateMask`](../date-mask/). |
+| `text`    | What the user typed or pasted. One character is a keystroke; longer text is a paste or a drop.                                   |
+| `options` | Optional. `parse`, to read pasted dates in any form. See [Options](#options).                                                    |
+
+## Options
+
+| Option  | Default | What it does                                                                                                                                    |
+| ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `parse` | none    | A function that gets the pasted text and returns a `Date`, or `undefined` when it cannot read it. Only used for text longer than one character. |
+
+## Returns
+
+A new field. The text is written at the cursor, and the cursor ends after what
+was typed. The field you passed in is not changed.
+
+## What each character does
+
+`typeDate` goes through the text one character at a time:
+
+- A **digit** goes into the slot at the cursor, replacing what is there.
+  Digits of any script work and are stored as `0`–`9`: `٣١٠٣٢٠٢٦` and
+  `３１.０３.２０２６` both give `31.03.2026`.
+- A **separator** finishes the segment the cursor is in, see below. Any
+  punctuation, symbol or space counts, whatever the format uses: `1/3/2026`,
+  `1-3-2026` and `1 3 2026` all give `01.03.2026` in `de-CH`.
+- **Anything else** (letters, for example) is ignored.
+
+When a segment is full, the cursor jumps over the separator to the next one.
+
+## A separator finishes a segment
+
+People write `1.3.2026`, not `01.03.2026`. When a separator comes while the
+cursor is inside a half-typed segment, that segment is padded with zeros and
+the cursor moves to the next segment.
+
+```ts
+let field = createInputState({ mask: dateMask(format) });
+
+for (const key of "1.3.2026") field = typeDate(format, field, key);
+// "1" → "1_.__.____"
+// "." → "01.__.____"   the day is finished
+// "3" → "01.3_.____"
+// "." → "01.03.____"   the month is finished
+// "2026" → "01.03.2026"
+```
+
+A separator at the very start of a segment does nothing. So after `31` the
+cursor has already jumped to the month, and the `.` the user types next does
+not skip the month:
+
+```ts
+for (const key of "31.03.2026") field = typeDate(format, field, key);
+// → "31.03.2026"
+```
+
+A separator also does nothing in an empty field, and two separators in a row
+count as one: `1..3` gives `01.03.____`.
+
+The last segment has no separator after it. When the user types `1.3.5` and
+leaves the field, the year still reads `5___`. Call
+[`finishSegment`](../finish-segment/) on blur to finish it.
+
+## Two-digit years
+
+A year finished with only one or two digits is read as a two-digit year: from
+80 years ago to 19 years ahead (in 2026: 1946 to 2045). Three digits are taken
+as written.
+
+```ts
+typeDate(format, field, "1.3.26").buffer.text; // → "01.03.2026"
+typeDate(format, field, "1.3.2").buffer.text; // → "01.03.2002"
+typeDate(format, field, "1.3.226").buffer.text; // → "01.03.0226"
+```
+
+## Pasting
+
+Text longer than one character is treated as a paste (or a drop):
+
+1. With `parse`, the text is given to the parser first. If it returns a date,
+   the whole field is replaced with that date in the field's format, and the
+   cursor goes to the end. Where the cursor was does not matter.
+2. Otherwise the text is typed character by character, as above, and the
+   segment it ends in is finished.
+
+datefield has no date parser of its own. Use
+[fechita](../../fechita/parse-date/), and pass
+[`dateOrder(format)`](../date-order/) so an ambiguous date follows the order
+the field shows:
+
+```ts
+import { dateOrder } from "datefield";
+import { parseDate } from "fechita";
+
+const parse = (text) => {
+  const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+};
+
+typeDate(format, field, "2026-03-31", { parse }).buffer.text; // → "31.03.2026"
+typeDate(format, field, "31. März 2026", { parse }).buffer.text; // → "31.03.2026"
+typeDate(format, field, "March 31, 2026", { parse }).buffer.text; // → "31.03.2026"
+typeDate(format, field, "04/05/2026", { parse }).buffer.text; // → "04.05.2026" (4 May)
+```
+
+Text the parser cannot read falls back to typing:
+
+```ts
+typeDate(format, field, "1.3", { parse }).buffer.text; // → "01.03.____"
+typeDate(format, field, "hello", { parse }).buffer.text; // → "__.__.____" (nothing to type)
+```
+
+Without `parse`, every paste is typed, and a date in another order comes out
+wrong. Pass a parser if users paste dates.
+
+```ts
+typeDate(format, field, "2026-03-31").buffer.text; // → "20.26.2003"
+```
+
+## It does not check the date
+
+`typeDate` only fills slots. `31.13.2026` or `99.99.9999` are typed as they
+are. Check the result with [`toDate`](../to-date/), and keep the day in range
+with [`clampDay`](../clamp-day/).
+
+## Other locales
+
+The same text works in every order:
+
+```ts
+const us = deriveFormat("en-US");
+typeDate(us, createInputState({ mask: dateMask(us) }), "3/1/2026").buffer.text;
+// → "03/01/2026"   (March 1)
+
+const ja = deriveFormat("ja-JP");
+typeDate(ja, createInputState({ mask: dateMask(ja) }), "2026/3/1").buffer.text;
+// → "2026/03/01"
+
+const ko = deriveFormat("ko-KR");
+typeDate(ko, createInputState({ mask: dateMask(ko) }), "2026.3.1").buffer.text;
+// → "2026. 03. 01."
+```
+
+:::caution
+In a field with a two-digit year (`year: "2-digit"`), finishing a year of one
+digit currently writes four digits: `1.3.5` gives `01.03.2005`, which is
+longer than the field. Type two-digit years in full (`05`) until this is fixed.
+:::
+
+## Related
+
+- [`finishSegment`](../finish-segment/) — finish the last segment on blur.
+- [`clampDay`](../clamp-day/) — keep the day valid after typing.
+- [`dateOrder`](../date-order/) — the order to give the parser.
+- [`parseDate`](../../fechita/parse-date/) (fechita) — read pasted dates.
+- [`typeChar`](../../input-state/type-char/) (input-state) — plain typing, without separators.
+- [`attachInput`](../../input-dom/attach-input/) (input-dom) — pass `typeDate` as `insert`.

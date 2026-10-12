@@ -1,0 +1,95 @@
+---
+title: temporalUnits
+description: Units computed with the TC39 Temporal API, using the polyfill when the runtime has no Temporal — in the computer's time zone.
+---
+
+Units computed with [Temporal](https://tc39.es/proposal-temporal/docs/), the
+new date API for JavaScript. Where the runtime has no Temporal yet, minuta
+installs the `@js-temporal/polyfill`. Dates are read in the time zone of the
+computer the code runs on.
+
+```ts
+import { temporalUnits } from "minuta/temporal";
+```
+
+```ts
+temporalUnits(options?)
+```
+
+## Example
+
+```ts
+import { temporalUnits } from "minuta/temporal";
+import { withUnits } from "minuta/core";
+
+const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
+
+time.period(new Date(2026, 2, 18), "week");
+// → { start: Sun Mar 15 00:00, end: Sat Mar 21 23:59:59.999, unit: "week" }
+```
+
+minuta takes and returns plain `Date` objects, also here. Temporal does the
+calendar arithmetic for days, months, quarters and years inside the units.
+
+## When to choose it
+
+- You are moving your app to Temporal and want minuta to use the same
+  arithmetic.
+
+The results are the same as with [`nativeUnits`](../native-units/). The
+units do **not** use Temporal's time zones: they work in the computer's
+zone like `nativeUnits`. For a fixed zone, use
+[`dateFnsTzUnits`](../date-fns-tz-units/).
+
+## Install
+
+```sh
+npm install minuta @js-temporal/polyfill
+```
+
+minuta is tested with `@js-temporal/polyfill` 0.5. It is listed as an
+optional dependency of minuta, so npm may install it already.
+
+## Parameters
+
+| Name      | What it is                                                 |
+| --------- | ---------------------------------------------------------- |
+| `options` | Optional. Week start and weekend, see [Options](#options). |
+
+## Options
+
+| Option         | Default                  | What it does                                                                               |
+| -------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
+| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).        |
+| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend. |
+
+There is no time zone option.
+
+## Returns
+
+The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
+`hour`, `minute` and `second`, plus `timeZone` (the computer's zone, e.g.
+`"Europe/Zurich"`), `weekStartsOn` (a number) and `weekend` (numbers).
+
+## The polyfill and `globalThis.Temporal`
+
+Importing `minuta/temporal` checks for `globalThis.Temporal`:
+
+- If the runtime has Temporal, it is used and left alone.
+- If not, minuta puts the polyfill on `globalThis.Temporal`. From then on,
+  the rest of your app sees a global `Temporal` too.
+
+```ts
+typeof Temporal; // → "undefined" (Node 24 without flags)
+await import("minuta/temporal");
+typeof Temporal; // → "object"
+```
+
+The polyfill is part of the import in both cases, so it is in your bundle
+even when the browser has Temporal.
+
+## Related
+
+- [All date engines](../overview/) — compare the engines.
+- [`withUnits`](../../minuta-core/with-units/) — bind the units to all operations.
+- [Time zones](../../../concepts/time-zones/)

@@ -1,0 +1,78 @@
+---
+title: momentUnits
+description: Units computed with Moment.js — for existing apps that use Moment, in the computer's time zone.
+---
+
+Units computed with [Moment.js](https://momentjs.com), the long-standing
+date library. Dates are read in the time zone of the computer the code runs
+on.
+
+```ts
+import { momentUnits } from "minuta/moment";
+```
+
+```ts
+momentUnits(options?)
+```
+
+## Example
+
+```ts
+import { momentUnits } from "minuta/moment";
+import { withUnits } from "minuta/core";
+
+const time = withUnits(momentUnits({ weekStartsOn: "sunday" }));
+
+time.period(new Date(2026, 2, 18), "week");
+// → { start: Sun Mar 15 00:00, end: Sat Mar 21 23:59:59.999, unit: "week" }
+```
+
+minuta takes and returns plain `Date` objects. Convert at the edges:
+`moment(period.start)` and `value.toDate()`.
+
+## When to choose it
+
+- An existing app uses Moment and you want minuta to follow the same rules.
+
+The Moment team considers Moment a legacy project and recommends other
+libraries for new code. For a new app, pick [`nativeUnits`](../native-units/)
+or another engine.
+
+The results are the same as with `nativeUnits`.
+
+## Install
+
+```sh
+npm install minuta moment
+```
+
+Moment is not a dependency of minuta; install it yourself. minuta is tested
+with Moment 2.30.
+
+## Parameters
+
+| Name      | What it is                                                 |
+| --------- | ---------------------------------------------------------- |
+| `options` | Optional. Week start and weekend, see [Options](#options). |
+
+## Options
+
+| Option         | Default                  | What it does                                                                               |
+| -------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
+| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).        |
+| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend. |
+
+The week start does not come from the Moment locale. It is Monday unless
+you set it. There is no time zone option.
+
+## Returns
+
+The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
+`hour`, `minute` and `second`, plus `timeZone` (the computer's zone, e.g.
+`"Europe/Zurich"`), `weekStartsOn` (a number) and `weekend` (numbers).
+
+## Related
+
+- [All date engines](../overview/) — compare the engines.
+- [`dayjsUnits`](../dayjs-units/) — a smaller library with a similar API.
+- [`withUnits`](../../minuta-core/with-units/) — bind the units to all operations.

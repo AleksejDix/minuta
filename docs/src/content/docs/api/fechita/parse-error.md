@@ -1,0 +1,69 @@
+---
+title: ParseError
+description: The error codes parseDate reports, as named constants.
+---
+
+The codes `parseDate` puts in `errorCodes`, as named constants. Use them
+instead of typing the strings yourself.
+
+```ts
+import { ParseError } from "fechita";
+// or: import { ParseError } from "fechita/core";
+```
+
+## Example
+
+```ts
+import { ParseError, parseDate } from "fechita";
+
+const result = parseDate("04/05/2026");
+
+if (!result.valid && result.errorCodes.includes(ParseError.AmbiguousDayMonth)) {
+  // Ask the user: 4 May or 5 April?
+  result.candidates; // → [4 May 2026, 5 April 2026]
+}
+```
+
+## What it is
+
+A plain object. Each name maps to the code string that appears in
+`errorCodes`.
+
+| Name                | Code                  | When                                                                                     |
+| ------------------- | --------------------- | ---------------------------------------------------------------------------------------- |
+| `AmbiguousDayMonth` | `AMBIGUOUS_DAY_MONTH` | The numbers make more than one real date (`04/05/2026`). Pass `order` or `locale`.       |
+| `AmbiguousMonth`    | `AMBIGUOUS_MONTH`     | A month word means different months in the loaded languages (`listopad`). Pass `locale`. |
+| `InvalidDay`        | `INVALID_DAY`         | The day does not exist in that month: 31 April, 29 February 2026.                        |
+| `InvalidMonth`      | `INVALID_MONTH`       | The month is not 1–12.                                                                   |
+| `InvalidTime`       | `INVALID_TIME`        | The time is out of range: `25:00`, `10:61`.                                              |
+| `NoDate`            | `NO_DATE`             | No day, month and year were found in the text.                                           |
+| `WeekdayMismatch`   | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                                  |
+
+The codes are plain strings, so you can store them, send them to a server or
+use them as keys for your own error messages.
+
+```ts
+const messages = {
+  [ParseError.InvalidDay]: "That day does not exist.",
+  [ParseError.NoDate]: "Please enter a date.",
+};
+```
+
+## More than one code
+
+`errorCodes` is a list. When every reading of the numbers fails, each
+different problem is listed once:
+
+```ts
+parseDate("29.02.2026").errorCodes;
+// → ["INVALID_DAY", "INVALID_MONTH"]
+//   day first: no 29 February in 2026; month first: no month 29
+```
+
+`candidates` holds dates only for `AMBIGUOUS_DAY_MONTH`. For every other code
+it is empty.
+
+## Related
+
+- [`parseDate`](../parse-date/) — where the codes come from, with examples of each.
+- [Parsing dates](../../../concepts/parsing-dates/) — why fechita reports instead of guessing.

@@ -1,0 +1,81 @@
+---
+title: dateFnsUnits
+description: Units computed with date-fns — for apps that already use date-fns, in the computer's time zone.
+---
+
+Units computed with [date-fns](https://date-fns.org), the library of small
+functions on plain `Date` objects. Dates are read in the time zone of the
+computer the code runs on.
+
+```ts
+import { dateFnsUnits } from "minuta/date-fns";
+```
+
+```ts
+dateFnsUnits(options?)
+```
+
+## Example
+
+```ts
+import { dateFnsUnits } from "minuta/date-fns";
+import { calendar } from "minuta/calendar";
+import { withUnits } from "minuta/core";
+
+const time = withUnits(dateFnsUnits({ weekStartsOn: "sunday" }), {
+  plugins: [calendar],
+});
+
+time.period(new Date(2026, 2, 18), "week");
+// → { start: Sun Mar 15 00:00, end: Sat Mar 21 23:59:59.999, unit: "week" }
+
+time.monthGrid(new Date(2026, 2, 15)).periods.length; // → 42
+```
+
+## When to choose it
+
+- Your app already uses date-fns and you want the same rules everywhere.
+- You work in the computer's time zone. For a fixed time zone, use
+  [`dateFnsTzUnits`](../date-fns-tz-units/).
+
+The results are the same as with [`nativeUnits`](../native-units/). The
+difference is which library does the work.
+
+## Install
+
+```sh
+npm install minuta date-fns
+```
+
+minuta is tested with date-fns 4. It lists date-fns as an optional
+dependency, so npm may install it already; installing it yourself makes it a
+direct dependency of your app.
+
+## Parameters
+
+| Name      | What it is                                                 |
+| --------- | ---------------------------------------------------------- |
+| `options` | Optional. Week start and weekend, see [Options](#options). |
+
+## Options
+
+| Option         | Default                  | What it does                                                                               |
+| -------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
+| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).        |
+| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend. |
+
+The week start is passed to date-fns' `startOfWeek` and `endOfWeek`. The
+date-fns locale is not used: the week starts on Monday unless you set it.
+
+## Returns
+
+The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
+`hour`, `minute` and `second`, plus `timeZone` (the computer's zone, e.g.
+`"Europe/Zurich"`), `weekStartsOn` (a number, 1 for Monday) and `weekend`
+(numbers, `[6, 0]` by default).
+
+## Related
+
+- [`dateFnsTzUnits`](../date-fns-tz-units/) — date-fns in a fixed time zone.
+- [All date engines](../overview/) — compare the engines.
+- [`withUnits`](../../minuta-core/with-units/) — bind the units to all operations.

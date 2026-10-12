@@ -1,0 +1,75 @@
+---
+title: dateOrder
+description: Tell whether a format puts the day, the month or the year first — "DMY", "MDY" or "YMD".
+---
+
+Tell in which order a format writes day, month and year: `"DMY"` for `de-CH`,
+`"MDY"` for `en-US`, `"YMD"` for `ja-JP`.
+
+```ts
+import { dateOrder } from "datefield";
+```
+
+```ts
+dateOrder(format);
+```
+
+## Example
+
+```ts
+import { dateOrder, deriveFormat } from "datefield";
+
+dateOrder(deriveFormat("de-CH")); // → "DMY"
+dateOrder(deriveFormat("en-US")); // → "MDY"
+dateOrder(deriveFormat("ja-JP")); // → "YMD"
+dateOrder(deriveFormat("ko-KR")); // → "YMD"
+```
+
+## Parameters
+
+| Name     | What it is                                           |
+| -------- | ---------------------------------------------------- |
+| `format` | The format from [`deriveFormat`](../derive-format/). |
+
+## Returns
+
+`"DMY"`, `"MDY"` or `"YMD"`. A format that does not have all three parts, such
+as a time or a month and year, gives `"DMY"`.
+
+```ts
+dateOrder(deriveFormat("de-CH", { hour: "2-digit", minute: "2-digit" })); // → "DMY"
+dateOrder(deriveFormat("en-US", { year: "numeric", month: "2-digit" })); // → "DMY"
+```
+
+## Why you need it: reading pastes
+
+`04/05/2026` is 4 May in Switzerland and 5 April in the US. A date parser
+cannot know which one the user meant. The field can: it shows the order the
+user is looking at. Pass `dateOrder(format)` to
+[fechita](../../fechita/parse-date/) as `order`, and an ambiguous paste is read
+the way the field writes it.
+
+```ts
+import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
+import { createInputState } from "input-state";
+import { parseDate } from "fechita";
+
+const format = deriveFormat("en-US");
+const field = createInputState({ mask: dateMask(format) });
+
+const parse = (text) => {
+  const result = parseDate(text, { order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+};
+
+typeDate(format, field, "04/05/2026", { parse }).buffer.text;
+// → "04/05/2026"   (5 April, as MDY)
+typeDate(format, field, "2026-03-31", { parse }).buffer.text;
+// → "03/31/2026"
+```
+
+## Related
+
+- [`typeDate`](../type-date/) — where the parser is used.
+- [`parseDate`](../../fechita/parse-date/) (fechita) — reads pasted dates.
+- [Parsing dates](../../../concepts/parsing-dates/) — how ambiguity is handled.

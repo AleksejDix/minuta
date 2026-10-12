@@ -1,0 +1,95 @@
+---
+title: nativeUnits
+description: Units computed with the built-in JavaScript Date — no dependencies, the computer's time zone.
+---
+
+Units computed with the built-in JavaScript `Date`. Nothing to install, no
+dependencies. Dates are read in the time zone of the computer the code runs
+on.
+
+```ts
+import { nativeUnits } from "minuta/native";
+```
+
+```ts
+nativeUnits(options?)
+```
+
+## Example
+
+```ts
+import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
+
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+
+time.period(new Date(2026, 2, 18), "week");
+// → { start: Sun Mar 15 00:00, end: Sat Mar 21 23:59:59.999, unit: "week" }
+```
+
+## When to choose it
+
+- You do not use a date library, or you want the smallest bundle.
+- Your users see dates in their own time zone (the usual case in a browser).
+
+This is the engine behind the default `minuta` entry: `period`, `divide`
+and the others from `"minuta"` use `nativeUnits()` with weeks starting on
+Monday. You only call `nativeUnits` yourself to change the week start or the
+weekend, or to pass units to `minuta/core` and the plugins.
+
+If you need a fixed time zone that is not the computer's, use
+[`dateFnsTzUnits`](../date-fns-tz-units/) instead.
+
+## Install
+
+Nothing to install beyond `minuta`.
+
+## Parameters
+
+| Name      | What it is                                                 |
+| --------- | ---------------------------------------------------------- |
+| `options` | Optional. Week start and weekend, see [Options](#options). |
+
+## Options
+
+| Option         | Default                  | What it does                                                                               |
+| -------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
+| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).        |
+| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend. |
+
+## Returns
+
+The units: a plain object with one spec for each of `year`, `quarter`,
+`month`, `week`, `day`, `hour`, `minute` and `second`, plus three settings:
+
+- `timeZone` — the computer's time zone when the units were made, e.g.
+  `"Europe/Zurich"`. It is a label for other functions (such as
+  `dayGridWith`); it does not change how dates are read.
+- `weekStartsOn` — the week start as a number, e.g. `1` for Monday.
+- `weekend` — the weekend days as numbers, e.g. `[6, 0]`.
+
+```ts
+const units = nativeUnits();
+
+units.timeZone; // → "Europe/Zurich" (on a computer in Zurich)
+units.weekStartsOn; // → 1
+units.weekend; // → [6, 0]
+```
+
+## Clock changes
+
+Days follow the calendar and hours follow real time. On a computer in
+Europe/Zurich, the day the clocks go forward has 23 hours:
+
+```ts
+time.duration(time.period(new Date(2026, 2, 29), "day"), "hour"); // → 23
+```
+
+Adding one day keeps the time on the clock: Mar 28 10:00 plus one day is
+Mar 29 10:00, which is only 23 real hours later.
+
+## Related
+
+- [All date engines](../overview/) — compare the engines.
+- [`withUnits`](../../minuta-core/with-units/) — bind the units to all operations.
+- [Time zones](../../../concepts/time-zones/)

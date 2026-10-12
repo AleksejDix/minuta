@@ -1,0 +1,135 @@
+---
+title: dateFnsTzUnits
+description: Units computed with date-fns-tz in one fixed time zone — Tokyo days on a computer in Zurich.
+---
+
+Units computed with [date-fns](https://date-fns.org) and
+[date-fns-tz](https://github.com/marnusw/date-fns-tz) in one fixed time zone
+that you choose. A day is a day in that zone, wherever the code runs.
+
+```ts
+import { dateFnsTzUnits } from "minuta/date-fns-tz";
+```
+
+```ts
+dateFnsTzUnits(options?)
+```
+
+## Example
+
+```ts
+import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { withUnits } from "minuta/core";
+
+const tokyo = withUnits(dateFnsTzUnits({ timeZone: "Asia/Tokyo" }));
+
+// 20:00 UTC on Mar 20 is already Mar 21 in Tokyo
+const day = tokyo.period(new Date("2026-03-20T20:00:00Z"), "day");
+
+day.start.toISOString(); // → "2026-03-20T15:00:00.000Z" (Mar 21 00:00 in Tokyo)
+day.end.toISOString(); // → "2026-03-21T14:59:59.999Z" (Mar 21 23:59:59.999 in Tokyo)
+```
+
+## When to choose it
+
+- Your server shows dates for users in another zone, e.g. a booking system
+  in `"Europe/Zurich"` running on a server in UTC.
+- Your app shows one place's calendar to people around the world.
+- You need results that do not depend on the computer's time zone, e.g. in
+  tests.
+
+It is the only engine with a time zone option. All others use the
+computer's time zone.
+
+## Install
+
+```sh
+npm install minuta date-fns date-fns-tz
+```
+
+minuta is tested with date-fns 4 and date-fns-tz 3. Both are listed as
+optional dependencies of minuta, so npm may install them already.
+
+## Parameters
+
+| Name      | What it is                                                            |
+| --------- | --------------------------------------------------------------------- |
+| `options` | Optional. Time zone, week start and weekend, see [Options](#options). |
+
+## Options
+
+| Option         | Default                  | What it does                                                                               |
+| -------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
+| `timeZone`     | `"UTC"`                  | The IANA time zone to compute in, e.g. `"Europe/Zurich"`, `"America/New_York"`.            |
+| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).        |
+| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend. |
+
+:::caution
+Without `timeZone` the zone is **UTC**, not the computer's zone. On a
+computer in Zurich, `dateFnsTzUnits()` makes days that start at 01:00
+Zurich time in winter.
+:::
+
+## Returns
+
+The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
+`hour`, `minute` and `second`, plus `timeZone` (the zone you passed, or
+`"UTC"`), `weekStartsOn` (a number) and `weekend` (numbers).
+
+## Everything follows the zone
+
+Periods, grids, weekend checks and clock changes are those of the zone:
+
+```ts
+import { calendar } from "minuta/calendar";
+
+const newYork = withUnits(dateFnsTzUnits({ timeZone: "America/New_York" }), {
+  plugins: [calendar],
+});
+
+// Mar 8 2026: clocks go forward in New York (but not yet in Europe)
+newYork.duration(
+  newYork.period(new Date("2026-03-08T17:00:00Z"), "day"),
+  "hour"
+); // → 23
+newYork.dayGrid(new Date("2026-03-08T17:00:00Z")).gapHour; // → 2
+```
+
+## Show the dates in the same zone
+
+The periods are correct moments, but `Date` methods such as `getDate()` and
+`toString()` read them in the computer's zone. Format them with the units'
+zone:
+
+```ts
+import { formatPeriod } from "minuta/format";
+
+formatPeriod(day, "en-US", { timeZone: tokyo.units.timeZone }); // → "March 21, 2026"
+```
+
+For the same reason, compare days with minuta (`contains`, `same`) instead
+of `getMonth()` or `getDay()`.
+
+## An unknown zone gives invalid dates
+
+A misspelled zone does not throw. Every date it computes is an invalid Date:
+
+```ts
+const mars = withUnits(dateFnsTzUnits({ timeZone: "Mars/Base" }));
+mars.period(new Date(), "day").start; // → Invalid Date
+```
+
+Check the name before you create the units. `Intl.DateTimeFormat` throws
+for an unknown zone:
+
+```ts
+new Intl.DateTimeFormat("en", { timeZone: "Mars/Base" });
+// RangeError: Invalid time zone specified: Mars/Base
+```
+
+## Related
+
+- [Time zones](../../../concepts/time-zones/) — the whole picture.
+- [`dateFnsUnits`](../date-fns-units/) — date-fns in the computer's zone.
+- [All date engines](../overview/) — compare the engines.
+- [`formatPeriod`](../../minuta-format/format-period/) — labels in the right zone.

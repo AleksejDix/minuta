@@ -1,0 +1,65 @@
+---
+title: intervals
+description: The intervals plugin — pass it to withUnits to get clamp, gap, merge, move, resize, snap and split on the bound object.
+---
+
+The intervals plugin. Pass it to `withUnits` and the interval functions
+join the operations on the bound object.
+
+```ts
+import { intervals } from "minuta/intervals";
+```
+
+```ts
+withUnits(units, { plugins: [intervals] });
+```
+
+## Example
+
+```ts
+import { intervals } from "minuta/intervals";
+import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
+
+const time = withUnits(nativeUnits(), { plugins: [intervals] });
+
+const days = time.divide(time.period(new Date(2026, 2, 1), "month"), "day");
+time.merge(days, "month"); // → March, unit "month"
+time.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
+```
+
+## What it contains
+
+`intervals` is a plain object of seven functions:
+
+| Member   | Bound call                        | The same as                                              |
+| -------- | --------------------------------- | -------------------------------------------------------- |
+| `clamp`  | `time.clamp(period, bounds)`      | [`clamp(period, bounds)`](../clamp/)                     |
+| `gap`    | `time.gap(from, to)`              | [`gap(from, to)`](../gap/)                               |
+| `merge`  | `time.merge(periods, unit?)`      | [`mergeWith(units, periods, unit?)`](../merge-with/)     |
+| `move`   | `time.move(period, targetDate)`   | [`move(period, targetDate)`](../move/)                   |
+| `resize` | `time.resize(period, edge, date)` | [`resize(period, edge, date)`](../resize/)               |
+| `snap`   | `time.snap(date, unit, options?)` | [`snapWith(units, date, unit, options?)`](../snap-with/) |
+| `split`  | `time.split(period, splitDate)`   | [`split(period, splitDate)`](../split/)                  |
+
+Only `merge` and `snap` need units. The others work on milliseconds alone.
+They are in the plugin anyway, so all interval functions are on the same
+object.
+
+## Only the plugin
+
+`bind` from `minuta/core` binds the plugin on its own, without the
+operations:
+
+```ts
+import { bind } from "minuta/core";
+
+const tools = bind(nativeUnits(), intervals);
+tools.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
+```
+
+## Related
+
+- [`withUnits`](../../minuta-core/with-units/) — bind the operations and plugins to units.
+- [`calendar`](../../minuta-calendar/calendar/) — the other plugin; the two can be combined.
+- [Overview](../overview/) — everything in `minuta/intervals`.
