@@ -1,0 +1,52 @@
+---
+import DemoFrame from "./DemoFrame.astro";
+---
+
+<DemoFrame
+  name="parsing"
+  problem="new Date(text) gives up on most real dates, and silently guesses on the rest."
+  solution="fechita reads dates in any language, and says so when a date could mean two days."
+>
+  <div class="grid w-full gap-3" slot="controls">
+    <div class="flex flex-wrap items-end gap-4">
+      <label class="demo-label grow">
+        Type or pick a date
+        <input class="demo-input w-full font-mono" value="03/04/2026" data-part="text" />
+      </label>
+      <label class="demo-label">
+        Order
+        <select class="demo-input" data-part="order">
+          <option value="auto">not set</option>
+          <option value="DMY">day month year</option>
+          <option value="MDY">month day year</option>
+          <option value="YMD">year month day</option>
+        </select>
+      </label>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button class="demo-button" type="button" data-preset="03/04/2026">03/04/2026</button>
+      <button class="demo-button" type="button" data-preset="31.03.2026">31.03.2026</button>
+      <button class="demo-button" type="button" data-preset="28. Oktober 2026">28. Oktober 2026</button>
+      <button class="demo-button" type="button" data-preset="4 de marzo de 2026">4 de marzo de 2026</button>
+      <button class="demo-button" type="button" data-preset="2026年3月4日">2026年3月4日</button>
+      <button class="demo-button" type="button" data-preset="Wed Oct 28 2026">Wed Oct 28 2026</button>
+      <button class="demo-button" type="button" data-preset="31.02.2026">31.02.2026</button>
+    </div>
+  </div>
+
+  <div class="grid gap-2" slot="problem">
+    <code class="demo-code">new Date(text)  → <span data-part="naive"></span></code>
+    <p class="text-destructive" data-part="naive-verdict"></p>
+  </div>
+
+  <div class="grid gap-2" slot="solution">
+    <code class="demo-code">parseDate(text, {"{"} order {"}"})  → <span data-part="result"></span></code>
+    <ul class="grid gap-1 font-mono text-xs" data-part="candidates"></ul>
+  </div>
+</DemoFrame>
+
+<script>
+  import { mountParsingDemos } from "./parsing-demo";
+
+  mountParsingDemos();
+</script>

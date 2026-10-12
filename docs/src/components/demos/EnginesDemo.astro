@@ -1,0 +1,42 @@
+---
+import DemoFrame from "./DemoFrame.astro";
+---
+
+<DemoFrame
+  name="engines"
+  problem="Every date library needs different code for the same question."
+  solution="One piece of code for every engine: only the import changes."
+>
+  <label class="demo-label" slot="controls">
+    Date library
+    <select class="demo-input" data-part="engine">
+      <option value="native">built-in Date</option>
+      <option value="date-fns">date-fns</option>
+      <option value="luxon">Luxon</option>
+      <option value="dayjs">Day.js</option>
+      <option value="moment">Moment</option>
+      <option value="temporal">Temporal</option>
+    </select>
+  </label>
+  <label class="demo-label" slot="controls">
+    Month of
+    <input class="demo-input" type="date" value="2026-03-18" data-part="date" />
+  </label>
+
+  <div class="grid gap-2" slot="problem">
+    <p>The weeks of a month, Monday to Sunday, cut to the month:</p>
+    <code class="demo-code" data-part="without"></code>
+  </div>
+
+  <div class="grid gap-2" slot="solution">
+    <code class="demo-code" data-part="with"></code>
+    <ol class="grid gap-1 font-mono text-xs" data-part="weeks"></ol>
+    <p class="font-medium text-emerald-700 dark:text-emerald-400" data-part="verdict"></p>
+  </div>
+</DemoFrame>
+
+<script>
+  import { mountEnginesDemos } from "./engines-demo";
+
+  mountEnginesDemos();
+</script>

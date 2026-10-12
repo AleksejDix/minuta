@@ -1,0 +1,158 @@
+---
+title: The input stack
+description: How text-buffer, input-state, datefield and input-dom build a date input together, and what happens on one keystroke and one paste.
+sidebar:
+  order: 5
+---
+
+import InputStackDemo from "../../../components/demos/InputStackDemo.astro";
+
+A date field like `__.__.____` looks simple, but it has to handle typing,
+pasting, deleting, arrow keys, many locales and many keyboards. minuta splits
+that work into four small packages. Each one does one job and builds on the
+one below.
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ 4  input-dom     the <input> element: events in, text out     │  DOM
+├──────────────────────────────────────────────────────────────┤
+│ 3  datefield     dates: locale formats, segments, typing     │
+│                  rules, arrow keys, day clamping              │
+├──────────────────────────────────────────────────────────────┤
+│ 2  input-state   insert/overwrite mode and masks (__.__.____) │  pure,
+├──────────────────────────────────────────────────────────────┤  no DOM
+│ 1  text-buffer   text and a selection                         │
+└──────────────────────────────────────────────────────────────┘
+```
+
+## See the problem
+
+Paste the same text into both fields, or type into the middle of a filled date. The minuta field shows what each layer holds after every key.
+
+<InputStackDemo />
+
+## What each layer owns
+
+### 1. text-buffer — text and a cursor
+
+The bottom layer is just a string and a selection: where the cursor is, and
+what is selected. It can insert text, delete backward or forward, and move the
+cursor. It knows nothing about modes, masks or dates.
+→ [text-buffer](../../api/text-buffer/overview/)
+
+### 2. input-state — how and under which rules
+
+input-state adds the **mode** (insert or overwrite, like the Insert key in an
+editor) and an optional **mask**: a template of slots and fixed characters,
+such as `99.99.9999`. With a mask the text always has the full length, typing
+replaces the slot at the cursor, and Backspace puts the placeholder back.
+Nothing ever shifts, so fixing the month of `31.03.2026` cannot push the year
+out of place.
+→ [input-state](../../api/input-state/overview/)
+
+### 3. datefield — what a date is
+
+datefield turns a locale into a mask (`de-CH` → `__.__.____`, `en-US` →
+`__/__/____`) using the browser's own `Intl` data. It cuts the text into
+**segments** — day, month, year — and knows the date rules: a `.` finishes a
+half-typed day, ArrowUp on day 31 wraps to 01, 31 February becomes 28. It
+does not parse free-form dates itself; pastes are read by a parser you pass
+in, usually [fechita](../../api/fechita/parse-date/).
+→ [datefield](../../api/datefield/overview/)
+
+### 4. input-dom — the element
+
+input-dom listens to the `<input>`, turns each event into a call to the layers
+below, and writes the result back into the element. It is the only layer that
+touches the DOM.
+→ [input-dom](../../api/input-dom/overview/)
+
+## Why the state is pure and the binding is thin
+
+Every function in layers 1 to 3 takes a value and returns a new one. Nothing
+is changed in place, and nothing reads the DOM, the clock or global settings
+(except where you can pass them in, like `today` for an empty year).
+
+That pays off in a few ways:
+
+- **Easy to test.** `typeDate(format, field, "1.3.2026")` gives
+  `01.03.2026` in a plain Node test. No browser, no fake events.
+- **Easy to reason about.** One input, one output. If the field shows
+  something wrong, you can replay the exact state and text that caused it.
+- **"Nothing changed" is cheap to see.** Functions return the same object
+  when there is nothing to do, so `next === state` means no re-render.
+- **Works everywhere.** The same rules run in vanilla JS, React, Vue or on a
+  server. Only the thin top layer is tied to the DOM, and frameworks wrap it in
+  a few lines.
+
+The binding stays thin because the browser is never allowed to edit the text
+itself. input-dom cancels every `beforeinput` event and applies it to the
+state instead. Whatever the source — a physical key, a phone keyboard,
+autocorrect, a paste, a drag-and-drop — it goes through the same pure rules.
+
+## One keystroke
+
+The field shows `3_.__.____` with the cursor after the `3`. The user presses
+`1`.
+
+```text
+browser    beforeinput { inputType: "insertText", data: "1" }
+  │
+input-dom  cancel the event
+  │        applyInputEvent → insert(state, "1")
+  ▼
+datefield  typeDate(format, state, "1")
+  │          "1" is a digit → input-state's typeChar
+  ▼
+input-state typeChar: overwrite the slot at the cursor,
+  │          skip the "." literal after the full day
+  ▼
+text-buffer new text "31.__.____", cursor at 3
+  │
+input-dom  normalize: clampDay(segments, cursor) — nothing to cut
+  │        show "31.__.____", select the slot at 3 (block cursor)
+  ▼        onChange(state)
+```
+
+If the user had typed `.` instead, `typeDate` would call `finishSegment`, and
+the day would become `03` with the cursor jumping to the month.
+
+## One paste
+
+The empty field gets a paste of `31. März 2026`.
+
+```text
+browser    beforeinput { inputType: "insertFromPaste", data: "31. März 2026" }
+  │
+input-dom  cancel the event
+  │        applyInputEvent → insert(state, "31. März 2026")
+  ▼
+datefield  typeDate(format, state, text, { parse })
+  │          more than one character → a paste: ask the parser
+  ▼
+fechita    parseDate(text, { locale: "de-CH", order: "DMY" }) → 31 March 2026
+  │
+datefield  fromDate(date, format) → segments "31" "." "03" "." "2026"
+  │        withSegments: replace the whole text, cursor at the end
+  ▼
+input-dom  normalize: clampDay — nothing to cut
+           show "31.03.2026", onChange(state)
+```
+
+When the parser cannot read the text, `typeDate` types it character by
+character instead, as if the user had typed it, and finishes the last segment.
+
+## Which layer to reach for
+
+| You want to…                                    | Use                                                                                                                  |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| a date input in a web page                      | input-dom's [`attachInput`](../../api/input-dom/attach-input/) with datefield                                        |
+| a masked input that is not a date (IBAN, phone) | input-dom with an input-state mask                                                                                   |
+| date rules in a test, a server or a canvas UI   | datefield and input-state, no DOM                                                                                    |
+| your own binding (a framework, a native view)   | [`applyInputEvent`](../../api/input-dom/apply-input-event/) and [`visibleRange`](../../api/input-dom/visible-range/) |
+
+## Related
+
+- [Parsing dates](../parsing-dates/) — how pasted text becomes a date.
+- [datefield overview](../../api/datefield/overview/) — every date function.
+- [input-dom overview](../../api/input-dom/overview/) — a complete working field.

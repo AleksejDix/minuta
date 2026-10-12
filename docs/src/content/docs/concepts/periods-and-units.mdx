@@ -1,0 +1,155 @@
+---
+title: Periods and units
+description: What a period is, what units are, why both ends are included, and what a "custom" period is.
+sidebar:
+  order: 1
+---
+
+import PeriodsDemo from "../../../components/demos/PeriodsDemo.astro";
+
+minuta has one data type: the **period**. Everything else is a function that
+makes, moves, splits, measures or compares periods.
+
+## See the problem
+
+Pick a date. The top half does month math on a plain `Date`; the bottom half asks minuta. Try **Jan 31**.
+
+<PeriodsDemo />
+
+## A period is a span of time
+
+A period is a plain object with three fields:
+
+```ts
+import { period } from "minuta";
+
+period(new Date(2026, 2, 18), "month");
+// → {
+//     start: Sun Mar 1 2026 00:00:00.000,
+//     end:   Tue Mar 31 2026 23:59:59.999,
+//     unit:  "month",
+//   }
+```
+
+- `start` — the first millisecond of the span, a `Date`.
+- `end` — the last millisecond of the span, a `Date`.
+- `unit` — what kind of span it is: `"month"` here.
+
+It is plain data: no class, no methods, nothing hidden. You can log it, put it
+in state, or send it as JSON (`start` and `end` become ISO strings). minuta
+never changes a period; every function returns a new one.
+
+## Units are the sizes of time
+
+A **unit** is a named size of calendar time. minuta knows eight:
+
+| Unit        | One of them is …                        |
+| ----------- | --------------------------------------- |
+| `"year"`    | Jan 1 to Dec 31                         |
+| `"quarter"` | Jan–Mar, Apr–Jun, Jul–Sep or Oct–Dec    |
+| `"month"`   | the 1st to the last day of the month    |
+| `"week"`    | seven days, Monday to Sunday by default |
+| `"day"`     | midnight to midnight                    |
+| `"hour"`    | one hour on the clock                   |
+| `"minute"`  | one minute                              |
+| `"second"`  | one second                              |
+
+Units are calendar units, not fixed lengths. A month has 28 to 31 days. A day
+has 24 hours, except on the nights the clocks change, when it has 23 or 25:
+
+```ts
+import { duration, period } from "minuta";
+
+duration(period(new Date(2026, 1, 1), "month"), "day"); // → 28
+duration(period(new Date(2026, 2, 29), "day"), "hour"); // → 23 in Europe/Zurich
+```
+
+[`period`](../../api/minuta/period/) gives you the whole unit that a date
+falls in. It does not matter which moment inside the unit you pass.
+
+How a unit behaves (where a week starts, which time zone a day is in) is set
+by the _units_ you compute with. See [Date engines](../date-engines/).
+
+## Both ends are included
+
+The `end` of a period is its **last millisecond**, and it belongs to the
+period. A day ends at 23:59:59.999, not at midnight. The next day starts one
+millisecond later:
+
+```ts
+import { contains, next, period } from "minuta";
+
+const today = period(new Date(2026, 2, 18), "day");
+// → Wed Mar 18 00:00:00.000 – Wed Mar 18 23:59:59.999
+
+contains(today, today.end); // → true
+next(today).start; // → Thu Mar 19 00:00:00.000
+```
+
+This makes the end readable ("March ends on the 31st") and means two
+neighbouring periods never share a moment. Functions that measure, like
+[`length`](../../api/minuta/length/) and
+[`duration`](../../api/minuta/duration/), add that last millisecond back, so
+a day is exactly 86 400 000 ms long, not one less.
+
+:::caution
+For periods you make yourself with [`range`](../../api/minuta/range/), the end
+is included too. `range(nineOClock, tenOClock)` includes 10:00:00.000, so it
+touches a range that starts at 10:00. End it at 9:59:59.999 to get a clean
+one-hour slot.
+:::
+
+## Custom periods
+
+A period that is not exactly one whole unit has the unit **`"custom"`**. You
+get one from:
+
+- [`range`](../../api/minuta/range/) — any two dates, such as a meeting or a
+  trip;
+- [`divide`](../../api/minuta/divide/) — pieces cut at the edges of the period
+  you split, and pieces made with a `step` above 1.
+
+```ts
+import { divide, period, range } from "minuta";
+
+range(new Date(2026, 2, 2, 9), new Date(2026, 2, 2, 9, 59, 59, 999));
+// → 9:00 – 9:59:59.999, unit "custom"
+
+divide(period(new Date(2026, 2, 1), "month"), "week")[0];
+// → Sun Mar 1 – Sun Mar 1 23:59:59.999, unit "custom"
+//   (the week started in February, so the piece in March is cut)
+```
+
+Custom periods work with every function. Where a function would step by the
+unit, a custom period steps by its own length instead: the
+[`next`](../../api/minuta/next/) of a one-hour custom slot is the following
+hour.
+
+## Why periods, not timestamps
+
+Most date code works with single moments and computes the rest on the spot:
+"start of month", "add one month", "is it before the end?". Each of these is a
+chance for an off-by-one or a daylight-saving bug.
+
+A period carries the whole answer: where it starts, where it ends, and what it
+is. That lets the functions stay small and composable:
+
+```ts
+import { divide, next, period } from "minuta";
+
+const thisMonth = period(new Date(2026, 2, 18), "month");
+const nextMonth = next(thisMonth);
+
+divide(nextMonth, "day");
+// → 30 day periods, Apr 1 to Apr 30
+```
+
+There is no "add 30 days" and no "set the date to 1": you ask for the month,
+the next one, and its days. Calendar rules (month lengths, leap years, clock
+changes) are handled once, inside the units.
+
+## Related
+
+- [Date engines](../date-engines/) — where units come from, and how to change them.
+- [`period`](../../api/minuta/period/) and [`range`](../../api/minuta/range/) — make periods.
+- [`divide`](../../api/minuta/divide/) — split them.

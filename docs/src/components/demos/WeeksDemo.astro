@@ -1,0 +1,62 @@
+---
+import DemoFrame from "./DemoFrame.astro";
+---
+
+<DemoFrame
+  name="weeks"
+  problem="A hand-made grid starts every week on Sunday and every weekend on Saturday."
+  solution="The grid follows the week start and weekend of the units — set them, or take them from the locale."
+>
+  <label class="demo-label" slot="controls">
+    Locale
+    <select class="demo-input" data-part="locale">
+      <option>en-US</option>
+      <option>de-CH</option>
+      <option>en-GB</option>
+      <option>ar-EG</option>
+      <option>he-IL</option>
+      <option>fa-IR</option>
+    </select>
+  </label>
+  <label class="demo-label" slot="controls">
+    Week starts on
+    <select class="demo-input" data-part="start">
+      <option value="locale">the locale's day</option>
+      <option value="1">Monday</option>
+      <option value="0">Sunday</option>
+      <option value="6">Saturday</option>
+    </select>
+  </label>
+  <label class="demo-label" slot="controls">
+    Weekend
+    <select class="demo-input" data-part="weekend">
+      <option value="locale">the locale's days</option>
+      <option value="sat-sun">Saturday + Sunday</option>
+      <option value="fri-sat">Friday + Saturday</option>
+      <option value="fri">Friday</option>
+      <option value="sun">Sunday</option>
+      <option value="none">none</option>
+    </select>
+  </label>
+  <label class="demo-label" slot="controls">
+    Month
+    <input class="demo-input" type="month" value="2026-03" data-part="month" />
+  </label>
+
+  <div class="grid gap-2" slot="problem">
+    <code class="demo-code">const blanks = new Date(year, month, 1).getDay();  // Sunday = 0, always first</code>
+    <table class="w-fit border-collapse" data-part="naive"></table>
+  </div>
+
+  <div class="grid gap-2" slot="solution">
+    <code class="demo-code" data-part="settings"></code>
+    <code class="demo-code">monthGridWith(units, date)  // 6 weeks of 7 days, weekends from isWeekendWith</code>
+    <table class="w-fit border-collapse" data-part="grid"></table>
+  </div>
+</DemoFrame>
+
+<script>
+  import { mountWeeksDemos } from "./weeks-demo";
+
+  mountWeeksDemos();
+</script>

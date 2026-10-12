@@ -1,0 +1,162 @@
+---
+title: Parsing dates
+description: Why reading a date from text is hard, how fechita decides, and how the date field uses it when you paste.
+sidebar:
+  order: 6
+---
+
+import ParsingDemo from "../../../components/demos/ParsingDemo.astro";
+
+People write the same date in many ways: `2026-03-31`, `31.03.2026`,
+`3/31/2026`, `31. März 2026`, `Tue, 31 Mar 2026`, `2026年3月31日`. Reading all of
+them back into one date is harder than it looks. This page explains why, how
+[fechita](../../api/fechita/overview/) handles it, and how the date field uses
+it when a user pastes.
+
+## See the problem
+
+Type a date or pick one. **03/04/2026** is the classic: March 4 or April 3? Then set the order.
+
+<ParsingDemo />
+
+## Why it is hard
+
+**Order.** Countries put day, month and year in different orders. Germany
+writes day first (`31.03.2026`), the United States writes month first
+(`3/31/2026`), Japan and China write year first (`2026/3/31`).
+
+**Ambiguity.** Because of that, many dates have more than one meaning.
+`3/4/2026` is 3 April in Germany and March 4 in the United States. Nothing
+in the text tells you which one was meant. Only knowing who wrote it helps.
+
+**Two-digit years.** `31.03.26` might be 2026, but `31.03.68` is almost
+certainly 1968, not 2068. And `26` might not even be the year: some people
+write the year first.
+
+**Languages.** Month and weekday names exist in hundreds of languages and
+in several forms each: `März`, `Mär`, `Marz`, `MÄRZ`. Some words mean
+different things in different languages: `listopad` is November in Polish
+and October in Croatian. In Welsh, "Dydd Mawrth" (Tuesday) contains
+"Mawrth" (March).
+
+**Times and digits.** `2:05 PM`, `14:05`, `오후 2:05` and `晚上11:59` are all
+times. Digits come in many scripts: `٣١` is 31 in Arabic-Indic digits.
+
+**Calendars.** Not every culture counts years the same way. fechita reads
+everything as the Gregorian calendar, the one `Date` uses.
+
+## How fechita decides
+
+fechita does not try one format after another and stop at the first match.
+It works out every possible meaning and then checks which ones are left:
+
+1. **ISO first.** A text such as `2026-03-31` or `2026-03-31T10:00+02:00` is
+   ISO 8601. Its order is fixed, so it is read exactly and is never
+   ambiguous.
+2. **Find the parts.** Otherwise it looks for a time, a month name, a weekday
+   name and an era in the text, using the words of every loaded language. The
+   digits that are left are the day, month and year.
+3. **Try every order.** Plain numbers are read as day–month–year,
+   month–day–year and year–month–day, wherever the digit counts fit.
+4. **Drop the impossible ones.** A reading with month 31 or 31 April is not
+   a real date and is dropped.
+5. **Decide.**
+   - Exactly one real date left: that is the result.
+   - Several readings that are the same day (`1/1/2026`): that day.
+   - Several different days: the `order` or `locale` option picks one. Without
+     them, the result is "ambiguous".
+6. **Check the weekday.** If the text names a weekday that does not match the
+   date, the result is an error, not a date.
+
+So `3/31/2026` is valid without any options, because month 31 does not exist.
+`04/05/2026` is not, because both readings are real days.
+
+## Ambiguity is reported, not guessed
+
+Many date parsers silently pick one reading. That makes a wrong date look
+right: a user in Zurich pastes `04/05/2026` meaning 4 May, and the form
+stores 5 April without a word.
+
+fechita returns no date in that case. It tells you why and what the options
+are:
+
+```ts
+import { parseDate } from "fechita";
+
+parseDate("04/05/2026");
+// → { valid: false, errorCodes: ["AMBIGUOUS_DAY_MONTH"],
+//     candidates: [4 May 2026, 5 April 2026] }
+```
+
+Your code then decides. You can pass what you know about the user:
+
+```ts
+parseDate("04/05/2026", { locale: "de-CH" }); // → 4 May 2026
+parseDate("04/05/2026", { order: "MDY" }); // → 5 April 2026
+```
+
+Or you can show the `candidates` and let the user choose. The same goes for
+month words that differ between languages (`AMBIGUOUS_MONTH`), dates that do
+not exist (`INVALID_DAY`, `INVALID_MONTH`), and a weekday that does not
+match (`WEEKDAY_MISMATCH`). See [`parseDate`](../../api/fechita/parse-date/)
+for the full list.
+
+## Two-digit years
+
+A two-digit year is placed in a window of 100 years, from 80 years before
+today to 19 years after. In 2026 that is 1946 to 2045: `68` is 1968, `45` is 2045. The `referenceDate` option moves the window.
+
+A two-digit year can also be read as the first number, so `31.03.26` has two
+real readings: 31 March 2026 (day first) and 26 March 2031 (year first). It is
+ambiguous until you pass an `order` or `locale`.
+
+## Pasting into a date field
+
+A masked date field such as `__.__.____` cannot read text on its own. A plain
+[`paste`](../../api/input-state/paste/) puts each digit into the next slot,
+so `2026-03-31` would become `20.26.0331`.
+
+That is why [`typeDate`](../../api/datefield/type-date/) in datefield takes a
+`parse` option. When the user pastes more than one character, `typeDate`
+hands the text to `parse`. If it returns a date, the whole field is filled
+with that date, written in the field's own format:
+
+```ts
+import { createInputState } from "input-state";
+import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
+import { parseDate } from "fechita";
+
+const format = deriveFormat("de-CH");
+const field = createInputState({ mask: dateMask(format) });
+
+const parse = (text: string) => {
+  const result = parseDate(text, { order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+};
+
+typeDate(format, field, "2026-03-31", { parse }).buffer.text; // → "31.03.2026"
+typeDate(format, field, "March 31, 2026", { parse }).buffer.text; // → "31.03.2026"
+typeDate(format, field, "04/05/2026", { parse }).buffer.text; // → "04.05.2026" (4 May)
+```
+
+The field passes its own order with [`dateOrder`](../../api/datefield/date-order/):
+`DMY` for `de-CH`, `MDY` for `en-US`. That settles ambiguous pastes the way
+the field is written, so what the user sees matches what they pasted.
+
+When `parse` returns `undefined`, for text that is not a date or a date that
+does not exist, `typeDate` falls back to typing the characters one by one.
+
+fechita is optional. Without a `parse` option the date field still works; it
+just cannot read pasted month names or other orders. And because fechita
+does not depend on the rest of minuta, you can use it anywhere you read dates
+from text: imports, emails, chat messages.
+
+To keep the bundle small, load only the languages you need with
+[`withLocales`](../../api/fechita/with-locales/).
+
+## Related
+
+- [`parseDate`](../../api/fechita/parse-date/) — every option, result and error code.
+- [Locales](../../api/fechita/locales/) — the 104 languages and how to load a few.
+- [The input stack](../the-input-stack/) — the layers of the date field.
+- [`typeDate`](../../api/datefield/type-date/) — typing and pasting into a date field.

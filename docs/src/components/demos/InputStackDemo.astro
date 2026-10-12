@@ -1,0 +1,52 @@
+---
+import DemoFrame from "./DemoFrame.astro";
+---
+
+<DemoFrame
+  name="input-stack"
+  problem="A regex mask rewrites the whole value on every keystroke."
+  solution="Each layer handles one job, so typing in the middle and pasting just work."
+>
+  <div class="grid gap-2" slot="controls">
+    <p class="font-medium">Paste into both fields:</p>
+    <div class="flex flex-wrap gap-2">
+      <button class="demo-button" type="button" data-paste="Wed Oct 28 2026">Wed Oct 28 2026</button>
+      <button class="demo-button" type="button" data-paste="2026-10-28">2026-10-28</button>
+      <button class="demo-button" type="button" data-paste="28. Oktober 2026">28. Oktober 2026</button>
+    </div>
+    <p class="text-muted-foreground">Or type into them, then click into the middle and type again.</p>
+  </div>
+
+  <div class="grid gap-2" slot="problem">
+    <label class="demo-label">
+      Regex-masked input (DD.MM.YYYY)
+      <input class="demo-input font-mono" data-part="naive" inputmode="numeric" />
+    </label>
+    <code class="demo-code">input.value = digitsOnly(input.value).replace(/(..)(..)/, "$1.$2.")</code>
+    <p class="font-mono text-xs">value <span data-part="naive-value">""</span></p>
+    <p class="text-destructive">✗ The paste loses the month name, and the cursor jumps to the end after every key.</p>
+  </div>
+
+  <div class="grid gap-3" slot="solution">
+    <label class="demo-label">
+      minuta date field (de-CH)
+      <input class="demo-input font-mono tabular-nums" data-part="field" inputmode="numeric" />
+    </label>
+    <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 font-mono text-xs">
+      <dt class="text-muted-foreground">text-buffer</dt>
+      <dd data-part="buffer"></dd>
+      <dt class="text-muted-foreground">input-state</dt>
+      <dd data-part="state"></dd>
+      <dt class="text-muted-foreground">datefield</dt>
+      <dd data-part="segments"></dd>
+      <dt class="text-muted-foreground">toDate()</dt>
+      <dd data-part="date"></dd>
+    </dl>
+  </div>
+</DemoFrame>
+
+<script>
+  import { mountInputStackDemos } from "./input-stack-demo";
+
+  mountInputStackDemos();
+</script>

@@ -1,0 +1,158 @@
+---
+title: Weeks and calendars
+description: Week start, weekend days, week numbers, calendar grids and calendar systems — what minuta does and what it leaves to you.
+sidebar:
+  order: 4
+---
+
+import WeeksDemo from "../../../components/demos/WeeksDemo.astro";
+
+A week looks simple, but countries disagree about it. In Switzerland the
+week starts on Monday, in the US on Sunday, in Egypt on Saturday. The
+weekend is Saturday and Sunday in most places, but Friday and Saturday in
+others. minuta lets you set both, and builds calendar grids that follow
+them.
+
+## See the problem
+
+Switch the locale, the week start and the weekend. The hand-made grid on top never changes; the minuta grid below follows the settings. With **ar-EG** the locale starts weeks on Saturday with a Friday–Saturday weekend (in browsers that support `Intl.Locale#getWeekInfo`).
+
+<WeeksDemo />
+
+## Week start
+
+The week start decides where every `"week"` period begins. It is a setting
+of the **units**, chosen when you create them:
+
+```ts
+import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
+
+const monday = withUnits(nativeUnits());
+const sunday = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+
+monday.period(new Date(2026, 2, 18), "week"); // → Mon Mar 16 – Sun Mar 22
+sunday.period(new Date(2026, 2, 18), "week"); // → Sun Mar 15 – Sat Mar 21
+```
+
+- The default is **Monday**, as in the ISO 8601 standard.
+- Name the day in lowercase English (`"sunday"` … `"saturday"`), or use the
+  numbers of `Date#getDay()`: 0 = Sunday, 1 = Monday … 6 = Saturday.
+- The units store it as a number: `nativeUnits({ weekStartsOn: "sunday" }).weekStartsOn`
+  is `0`.
+- The default `minuta` entry (`import { period } from "minuta"`) always
+  starts weeks on Monday. For another start, use `withUnits` from
+  `minuta/core`.
+
+Every engine takes the option the same way. None of them reads the week
+start from a date library's locale.
+
+Everything that deals with weeks follows it: `period(date, "week")`,
+`divide(month, "week")`, `next` and `previous` of a week, month and year
+grids, `snapWith(units, date, "week")`, and whether `mergeWith` calls seven
+days a `"week"`.
+
+## Weekend
+
+The weekend is a second setting of the units. It is used by exactly two
+functions, [`isWeekendWith`](../../api/minuta-calendar/is-weekend-with/) and
+[`isWeekdayWith`](../../api/minuta-calendar/is-weekday-with/):
+
+```ts
+import { isWeekendWith } from "minuta/calendar";
+import { period } from "minuta";
+
+const units = nativeUnits({ weekend: ["friday", "saturday"] });
+
+isWeekendWith(units, period(new Date(2026, 2, 20), "day")); // → true  (Friday)
+isWeekendWith(units, period(new Date(2026, 2, 22), "day")); // → false (Sunday)
+```
+
+- The default is Saturday and Sunday.
+- Any list of days works, also one day or none (`weekend: []`).
+- The weekend does not change grids or weeks. Mark weekend cells yourself
+  with `isWeekendWith`.
+- minuta knows nothing about public holidays.
+
+## Taking both from the user's locale
+
+minuta does not guess the week start or the weekend from a locale. Where the
+runtime supports it, `Intl.Locale#getWeekInfo()` tells you. It numbers days
+1 = Monday … 7 = Sunday, so turn 7 into 0:
+
+```ts
+const info = new Intl.Locale("en-US").getWeekInfo();
+// → { firstDay: 7, weekend: [6, 7] }
+
+const units = nativeUnits({
+  weekStartsOn: info.firstDay % 7, // → 0, Sunday
+  weekend: info.weekend.map((day) => day % 7), // → [6, 0]
+});
+```
+
+With `"ar-EG"` this gives weeks starting on Saturday and a Friday–Saturday
+weekend. `getWeekInfo` is not available in every browser yet.
+
+## Week numbers
+
+minuta does not compute week numbers. In particular, the position of a week
+in [`yearGridWith`](../../api/minuta-calendar/year-grid-with/) is not the
+ISO week number: the grid starts with the week that contains January 1,
+while ISO week 1 is the week that contains the first Thursday. For 2021,
+the grid's first week (Mon Dec 28 2020) is ISO week 53 of 2020.
+
+## Calendar grids
+
+[`minuta/calendar`](../../api/minuta-calendar/overview/) builds the data
+for calendar screens. Every cell is an ordinary period.
+
+| Grid                                                          | What it is                                                          |
+| ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [`monthGridWith`](../../api/minuta-calendar/month-grid-with/) | Always 42 days: 6 weeks of 7, from the week start before the 1st.   |
+| [`yearGridWith`](../../api/minuta-calendar/year-grid-with/)   | Whole weeks from the week of Jan 1 to the week of Dec 31: 53 or 54. |
+| [`dayGridWith`](../../api/minuta-calendar/day-grid-with/)     | The real hours of a day: 23, 24 or 25.                              |
+
+The month grid always has 42 days, even for a February that fits into 4
+rows. A month view built on it keeps the same height for every month, so
+nothing jumps when the user pages through months.
+
+```ts
+import { monthGridWith } from "minuta/calendar";
+
+monthGridWith(nativeUnits(), new Date(2026, 2, 15)).periods[0];
+// → Mon Feb 23 (the week of Mar 1 starts on Monday)
+
+monthGridWith(nativeUnits({ weekStartsOn: "sunday" }), new Date(2026, 2, 15))
+  .periods[0];
+// → Sun Mar 1 (March 2026 starts on a Sunday)
+```
+
+Grids and weekends are computed in the time zone of the units, see
+[Time zones](../time-zones/).
+
+## Calendar systems
+
+minuta computes with the **Gregorian calendar** only: months are January to
+December, years are Gregorian years. All engines work this way.
+
+Other calendar systems are available for **labels**, through the locale of
+[`formatPeriod`](../../api/minuta-format/format-period/) and
+`formatRange`. Add `-u-ca-` and a calendar name to the locale:
+
+```ts
+import { formatPeriod } from "minuta/format";
+
+formatPeriod(period(new Date(2026, 2, 15), "month"), "en-US-u-ca-buddhist");
+// → "March 2569 BE"
+```
+
+The period is still the Gregorian month. In calendars whose months start on
+other days, the label names the month in which the period **starts**: March
+2026 in `"fa-IR"` (Persian calendar) is labelled "۱۴۰۴ اسفند" (Esfand 1404),
+although March 21–31 already fall in the next Persian month, Farvardin 1405.
+
+## Related
+
+- [Time zones](../time-zones/)
+- [Date engines](../../api/adapters/overview/) — the options every engine takes.
+- [`minuta/calendar`](../../api/minuta-calendar/overview/)

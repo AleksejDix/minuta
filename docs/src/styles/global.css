@@ -63,18 +63,38 @@
 /* Starlight leaves out Tailwind's preflight, which the demos' shadcn parts
    rely on: restore the parts of it they need, inside the demos only */
 @layer components {
-  .minuta-playground,
-  .minuta-playground *,
-  .minuta-playground ::before,
-  .minuta-playground ::after {
+  :is(.minuta-playground, .concept-demo),
+  :is(.minuta-playground, .concept-demo) *,
+  :is(.minuta-playground, .concept-demo) ::before,
+  :is(.minuta-playground, .concept-demo) ::after {
     @apply border-border outline-ring/50;
   }
 
-  .minuta-playground :where(button, input, select, textarea) {
+  :is(.minuta-playground, .concept-demo)
+    :where(button, input, select, textarea) {
     margin: 0;
     padding: 0;
     font: inherit;
     color: inherit;
     background-color: transparent;
+  }
+}
+
+/* The concept demos' controls, in shadcn's input and button styles */
+@layer components {
+  .demo-input {
+    @apply h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30;
+  }
+
+  .demo-button {
+    @apply inline-flex h-9 cursor-pointer items-center justify-center rounded-md border bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30;
+  }
+
+  .demo-label {
+    @apply grid gap-1.5 text-sm font-medium;
+  }
+
+  .demo-code {
+    @apply rounded-md bg-muted px-3 py-2 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground;
   }
 }
