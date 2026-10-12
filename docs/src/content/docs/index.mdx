@@ -1,0 +1,36 @@
+---
+title: minuta
+description: Divide time into pieces. A pure functional calendar library with a segmented date field for React and Vue.
+template: splash
+hero:
+  tagline: Divide time into pieces. A pure functional calendar library, a date parser for every locale, and a segmented date field for React and Vue.
+  actions:
+    - text: Get started
+      link: getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/AleksejDix/minuta
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid stagger>
+  <Card title="Periods, not timestamps" icon="seti:clock">
+    `period`, `divide`, `next` and `previous` work on spans of time: a year, a
+    month, a day. Pure functions over plain data.
+  </Card>
+  <Card title="Any date engine" icon="setting">
+    Native `Date`, date-fns, Luxon or Temporal. Swap the adapter without
+    changing your code.
+  </Card>
+  <Card title="A date field people can type in" icon="pencil">
+    Segmented input that reads typed and pasted dates in any locale, with
+    arrow-key stepping and day clamping.
+  </Card>
+  <Card title="React and Vue" icon="puzzle">
+    Headless roots, context and composable parts for both frameworks over the
+    same pure core.
+  </Card>
+</CardGrid>
