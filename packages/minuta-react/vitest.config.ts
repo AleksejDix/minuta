@@ -5,7 +5,11 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: false,
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    include: [
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "examples/src/**/*.test.tsx",
+    ],
     setupFiles: [
       path.resolve(import.meta.dirname, "../../vitest.setup.ts"),
       path.resolve(import.meta.dirname, "vitest.setup.ts"),
