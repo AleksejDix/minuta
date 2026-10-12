@@ -1,0 +1,59 @@
+/*
+ * minuta's calendar, styled like shadcn's Calendar. The components carry
+ * scoped styles, so these rules sit outside any layer and under .minuta-playground .calendar-shell to win.
+ */
+.minuta-playground .calendar-shell {
+  @apply flex w-fit flex-col gap-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm;
+}
+
+.minuta-playground .calendar-shell .calendar-header {
+  @apply flex items-center justify-between gap-4;
+}
+
+.minuta-playground .calendar-shell .calendar-header h2 {
+  @apply m-0 text-sm font-medium;
+}
+
+.minuta-playground .calendar-shell .calendar-header .nav-button {
+  @apply inline-flex h-8 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground shadow-xs transition-all outline-none hover:bg-accent hover:text-accent-foreground hover:opacity-100 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
+}
+
+.minuta-playground .calendar-shell .calendar-grid {
+  @apply w-auto table-auto border-collapse;
+}
+
+.minuta-playground .calendar-shell .calendar-weekdays th {
+  @apply h-8 w-9 text-[0.8rem] font-normal tracking-normal text-muted-foreground normal-case;
+}
+
+.minuta-playground .calendar-shell .calendar-cell {
+  @apply p-0;
+}
+
+.minuta-playground .calendar-shell .calendar-cell .calendar-day {
+  @apply inline-flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-md bg-transparent p-0 text-center text-sm font-normal text-foreground transition-colors outline-none hover:translate-y-0 hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50;
+}
+
+.minuta-playground .calendar-shell .calendar-cell .calendar-day.is-weekend {
+  @apply bg-transparent text-foreground;
+}
+
+.minuta-playground .calendar-shell .calendar-cell .calendar-day.is-outside {
+  @apply bg-transparent text-muted-foreground;
+}
+
+.minuta-playground .calendar-shell .calendar-cell .calendar-day.is-today {
+  @apply bg-accent text-accent-foreground outline-none;
+}
+
+.minuta-playground .calendar-shell .calendar-cell .calendar-day.is-selected {
+  @apply bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground;
+}
+
+.minuta-playground .calendar-shell .calendar-cell .calendar-day.is-disabled {
+  @apply pointer-events-none opacity-50;
+}
+
+.minuta-playground .calendar-shell .calendar-cell .calendar-day:focus-visible {
+  @apply outline-none;
+}
