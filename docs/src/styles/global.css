@@ -29,3 +29,52 @@
   --color-gray-900: var(--color-neutral-900);
   --color-gray-950: var(--color-neutral-950);
 }
+
+/* The live demos: the demos' shadcn theme and calendar styles, read from
+   their sources so the docs show exactly what the demos ship */
+@source "../../../packages/minuta-react/examples/src";
+@source "../../../packages/minuta-vue/examples/src";
+@import "../../../packages/minuta-react/examples/src/theme.css";
+@import "../../../packages/minuta-react/examples/src/calendar.css";
+@import "../../../packages/minuta-vue/examples/src/assets/calendar.css";
+
+/* shadcn's dark palette when Starlight is in dark mode */
+:root[data-theme="dark"] {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+}
+
+/* Starlight leaves out Tailwind's preflight, which the demos' shadcn parts
+   rely on: restore the parts of it they need, inside the demos only */
+@layer components {
+  .minuta-playground,
+  .minuta-playground *,
+  .minuta-playground ::before,
+  .minuta-playground ::after {
+    @apply border-border outline-ring/50;
+  }
+
+  .minuta-playground :where(button, input, select, textarea) {
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background-color: transparent;
+  }
+}
