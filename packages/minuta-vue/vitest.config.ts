@@ -13,6 +13,10 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: [
+      {
+        find: /^@\//u,
+        replacement: `${path.resolve(import.meta.dirname, "examples/src")}/`,
+      },
       { find: /^minuta$/u, replacement: core("index.ts") },
       { find: /^minuta\/calendar$/u, replacement: core("calendar.ts") },
       { find: /^minuta\/core$/u, replacement: core("core.ts") },
