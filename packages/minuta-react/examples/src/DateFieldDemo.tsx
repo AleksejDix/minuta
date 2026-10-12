@@ -1,7 +1,12 @@
-import type { CSSProperties, JSX } from "react";
-import { DateFieldInput } from "./DateFieldInput";
-import { DateFieldOutput } from "./DateFieldOutput";
-import { DateFieldRoot } from "./DateFieldRoot";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { DateField } from "./DateField";
+import type { JSX } from "react";
 import { LocaleSelect } from "./LocaleSelect";
 
 type DateFieldDemoProps = Readonly<{
@@ -12,14 +17,9 @@ type DateFieldDemoProps = Readonly<{
   value: Readonly<Date> | undefined;
 }>;
 
-const TITLE = "datefield + input-dom";
-const DATE_LABEL = "Date";
-const SECTION_STYLE: CSSProperties = {
-  display: "grid",
-  gap: "1rem",
-  minWidth: "20rem",
-};
-const TITLE_STYLE: CSSProperties = { margin: 0 };
+const TITLE = "Date field";
+const DESCRIPTION =
+  "datefield + input-dom: type, paste or step with the arrow keys.";
 
 function DateFieldDemo({
   locale,
@@ -29,18 +29,20 @@ function DateFieldDemo({
   value,
 }: DateFieldDemoProps): JSX.Element {
   return (
-    <section style={SECTION_STYLE}>
-      <h2 style={TITLE_STYLE}>{TITLE}</h2>
-      <LocaleSelect
-        locale={locale}
-        locales={locales}
-        onChange={onLocaleChange}
-      />
-      <DateFieldRoot locale={locale} value={value} onChange={onChange}>
-        <DateFieldInput label={DATE_LABEL} />
-        <DateFieldOutput />
-      </DateFieldRoot>
-    </section>
+    <Card className="w-full max-w-sm">
+      <CardHeader>
+        <CardTitle>{TITLE}</CardTitle>
+        <CardDescription>{DESCRIPTION}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-6">
+        <LocaleSelect
+          locale={locale}
+          locales={locales}
+          onChange={onLocaleChange}
+        />
+        <DateField locale={locale} onChange={onChange} value={value} />
+      </CardContent>
+    </Card>
   );
 }
 

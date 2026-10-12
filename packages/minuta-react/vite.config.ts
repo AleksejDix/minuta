@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import path from "node:path";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 const EXTERNAL = [/^minuta/u, /^react(?:\/.*)?$/u];
 
@@ -19,8 +20,10 @@ function fileName(_format: string, entryName: string): string {
 
 const demoConfig: UserConfig = {
   build: { outDir: "dist" },
-  plugins: [react()],
-  resolve: { alias: { "minuta-react": fromRoot("src") } },
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: { "@": fromRoot("examples/src"), "minuta-react": fromRoot("src") },
+  },
   root: fromRoot("examples"),
 };
 

@@ -1,16 +1,16 @@
-import type { CSSProperties, JSX, ReactNode } from "react";
+import type { JSX, ReactNode } from "react";
 import { useDateFieldContext } from "./date-field-context";
 
-const TO_DATE_LABEL = "toDate():";
+const TO_DATE_LABEL = "toDate()";
 const INVALID_DATE = "undefined (incomplete or invalid)";
+const STATE_LABEL = "Input state";
 const JSON_INDENT = 2;
-const STATE_STYLE: CSSProperties = { fontSize: "0.75rem", margin: 0 };
 
 function renderDate(date: Readonly<Date> | undefined): ReactNode {
   if (date === undefined) {
-    return <em>{INVALID_DATE}</em>;
+    return <em className="text-muted-foreground">{INVALID_DATE}</em>;
   }
-  return date.toDateString();
+  return <span className="font-medium">{date.toDateString()}</span>;
 }
 
 /**
@@ -21,11 +21,19 @@ function renderDate(date: Readonly<Date> | undefined): ReactNode {
 function DateFieldOutput(): JSX.Element {
   const { date, state } = useDateFieldContext();
   return (
-    <output>
-      <div>
-        <strong>{TO_DATE_LABEL}</strong> {renderDate(date)}
+    <output className="grid gap-2 text-sm">
+      <div className="flex items-baseline justify-between gap-4">
+        <code className="text-muted-foreground">{TO_DATE_LABEL}</code>
+        {renderDate(date)}
       </div>
-      <pre style={STATE_STYLE}>{JSON.stringify(state, null, JSON_INDENT)}</pre>
+      <details>
+        <summary className="cursor-pointer text-muted-foreground select-none hover:text-foreground">
+          {STATE_LABEL}
+        </summary>
+        <pre className="mt-2 max-h-72 overflow-auto rounded-md bg-muted p-3 font-mono text-xs">
+          {JSON.stringify(state, null, JSON_INDENT)}
+        </pre>
+      </details>
     </output>
   );
 }
