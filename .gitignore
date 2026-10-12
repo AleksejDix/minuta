@@ -50,6 +50,9 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Astro
+.astro/
+
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*

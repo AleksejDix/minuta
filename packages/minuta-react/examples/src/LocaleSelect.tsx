@@ -1,5 +1,9 @@
-import type { CSSProperties, JSX } from "react";
-import { useCallback } from "react";
+import type { JSX } from "react";
+import { Label } from "@/components/ui/label";
+import { LocaleOptions } from "./LocaleOptions";
+import { LocaleTrigger } from "./LocaleTrigger";
+import { Select } from "@/components/ui/select";
+import { useId } from "react";
 
 type LocaleSelectProps = Readonly<{
   locale: string;
@@ -7,32 +11,22 @@ type LocaleSelectProps = Readonly<{
   onChange: (locale: string) => void;
 }>;
 
-type ValueChange = Readonly<{ target: Readonly<{ value: string }> }>;
-
 const LABEL = "Locale";
-const LABEL_STYLE: CSSProperties = { display: "grid", gap: "0.25rem" };
 
 function LocaleSelect({
   locale,
   locales,
   onChange,
 }: LocaleSelectProps): JSX.Element {
-  const handleChange = useCallback(
-    (event: ValueChange) => {
-      onChange(event.target.value);
-    },
-    [onChange]
-  );
-
+  const id = useId();
   return (
-    <label style={LABEL_STYLE}>
-      {LABEL}
-      <select value={locale} onChange={handleChange}>
-        {locales.map((option) => (
-          <option key={option}>{option}</option>
-        ))}
-      </select>
-    </label>
+    <div className="grid gap-2">
+      <Label htmlFor={id}>{LABEL}</Label>
+      <Select value={locale} onValueChange={onChange}>
+        <LocaleTrigger id={id} />
+        <LocaleOptions locales={locales} />
+      </Select>
+    </div>
   );
 }
 

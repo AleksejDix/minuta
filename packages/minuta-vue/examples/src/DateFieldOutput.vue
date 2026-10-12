@@ -11,20 +11,19 @@ const stateJson = computed(() => JSON.stringify(state.value, undefined, JSON_IND
 </script>
 
 <template>
-  <output>
-    <div>
-      <strong>toDate():</strong>
-      {{ ' ' }}
-      <template v-if="date">{{ date.toDateString() }}</template>
-      <em v-else>undefined (incomplete or invalid)</em>
+  <output class="grid gap-2 text-sm">
+    <div class="flex items-baseline justify-between gap-4">
+      <code class="text-muted-foreground">toDate()</code>
+      <span v-if="date" class="font-medium">{{ date.toDateString() }}</span>
+      <em v-else class="text-muted-foreground">undefined (incomplete or invalid)</em>
     </div>
-    <pre class="date-field-state">{{ stateJson }}</pre>
+    <details>
+      <summary class="cursor-pointer text-muted-foreground select-none hover:text-foreground">
+        Input state
+      </summary>
+      <pre class="mt-2 max-h-72 overflow-auto rounded-md bg-muted p-3 font-mono text-xs">{{
+        stateJson
+      }}</pre>
+    </details>
   </output>
 </template>
-
-<style scoped>
-.date-field-state {
-  font-size: 0.75rem;
-  margin: 0;
-}
-</style>

@@ -51,6 +51,10 @@ jobs:
           name: build-dist
           path: packages/
 
+      # Type-aware lint rules read astro:content's types, which Astro generates
+      - name: Generate Astro types
+        run: npm run sync -w minuta-docs
+
       - name: Run linter
         run: npm run lint
 

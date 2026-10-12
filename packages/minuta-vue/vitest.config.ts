@@ -13,6 +13,10 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: [
+      {
+        find: /^@\//u,
+        replacement: `${path.resolve(import.meta.dirname, "examples/src")}/`,
+      },
       { find: /^minuta$/u, replacement: core("index.ts") },
       { find: /^minuta\/calendar$/u, replacement: core("calendar.ts") },
       { find: /^minuta\/core$/u, replacement: core("core.ts") },
@@ -23,7 +27,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: false,
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "examples/src/**/*.test.ts"],
     setupFiles: path.resolve(import.meta.dirname, "../../vitest.setup.ts"),
   },
 });

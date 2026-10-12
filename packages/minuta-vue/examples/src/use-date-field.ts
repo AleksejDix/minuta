@@ -2,6 +2,7 @@ import type { ComputedRef, ShallowRef } from 'vue'
 import {
   clampDay,
   dateMask,
+  dateOrder,
   deriveFormat,
   fromDate,
   parseSegments,
@@ -9,6 +10,7 @@ import {
   segmentAtPosition,
   segmentsToString,
   toDate,
+  typeDate,
   withSegments,
 } from 'datefield'
 import { computed, shallowRef, watch } from 'vue'
@@ -17,6 +19,7 @@ import type { InputController } from 'input-dom'
 import type { InputState } from 'input-state'
 import { attachInput } from 'input-dom'
 import { createInputState } from 'input-state'
+import { parseDate } from 'fechita'
 
 type DateField = Readonly<{
   date: ComputedRef<Readonly<Date> | undefined>
@@ -28,6 +31,7 @@ type DateField = Readonly<{
 type AttachedField = Readonly<{
   format: Readonly<DateFormat>
   initial: InputState
+  locale: string
   onChange: (next: InputState) => void
 }>
 
@@ -98,17 +102,34 @@ function rotated(
   return withSegments(state, rotateSegment(segments, index, rotationDirection(key)))
 }
 
+// The demo reads pastes in every locale; an app loads only the ones it needs
+function pastedDate(
+  text: string,
+  locale: string,
+  format: Readonly<DateFormat>,
+): Readonly<Date> | undefined {
+  const result = parseDate(text, { locale, order: dateOrder(format) })
+  if (result.valid) {
+    return result.date
+  }
+  return undefined
+}
+
 /**
- * Attaches input-dom to an element with the datefield mask, day clamping and
- * segment rotation.
+ * Attaches input-dom to an element with the datefield mask, typing and
+ * pasting the way people write dates, day clamping and segment rotation.
  *
  * @param element - The input element
- * @param field - The format, the initial state and the change listener
+ * @param field - The format, the locale, the initial state and the change listener
  * @returns The input-dom controller
  */
 function attachField(element: HTMLInputElement, field: AttachedField): InputController {
-  const { format, initial, onChange } = field
+  const { format, initial, locale, onChange } = field
   return attachInput(element, initial, {
+    insert: (state, text) =>
+      typeDate(format, state, text, {
+        parse: (pasted) => pastedDate(pasted, locale, format),
+      }),
     normalize: (next) => withSegments(next, clampDay(parseSegments(format, next.buffer.text))),
     onChange,
     onKeyDown: (event, next) => rotated(format, next, event.key),
@@ -131,6 +152,7 @@ function attachSession(
   const attached = attachField(input, {
     format,
     initial: fieldFor(format, session.lastDate.value, session.locale()),
+    locale: session.locale(),
     onChange: (next) => {
       // Remembered with this format, so a new locale keeps the date
       session.lastDate.value = toDate(parseSegments(format, next.buffer.text))

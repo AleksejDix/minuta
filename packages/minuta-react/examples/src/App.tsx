@@ -1,11 +1,8 @@
-import {
-  CalendarGrid,
-  CalendarHeader,
-  CalendarRoot,
-} from "minuta-react/components";
 import { useCallback, useState } from "react";
 import { DateFieldDemo } from "./DateFieldDemo";
+import { DemoCalendar } from "./DemoCalendar";
 import type { JSX } from "react";
+import { PageHeader } from "./PageHeader";
 import type { Period } from "minuta-react";
 
 const LOCALES = ["de-CH", "en-US", "en-GB", "ja-JP", "ko-KR", "fr-FR"];
@@ -21,18 +18,18 @@ function App(): JSX.Element {
   }, []);
 
   return (
-    <main className="app-shell">
-      <DateFieldDemo
-        locale={locale}
-        locales={LOCALES}
-        onChange={setValue}
-        onLocaleChange={setLocale}
-        value={value}
-      />
-      <CalendarRoot onSelect={handleSelect}>
-        <CalendarHeader locale={locale} />
-        <CalendarGrid locale={locale} />
-      </CalendarRoot>
+    <main className="mx-auto flex min-h-svh max-w-4xl flex-col gap-8 px-4 py-12">
+      <PageHeader />
+      <div className="flex flex-wrap items-start gap-6">
+        <DateFieldDemo
+          locale={locale}
+          locales={LOCALES}
+          onChange={setValue}
+          onLocaleChange={setLocale}
+          value={value}
+        />
+        <DemoCalendar locale={locale} onSelect={handleSelect} />
+      </div>
     </main>
   );
 }

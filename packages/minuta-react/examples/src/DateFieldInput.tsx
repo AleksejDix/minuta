@@ -1,17 +1,13 @@
-import type { CSSProperties, JSX } from "react";
+import { Input } from "@/components/ui/input";
+import type { JSX } from "react";
+import { Label } from "@/components/ui/label";
 import { useDateFieldContext } from "./date-field-context";
+import { useId } from "react";
 
 type DateFieldInputProps = Readonly<{
   /** Visible label of the input */
   label: string;
 }>;
-
-const LABEL_STYLE: CSSProperties = { display: "grid", gap: "0.25rem" };
-const INPUT_STYLE: CSSProperties = {
-  fontFamily: "monospace",
-  fontSize: "1.5rem",
-  padding: "0.5rem",
-};
 
 /**
  * The labelled `<input>` the field's input-dom controller attaches to.
@@ -22,11 +18,17 @@ const INPUT_STYLE: CSSProperties = {
  */
 function DateFieldInput({ label }: DateFieldInputProps): JSX.Element {
   const { inputRef } = useDateFieldContext();
+  const id = useId();
   return (
-    <label style={LABEL_STYLE}>
-      {label}
-      <input ref={inputRef} inputMode="numeric" style={INPUT_STYLE} />
-    </label>
+    <div className="grid gap-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        ref={inputRef}
+        id={id}
+        inputMode="numeric"
+        className="font-mono tabular-nums"
+      />
+    </div>
   );
 }
 

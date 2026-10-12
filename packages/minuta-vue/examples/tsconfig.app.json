@@ -6,6 +6,9 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"],
+      "@internationalized/date": [
+        "../../../node_modules/@internationalized/date/dist/types/src/index.d.ts"
+      ],
       "minuta-vue": ["../src/index"],
       "minuta-vue/components": ["../src/components/index"]
     },
