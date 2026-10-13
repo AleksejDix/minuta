@@ -11,37 +11,11 @@ const INCLUSIVE_END_MS = 1;
 const FIXED_LENGTH: ReadonlySet<string> = new Set(["hour", "minute", "second"]);
 
 /**
- * The period right before or after `period`, found across its own boundary:
- * the first moment after its end, or the last moment before its start. Never
- * asks the engine for a local time, so a day the zone skipped (Samoa, Dec 30
- * 2011) or a missing hour cannot make the step stall or jump back.
- *
- * @param units - Available unit specs
- * @param step - A whole period, its calendar unit and the direction
- * @returns The neighbouring period
- */
-function neighbour(
-  units: Units,
-  step: Readonly<{ forward: boolean; period: Period; unit: Unit }>
-): Period {
-  const { forward, period, unit } = step;
-  if (forward) {
-    return periodWith(
-      units,
-      new Date(period.end.getTime() + INCLUSIVE_END_MS),
-      unit
-    );
-  }
-  return periodWith(
-    units,
-    new Date(period.start.getTime() - INCLUSIVE_END_MS),
-    unit
-  );
-}
-
-/**
- * Step a period of a calendar unit one neighbour at a time, across each
- * boundary.
+ * Step a period of a calendar unit one neighbour at a time: to the period
+ * holding the first moment after its end, or the last moment before its
+ * start. Never asks the engine for a local time, so a day the zone skipped
+ * (Samoa, Dec 30 2011) or a missing hour cannot make a step stall or jump
+ * back.
  *
  * @param units - Available unit specs
  * @param walk - The period, its calendar unit and how many steps
@@ -52,11 +26,13 @@ function stepped(
   walk: Readonly<{ period: Period; steps: number; unit: Unit }>
 ): Period {
   const { steps, unit } = walk;
-  const forward = steps > NO_STEPS;
-  // Start from the whole period, so a period built by hand steps the same way
   let moved = periodWith(units, walk.period.start, unit);
   for (let step = NO_STEPS; step < Math.abs(steps); step += ONE) {
-    moved = neighbour(units, { forward, period: moved, unit });
+    let edge = moved.start.getTime() - INCLUSIVE_END_MS;
+    if (steps > NO_STEPS) {
+      edge = moved.end.getTime() + INCLUSIVE_END_MS;
+    }
+    moved = periodWith(units, new Date(edge), unit);
   }
   return moved;
 }
