@@ -35,6 +35,9 @@ jobs:
       - name: Check that every export has a reference page
         run: npm run check:api -w minuta-docs
 
+      - name: Check that every page has a visual
+        run: npm run check:visuals -w minuta-docs
+
       - name: Check that every internal link resolves
         run: npm run check:links -w minuta-docs
 

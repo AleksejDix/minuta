@@ -15,6 +15,8 @@ type Entry = Readonly<{ docs: string; file: string; pkg: string }>;
 const ROOT = path.resolve(import.meta.dirname, "../..");
 const API = path.resolve(import.meta.dirname, "../src/content/docs/api");
 const FAILURE = 1;
+// A page is Markdown or MDX
+const PAGE = /\.mdx?$/u;
 const NONE = 0;
 
 const ADAPTERS = [
@@ -79,10 +81,9 @@ function allPages(): ReadonlySet<string> {
   return new Set(
     readdirSync(API, { recursive: true, withFileTypes: true })
       .filter(
-        (dirent: Readonly<Dirent>) =>
-          dirent.isFile() && dirent.name.endsWith(".md")
+        (dirent: Readonly<Dirent>) => dirent.isFile() && PAGE.test(dirent.name)
       )
-      .map((dirent: Readonly<Dirent>) => dirent.name.replace(/\.md$/u, ""))
+      .map((dirent: Readonly<Dirent>) => dirent.name.replace(PAGE, ""))
   );
 }
 
@@ -98,8 +99,12 @@ function missingPages(
     }
     return valueExports(checker, file)
       .filter((name) => {
-        const own = path.join(API, entry.docs, `${kebabCase(name)}.md`);
-        return !existsSync(own) && !pages.has(kebabCase(name));
+        const own = path.join(API, entry.docs, kebabCase(name));
+        return (
+          !existsSync(`${own}.md`) &&
+          !existsSync(`${own}.mdx`) &&
+          !pages.has(kebabCase(name))
+        );
       })
       .map((name) => `api/${entry.docs}/${kebabCase(name)}.md (${name})`);
   });
