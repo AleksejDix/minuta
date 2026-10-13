@@ -162,6 +162,12 @@
       }
     },
     {
+      "files": ["**/*.astro"],
+      "rules": {
+        "import/unambiguous": "off"
+      }
+    },
+    {
       "files": ["docs/scripts/**/*.ts"],
       "rules": {
         "import/no-nodejs-modules": "off",
