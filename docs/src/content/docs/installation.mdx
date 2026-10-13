@@ -1,0 +1,144 @@
+---
+title: Installation
+description: Install minuta, the React or Vue bindings, the date field and the parser.
+---
+
+import Anatomy from "../../components/diagrams/Anatomy.astro";
+
+minuta is in beta (`1.0.0-beta`); the date field packages and `fechita` are at
+`0.1`. All packages are ES modules only.
+
+## The packages at a glance
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "minuta",
+        note: "periods and every operation on them — no dependencies",
+        children: [
+          {
+            name: "minuta",
+            note: "ready to use: the built-in Date, weeks from Monday",
+          },
+          {
+            name: "minuta/core",
+            note: "the same functions with your own units: withUnits, bind",
+          },
+          {
+            name: "minuta/calendar · minuta/intervals · minuta/format",
+            note: "grids and weekends · merge, split, snap · labels",
+          },
+          {
+            name: "minuta/native · /date-fns · /date-fns-tz · /luxon · /dayjs · /moment · /temporal",
+            note: "one adapter per date engine",
+          },
+        ],
+      },
+      {
+        name: "minuta-react · minuta-vue",
+        note: "a root, hooks or composables, and accessible calendar parts — on top of minuta",
+      },
+      {
+        name: "datefield + input-dom",
+        note: "the segmented date field",
+        children: [
+          {
+            name: "input-state",
+            note: "masks and modes, installed with datefield",
+          },
+          {
+            name: "text-buffer",
+            note: "text and a selection, installed with input-state",
+          },
+        ],
+      },
+      {
+        name: "fechita",
+        note: "reads typed and pasted dates in every CLDR locale — no dependencies",
+      },
+    ]}
+  />
+</div>
+
+## The core
+
+```sh
+npm install minuta
+```
+
+That is all you need to work with periods on the built-in `Date`. No other
+dependency.
+
+## With another date engine
+
+If your app already uses a date library, minuta can run on it. Import the
+adapter for that library:
+
+| Engine                   | Library                    | Import the adapter from |
+| ------------------------ | -------------------------- | ----------------------- |
+| date-fns                 | `date-fns`                 | `minuta/date-fns`       |
+| date-fns with time zones | `date-fns` + `date-fns-tz` | `minuta/date-fns-tz`    |
+| Luxon                    | `luxon`                    | `minuta/luxon`          |
+| Day.js                   | `dayjs`                    | `minuta/dayjs`          |
+| Moment                   | `moment`                   | `minuta/moment`         |
+| Temporal                 | `@js-temporal/polyfill`    | `minuta/temporal`       |
+
+date-fns, date-fns-tz, Luxon and the Temporal polyfill are optional
+dependencies of minuta: npm installs them with minuta unless you pass
+`--omit=optional`. Day.js and Moment are not, so install them yourself:
+
+```sh
+npm install minuta dayjs
+npm install minuta moment
+```
+
+:::caution
+Importing an adapter without its library installed fails at import time, for
+example `minuta/dayjs` without `dayjs`.
+:::
+
+:::note
+`minuta/temporal` always uses the polyfill, even where the runtime has
+Temporal built in. On import it sets a global `Temporal` from the polyfill if
+the runtime has none.
+:::
+
+How to choose: see [Date engines](../concepts/date-engines/).
+
+## React
+
+```sh
+npm install minuta minuta-react
+```
+
+Needs React 18.
+
+## Vue
+
+```sh
+npm install minuta minuta-vue
+```
+
+Needs Vue 3.
+
+## The date field
+
+The segmented date input is three small packages: `datefield` knows dates and
+locales, `input-dom` connects it to an `<input>`, and `fechita` reads pasted
+dates. `input-state` and `text-buffer` come along as dependencies.
+
+```sh
+npm install datefield input-dom fechita
+```
+
+See [The input stack](../concepts/the-input-stack/) for how they fit together.
+
+## Only the parser
+
+```sh
+npm install fechita
+```
+
+`fechita` has no dependencies. It parses dates in every CLDR locale; import
+`fechita/core` and single locales to ship only the languages you need.

@@ -1,0 +1,60 @@
+---
+title: isCollapsed
+description: Whether a buffer's selection is just a cursor, with nothing selected.
+---
+
+import { createTextBuffer, isCollapsed } from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const cursor = createTextBuffer("hi");
+export const selected = createTextBuffer("hi", { anchor: 0, head: 2 });
+
+Check whether nothing is selected, so the selection is just a cursor.
+
+```ts
+import { isCollapsed } from "text-buffer";
+```
+
+```ts
+isCollapsed(buffer);
+```
+
+## Example
+
+```ts
+import { createTextBuffer, isCollapsed } from "text-buffer";
+
+isCollapsed(createTextBuffer("hi")); // → true, a cursor at the end
+isCollapsed(createTextBuffer("hi", { anchor: 0, head: 2 })); // → false, "hi" is selected
+```
+
+A collapsed selection is drawn as a caret line between two characters; a
+selection that is not collapsed covers whole cells:
+
+<FieldDiagram
+  {...cursor.selection}
+  text={cursor.text}
+  caption={`anchor 2, head 2: isCollapsed → ${String(isCollapsed(cursor))}. Both ends at the same position, so it is a cursor.`}
+/>
+
+<FieldDiagram
+  {...selected.selection}
+  text={selected.text}
+  caption={`anchor 0, head 2: isCollapsed → ${String(isCollapsed(selected))}. The two ends are apart, so "hi" is selected.`}
+/>
+
+## Parameters
+
+| Name     | What it is             |
+| -------- | ---------------------- |
+| `buffer` | The buffer to look at. |
+
+## Returns
+
+`true` when `anchor` and `head` are the same position, `false` when some text
+is selected.
+
+## Related
+
+- [`select`](../select/) — leave out `head` to create a collapsed selection.
+- [`selectionStart`](../selection-start/) and [`selectionEnd`](../selection-end/) — the edges of a selection.

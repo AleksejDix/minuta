@@ -1,0 +1,178 @@
+---
+title: Time zones
+description: Which zone minuta computes in, how clock changes affect days and hours, and how to work in a zone that is not the computer's.
+sidebar:
+  order: 3
+---
+
+import TimeZonesDemo from "../../../components/demos/TimeZonesDemo.astro";
+
+A JavaScript `Date` is one moment in time, the same everywhere in the
+world. Which **day** or **hour** that moment belongs to depends on the time
+zone. 20:00 UTC on Mar 20 2026 is still Mar 20 in Zurich, but already Mar 21
+in Tokyo.
+
+So every period minuta makes — a day, a week, a month — is computed in some
+time zone. This page explains which one, and how to choose.
+
+## See the problem
+
+Pick a day and a zone. **Mar 29 2026** is the night the clocks go forward in Europe; try it in Europe/Zurich, then Mar 8 in America/New_York.
+
+<TimeZonesDemo />
+
+## The units decide the zone
+
+Periods come from **units**, made by a [date engine](../../api/adapters/overview/).
+The engine decides the zone:
+
+- `dateFnsTzUnits({ timeZone })` computes in the zone you pass.
+- All other engines, and the default `minuta` entry, compute in the zone of
+  the computer the code runs on.
+
+The same code gives different days on different computers:
+
+```ts
+import { period } from "minuta";
+
+const day = period(new Date("2026-03-20T20:00:00Z"), "day");
+
+day.start.toISOString();
+// → "2026-03-19T23:00:00.000Z" on a computer in Europe/Zurich (Mar 20 00:00 there)
+// → "2026-03-20T15:00:00.000Z" on a computer in Asia/Tokyo    (Mar 21 00:00 there)
+// → "2026-03-20T00:00:00.000Z" on a computer in UTC
+```
+
+In a browser that is usually what you want: users see their own days. On a
+server, the computer's zone is often UTC, which is rarely what your users
+mean by "today".
+
+## Choosing a zone
+
+Use [`dateFnsTzUnits`](../../api/adapters/date-fns-tz-units/) with an IANA
+zone name. Then every function computes in that zone, wherever it runs:
+
+```ts
+import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { withUnits } from "minuta/core";
+
+const tokyo = withUnits(dateFnsTzUnits({ timeZone: "Asia/Tokyo" }));
+
+tokyo.period(new Date("2026-03-20T20:00:00Z"), "day").start.toISOString();
+// → "2026-03-20T15:00:00.000Z" (Mar 21 00:00 in Tokyo), on any computer
+```
+
+:::caution
+`dateFnsTzUnits()` without `timeZone` uses **UTC**, not the computer's
+zone. A misspelled zone name gives invalid dates instead of an error.
+:::
+
+Everything that depends on the day follows the zone of the units, not the
+computer's:
+
+- periods, `next`, `divide`, `duration`, …
+- month, year and day grids ([`minuta/calendar`](../../api/minuta-calendar/overview/)),
+- weekend checks — 22:00 UTC on Friday is Saturday in Tokyo,
+- `snapWith`, e.g. snapping to midnight or to a decade.
+
+## The `timeZone` setting
+
+All units carry a `timeZone` setting with the zone name:
+
+```ts
+import { nativeUnits } from "minuta/native";
+
+nativeUnits().timeZone; // → "Europe/Zurich" (on a computer in Zurich)
+dateFnsTzUnits({ timeZone: "Asia/Tokyo" }).timeZone; // → "Asia/Tokyo"
+```
+
+It is a label. Changing it does not change how the units compute. It is
+read by functions that need the zone's name: `dayGridWith` uses it to label
+hours, and you pass it to the formatters.
+
+## Showing dates in the right zone
+
+A period's `start` and `end` are plain `Date` objects. Their methods —
+`getDate()`, `getMonth()`, `getDay()`, `toString()` — always read the
+computer's zone. For periods of `dateFnsTzUnits` in another zone, they show
+the wrong day.
+
+- **To display**, use [`formatPeriod`](../../api/minuta-format/format-period/)
+  or `Intl.DateTimeFormat` with the units' `timeZone`:
+
+  ```ts
+  import { formatPeriod } from "minuta/format";
+
+  const day = tokyo.period(new Date("2026-03-20T20:00:00Z"), "day");
+
+  formatPeriod(day, "en-US", { timeZone: tokyo.units.timeZone }); // → "March 21, 2026"
+  formatPeriod(day, "en-US"); // → "March 20, 2026" on a computer in Zurich (wrong)
+  ```
+
+- **To compare**, use minuta: `contains(month, day)` or
+  `same(a, b, "month")` instead of comparing `getMonth()`.
+
+## Clock changes (DST)
+
+Many zones switch to summer time (daylight saving time, DST) once a year and
+back once a year. In Europe/Zurich in 2026:
+
+- On **Mar 29** the clocks jump from 02:00 to 03:00. The day has 23 hours.
+- On **Oct 25** the clocks go back from 03:00 to 02:00. The day has 25
+  hours, and 02:00–02:59 happens twice.
+
+minuta follows the real clock:
+
+```ts
+import { duration, period } from "minuta";
+
+// On a computer in Europe/Zurich
+duration(period(new Date(2026, 2, 29), "day"), "hour"); // → 23
+duration(period(new Date(2026, 9, 25), "day"), "hour"); // → 25
+duration(period(new Date(2026, 5, 1), "day"), "hour"); // → 24
+```
+
+The rules behind it:
+
+- **Days, weeks, months and years follow the calendar.** A day is
+  midnight to midnight, however long that is. Adding one day keeps the time
+  on the clock: Mar 28 10:00 plus one day is Mar 29 10:00, only 23 real
+  hours later.
+- **Hours, minutes and seconds follow real time.** One hour is always 60
+  real minutes. On Oct 25 there are two different hour periods that both
+  show 02:00 on the clock.
+
+[`dayGridWith`](../../api/minuta-calendar/day-grid-with/) lists the real
+hours of a day and tells you which clock hour was skipped (`gapHour`) or
+repeated (`ambiguousHour`).
+
+Functions that work on milliseconds keep milliseconds. `move` keeps a
+24-hour day 24 hours long, so moved onto Mar 29 it ends at 00:59:59.999 on
+Mar 30. Use `shift` to move by calendar units.
+
+## Zones with unusual offsets
+
+Zones that are offset by 30 or 45 minutes from UTC, such as Asia/Kolkata or
+Asia/Kathmandu, work: hours start at full hours on their clock.
+
+A few zones change their clocks by 30 minutes instead of an hour, such as
+Australia/Lord_Howe. On those days hour periods do not line up with the
+clock, and `dayGridWith` can report wrong DST hours.
+
+## Engines and their zones
+
+| Engine                                                                      | Computes in                                                               |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `nativeUnits`, `dateFnsUnits`, `dayjsUnits`, `momentUnits`, `temporalUnits` | the computer's zone                                                       |
+| `luxonUnits`                                                                | Luxon's `Settings.defaultZone` — the computer's zone unless you change it |
+| `dateFnsTzUnits`                                                            | the zone you pass (default UTC)                                           |
+
+If you change Luxon's default zone, `luxonUnits` computes in it but its
+`timeZone` setting still names the computer's zone. Use `dateFnsTzUnits`
+for a fixed zone instead.
+
+## Related
+
+- [Date engines](../../api/adapters/overview/) — all engines compared.
+- [Weeks and calendars](../weeks-and-calendars/) — week start, weekend, grids.
+- [`dayGridWith`](../../api/minuta-calendar/day-grid-with/) — the hours of a day.

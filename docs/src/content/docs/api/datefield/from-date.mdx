@@ -1,0 +1,151 @@
+---
+title: fromDate
+description: Write a Date as segments in a format, ready to show in a date field.
+---
+
+import { deriveFormat, fromDate, segmentsToString } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const format = deriveFormat("de-CH");
+export const segments = fromDate(new Date(2026, 2, 31), format);
+export const written = (locale) =>
+  segmentsToString(fromDate(new Date(2026, 2, 1), deriveFormat(locale)));
+
+Write a `Date` in a format, so `new Date(2026, 2, 1)` becomes `01.03.2026` for
+`de-CH` and `03/01/2026` for `en-US`.
+
+```ts
+import { fromDate } from "datefield";
+```
+
+```ts
+fromDate(date, format, locale?)
+```
+
+## Example
+
+```ts
+import { deriveFormat, fromDate, segmentsToString } from "datefield";
+
+const format = deriveFormat("de-CH");
+
+fromDate(new Date(2026, 2, 31), format);
+// → [
+//     { type: "day",     value: "31",   start: 0, end: 2 },
+//     { type: "literal", value: ".",    start: 2, end: 3 },
+//     { type: "month",   value: "03",   start: 3, end: 5 },
+//     { type: "literal", value: ".",    start: 5, end: 6 },
+//     { type: "year",    value: "2026", start: 6, end: 10 },
+//   ]
+
+segmentsToString(fromDate(new Date(2026, 2, 1), format)); // → "01.03.2026"
+```
+
+<Flow
+  steps={[
+    {
+      code: "new Date(2026, 2, 31)",
+      layer: "date",
+      text: "A Date, read in local time: day 31, month 3, year 2026.",
+    },
+    {
+      code: segments
+        .map((segment) => `${segment.type} "${segment.value}"`)
+        .join(", "),
+      layer: "fromDate",
+      text: "Each part of the format gets the date's number, padded with zeros to the segment's length.",
+    },
+    {
+      code: `"${segmentsToString(segments)}"`,
+      layer: "segmentsToString",
+      text: "Joined, the segments are the text a field can show.",
+    },
+  ]}
+/>
+
+The same date in two formats: one `Date`, two texts.
+
+<FieldDiagram
+  text={written("de-CH")}
+  locale="de-CH"
+  caption='fromDate(new Date(2026, 2, 1), deriveFormat("de-CH")): day 1 is padded to 01.'
+/>
+
+<FieldDiagram
+  text={written("en-US")}
+  locale="en-US"
+  caption='The same date with deriveFormat("en-US"): the month segment comes first.'
+/>
+
+## Parameters
+
+| Name     | What it is                                                                         |
+| -------- | ---------------------------------------------------------------------------------- |
+| `date`   | The date to write. Its local day, month, year and time are used.                   |
+| `format` | The format from [`deriveFormat`](../derive-format/).                               |
+| `locale` | Optional. Only for display-only parts (weekday, era, AM/PM, …). Default `"en-US"`. |
+
+## Returns
+
+The segments of the date, the same shape [`parseSegments`](../parse-segments/)
+returns. Every number is padded with zeros to fill its segment: day 1 is `01`,
+the year 50 is `0050`.
+
+A two-digit year segment gets the last two digits: 2026 is `26`.
+
+```ts
+const short = deriveFormat("de-CH", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "2-digit",
+});
+segmentsToString(fromDate(new Date(2026, 2, 1), short)); // → "01.03.26"
+```
+
+## Start a field with a date
+
+```ts
+import { dateMask, segmentsToString } from "datefield";
+import { createInputState } from "input-state";
+
+let field = createInputState({
+  mask: dateMask(format),
+  value: segmentsToString(fromDate(new Date(2026, 2, 31), format)),
+});
+field.buffer.text; // → "31.03.2026"
+```
+
+To replace the date of a field that already exists, keep the cursor and use
+[`withSegments`](../with-segments/):
+
+```ts
+field = withSegments(field, fromDate(new Date(2026, 2, 31), format));
+```
+
+## Display-only parts
+
+A weekday, era or similar part is written in `locale`. Pass the field's locale,
+or you get English words:
+
+```ts
+const withWeekday = deriveFormat("en-US", {
+  weekday: "short",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+segmentsToString(fromDate(new Date(2026, 2, 31), withWeekday)); // → "Tue, 03/31/2026"
+segmentsToString(fromDate(new Date(2026, 2, 31), withWeekday, "de-CH")); // → "Di, 03/31/2026"
+```
+
+These parts get the length of the actual word, so their segments can be
+longer or shorter than the format says. Use them for display only: this text
+cannot be cut back with `parseSegments`, and it cannot go into a field.
+
+## Related
+
+- [`toDate`](../to-date/) — the other direction: segments to a `Date`.
+- [`segmentsToString`](../segments-to-string/) — join the segments into text.
+- [`withSegments`](../with-segments/) — put the segments into a field.

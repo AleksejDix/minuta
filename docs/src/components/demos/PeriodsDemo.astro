@@ -1,0 +1,60 @@
+---
+import DemoFrame from "./DemoFrame.astro";
+---
+
+<DemoFrame
+  name="periods"
+  problem="Month math on a Date skips months."
+  solution="A period knows where its month ends, so the next one is always right."
+>
+  <label class="demo-label" slot="controls">
+    Date
+    <input class="demo-input" type="date" value="2026-01-31" data-part="date" />
+  </label>
+
+  <div class="grid gap-2" slot="problem">
+    <code class="demo-code">date.setMonth(date.getMonth() + 1)  → <span data-part="plus-month"></span></code>
+    <code class="demo-code">date.setDate(date.getDate() + 30)   → <span data-part="plus-days"></span></code>
+    <p class="text-destructive" data-part="verdict"></p>
+  </div>
+
+  <div class="grid gap-4" slot="solution">
+    <code class="demo-code">next(period(date, "month"))  → <span data-part="next-month"></span></code>
+    <div class="grid gap-3 border-t pt-4">
+      <p class="font-medium">Explore any period</p>
+      <div class="flex flex-wrap items-end gap-3">
+        <label class="demo-label">
+          Unit
+          <select class="demo-input" data-part="unit">
+            <option>day</option>
+            <option>week</option>
+            <option selected>month</option>
+            <option>quarter</option>
+            <option>year</option>
+          </select>
+        </label>
+        <button class="demo-button" type="button" data-part="previous">‹ previous</button>
+        <button class="demo-button" type="button" data-part="next">next ›</button>
+      </div>
+      <p>
+        <code class="mr-2 rounded bg-muted px-1.5 py-0.5 font-mono text-xs" data-part="unit-name"></code>
+        <span class="font-mono text-xs" data-part="period"></span>
+      </p>
+      <label class="demo-label">
+        Split it into
+        <select class="demo-input w-fit" data-part="sub"></select>
+      </label>
+      <p class="text-muted-foreground">
+        <code class="font-mono text-xs">divide(period, unit)</code> →
+        <span data-part="count"></span>
+      </p>
+      <ol class="grid gap-1 font-mono text-xs" data-part="pieces"></ol>
+    </div>
+  </div>
+</DemoFrame>
+
+<script>
+  import { mountPeriodsDemos } from "./periods-demo";
+
+  mountPeriodsDemos();
+</script>

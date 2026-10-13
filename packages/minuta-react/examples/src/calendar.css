@@ -1,0 +1,53 @@
+/* minuta's calendar, styled like shadcn's Calendar */
+.calendar-shell {
+  @apply flex w-fit flex-col gap-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm;
+}
+
+.calendar-shell .toolbar-row {
+  @apply flex items-center justify-between gap-4;
+}
+
+.calendar-shell .toolbar-row h2 {
+  @apply text-sm font-medium;
+}
+
+.calendar-shell .toolbar-row .nav-button {
+  @apply inline-flex h-8 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium shadow-xs transition-all outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
+}
+
+.calendar-shell .weeks-grid {
+  @apply border-collapse;
+}
+
+.calendar-shell .weekday-grid th {
+  @apply h-8 w-9 text-[0.8rem] font-normal text-muted-foreground;
+}
+
+.calendar-shell .grid-cell {
+  @apply p-0;
+}
+
+.calendar-shell .grid-cell .day-cell {
+  @apply inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-sm font-normal transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50;
+}
+
+.calendar-shell .grid-cell .day-cell.is-outside {
+  @apply text-muted-foreground;
+}
+
+.calendar-shell .grid-cell .day-cell.is-today {
+  @apply bg-accent text-accent-foreground;
+}
+
+.calendar-shell .grid-cell .day-cell.is-selected {
+  @apply bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground;
+}
+
+.calendar-shell .grid-cell .day-cell.is-disabled {
+  @apply pointer-events-none opacity-50;
+}
+
+/* The day button's aria-label already names the weekday */
+.calendar-shell .grid-cell .weekday-label {
+  @apply sr-only;
+}

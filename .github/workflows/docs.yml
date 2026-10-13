@@ -1,0 +1,61 @@
+name: Docs
+
+on:
+  # Every pull request builds and checks the docs; only master deploys them
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # The docs' demos import the packages' builds, so the packages build first
+      - name: Build the packages and the docs
+        run: npm run build --workspaces --if-present
+
+      - name: Check that every export has a reference page
+        run: npm run check:api -w minuta-docs
+
+      - name: Check that every page has a visual
+        run: npm run check:visuals -w minuta-docs
+
+      - name: Check that every internal link resolves
+        run: npm run check:links -w minuta-docs
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

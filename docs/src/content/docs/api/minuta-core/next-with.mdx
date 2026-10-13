@@ -1,0 +1,121 @@
+---
+title: nextWith
+description: Get the period right after a period — the next day, week or month — with the units you pass.
+---
+
+import { nextWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const sunday = nativeUnits({ weekStartsOn: "sunday" });
+export const week = periodWith(sunday, new Date(2026, 2, 18), "week");
+export const mondayWeek = periodWith(
+  nativeUnits(),
+  new Date(2026, 2, 18),
+  "week"
+);
+
+Get the period right after a period (the next day, week or month), computed
+with the units you pass.
+
+```ts
+import { nextWith } from "minuta/core";
+```
+
+```ts
+nextWith(units, period);
+```
+
+## Example
+
+```ts
+import { nextWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const units = nativeUnits({ weekStartsOn: "sunday" });
+const week = periodWith(units, new Date(2026, 2, 18), "week");
+// → Sun Mar 15 – Sat Mar 21
+
+nextWith(units, week);
+// → Sun Mar 22 00:00:00.000 – Sat Mar 28 23:59:59.999, unit "week"
+```
+
+<Timeline
+  caption="A Sunday week and the week nextWith gives with the same Sunday units: it starts right after the first one ends."
+  tracks={[
+    { label: "week", periods: [week], tone: "ink" },
+    {
+      label: "nextWith(units, week)",
+      periods: [nextWith(sunday, week)],
+      tone: "accent",
+    },
+  ]}
+/>
+
+## Parameters
+
+| Name     | What it is                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. `nativeUnits()`. See [Date engines](../../../concepts/date-engines/). |
+| `period` | The current period.                                                                                   |
+
+## Returns
+
+A new, whole period of the same unit that starts right after `period`.
+`nextWith(units, p)` is the same as [`shiftWith(units, p, 1)`](../shift-with/).
+
+It works exactly like [`next`](../../minuta/next/), which is `nextWith` with
+`nativeUnits()` bound. Read that page for daylight saving and for custom
+periods, which move by their own length.
+
+## Use the same units as the period
+
+Pass the units the period was made with. `nextWith` steps from the period's
+start and then rounds to a whole unit with _these_ units. A Monday week moved
+with Sunday units comes out as a Sunday week:
+
+```ts
+import { nextWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const mondayWeek = periodWith(nativeUnits(), new Date(2026, 2, 18), "week");
+// → Mon Mar 16 – Sun Mar 22
+
+nextWith(nativeUnits({ weekStartsOn: "sunday" }), mondayWeek);
+// → Sun Mar 22 – Sat Mar 28
+```
+
+<Timeline
+  caption="A Monday week moved with Sunday units lands on the Sunday grid: it starts on Sun Mar 22, the last day of mondayWeek, instead of on Mon Mar 23."
+  tracks={[
+    { label: "mondayWeek", periods: [mondayWeek], tone: "ink" },
+    {
+      label: "nextWith(monday, …)",
+      periods: [nextWith(nativeUnits(), mondayWeek)],
+      tone: "muted",
+    },
+    {
+      label: "nextWith(sunday, …)",
+      periods: [nextWith(sunday, mondayWeek)],
+      tone: "accent",
+    },
+  ]}
+/>
+
+[`withUnits`](../with-units/) makes this hard to get wrong: everything on the
+bound object uses one set of units.
+
+## Errors
+
+`nextWith` throws a `RangeError` whose message starts with a code:
+
+| Code                 | When                                   |
+| -------------------- | -------------------------------------- |
+| `INVALID_DATE`       | `period.start` is an invalid `Date`.   |
+| `UNIT_NOT_SUPPORTED` | `units` has no spec for `period.unit`. |
+
+## Related
+
+- [`next`](../../minuta/next/) (`minuta`) — the same, ready to use.
+- [`previousWith`](../previous-with/) — the period before.
+- [`shiftWith`](../shift-with/) — move by any number of periods.

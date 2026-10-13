@@ -1,0 +1,218 @@
+---
+title: Date engines
+description: What units and adapters are, and how to choose the date library, week start and time zone minuta computes with.
+sidebar:
+  order: 2
+---
+
+import EnginesDemo from "../../../components/demos/EnginesDemo.astro";
+
+minuta does not do date math itself. It asks a **date engine**: a set of
+small rules for each unit of time. You can use the built-in `Date`, or plug
+in date-fns, Luxon, Day.js, Moment or Temporal.
+
+## See the problem
+
+Pick a date library. The top shows the code you would write in that library to get the weeks of a month; the bottom shows the minuta code — only its import changes — and checks the result against the built-in `Date`.
+
+<EnginesDemo />
+
+## Units are rules, as data
+
+For every unit (`"day"`, `"week"`, `"month"` …) minuta needs four answers:
+
+- `startOf(date)` — where does the unit containing `date` start?
+- `endOf(date)` — where does it end?
+- `add(date, amount)` — what is `amount` units later?
+- `diff(from, to)` — how many whole units fit in between?
+
+These four functions are a _unit spec_. A set of specs, one per unit, plus a
+few settings, is called **units**. It is a plain object:
+
+```ts
+import { nativeUnits } from "minuta/native";
+
+const units = nativeUnits();
+
+Object.keys(units);
+// → ["day", "hour", "minute", "month", "quarter", "second", "week", "year",
+//    "timeZone", "weekStartsOn", "weekend"]
+
+units.week.startOf(new Date(2026, 2, 18));
+// → Mon Mar 16 2026 00:00:00.000
+```
+
+The settings travel with the specs:
+
+| Setting        | What it is                                                           |
+| -------------- | -------------------------------------------------------------------- |
+| `weekStartsOn` | The first day of the week, as a number: 0 = Sunday … 6 = Saturday.   |
+| `weekend`      | The weekend days, as numbers. Saturday and Sunday unless you set it. |
+| `timeZone`     | The time zone the specs compute in, e.g. `"Europe/Zurich"`.          |
+
+## Adapters make units
+
+An **adapter** is a function that makes units for one date library, with your
+settings. Each lives in its own entry, so you only load the one you use:
+
+| Date library                      | Adapter                                                   | Import               |
+| --------------------------------- | --------------------------------------------------------- | -------------------- |
+| Built-in `Date` (no dependencies) | [`nativeUnits`](../../api/adapters/native-units/)         | `minuta/native`      |
+| date-fns                          | [`dateFnsUnits`](../../api/adapters/date-fns-units/)      | `minuta/date-fns`    |
+| date-fns-tz (any time zone)       | [`dateFnsTzUnits`](../../api/adapters/date-fns-tz-units/) | `minuta/date-fns-tz` |
+| Luxon                             | [`luxonUnits`](../../api/adapters/luxon-units/)           | `minuta/luxon`       |
+| Day.js                            | [`dayjsUnits`](../../api/adapters/dayjs-units/)           | `minuta/dayjs`       |
+| Moment                            | [`momentUnits`](../../api/adapters/moment-units/)         | `minuta/moment`      |
+| Temporal                          | [`temporalUnits`](../../api/adapters/temporal-units/)     | `minuta/temporal`    |
+
+Every adapter takes `weekStartsOn` and `weekend`. Days are named
+(`"sunday"`), and the numbers of `Date#getDay()` (0 = Sunday) work too:
+
+```ts
+import { nativeUnits } from "minuta/native";
+
+nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] });
+```
+
+All adapters except `dateFnsTzUnits` compute in the local time zone of the
+runtime. `dateFnsTzUnits` takes a `timeZone` and computes in it wherever the
+code runs (UTC when you leave it out).
+
+Whatever the adapter, periods are always plain objects with native `Date`s in
+`start` and `end`. The date library is only used inside the specs.
+
+## `minuta`: ready to use
+
+The main entry, [`minuta`](../../api/minuta/overview/), has the native units
+built in, with weeks from Monday. There is nothing to set up:
+
+```ts
+import { period } from "minuta";
+
+period(new Date(2026, 2, 18), "week");
+// → Mon Mar 16 – Sun Mar 22
+```
+
+Use it when the built-in `Date`, local time and Monday weeks are what you
+need.
+
+## `minuta/core`: bring your own units
+
+[`minuta/core`](../../api/minuta-core/overview/) has the same operations
+without units built in. There are two ways to use it.
+
+**Bind once with `withUnits`.** You get an object with every operation, all
+using your units. This is the usual way:
+
+```ts
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+
+time.period(new Date(2026, 2, 18), "week");
+// → Sun Mar 15 – Sat Mar 21
+```
+
+**Pass the units to each call.** Every unit-aware function has a `…With`
+form that takes the units first. Pass only the units you use, and the rest
+stay out of your bundle:
+
+```ts
+import { nextWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const { day, month } = nativeUnits();
+const units = { day, month };
+
+nextWith(units, periodWith(units, new Date(2026, 2, 18), "month"));
+// → Wed Apr 1 – Thu Apr 30
+
+periodWith(units, new Date(2026, 2, 18), "week");
+// RangeError: UNIT_NOT_SUPPORTED: no "week" spec in the units passed (available: day, month). …
+```
+
+See [`withUnits`](../../api/minuta-core/with-units/) and
+[`periodWith`](../../api/minuta-core/period-with/).
+
+## Another library or time zone
+
+Swap the adapter; the code stays the same. Here a day is computed in
+New York, even on a server in Europe:
+
+```ts
+import { withUnits } from "minuta/core";
+import { dateFnsTzUnits } from "minuta/date-fns-tz";
+
+const newYork = withUnits(dateFnsTzUnits({ timeZone: "America/New_York" }));
+
+const day = newYork.period(new Date("2026-03-08T12:00:00Z"), "day");
+// → 2026-03-08T05:00:00.000Z – 2026-03-09T03:59:59.999Z
+
+newYork.duration(day, "hour"); // → 23, the clocks go forward in New York that day
+```
+
+## Plugins use the same units
+
+Calendar grids ([`minuta/calendar`](../../api/minuta-calendar/overview/)) and interval helpers
+([`minuta/intervals`](../../api/minuta-intervals/overview/))
+come as **plugins**: objects of functions that take the units first. Pass them
+to `withUnits`, and they use the same week start, weekend and time zone as
+everything else:
+
+```ts
+import { calendar } from "minuta/calendar";
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
+  plugins: [calendar],
+});
+
+time.monthGrid(new Date(2026, 2, 18)).periods[0].start;
+// → Sun Mar 1 2026, the grid starts on a Sunday
+```
+
+To bind one plugin on its own, use [`bind`](../../api/minuta-core/bind/).
+
+## Your own units
+
+Units are plain data, so you can add one. Give it the four functions and put
+it next to an adapter's units:
+
+```ts
+import { nextWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const base = nativeUnits();
+const fortnight = {
+  startOf: (date) => base.week.startOf(date),
+  endOf: (date) =>
+    new Date(base.week.add(base.week.startOf(date), 2).getTime() - 1),
+  add: (date, amount) => base.week.add(date, amount * 2),
+  diff: (from, to) => Math.trunc(base.week.diff(from, to) / 2),
+};
+
+const units = Object.assign({ fortnight }, base);
+
+periodWith(units, new Date(2026, 2, 18), "fortnight");
+// → Mon Mar 16 – Sun Mar 29, unit "fortnight"
+```
+
+This fortnight starts on the week of the date you pass; a real one would
+align to a fixed first week. In TypeScript, also add the name to
+`UnitRegistry` so `"fortnight"` is accepted as a unit.
+
+:::note
+`diff` must count _complete_ units, rounded toward zero, the same way `add`
+steps. The built-in adapters guarantee this; your own units must follow it
+too, or `duration` gives wrong counts.
+:::
+
+## Keep one set of units
+
+A period does not remember which units made it. Use the same units from
+start to finish. Moving a Monday week with Sunday units gives a Sunday week
+(see [`nextWith`](../../api/minuta-core/next-with/#use-the-same-units-as-the-period)).
+Binding once with `withUnits`, in one module that the rest of the app imports,
+is the simplest way to keep them consistent.

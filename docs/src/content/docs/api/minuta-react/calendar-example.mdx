@@ -1,0 +1,106 @@
+---
+title: CalendarExample
+description: A ready-made React month calendar built from the calendar parts, with a toggle for the first day of the week.
+---
+
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
+A ready-made month calendar, built from the calendar parts, with a toggle that
+switches the first day of the week between Sunday and Monday. Use it to try
+the library, or read it as a template for your own calendar.
+
+```js
+import { CalendarExample } from "minuta-react/components";
+// also exported from "minuta-react"
+```
+
+```jsx
+<CalendarExample onSelect={(day) => …} />
+```
+
+## Example
+
+```jsx
+import { CalendarExample } from "minuta-react";
+
+export function App() {
+  return (
+    <CalendarExample onSelect={(day) => alert(day.start.toDateString())} />
+  );
+}
+```
+
+It renders a title ("Minuta React Demo"), a "Week starts on" toggle with
+"Sunday" and "Monday" buttons, a [`CalendarHeader`](../calendar-header/) and a
+[`CalendarGrid`](../calendar-grid/) for the current month. Clicking a day
+shows its date.
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "<CalendarExample>",
+        note: "this page: keeps the week start in state and builds the units from it",
+        children: [
+          {
+            name: "<CalendarRoot units={units}>",
+            note: "gets new units when the toggle changes",
+            children: [
+              {
+                name: '<div class="calendar-header">',
+                note: "the title and the toggle",
+                children: [
+                  { name: "<h1>", note: "Minuta React Demo" },
+                  {
+                    name: '<button class="toggle"> × 2',
+                    note: "Sunday · Monday; the active one has is-active",
+                  },
+                ],
+              },
+              {
+                name: "<CalendarHeader>",
+                note: "‹ previous · the month's name · next ›",
+              },
+              {
+                name: "<CalendarGrid>",
+                note: "the weekday row and 6 weeks of days",
+              },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
+## Props
+
+| Name       | What it is                                                           | Default |
+| ---------- | -------------------------------------------------------------------- | ------- |
+| `onSelect` | Called with the day [period](../../minuta/period/) the user selects. | —       |
+
+## How it works
+
+It is a [`CalendarRoot`](../calendar-root/) with a header and a grid inside.
+The week starts on Monday. The toggle builds new units with
+`nativeUnits({ weekStartsOn })` and passes them to the root, so the weekday
+row and the weeks move at once. The browsed month and the selection are kept.
+
+The same month, March 2026, before and after a click on "Sunday":
+
+<MonthGrid month="2026-03" />
+
+<MonthGrid month="2026-03" weekStartsOn="sunday" />
+
+With Monday weeks the grid starts on Feb 23; with Sunday weeks March 1 is a
+Sunday, so the first row has no February days and the grid runs to April 11.
+
+The toggle buttons have the class `toggle`, and the active one also has
+`is-active`. Like the other parts, it ships no styles.
+
+## Related
+
+- [`CalendarRoot`](../calendar-root/), [`CalendarHeader`](../calendar-header/),
+  [`CalendarGrid`](../calendar-grid/) — the parts it is made of.
+- [Overview](../overview/) — a smaller calendar to start from.

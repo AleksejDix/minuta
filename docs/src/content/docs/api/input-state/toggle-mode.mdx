@@ -1,0 +1,112 @@
+---
+title: toggleMode
+description: Switch a free-text field between insert and overwrite mode, like the Insert key.
+---
+
+import {
+  createInputState,
+  setSelection,
+  toggleMode,
+  typeChar,
+} from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const insert = setSelection(createInputState({ value: "hello" }), 0);
+export const overwrite = toggleMode(insert);
+
+Switch a free-text field between insert mode and overwrite mode, like the
+Insert key in an editor.
+
+```ts
+import { toggleMode } from "input-state";
+```
+
+```ts
+toggleMode(state);
+```
+
+## Example
+
+```ts
+import {
+  createInputState,
+  parseMask,
+  setSelection,
+  toggleMode,
+  typeChar,
+} from "input-state";
+
+let field = setSelection(createInputState({ value: "hello" }), 0);
+field.mode; // → "insert"
+
+field = toggleMode(field);
+field.mode; // → "overwrite"
+typeChar(field, "J").buffer.text; // → "Jello"
+```
+
+## Parameters
+
+| Name    | What it is           |
+| ------- | -------------------- |
+| `state` | The field to change. |
+
+## Returns
+
+A new state with the other mode. The text and selection do not change.
+
+## Insert and overwrite
+
+- **Insert**: a typed character is added at the cursor and the text after it
+  moves right. This is how most fields work.
+- **Overwrite**: a typed character replaces the character at the cursor. At
+  the end of the text it is added as usual.
+
+The same cursor is drawn differently in each mode: as a caret line between
+two characters in insert mode, as a block on the character that will be
+replaced in overwrite mode.
+
+<FieldDiagram
+  {...insert.buffer.selection}
+  text={insert.buffer.text}
+  mode={insert.mode}
+  caption='Insert mode, the cursor at 0: a caret before the "h".'
+/>
+
+<FieldDiagram
+  {...typeChar(insert, "J").buffer.selection}
+  text={typeChar(insert, "J").buffer.text}
+  mode={typeChar(insert, "J").mode}
+  caption='typeChar(field, "J") in insert mode: "Jhello", everything after the cursor moved one to the right.'
+/>
+
+<FieldDiagram
+  {...overwrite.buffer.selection}
+  text={overwrite.buffer.text}
+  mode={overwrite.mode}
+  caption='After toggleMode: the same text and position, now in overwrite mode. The block marks the "h", which the next key replaces.'
+/>
+
+<FieldDiagram
+  {...typeChar(overwrite, "J").buffer.selection}
+  text={typeChar(overwrite, "J").buffer.text}
+  mode={typeChar(overwrite, "J").mode}
+  caption='typeChar(field, "J") in overwrite mode: "Jello", the "h" was replaced and the text kept its length.'
+/>
+
+The mode belongs to the field, not to the text, just like the Insert key
+belongs to the editor and not to the document.
+
+## Masked fields always overwrite
+
+A masked field has a fixed length, so it can only overwrite. `toggleMode`
+returns the same state unchanged.
+
+```ts
+const date = createInputState({ mask: parseMask("99.99.9999") });
+toggleMode(date) === date; // → true
+```
+
+## Related
+
+- [`typeChar`](../type-char/) — how each mode types.
+- [`createInputState`](../create-input-state/) — the `mode` option sets the starting mode.

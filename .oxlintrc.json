@@ -117,7 +117,7 @@
   },
   "overrides": [
     {
-      "files": ["**/*.tsx", "**/*.vue"],
+      "files": ["**/*.tsx", "**/*.vue", "**/*.astro"],
       "rules": {
         "unicorn/filename-case": [
           "error",
@@ -159,6 +159,20 @@
       },
       "env": {
         "node": true
+      }
+    },
+    {
+      "files": ["**/*.astro"],
+      "rules": {
+        "import/unambiguous": "off",
+        "node/no-top-level-await": "off"
+      }
+    },
+    {
+      "files": ["docs/scripts/**/*.ts"],
+      "rules": {
+        "import/no-nodejs-modules": "off",
+        "node/no-sync": "off"
       }
     },
     {

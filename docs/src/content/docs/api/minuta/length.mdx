@@ -1,0 +1,89 @@
+---
+title: length
+description: How long a period is, in milliseconds.
+---
+
+import { divide, period } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const day = period(new Date(2026, 9, 8), "day");
+
+Get how long a period is, in milliseconds.
+
+```ts
+import { length } from "minuta";
+```
+
+```ts
+length(period);
+```
+
+## Example
+
+```ts
+import { length, period } from "minuta";
+
+length(period(new Date(2026, 9, 8), "day"));
+// → 86400000 (24 hours)
+
+length(period(new Date(2026, 9, 8, 9), "hour"));
+// → 3600000 (1 hour)
+```
+
+<Timeline
+  caption="A whole day measured from its start to one millisecond after its end: 24 hours of 3 600 000 ms each, 86 400 000 ms."
+  tracks={[
+    { label: "day", periods: [day], tone: "accent" },
+    {
+      label: 'divide(day, "hour")',
+      periods: divide(day, "hour"),
+      tone: "muted",
+    },
+  ]}
+/>
+
+## Parameters
+
+| Name     | What it is             |
+| -------- | ---------------------- |
+| `period` | The period to measure. |
+
+## Returns
+
+The number of milliseconds from `period.start` up to one millisecond after
+`period.end`. Because the end is the period's last millisecond, a whole day
+comes out as exactly one day, not one day minus a millisecond.
+
+`length` does not need units, so it works the same with every date engine.
+
+## Real elapsed time
+
+`length` is the time that really passes, so it changes with daylight saving.
+In Europe/Zurich:
+
+```ts
+length(period(new Date(2026, 2, 29), "day")); // → 82800000 (23 hours)
+length(period(new Date(2026, 9, 25), "day")); // → 90000000 (25 hours)
+```
+
+To count calendar units instead (days in a month, hours in a day), use
+[`duration`](../duration/).
+
+## Ranges that end on a round time
+
+A [`range`](../range/) includes its end, so a range from 9:00 to 10:00 is one
+millisecond longer than one hour. A range that starts and ends at the same
+moment is one millisecond long:
+
+```ts
+import { length, range } from "minuta";
+
+length(range(new Date(2026, 2, 1, 9), new Date(2026, 2, 1, 10))); // → 3600001
+length(range(new Date(2026, 2, 1, 9), new Date(2026, 2, 1, 9))); // → 1
+```
+
+## Related
+
+- [`duration`](../duration/) — count whole days, hours, … instead of milliseconds.
+- [`range`](../range/) — make a period between two dates.
+- Also exported from [`minuta/core`](../../minuta-core/overview/).

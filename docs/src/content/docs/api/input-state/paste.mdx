@@ -1,0 +1,137 @@
+---
+title: paste
+description: Paste text into an input field; in a masked field the characters fill the slots one by one.
+---
+
+import { createInputState, parseMask, paste, setSelection } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const empty = createInputState({ mask: parseMask("99.99.9999") });
+export const midway = setSelection(empty, 3);
+export const words = createInputState({ value: "hello" });
+
+Paste a string at the cursor. In a masked field the characters are typed into
+the slots one after another, and characters a slot does not accept are
+skipped.
+
+```ts
+import { paste } from "input-state";
+```
+
+```ts
+paste(state, text);
+```
+
+## Example
+
+```ts
+import { createInputState, parseMask, paste, setSelection } from "input-state";
+
+const mask = parseMask("99.99.9999");
+const empty = createInputState({ mask });
+
+paste(empty, "31032026"); // → "31.03.2026"
+paste(empty, "31.03.2026"); // → "31.03.2026", the dots are skipped
+```
+
+<FieldDiagram
+  {...paste(empty, "31.03.2026").buffer.selection}
+  text={paste(empty, "31.03.2026").buffer.text}
+  mode={paste(empty, "31.03.2026").mode}
+  caption='paste(empty, "31.03.2026"): the pasted dots are skipped, the eight digits fill the eight slots, and the cursor ends after the last one.'
+/>
+
+## Parameters
+
+| Name    | What it is               |
+| ------- | ------------------------ |
+| `state` | The field to paste into. |
+| `text`  | The pasted text.         |
+
+## Returns
+
+A new state with the cursor after the last character that was placed.
+
+## In a masked field
+
+A paste works exactly like calling [`typeChar`](../type-char/) once for each
+character. So:
+
+- It starts at the cursor, not at the start of the field.
+- Each character goes into the next free slot; literals are jumped over.
+- A character the next slot rejects is skipped, and the next character is
+  tried in the same slot.
+- Characters left over when the slots run out are dropped.
+
+<FieldDiagram
+  {...paste(midway, "0326").buffer.selection}
+  text={paste(midway, "0326").buffer.text}
+  mode={paste(midway, "0326").mode}
+  caption='paste(field, "0326") with the cursor at 3: the paste starts at the cursor, so the day stays empty and "0326" fills the month and the first two year slots.'
+/>
+
+```ts
+paste(empty, "3103202612345"); // → "31.03.2026", the rest is dropped
+
+const code = createInputState({ mask: parseMask("AAA-999") });
+paste(code, "1a2b3c4");
+// → "abc-4__": "1", "2", "3" are skipped in letter slots
+```
+
+Because characters are only skipped, never understood, a paste does not know
+what the text means. Spaces and slashes are skipped, but the digits after them
+just go into the next slot:
+
+```ts
+paste(empty, "31 / 3 / 2026"); // → "31.32.026_"
+
+const time = createInputState({ mask: parseMask("99:99") });
+paste(time, "9:30"); // → "93:0_"
+```
+
+<FieldDiagram
+  {...paste(empty, "31 / 3 / 2026").buffer.selection}
+  text={paste(empty, "31 / 3 / 2026").buffer.text}
+  mode={paste(empty, "31 / 3 / 2026").mode}
+  caption='paste(empty, "31 / 3 / 2026"): the spaces and slashes are skipped, but the digits just run on. The month gets the 3 and the first digit of the year, 32, and one year slot stays empty.'
+/>
+
+For dates, [`typeDate`](../../datefield/type-date/) handles separators and can
+read a pasted date in any form with [fechita](../../fechita/parse-date/).
+
+Digits from other scripts are stored as ASCII digits:
+
+```ts
+paste(empty, "٣١٠٣٢٠٢٦"); // → "31.03.2026"
+```
+
+## In a free-text field
+
+The text is inserted at the cursor and replaces any selection, in both insert
+and overwrite mode.
+
+```ts
+let text = createInputState({ value: "hello" });
+paste(setSelection(text, 0, 5), "bye"); // → "bye"
+```
+
+<FieldDiagram
+  {...setSelection(words, 0, 5).buffer.selection}
+  text={setSelection(words, 0, 5).buffer.text}
+  mode={setSelection(words, 0, 5).mode}
+  caption='Before: all of "hello" selected in a free-text field.'
+/>
+
+<FieldDiagram
+  {...paste(setSelection(words, 0, 5), "bye").buffer.selection}
+  text={paste(setSelection(words, 0, 5), "bye").buffer.text}
+  mode={paste(setSelection(words, 0, 5), "bye").mode}
+  caption='After paste(field, "bye"): the selection is replaced, and the field is shorter now; free text has no fixed length.'
+/>
+
+## Related
+
+- [`typeChar`](../type-char/) — what a paste does for each character.
+- [`slotChar`](../slot-char/) — which characters a slot accepts.
+- [`typeDate`](../../datefield/type-date/) — pasting into a date field.
+- [`parseDate`](../../fechita/parse-date/) — read a date from pasted text.

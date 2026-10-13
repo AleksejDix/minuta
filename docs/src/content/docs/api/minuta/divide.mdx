@@ -1,0 +1,113 @@
+---
+title: divide
+description: Split a period into smaller periods — a month into days, a day into hours, an hour into 15-minute slots.
+---
+
+import { divide, period } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 1), "month");
+
+Split a period into smaller periods: a month into days, a day into hours, an
+hour into 15-minute slots.
+
+```ts
+import { divide } from "minuta";
+```
+
+```ts
+divide(period, unit, options?)
+```
+
+## Example
+
+```ts
+import { divide, period } from "minuta";
+
+const march = period(new Date(2026, 2, 1), "month");
+
+divide(march, "day");
+// → 31 periods: Mar 1, Mar 2, … Mar 31
+```
+
+## Parameters
+
+| Name      | What it is                                                        |
+| --------- | ----------------------------------------------------------------- |
+| `period`  | The period to split, e.g. a month from `period()`.                |
+| `unit`    | The size of each piece: `"day"`, `"hour"`, `"week"`, …            |
+| `options` | Optional. `step` and `maxPeriods`, see [Options](#options) below. |
+
+## Returns
+
+An array of periods, in order, that together cover `period` exactly — no gaps,
+no overlaps. Each piece ends one millisecond before the next one starts.
+
+## Options
+
+| Option       | Default   | What it does                                                                           |
+| ------------ | --------- | -------------------------------------------------------------------------------------- |
+| `step`       | `1`       | How many units each piece spans. `{ step: 15 }` with `"minute"` gives 15-minute slots. |
+| `maxPeriods` | `100_000` | A safety limit. `divide` throws instead of creating more pieces than this.             |
+
+```ts
+const nine = period(new Date(2026, 2, 1, 9), "hour");
+
+divide(nine, "minute", { step: 15 });
+// → 4 periods: 9:00–9:14, 9:15–9:29, 9:30–9:44, 9:45–9:59
+```
+
+## Pieces at the edges are cut to fit
+
+<Timeline
+  caption="March 2026 split into weeks. The first and last pieces are cut at the month's edges, so they are not whole weeks: hatched, with the unit custom."
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: 'divide(march, "week")',
+      periods: divide(march, "week"),
+      tone: "accent",
+    },
+  ]}
+/>
+
+A piece never sticks out of `period`. When the units don't line up with it,
+the first and last pieces are cut at its edges and get the unit `"custom"`,
+because they are no longer a whole week or day.
+
+```ts
+divide(march, "week");
+// → Sun Mar 1          "custom"  (the week started in February)
+//   Mon Mar 2 – Sun 8  "week"
+//   Mon Mar 9 – Sun 15 "week"
+//   Mon Mar 16 – Sun 22 "week"
+//   Mon Mar 23 – Sun 29 "week"
+//   Mon Mar 30 – Tue 31 "custom"  (the week ends in April)
+```
+
+Pieces made with a `step` larger than 1 are always `"custom"` too: 15 minutes
+is not one whole unit.
+
+Weeks start on Monday here. To start them on Sunday, or to use another date
+library, use `divideWith` from `minuta/core` with your own units.
+
+## Errors
+
+`divide` throws a `RangeError` whose message starts with a code:
+
+| Code               | When                                                            |
+| ------------------ | --------------------------------------------------------------- |
+| `TOO_MANY_PERIODS` | More than `maxPeriods` pieces — e.g. a year split into seconds. |
+| `INVALID_OPTION`   | `step` or `maxPeriods` is not a positive whole number.          |
+
+```ts
+divide(period(new Date(2026, 0, 1), "year"), "second");
+// RangeError: TOO_MANY_PERIODS: divideWith() generated over 100000 periods. …
+```
+
+## Related
+
+- `period` — create the period to divide.
+- `duration` — count the units without creating them.
+- `divideWith` (`minuta/core`) — the same, with your own units and week start.
+- `monthGridWith` (`minuta/calendar`) — a month as a calendar grid of weeks.

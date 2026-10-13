@@ -1,0 +1,114 @@
+---
+title: CalendarExample
+description: A ready-made Vue month calendar built from the calendar parts, with a toggle for the first day of the week.
+---
+
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
+A ready-made month calendar, built from the calendar parts, with a toggle that
+switches the first day of the week between Sunday and Monday. Use it to try
+the library, or read it as a template for your own calendar.
+
+```js
+import { CalendarExample } from "minuta-vue/components";
+// also exported from "minuta-vue"
+```
+
+```vue
+<CalendarExample @select="onSelect" />
+```
+
+## Example
+
+```vue
+<script setup>
+import { CalendarExample } from "minuta-vue";
+import "minuta-vue/style.css";
+
+function onSelect(day) {
+  alert(day.start.toDateString());
+}
+</script>
+
+<template>
+  <CalendarExample @select="onSelect" />
+</template>
+```
+
+It renders a title ("minuta-vue calendar"), a "Week starts on" toggle with
+"Sunday" and "Monday" buttons, a [`CalendarHeader`](../calendar-header/) and a
+[`CalendarGrid`](../calendar-grid/) for the current month. Clicking a day
+shows its date.
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: '<CalendarExample> → <section class="calendar-shell">',
+        note: "this page: keeps the units in a ref and re-emits select",
+        children: [
+          {
+            name: '<header class="calendar-toolbar">',
+            note: "outside the root: the title and the toggle",
+            children: [
+              { name: "<h1>", note: "minuta-vue calendar" },
+              {
+                name: '<button class="toggle"> × 2',
+                note: 'Sunday · Monday; the active one has is-active and aria-pressed="true"',
+              },
+            ],
+          },
+          {
+            name: '<CalendarRoot :units="units">',
+            note: "gets new units when the toggle changes",
+            children: [
+              {
+                name: "<CalendarHeader>",
+                note: "← Previous · the month's name · Next →",
+              },
+              {
+                name: "<CalendarGrid>",
+                note: "the weekday row and 6 weeks of days",
+              },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
+## Props, events and slots
+
+It has no props and no slots.
+
+| Event    | When                                                                           |
+| -------- | ------------------------------------------------------------------------------ |
+| `select` | The user selects a day. The payload is the day [period](../../minuta/period/). |
+
+## How it works
+
+It is a [`CalendarRoot`](../calendar-root/) with a header and a grid inside.
+The week starts on Monday. The toggle builds new units with
+`nativeUnits({ weekStartsOn })` and passes them to the root, so the weekday
+row and the weeks move at once. The browsed month and the selection are kept.
+
+The same month, March 2026, before and after a click on "Sunday":
+
+<MonthGrid month="2026-03" />
+
+<MonthGrid month="2026-03" weekStartsOn="sunday" />
+
+With Monday weeks the grid starts on Feb 23; with Sunday weeks March 1 is a
+Sunday, so the first row has no February days and the grid runs to April 11.
+
+The toggle buttons have `aria-pressed`, `true` on the active one, which also
+gets the class `is-active`. The component's own styles (a white card with a
+shadow) are in `minuta-vue/style.css`.
+
+## Related
+
+- [`CalendarRoot`](../calendar-root/), [`CalendarHeader`](../calendar-header/),
+  [`CalendarGrid`](../calendar-grid/) — the parts it is made of.
+- [Overview](../overview/) — a smaller calendar to start from.

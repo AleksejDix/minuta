@@ -1,0 +1,204 @@
+---
+title: Locales
+description: The 104 per-locale imports of fechita, how to load only the ones you need, and how to list them.
+---
+
+import { de } from "fechita/locales/de";
+import { en } from "fechita/locales/en";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+
+export const enRegions = Object.entries(en.regionOrders);
+export const regionsWith = (order) =>
+  enRegions
+    .filter(([, regionOrder]) => regionOrder === order)
+    .map(([tag]) => tag);
+
+fechita's language data is split into one module per locale, under
+`fechita/locales/<tag>`. Each one holds the month names, weekday names, AM/PM
+and day period words, era names and usual date order of one language, taken
+from Unicode CLDR 48. Load the ones you need and pass them to
+[`withLocales`](../with-locales/) or [`parseDateWith`](../parse-date-with/).
+
+The default entry, `fechita`, already includes all of them. You only need
+these imports with `fechita/core`.
+
+How the two entry points get their data:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      { name: "fechita", note: "parseDate with all 104 locales built in" },
+      {
+        name: "fechita/core",
+        note: "no locale data; withLocales and parseDateWith take the locales you pass",
+        children: [
+          {
+            name: "fechita/locales/de",
+            note: "exports de: one language, all its regions",
+          },
+          { name: "fechita/locales/en", note: "exports en" },
+          {
+            name: "fechita/locales/zh-Hant",
+            note: 'exports zhHant, passed as { "zh-Hant": zhHant }',
+          },
+          {
+            name: "fechita/locales/all",
+            note: "exports allLocales, all 104 in one object",
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
+## Import one locale
+
+```ts
+import { withLocales } from "fechita/core";
+import { fr } from "fechita/locales/fr";
+
+const { parseDate } = withLocales({ fr });
+
+parseDate("mardi 31 mars 2026"); // → valid: 31 March 2026
+```
+
+The path ends in the locale tag, and the export has the same name:
+`fechita/locales/de` exports `de`, `fechita/locales/ja` exports `ja`.
+
+Tags with a hyphen are exported in camel case. Give them their real tag as
+the key, so that the `locale` option finds them:
+
+| Import                                               | Pass as                   |
+| ---------------------------------------------------- | ------------------------- |
+| `import { zhHant } from "fechita/locales/zh-Hant"`   | `{ "zh-Hant": zhHant }`   |
+| `import { srLatn } from "fechita/locales/sr-Latn"`   | `{ "sr-Latn": srLatn }`   |
+| `import { hiLatn } from "fechita/locales/hi-Latn"`   | `{ "hi-Latn": hiLatn }`   |
+| `import { kkArab } from "fechita/locales/kk-Arab"`   | `{ "kk-Arab": kkArab }`   |
+| `import { yueHans } from "fechita/locales/yue-Hans"` | `{ "yue-Hans": yueHans }` |
+
+## Regions come with the language
+
+There is one module per language, not per country. The regional date orders
+are inside it. `en` knows that `en-US` writes month first, `en-GB` writes day
+first and `en-CA` writes year first.
+
+```ts
+import { en } from "fechita/locales/en";
+
+const { parseDate } = withLocales({ en });
+
+parseDate("04/05/2026", { locale: "en-US" }); // → 5 April 2026
+parseDate("04/05/2026", { locale: "en-GB" }); // → 4 May 2026
+```
+
+Inside `en`, the language order and the regions that differ from it:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: `en.order = "${en.order}"`,
+        note: "en-US and every region not listed below",
+        children: [
+          {
+            name: `"DMY" · ${String(regionsWith("DMY").length)} regions`,
+            note:
+              regionsWith("DMY")
+                .filter((tag) =>
+                  ["en-GB", "en-AU", "en-CH", "en-IN"].includes(tag)
+                )
+                .join(", ") + ", …",
+          },
+          {
+            name: `"YMD" · ${String(regionsWith("YMD").length)} regions`,
+            note: regionsWith("YMD").join(", "),
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
+## The 104 locales
+
+`af` `ak` `am` `ar` `as` `az` `ba` `be` `bg` `bn` `bs` `ca` `chr` `cs` `cv`
+`cy` `da` `de` `dsb` `el` `en` `es` `et` `eu` `fa` `fi` `fil` `fr` `ga` `gd`
+`gl` `gu` `ha` `he` `hi` `hi-Latn` `hr` `hsb` `hu` `hy` `id` `ig` `is` `it`
+`ja` `jv` `ka` `kk` `kk-Arab` `km` `kn` `ko` `kok` `ky` `lo` `lt` `lv` `mk`
+`ml` `mn` `mr` `ms` `my` `ne` `nl` `nn` `no` `or` `pa` `pcm` `pl` `ps` `pt`
+`qu` `rm` `ro` `ru` `sd` `shn` `si` `sk` `sl` `so` `sq` `sr` `sr-Latn` `sv`
+`sw` `ta` `te` `th` `ti` `tk` `tr` `uk` `ur` `uz` `vi` `yo` `yue` `yue-Hans`
+`zh` `zh-Hant` `zu`
+
+These are the locales with modern coverage in CLDR.
+
+## See the list in code
+
+`fechita/locales/all` exports every locale in one object, keyed by tag:
+
+```ts
+import { allLocales } from "fechita/locales/all";
+
+Object.keys(allLocales).length; // → 104
+Object.keys(allLocales); // → ["af", "ak", "am", …, "zh-Hant", "zu"]
+```
+
+`withLocales(allLocales)` gives the same results as the default `parseDate`.
+Importing it puts all the data in your bundle, so use it for tools and
+tests, not to save bytes.
+
+## What a locale contains
+
+Each module is plain data, safe to inspect:
+
+| Field          | What it is                                                                      |
+| -------------- | ------------------------------------------------------------------------------- |
+| `tag`          | The locale tag, e.g. `"de"` or `"zh-Hant"`.                                     |
+| `order`        | The usual order of numeric dates: `"DMY"`, `"MDY"` or `"YMD"`.                  |
+| `regionOrders` | Regions whose order differs from `order`, e.g. `{ "en-GB": "DMY", … }` in `en`. |
+| `months`       | The names of each month, January first, in full and short forms.                |
+| `weekdays`     | The names of each weekday, Sunday first.                                        |
+| `dayPeriods`   | AM and PM words, and words like "evening" with the hours they cover.            |
+| `eras`         | The words for before and after the common era: `"v. Chr."`, `"n. Chr."`.        |
+
+The German module, `de`, with one example from each field:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: `de · tag "${de.tag}"`,
+        children: [
+          {
+            name: `order "${de.order}"`,
+            note: `regionOrders: ${Object.keys(de.regionOrders).length === 0 ? "none, every German region writes day first" : Object.keys(de.regionOrders).join(", ")}`,
+          },
+          { name: "months[2]", note: de.months[2].join(" · ") },
+          { name: "weekdays[2]", note: de.weekdays[2].join(" · ") },
+          {
+            name: "dayPeriods",
+            note:
+              `am ${de.dayPeriods.am.join(", ")} · ` +
+              de.dayPeriods.flexible
+                .filter((period) => period.from === 18)
+                .map(
+                  (period) =>
+                    `${period.names.join(", ")}: ${String(period.from)}–${String(period.before)} h`
+                )
+                .join(""),
+          },
+          {
+            name: "eras",
+            note: `bc ${de.eras.bc.join(", ")} · ad ${de.eras.ad.join(", ")}`,
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
+## Related
+
+- [`withLocales`](../with-locales/) — bind `parseDate` to the locales you load.
+- [`parseDateWith`](../parse-date-with/) — pass the locales in each call.
+- [`parseDate`](../parse-date/) — the default entry, with every locale.

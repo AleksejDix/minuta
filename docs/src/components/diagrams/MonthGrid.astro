@@ -1,0 +1,147 @@
+---
+/*
+ * A month as a calendar grid, computed at build time with minuta's
+ * `monthGridWith`: 6 weeks of 7 days, days outside the month muted,
+ * weekend days marked, one day optionally selected.
+ */
+import { contains, period, same } from "minuta";
+import { isWeekendWith, monthGridWith } from "minuta/calendar";
+import type { Weekday } from "minuta/core";
+import { formatPeriod } from "minuta/format";
+import { nativeUnits } from "minuta/native";
+
+type Props = Readonly<{
+  /** First day of a highlighted range, as `YYYY-MM-DD` */
+  from?: string;
+  /** Locale of the weekday names and the caption, default `en-US` */
+  locale?: string;
+  /** Days to mark with a dot, as `YYYY-MM-DD` */
+  marks?: readonly string[];
+  /** The month to show, as `YYYY-MM` */
+  month: string;
+  /** A day to mark as selected, as `YYYY-MM-DD` */
+  selected?: string;
+  /** Last day of a highlighted range, as `YYYY-MM-DD` */
+  to?: string;
+  /** First day of the week, default `monday` */
+  weekStartsOn?: Weekday;
+}>;
+
+const DAYS_A_WEEK = 7;
+const FIRST = 0;
+const ONE = 1;
+
+const {
+  from,
+  locale = "en-US",
+  marks = [],
+  month,
+  selected,
+  to,
+  weekStartsOn = "monday",
+} = Astro.props;
+
+/**
+ * The local day a `YYYY-MM-DD` string names.
+ *
+ * @param iso - The day
+ * @returns Its day period
+ */
+function dayOf(iso: string): ReturnType<typeof period> {
+  return period(new Date(`${iso}T00:00:00`), "day");
+}
+
+/**
+ * Whether a day lies in the highlighted range.
+ *
+ * @param day - A day of the grid
+ * @returns True between `from` and `to`, both included
+ */
+function inRange(day: Readonly<{ start: Readonly<Date> }>): boolean {
+  if (from === undefined || to === undefined) {
+    return false;
+  }
+  return day.start >= dayOf(from).start && day.start <= dayOf(to).start;
+}
+
+/**
+ * Whether a day is one of the marked days.
+ *
+ * @param day - A day of the grid
+ * @returns True for a day in `marks`
+ */
+function isMarked(day: Readonly<{ start: Readonly<Date> }>): boolean {
+  return marks.some((iso) => same(period(day.start, "day"), dayOf(iso), "day"));
+}
+
+const units = nativeUnits({ weekStartsOn });
+const monthStart = new Date(`${month}-01T00:00:00`);
+const grid = monthGridWith(units, monthStart);
+const thisMonth = period(monthStart, "month");
+const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" });
+
+/**
+ * Whether a day is the selected one.
+ *
+ * @param day - A day of the grid
+ * @returns True for the `selected` day
+ */
+function isSelected(day: Readonly<{ start: Readonly<Date> }>): boolean {
+  if (selected === undefined) {
+    return false;
+  }
+  return same(
+    period(day.start, "day"),
+    period(new Date(`${selected}T00:00:00`), "day"),
+    "day"
+  );
+}
+
+const headers = grid.periods
+  .slice(FIRST, DAYS_A_WEEK)
+  .map((day) => weekday.format(day.start));
+const weeks = Array.from(
+  { length: grid.periods.length / DAYS_A_WEEK },
+  (_unused, row) =>
+    grid.periods
+      .slice(row * DAYS_A_WEEK, (row + ONE) * DAYS_A_WEEK)
+      .map((day) => ({
+        inRange: inRange(day),
+        label: day.start.getDate(),
+        marked: isMarked(day),
+        outside: !contains(thisMonth, day.start),
+        selected: isSelected(day),
+        weekend: isWeekendWith(units, day),
+      }))
+);
+---
+
+<figure class="month-grid not-content">
+  <figcaption>{formatPeriod(thisMonth, locale)}</figcaption>
+  <table>
+    <thead>
+      <tr>{headers.map((name) => <th>{name}</th>)}</tr>
+    </thead>
+    <tbody>
+      {
+        weeks.map((days) => (
+          <tr>
+            {days.map((day) => (
+              <td
+                class:list={{
+                  "is-in-range": day.inRange,
+                  "is-marked": day.marked,
+                  "is-outside": day.outside,
+                  "is-selected": day.selected,
+                  "is-weekend": day.weekend,
+                }}
+              >
+                {day.label}
+              </td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</figure>

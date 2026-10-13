@@ -1,0 +1,74 @@
+---
+title: fechita
+description: Read dates the way people write them, in 104 languages, and report ambiguity instead of guessing.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+import ParseDiagram from "../../../../components/diagrams/ParseDiagram.astro";
+
+`fechita` reads a date out of text the way people write it: `2026-03-31`,
+`31.03.2026`, `3/31/2026`, `31. März 2026`, `Tue, 31 Mar 2026 10:00:00 +0200`,
+`2026年3月31日`. It knows month names, weekday names and AM/PM words of 104
+languages, taken from the Unicode CLDR data. When a text can mean more than
+one date, it tells you so and lists the dates instead of picking one.
+
+```sh
+npm install fechita
+```
+
+## Where it sits
+
+fechita is a standalone package with no dependencies. It does not need the
+rest of minuta, and the rest of minuta does not need it.
+
+The date field uses it for one job: reading a **pasted** date. When a user
+pastes `March 31, 2026` into a `__.__.____` field,
+[`typeDate`](../../datefield/type-date/) can hand the text to fechita and
+write the date it finds in the field's own format. See
+[Parsing dates](../../../concepts/parsing-dates/) for how that works and why
+dates are hard to read.
+
+## Example
+
+```ts
+import { parseDate } from "fechita";
+
+parseDate("31. März 2026");
+// → { valid: true, date: 31 March 2026 00:00 local time,
+//     parts: { year: 2026, month: 3, day: 31, hour: 0, minute: 0, … } }
+
+parseDate("04/05/2026");
+// → { valid: false, errorCodes: ["AMBIGUOUS_DAY_MONTH"],
+//     candidates: [4 May 2026, 5 April 2026] }
+
+parseDate("04/05/2026", { locale: "en-US" });
+// → valid: 5 April 2026
+```
+
+One text written with a month name, read as one date; one written with only
+numbers, which has two readings until a locale picks one:
+
+<ParseDiagram text="31. März 2026" />
+
+<ParseDiagram text="04/05/2026" />
+
+<ParseDiagram text="04/05/2026" locale="en-US" />
+
+## Two entry points
+
+- **`fechita`** knows all 104 locales. Easiest to use.
+- **`fechita/core`** knows none. You pass in only the locales you need, from
+  `fechita/locales/<locale>`, which makes your bundle much smaller. See
+  [Locales](../locales/).
+
+## Exports
+
+| Export                                 | Entry point         | What it does                                               |
+| -------------------------------------- | ------------------- | ---------------------------------------------------------- |
+| [`parseDate`](../parse-date/)          | `fechita`           | Read the date in a text, with all locales.                 |
+| [`ParseError`](../parse-error/)        | both                | The error codes `parseDate` reports, by name.              |
+| [`withLocales`](../with-locales/)      | `fechita/core`      | Get a `parseDate` that knows only the locales you pass in. |
+| [`parseDateWith`](../parse-date-with/) | `fechita/core`      | Read a date with the locales you pass in, in one call.     |
+| [Locales](../locales/)                 | `fechita/locales/*` | The data of one locale each, to pass to `withLocales`.     |

@@ -1,0 +1,221 @@
+---
+title: snapWith
+description: Round a date to a neat boundary — the nearest quarter hour, the next midnight, the start of the week.
+---
+
+import { divide, period } from "minuta";
+import { snapWith } from "minuta/intervals";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const units = nativeUnits();
+export const date = new Date(2026, 2, 15, 10, 37);
+export const march = period(new Date(2026, 2, 1), "month");
+
+Round a date to a neat boundary: the nearest quarter hour, the next
+midnight, the start of the week.
+
+```ts
+import { snapWith } from "minuta/intervals";
+```
+
+```ts
+snapWith(units, date, unit, options?)
+```
+
+## Example
+
+```ts
+import { snapWith } from "minuta/intervals";
+import { nativeUnits } from "minuta/native";
+
+const units = nativeUnits();
+const date = new Date(2026, 2, 15, 10, 37); // Sun Mar 15, 10:37
+
+snapWith(units, date, "minute", { step: 15 }); // → 10:30
+snapWith(units, date, "minute", { step: 15, mode: "ceil" }); // → 10:45
+snapWith(units, date, "day", { mode: "ceil" }); // → Mon Mar 16 00:00
+snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // → Mon Mar 16 00:00
+```
+
+<Timeline
+  caption="The hour from 10:00 in steps of 15 minutes. 10:37 lies between the boundaries 10:30 and 10:45: the default, nearest, picks 10:30; ceil picks 10:45."
+  marks={[
+    { date, label: "10:37" },
+    { date: snapWith(units, date, "minute", { step: 15 }), label: "10:30" },
+    {
+      date: snapWith(units, date, "minute", { step: 15, mode: "ceil" }),
+      label: "10:45",
+    },
+  ]}
+  tracks={[
+    {
+      label: "{ step: 15 } boundaries",
+      periods: divide(period(date, "hour"), "minute", { step: 15 }),
+      tone: "muted",
+    },
+  ]}
+/>
+
+## Parameters
+
+| Name      | What it is                                                                                     |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| `units`   | The units to compute with, e.g. `nativeUnits()`. They decide the week start and the time zone. |
+| `date`    | The date to round.                                                                             |
+| `unit`    | Whose boundaries to round to: `"minute"`, `"hour"`, `"day"`, `"week"`, …                       |
+| `options` | Optional. `step` and `mode`, see [Options](#options) below.                                    |
+
+## Options
+
+| Option | Default     | What it does                                                                                                       |
+| ------ | ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| `mode` | `"nearest"` | `"floor"` goes back to the boundary before, `"ceil"` forward to the boundary after, `"nearest"` to the closer one. |
+| `step` | `1`         | How many units lie between boundaries. `{ step: 15 }` with `"minute"` gives :00, :15, :30, :45.                    |
+
+## Returns
+
+A new date on a boundary. When `date` already is a boundary, you get the
+same moment back, whatever the mode.
+
+## Nearest, and ties
+
+`"nearest"` picks the closer boundary. Exactly in the middle, it rounds up:
+
+```ts
+snapWith(units, new Date(2026, 2, 15, 10, 30), "hour"); // → 11:00
+snapWith(units, new Date(2026, 2, 15, 12, 0), "day"); // → Mon Mar 16 00:00
+snapWith(units, new Date(2026, 2, 15, 10, 37, 30), "minute"); // → 10:38
+```
+
+## Where steps are counted from
+
+Steps start again in every larger unit, so they follow the clock and the
+calendar:
+
+| Unit               | Steps counted from      |
+| ------------------ | ----------------------- |
+| `second`           | the start of the minute |
+| `minute`           | the start of the hour   |
+| `hour`             | the start of the day    |
+| `day`              | the start of the month  |
+| `month`, `quarter` | the start of the year   |
+| `week`, `year`     | 1970                    |
+
+```ts
+snapWith(units, new Date(2026, 2, 15, 10, 37), "hour", {
+  step: 6,
+  mode: "floor",
+});
+// → 06:00 (boundaries at 0:00, 6:00, 12:00, 18:00)
+
+snapWith(units, new Date(2026, 4, 20), "month", { step: 3, mode: "floor" });
+// → Apr 1 (boundaries at Jan, Apr, Jul, Oct)
+
+snapWith(units, new Date(2026, 4, 20), "year", { step: 10, mode: "floor" });
+// → Jan 1 2020 (decades)
+
+snapWith(units, new Date(2026, 2, 18), "week", { step: 2, mode: "floor" });
+// → Mon Mar 9 2026 (every second week, counted from 1970)
+```
+
+## The last step is cut short
+
+When a step does not divide the larger unit evenly, the last step ends where
+the larger unit ends. Days in steps of 7 from the start of March are Mar 1,
+8, 15, 22 and 29. The next one would be Apr 5, but April 1 comes first:
+
+```ts
+snapWith(units, new Date(2026, 2, 30), "day", { step: 7, mode: "ceil" });
+// → Wed Apr 1 00:00
+```
+
+<Timeline
+  caption="The 7-day steps of March start on Mar 1, 8, 15, 22 and 29; the last one is only 3 days long. Rounding Mar 30 up (ceil) lands on Apr 1, where the next month starts."
+  marks={[
+    { date: new Date(2026, 2, 30), label: "Mar 30" },
+    {
+      date: snapWith(units, new Date(2026, 2, 30), "day", {
+        step: 7,
+        mode: "ceil",
+      }),
+      label: "Apr 1",
+    },
+  ]}
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: "{ step: 7 } from Mar 1",
+      periods: divide(march, "day", { step: 7 }),
+      tone: "accent",
+    },
+  ]}
+/>
+
+```ts
+snapWith(units, new Date(2026, 2, 15, 22, 37), "hour", {
+  step: 5,
+  mode: "ceil",
+});
+// → Mon Mar 16 00:00 (not 25:00)
+```
+
+## Clock changes
+
+Hours are real hours. On Mar 29 2026 in Europe/Zurich the clock skips 2:00,
+so rounding to the hour around it lands on 3:00:
+
+```ts
+snapWith(units, new Date(2026, 2, 29, 1, 40), "hour"); // → 03:00 summer time
+```
+
+Steps of hours count real hours since midnight. On that day 3:00 is only 2
+hours after midnight, so with `{ step: 3 }` the boundaries are 0:00, 4:00,
+7:00 … instead of 0:00, 3:00, 6:00:
+
+```ts
+snapWith(units, new Date(2026, 2, 29, 5, 10), "hour", {
+  step: 3,
+  mode: "floor",
+});
+// → 04:00
+```
+
+`"nearest"` for days compares real time too. Mar 29 2026 has 23 hours, so
+its middle is 12:30, not 12:00.
+
+## Week start
+
+Week boundaries follow the week start of the units:
+
+```ts
+snapWith(
+  nativeUnits({ weekStartsOn: "sunday" }),
+  new Date(2026, 2, 18),
+  "week",
+  { mode: "floor" }
+);
+// → Sun Mar 15 00:00
+```
+
+## Errors
+
+`snapWith` throws a `RangeError` whose message starts with a code:
+
+| Code                 | When                                                                              |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `INVALID_DATE`       | `date` is an invalid Date.                                                        |
+| `INVALID_OPTION`     | `step` is not a positive whole number (0, 1.5, -1).                               |
+| `UNIT_NOT_SUPPORTED` | `units` has no spec for `unit` or for the larger unit the steps are counted from. |
+
+```ts
+snapWith(units, date, "minute", { step: 0 });
+// RangeError: INVALID_OPTION: snapWith() step must be a positive whole number, got 0. …
+```
+
+## Related
+
+- [`period`](../../minuta/period/) — the whole unit around a date, start and end.
+- [`move`](../move/) — move a period to the snapped date.
+- [`resize`](../resize/) — move an edge to the snapped date.
+- [`intervals`](../intervals/) — use it as `time.snap(date, unit, options)` with `withUnits`.

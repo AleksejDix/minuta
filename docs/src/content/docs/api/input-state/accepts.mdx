@@ -1,0 +1,77 @@
+---
+title: accepts
+description: Whether a kind of mask slot — digit, letter or alphanumeric — takes a character.
+---
+
+import { accepts, createInputState, parseMask, paste } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const code = paste(
+  createInputState({ mask: parseMask("AAA-999") }),
+  "1a2b3c4"
+);
+
+Check whether a kind of slot takes a character: a digit slot takes digits, a
+letter slot takes letters, an alphanumeric slot takes both.
+
+```ts
+import { accepts } from "input-state";
+```
+
+```ts
+accepts(kind, char);
+```
+
+## Example
+
+```ts
+import { accepts } from "input-state";
+
+accepts("digit", "3"); // → true
+accepts("digit", "a"); // → false
+accepts("letter", "ä"); // → true
+accepts("alphanumeric", "-"); // → false
+```
+
+A field asks this question for every character typed or pasted. Here
+`"1a2b3c4"` was pasted into the mask `AAA-999`, three letter slots and three
+digit slots:
+
+<FieldDiagram
+  {...code.buffer.selection}
+  text={code.buffer.text}
+  mode={code.mode}
+  caption='paste(field, "1a2b3c4"): the letter slots refused 1, 2 and 3 and took a, b and c; the first digit slot took 4. The last two slots are still empty, and the cursor waits on the next one.'
+/>
+
+## Parameters
+
+| Name   | What it is                                                                                      |
+| ------ | ----------------------------------------------------------------------------------------------- |
+| `kind` | The kind of slot: `"digit"` (a `9` in the pattern), `"letter"` (`A`) or `"alphanumeric"` (`*`). |
+| `char` | The character to test.                                                                          |
+
+## Returns
+
+`true` when `char` is exactly one character of that kind, `false` otherwise.
+A string of two characters is never accepted.
+
+## Every script counts
+
+"Digit" means a decimal digit of any script, and "letter" means a letter of
+any alphabet.
+
+```ts
+accepts("digit", "٣"); // → true, Arabic-Indic three
+accepts("letter", "ж"); // → true
+accepts("digit", "12"); // → false, two characters
+```
+
+`accepts` only answers the question. A slot may still refuse a character it
+accepts, or store a different one. Use [`slotChar`](../slot-char/) to know
+what ends up in the field.
+
+## Related
+
+- [`slotChar`](../slot-char/) — the character a slot actually stores.
+- [`parseMask`](../parse-mask/) — the pattern letters for each kind.

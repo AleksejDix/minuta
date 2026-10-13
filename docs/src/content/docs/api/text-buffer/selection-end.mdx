@@ -1,0 +1,61 @@
+---
+title: selectionEnd
+description: The right edge of a buffer's selection, whichever way it was made.
+---
+
+import { createTextBuffer, selectionEnd } from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const forward = createTextBuffer("hello", { anchor: 1, head: 4 });
+export const backward = createTextBuffer("hello", { anchor: 4, head: 1 });
+
+Get the right edge of the selection: the larger of `anchor` and `head`.
+
+```ts
+import { selectionEnd } from "text-buffer";
+```
+
+```ts
+selectionEnd(buffer);
+```
+
+## Example
+
+```ts
+import { createTextBuffer, selectionEnd } from "text-buffer";
+
+selectionEnd(createTextBuffer("hello", { anchor: 1, head: 4 })); // → 4
+selectionEnd(createTextBuffer("hello", { anchor: 4, head: 1 })); // → 4
+```
+
+The two selections below were made in opposite directions but cover the same
+cells, "ell". `selectionEnd` gives the right edge of the highlight, not one of the
+two ends:
+
+<FieldDiagram
+  {...forward.selection}
+  text={forward.text}
+  caption={`Forward, anchor 1 and head 4: selectionEnd → ${String(selectionEnd(forward))}.`}
+/>
+
+<FieldDiagram
+  {...backward.selection}
+  text={backward.text}
+  caption={`Backward, anchor 4 and head 1, as when dragging from right to left: selectionEnd → ${String(selectionEnd(backward))}.`}
+/>
+
+## Parameters
+
+| Name     | What it is             |
+| -------- | ---------------------- |
+| `buffer` | The buffer to look at. |
+
+## Returns
+
+A position in the text. For a forward selection it is `head`, for a backward
+selection it is `anchor`, and for a plain cursor it is the cursor position.
+
+## Related
+
+- [`selectionStart`](../selection-start/) — the left edge, and how to get the selected text.
+- [`isCollapsed`](../is-collapsed/) — whether both edges are the same.

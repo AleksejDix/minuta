@@ -1,0 +1,242 @@
+---
+/*
+ * Layers as a stack of glass plates in 3D, top layer first, with a legend.
+ * A bead travels down the stack and back, the way one keystroke does;
+ * hovering spreads the plates apart.
+ */
+type Layer = Readonly<{
+  name: string;
+  owns: string;
+  tag: string;
+}>;
+
+type Props = Readonly<{ layers: readonly Layer[] }>;
+
+const ONE = 1;
+
+const { layers } = Astro.props;
+const count = layers.length;
+---
+
+<figure class="stack3d not-content" style={`--count: ${String(count)}`}>
+  <div class="stack3d__scene" aria-hidden="true">
+    <div class="stack3d__tower">
+      <div class="stack3d__shadow"></div>
+      {
+        layers.map((layer, index) => (
+          <div
+            class:list={["stack3d__plate", `is-${layer.tag.toLowerCase()}`]}
+            style={`--level: ${String(count - ONE - index)}`}
+          >
+            <span class="stack3d__numeral">{count - index}</span>
+            <code>{layer.name}</code>
+          </div>
+        ))
+      }
+      <div class="stack3d__bead"></div>
+    </div>
+  </div>
+  <ol class="stack3d__legend">
+    {
+      layers.map((layer, index) => (
+        <li>
+          <span class="stack3d__numeral">{count - index}</span>
+          <div>
+            <code>{layer.name}</code>
+            <p>{layer.owns}</p>
+          </div>
+          <span class="stack3d__tag">{layer.tag}</span>
+        </li>
+      ))
+    }
+  </ol>
+</figure>
+
+<style is:global>
+  .stack3d {
+    --gap: 4.2rem;
+    --plate: 13.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    align-items: center;
+    gap: 1.5rem;
+    margin: 2rem 0 2.5rem;
+  }
+
+  .stack3d__scene {
+    display: grid;
+    place-items: center;
+    height: 26rem;
+    perspective: 1600px;
+  }
+
+  .stack3d__tower {
+    position: relative;
+    width: var(--plate);
+    height: var(--plate);
+    transform-style: preserve-3d;
+    transform: translateY(2.5rem) rotateX(58deg) rotateZ(-42deg);
+  }
+
+  .stack3d__scene:hover {
+    --gap: 5.8rem;
+  }
+
+  .stack3d__shadow {
+    position: absolute;
+    inset: 8%;
+    border-radius: 1.6rem;
+    background: rgb(18 17 15 / 0.35);
+    filter: blur(22px);
+    transform: translateZ(-2px);
+  }
+
+  .stack3d__plate {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.15rem;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 1.4rem;
+    background: color-mix(in oklab, var(--card) 82%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.35),
+      0 1px 0 var(--sl-color-hairline-light);
+    transform: translateZ(calc(var(--level) * var(--gap)));
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .stack3d__plate.is-dom {
+    border-color: color-mix(in oklab, var(--sl-color-accent) 55%, transparent);
+    background: color-mix(in oklab, var(--sl-color-accent) 16%, var(--card));
+  }
+
+  .stack3d__plate code {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--sl-color-white);
+  }
+
+  .stack3d__numeral {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--sl-color-accent);
+  }
+
+  /* One keystroke: down from the DOM to the text and back up */
+  .stack3d__bead {
+    position: absolute;
+    top: calc(50% - 0.45rem);
+    left: calc(50% - 0.45rem);
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: var(--sl-color-accent);
+    box-shadow: 0 0 14px var(--sl-color-accent);
+    transform: translateZ(calc((var(--count) - 1) * var(--gap) + 1.5rem));
+    animation: stack3d-keystroke 4.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  @keyframes stack3d-keystroke {
+    0%,
+    8% {
+      transform: translateZ(calc((var(--count) - 1) * var(--gap) + 1.5rem));
+      opacity: 0;
+    }
+
+    15% {
+      opacity: 1;
+    }
+
+    50% {
+      transform: translateZ(0.6rem);
+    }
+
+    85% {
+      opacity: 1;
+    }
+
+    92%,
+    100% {
+      transform: translateZ(calc((var(--count) - 1) * var(--gap) + 1.5rem));
+      opacity: 0;
+    }
+  }
+
+  .stack3d__legend {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .stack3d__legend li {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 0.8rem;
+    background: var(--card);
+  }
+
+  .stack3d__legend .stack3d__numeral {
+    font-size: 1.6rem;
+  }
+
+  .stack3d__legend code {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--sl-color-white);
+  }
+
+  .stack3d__legend p {
+    margin: 0.15rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--sl-color-gray-2);
+  }
+
+  .stack3d__tag {
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stack3d__bead {
+      display: none;
+    }
+
+    .stack3d__plate {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 50rem) {
+    .stack3d {
+      grid-template-columns: 1fr;
+    }
+
+    .stack3d__scene {
+      height: 19rem;
+    }
+
+    .stack3d {
+      --gap: 2.8rem;
+      --plate: 11rem;
+    }
+  }
+</style>

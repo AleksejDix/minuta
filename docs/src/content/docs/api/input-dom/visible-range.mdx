@@ -1,0 +1,129 @@
+---
+title: visibleRange
+description: The part of the text an <input> should select to show a state — its selection, or a one-character block cursor in overwrite mode.
+---
+
+import { visibleRange } from "input-dom";
+import { createInputState, parseMask, setSelection } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const empty = createInputState({ mask: parseMask("99.99.9999") });
+export const emptyRange = visibleRange(empty);
+export const text = createInputState({ value: "hello" });
+export const backward = visibleRange(setSelection(text, 4, 1));
+export const overwrite = setSelection(
+  createInputState({ mode: "overwrite", value: "abc" }),
+  1
+);
+export const overwriteRange = visibleRange(overwrite);
+export const textRange = visibleRange(text);
+
+Work out what the element should select to show a state: the selection as it
+is, or, in overwrite mode, a one-character block over the slot the next key
+will fill.
+
+```ts
+import { visibleRange } from "input-dom";
+```
+
+```ts
+visibleRange(state);
+```
+
+## Example
+
+```ts
+import { createInputState, parseMask, setSelection } from "input-state";
+import { visibleRange } from "input-dom";
+
+const empty = createInputState({ mask: parseMask("99.99.9999") });
+visibleRange(empty);
+// → { start: 0, end: 1, direction: "forward" }   block over the first slot
+
+const range = visibleRange(empty);
+element.setSelectionRange(range.start, range.end, range.direction);
+```
+
+<FieldDiagram
+  text={empty.buffer.text}
+  head={empty.buffer.selection.head}
+  caption="The state: a plain cursor at 0, before the first slot."
+/>
+
+<FieldDiagram
+  text={empty.buffer.text}
+  anchor={emptyRange.start}
+  head={emptyRange.end}
+  caption={`visibleRange → ${String(emptyRange.start)} to ${String(emptyRange.end)}: the element selects the first slot, a block over the character the next key replaces.`}
+/>
+
+## Parameters
+
+| Name    | What it is               |
+| ------- | ------------------------ |
+| `state` | The input state to show. |
+
+## Returns
+
+An object with `start`, `end` and `direction`, ready for the element's
+`setSelectionRange(start, end, direction)`.
+
+| State                                    | Shown as                                |
+| ---------------------------------------- | --------------------------------------- |
+| A selection from left to right           | that selection, `"forward"`             |
+| A selection from right to left (Shift+←) | that selection, `"backward"`            |
+| A cursor in insert mode                  | a cursor (`start` = `end`)              |
+| A cursor in overwrite mode               | the one character after it, `"forward"` |
+| A cursor in overwrite mode at the end    | a cursor: there is nothing to cover     |
+
+```ts
+const text = createInputState({ value: "hello" });
+
+visibleRange(setSelection(text, 1, 4)); // → { start: 1, end: 4, direction: "forward" }
+visibleRange(setSelection(text, 4, 1)); // → { start: 1, end: 4, direction: "backward" }
+visibleRange(text); // → { start: 5, end: 5, direction: "forward" }
+
+const overwrite = setSelection(
+  createInputState({ mode: "overwrite", value: "abc" }),
+  1
+);
+visibleRange(overwrite); // → { start: 1, end: 2, direction: "forward" }
+```
+
+What the element shows in three of these cases:
+
+<FieldDiagram
+  text="hello"
+  anchor={backward.end}
+  head={backward.start}
+  caption={`A selection made from right to left: shown as ${String(backward.start)} to ${String(backward.end)} with direction "${backward.direction}", so the caret end stays on the left.`}
+/>
+
+<FieldDiagram
+  text="hello"
+  head={textRange.start}
+  caption={`A cursor in insert mode at the end: start = end = ${String(textRange.start)}, a thin caret.`}
+/>
+
+<FieldDiagram
+  text="abc"
+  anchor={overwriteRange.start}
+  head={overwriteRange.end}
+  caption={`A cursor at 1 in overwrite mode: the element selects ${String(overwriteRange.start)} to ${String(overwriteRange.end)}, the b that the next key replaces.`}
+/>
+
+## Why a block
+
+A masked field is always in overwrite mode: typing replaces the slot at the
+cursor. A thin caret between characters does not say which slot that is. A
+one-character selection does, the way a block cursor does in a terminal.
+
+The state itself keeps a plain cursor. Only the element shows the block.
+[`attachInput`](../attach-input/) knows that, and does not mistake the block
+for a selection the user made.
+
+## Related
+
+- [`attachInput`](../attach-input/) — renders with this after every change.
+- [`applyInputEvent`](../apply-input-event/) — the other half of a custom binding.
+- [`setSelection`](../../input-state/set-selection/) (input-state) — set the cursor or selection.

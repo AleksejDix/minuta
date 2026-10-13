@@ -1,0 +1,29 @@
+---
+/*
+ * Which part sits inside which, as nested boxes: a component tree with a
+ * short note on each part.
+ */
+type Part = Readonly<{
+  children?: readonly Part[];
+  name: string;
+  note?: string;
+}>;
+
+type Props = Readonly<{ parts: readonly Part[] }>;
+
+const { parts } = Astro.props;
+---
+
+<div class="anatomy">
+  {
+    parts.map((part) => (
+      <div class="anatomy__part">
+        <div class="anatomy__head">
+          <code>{part.name}</code>
+          {part.note === undefined ? null : <span>{part.note}</span>}
+        </div>
+        {part.children === undefined ? null : <Astro.self parts={part.children} />}
+      </div>
+    ))
+  }
+</div>

@@ -1,0 +1,132 @@
+---
+title: text-buffer
+description: Text plus a selection, with pure editing functions — the bottom layer of the input stack.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+import {
+  createTextBuffer,
+  deleteBackward,
+  insertText,
+  moveCursor,
+  select,
+} from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const step1 = insertText(createTextBuffer("hello"), " world");
+export const step2 = select(step1, 0, 5);
+export const step3 = insertText(step2, "goodbye");
+export const step5 = deleteBackward(moveCursor(step3, 1));
+
+`text-buffer` holds the text of a field and where the cursor is. Every edit is
+a plain function: you pass in a buffer and get a new buffer back. Nothing is
+changed in place, and there is no DOM.
+
+```sh
+npm install text-buffer
+```
+
+## Where it sits
+
+It is the bottom layer of the input stack:
+
+1. **text-buffer** — text and selection.
+2. [input-state](../../input-state/overview/) — adds masks (`__.__.____`) and
+   insert or overwrite mode on top.
+3. [datefield](../../datefield/overview/) — date segments on top of a mask.
+4. [input-dom](../../input-dom/overview/) — connects a state to a real
+   `<input>` element.
+
+See [The input stack](../../../concepts/the-input-stack/) for the whole
+picture. You only use text-buffer directly when you build your own field
+logic.
+
+## The model
+
+A buffer has two things:
+
+- `text` — the text, a string.
+- `selection` — `{ anchor, head }`, two positions in the text.
+
+The **anchor** is where the selection started. The **head** is where it ends
+and where the caret blinks. When you drag the mouse from left to right, the
+anchor is on the left. When you drag from right to left, the anchor is on the
+right and the head is on the left: a **backward** selection.
+
+When `anchor` and `head` are equal, nothing is selected. The selection is
+**collapsed**: it is just a cursor.
+
+Positions count UTF-16 code units, the same unit the DOM uses for
+`selectionStart` and `selectionEnd`. Position 0 is before the first character.
+
+<FieldDiagram
+  text="hello"
+  anchor={1}
+  head={4}
+  caption="A selection from 1 to 4: positions are the gaps between characters, so it covers e, l, l."
+/>
+
+<FieldDiagram
+  text="hello"
+  head={2}
+  caption="A collapsed selection at 2: anchor and head are equal, and the caret sits between e and l."
+/>
+
+## Example
+
+```ts
+import {
+  createTextBuffer,
+  deleteBackward,
+  insertText,
+  moveCursor,
+  select,
+} from "text-buffer";
+
+let buffer = createTextBuffer("hello"); // cursor at the end, position 5
+buffer = insertText(buffer, " world"); // "hello world"
+buffer = select(buffer, 0, 5); // "hello" is selected
+buffer = insertText(buffer, "goodbye"); // "goodbye world", cursor at 7
+buffer = moveCursor(buffer, 1); // cursor at 8, after the space
+buffer = deleteBackward(buffer); // "goodbyeworld", cursor at 7
+```
+
+Three moments of that sequence, each a new buffer:
+
+<FieldDiagram
+  {...step2.selection}
+  text={step2.text}
+  caption='After select(buffer, 0, 5): the text is unchanged, "hello" is selected.'
+/>
+
+<FieldDiagram
+  {...step3.selection}
+  text={step3.text}
+  caption='After insertText(buffer, "goodbye"): the selection is replaced and the cursor is at 7.'
+/>
+
+<FieldDiagram
+  {...step5.selection}
+  text={step5.text}
+  caption="After moveCursor(buffer, 1) and deleteBackward: the space before the cursor is gone, the cursor is back at 7."
+/>
+
+When an edit changes nothing, most functions return the very same buffer, so
+`next === buffer` tells you that nothing happened.
+
+## Exports
+
+| Function                                     | What it does                                             |
+| -------------------------------------------- | -------------------------------------------------------- |
+| [`createTextBuffer`](../create-text-buffer/) | Create a buffer, with the cursor at the end by default.  |
+| [`select`](../select/)                       | Set the selection, or place the cursor.                  |
+| [`moveCursor`](../move-cursor/)              | Move the cursor like the arrow keys do.                  |
+| [`insertText`](../insert-text/)              | Type or paste at the cursor, replacing the selection.    |
+| [`replaceRange`](../replace-range/)          | Replace any range of the text.                           |
+| [`deleteBackward`](../delete-backward/)      | Backspace: delete the selection or the character before. |
+| [`deleteForward`](../delete-forward/)        | Delete: delete the selection or the character after.     |
+| [`selectionStart`](../selection-start/)      | The left edge of the selection.                          |
+| [`selectionEnd`](../selection-end/)          | The right edge of the selection.                         |
+| [`isCollapsed`](../is-collapsed/)            | Whether the selection is just a cursor.                  |

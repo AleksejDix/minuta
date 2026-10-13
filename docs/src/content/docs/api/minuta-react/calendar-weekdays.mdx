@@ -1,0 +1,82 @@
+---
+title: CalendarWeekdays
+description: A React component that renders the row of weekday names above the calendar grid, in the week order of the units.
+---
+
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
+A component that renders the row of weekday names ("Mon", "Tue", …) above the
+calendar grid, in the week order of the units.
+
+```js
+import { CalendarWeekdays } from "minuta-react/components";
+```
+
+```jsx
+<CalendarWeekdays locale="en-US" />
+```
+
+## Example
+
+You rarely render it yourself: [`CalendarGrid`](../calendar-grid/) already
+includes it and passes its own `locale`.
+
+```jsx
+import { CalendarGrid, CalendarRoot } from "minuta-react/components";
+import { nativeUnits } from "minuta/native";
+
+const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
+
+export function Calendar() {
+  return (
+    <CalendarRoot units={sundayFirst}>
+      <CalendarGrid locale="de-CH" />
+    </CalendarRoot>
+  );
+}
+```
+
+The header row reads "So Mo Di Mi Do Fr Sa": German short names, starting on
+Sunday because the units say so.
+
+<MonthGrid month="2024-01" weekStartsOn="sunday" locale="de-CH" />
+
+The top row of this grid is what `CalendarWeekdays` renders; here for
+January 2024. The order comes from the units, the names from `locale`. With the
+defaults, Monday weeks and `"en-US"`, the same month starts with "Mon":
+
+<MonthGrid month="2024-01" />
+
+## Props
+
+| Name     | What it is                         | Default   |
+| -------- | ---------------------------------- | --------- |
+| `locale` | The language of the weekday names. | `"en-US"` |
+
+## What it renders
+
+A table head, so it belongs inside a `<table>`:
+
+```html
+<thead class="weekday-grid">
+  <tr>
+    <th scope="col" abbr="Monday">Mon</th>
+    …
+  </tr>
+</thead>
+```
+
+Each header shows the short name and carries the full name in `abbr`, which
+screen readers read out. Names use the time zone of the units
+(`units.timeZone`).
+
+## Errors
+
+It reads only the minuta state, so it works inside any
+[`MinutaRoot`](../minuta-root/), not only a `CalendarRoot`. Outside any root it
+throws `useMinutaContext() must be used within <MinutaRoot>`.
+
+## Related
+
+- [`CalendarGrid`](../calendar-grid/) — renders this row for you.
+- [`CalendarRoot`](../calendar-root/) — where the units come from.

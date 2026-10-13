@@ -1,0 +1,915 @@
+---
+title: Building a date field
+description: Build a segmented date input step by step — locale format, typing, pasting, day clamping, arrow keys and reading the date, then wrap it for React and Vue.
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import {
+  clampDay,
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  fromDate,
+  parseSegments,
+  rotateSegment,
+  segmentAtPosition,
+  segmentsToString,
+  toDate,
+  typeDate,
+  withSegments,
+} from "datefield";
+import { parseDate } from "fechita";
+import { applyInputEvent } from "input-dom";
+import { createInputState, setSelection } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const format = deriveFormat("de-CH");
+export const field = createInputState({ mask: dateMask(format) });
+export const japanese = createInputState({
+  mask: dateMask(deriveFormat("ja-JP")),
+});
+export const keys = (text, insert) =>
+  [...text].reduce(
+    (state, data) =>
+      applyInputEvent(state, { data, inputType: "insertText" }, insert),
+    field
+  );
+export const typeDateInsert = (state, text) => typeDate(format, state, text);
+export const withoutTypeDate = keys("1.3.2026");
+export const withTypeDate = keys("1.3.2026", typeDateInsert);
+export const parse = (text) => {
+  const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+};
+export const pastedPlain = typeDate(format, field, "2026-03-31");
+export const pastedParsed = typeDate(format, field, "2026-03-31", { parse });
+export const december = setSelection(
+  createInputState({ mask: dateMask(format), value: "31.12.2026" }),
+  3
+);
+export const afterZero = typeDate(format, december, "0");
+export const zeroWithCursor = withSegments(
+  afterZero,
+  clampDay(
+    parseSegments(format, afterZero.buffer.text),
+    afterZero.buffer.selection.head
+  )
+);
+export const zeroWithoutCursor = withSegments(
+  afterZero,
+  clampDay(parseSegments(format, afterZero.buffer.text))
+);
+export const march = setSelection(
+  createInputState({ mask: dateMask(format), value: "31.03.2026" }),
+  3
+);
+export const marchSegments = parseSegments(format, march.buffer.text);
+export const monthUp = withSegments(
+  march,
+  rotateSegment(
+    marchSegments,
+    segmentAtPosition(marchSegments, march.buffer.selection.head),
+    1
+  )
+);
+export const normalize = (state) =>
+  withSegments(
+    state,
+    clampDay(
+      parseSegments(format, state.buffer.text),
+      state.buffer.selection.head
+    )
+  );
+export const thirtyFirstApril = keys("31.04", (state, text) =>
+  normalize(typeDate(format, state, text))
+);
+export const readSegments = parseSegments(format, "31.03.2026");
+export const christmas = segmentsToString(
+  fromDate(new Date(2026, 11, 24), format)
+);
+
+This page builds a date input like `__.__.____` in seven steps. Each step
+adds one rule to the same field: how the locale writes dates, how people
+type them, how they paste them, what happens to 31 February, what the arrow
+keys do, and how you get a `Date` out. The last step wraps it all into one
+function and uses it from React and Vue.
+
+```sh
+npm install datefield input-state input-dom text-buffer fechita
+```
+
+The packages are layers that build on each other. How they fit together is
+explained in [The input stack](../../../concepts/the-input-stack/); this page
+only shows how to use them. All results are for the locale `de-CH`, with the
+computer in Europe/Zurich and today being in 2026.
+
+## 1. A format and an empty field
+
+You never write a format string. [`deriveFormat`](../../../api/datefield/derive-format/)
+asks the browser how a locale writes a date, and
+[`dateMask`](../../../api/datefield/date-mask/) turns that into a mask: a slot
+for every digit, and fixed separators in between.
+[`createInputState`](../../../api/input-state/create-input-state/) makes the
+field from it.
+
+```ts
+import { dateMask, deriveFormat } from "datefield";
+import { createInputState } from "input-state";
+
+const format = deriveFormat("de-CH");
+const field = createInputState({ mask: dateMask(format) });
+
+field.buffer.text; //      → "__.__.____"
+field.mode; //             → "overwrite"
+field.buffer.selection; // → { anchor: 0, head: 0 }, the cursor
+```
+
+Other locales get their own order and separators, with no extra code:
+
+```ts
+createInputState({ mask: dateMask(deriveFormat("en-US")) }).buffer.text;
+// → "__/__/____"
+createInputState({ mask: dateMask(deriveFormat("ja-JP")) }).buffer.text;
+// → "____/__/__"
+```
+
+The field is plain data. Nothing here touches the DOM, so you can run it in
+Node or in a test. A masked field is always in **overwrite mode**: typing
+replaces the slot under the cursor and nothing ever shifts.
+
+<FieldDiagram
+  text={field.buffer.text}
+  head={field.buffer.selection.head}
+  mode={field.mode}
+  locale="de-CH"
+  caption="The de-CH field: digit slots for day, month and year with fixed dots between them. The block is the slot the first digit replaces."
+/>
+
+<FieldDiagram
+  text={japanese.buffer.text}
+  head={japanese.buffer.selection.head}
+  mode={japanese.mode}
+  locale="ja-JP"
+  caption="The ja-JP field from the same code: the year comes first and the separator is a slash."
+/>
+
+Keep `format`: every datefield function from here on takes it.
+
+## 2. Attach it to an input
+
+[`attachInput`](../../../api/input-dom/attach-input/) from input-dom binds
+the field to a real `<input>`. The element never edits itself. Every key
+press, paste and drop goes through the field's rules first, and the element
+shows the result.
+
+```html
+<label for="date">Date</label>
+<input id="date" inputmode="numeric" autocomplete="off" />
+```
+
+```ts
+import { dateMask, deriveFormat } from "datefield";
+import { attachInput } from "input-dom";
+import { createInputState } from "input-state";
+
+const format = deriveFormat("de-CH");
+const element = document.querySelector("#date");
+
+const controller = attachInput(
+  element,
+  createInputState({ mask: dateMask(format) }),
+  {
+    onChange: (state) => console.log(state.buffer.text),
+  }
+);
+```
+
+The input shows `__.__.____`, and the mask holds: letters are refused and
+Backspace puts the `_` back. But people type `1.3.2026`, not `01032026`, and
+here the dot is simply skipped:
+
+| The user types | The field shows |
+| -------------- | --------------- |
+| `1.3.2026`     | `13.20.26__`    |
+
+<FieldDiagram
+  text={withoutTypeDate.buffer.text}
+  head={withoutTypeDate.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="1.3.2026 typed key by key without typeDate: the dots are skipped, the digits fill the slots in a row, and the year is left half empty."
+/>
+
+[`typeDate`](../../../api/datefield/type-date/) types the way people write
+dates: a separator finishes the part being typed. Pass it as `insert`, the
+option that applies typed and pasted text:
+
+```ts
+import { dateMask, deriveFormat, typeDate } from "datefield";
+import { attachInput } from "input-dom";
+import { createInputState } from "input-state";
+
+const format = deriveFormat("de-CH");
+const element = document.querySelector("#date");
+
+const controller = attachInput(
+  element,
+  createInputState({ mask: dateMask(format) }),
+  {
+    insert: (state, text) => typeDate(format, state, text),
+    onChange: (state) => console.log(state.buffer.text),
+  }
+);
+```
+
+| The user types | The field shows |
+| -------------- | --------------- |
+| `1.3.2026`     | `01.03.2026`    |
+| `31032026`     | `31.03.2026`    |
+| `1/3/2026`     | `01.03.2026`    |
+
+<FieldDiagram
+  text={withTypeDate.buffer.text}
+  head={withTypeDate.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="The same keys with typeDate as insert: each dot finished the part before it, so day and month got their zeros."
+/>
+
+Any separator works, whatever the format uses. When a part is full, the
+cursor jumps over the separator on its own.
+
+Call `controller.destroy()` when the element goes away.
+
+## 3. Pasting any date
+
+People paste dates from emails, spreadsheets and other sites, in any form.
+`typeDate` has no date parser of its own, so with step 2 a paste is typed
+character by character:
+
+| The user pastes | The field shows |
+| --------------- | --------------- |
+| `2026-03-31`    | `20.26.2003`    |
+| `31. März 2026` | `31.20.2026`    |
+
+<FieldDiagram
+  text={pastedPlain.buffer.text}
+  locale="de-CH"
+  caption="2026-03-31 typed into the field character by character: the year's digits end up in the day and the month."
+/>
+
+Give `typeDate` a parser. [`parseDate`](../../../api/fechita/parse-date/) from
+fechita reads dates in 104 languages. Pass it
+[`dateOrder(format)`](../../../api/datefield/date-order/), so an ambiguous
+date like `04/05/2026` is read in the order the field shows:
+
+```ts
+import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
+import { attachInput } from "input-dom";
+import { createInputState } from "input-state";
+import { parseDate } from "fechita";
+
+const locale = "de-CH";
+const format = deriveFormat(locale);
+const element = document.querySelector("#date");
+
+// Read pasted dates in any form, in the order the field shows ("DMY")
+function parse(text) {
+  const result = parseDate(text, { locale, order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+}
+
+const controller = attachInput(
+  element,
+  createInputState({ mask: dateMask(format) }),
+  {
+    insert: (state, text) => typeDate(format, state, text, { parse }),
+    onChange: (state) => console.log(state.buffer.text),
+  }
+);
+```
+
+| The user pastes  | The field shows              |
+| ---------------- | ---------------------------- |
+| `2026-03-31`     | `31.03.2026`                 |
+| `31. März 2026`  | `31.03.2026`                 |
+| `March 31, 2026` | `31.03.2026`                 |
+| `04/05/2026`     | `04.05.2026` (4 May, as DMY) |
+| `hello`          | unchanged, nothing to type   |
+
+<FieldDiagram
+  text={pastedParsed.buffer.text}
+  locale="de-CH"
+  caption="The same paste with the parser: fechita reads 31 March 2026, and the field writes it day first."
+/>
+
+`typeDate` only asks the parser for text longer than one character, so
+single key presses are never parsed. When the parser returns `undefined`,
+the text is typed as before.
+
+:::tip
+`fechita` knows all 104 languages. To ship only the ones you need, use
+[`withLocales`](../../../api/fechita/with-locales/) from `fechita/core`. Why
+dates are hard to read, and how fechita decides, is in
+[Parsing dates](../../../concepts/parsing-dates/).
+:::
+
+## 4. Keeping the day valid
+
+The mask only checks that every slot holds a digit. `31.04.2026` fits the
+mask, but there is no 31 April.
+[`clampDay`](../../../api/datefield/clamp-day/) cuts the day to the month's
+real length. Run it on every change with the `normalize` option, which gets
+each new state before it is shown:
+
+```ts
+import {
+  clampDay,
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  parseSegments,
+  typeDate,
+  withSegments,
+} from "datefield";
+import { attachInput } from "input-dom";
+import { createInputState } from "input-state";
+import { parseDate } from "fechita";
+
+const locale = "de-CH";
+const format = deriveFormat(locale);
+const element = document.querySelector("#date");
+
+function parse(text) {
+  const result = parseDate(text, { locale, order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+}
+
+// 31.04 → 30.04, once the cursor has left the part being typed
+function clamped(state, cursor) {
+  const segments = parseSegments(format, state.buffer.text);
+  return withSegments(state, clampDay(segments, cursor));
+}
+
+const controller = attachInput(
+  element,
+  createInputState({ mask: dateMask(format) }),
+  {
+    insert: (state, text) => typeDate(format, state, text, { parse }),
+    normalize: (state) => clamped(state, state.buffer.selection.head),
+    onChange: (state) => console.log(state.buffer.text),
+  }
+);
+```
+
+[`parseSegments`](../../../api/datefield/parse-segments/) cuts the text into
+day, month and year. `clampDay` fixes the day, and
+[`withSegments`](../../../api/datefield/with-segments/) writes the result
+back with the cursor kept. When nothing needs to change, the same field comes
+back.
+
+| The user…                                 | The field shows |
+| ----------------------------------------- | --------------- |
+| types `31.04`                             | `30.04.____`    |
+| types `30.02.`                            | `29.02.____`    |
+| changes the month of `31.03.2026` to `02` | `28.02.2026`    |
+
+While the year is still empty, February allows the 29th: it could be a leap
+year.
+
+<FieldDiagram
+  text={thirtyFirstApril.buffer.text}
+  head={thirtyFirstApril.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="31.04 typed with normalize: once the cursor left the month, clampDay cut the day to 30. Only the day bracket changes; the month stays as typed."
+/>
+
+### Pass the cursor
+
+The second argument of `clampDay` is the cursor, and it matters. Say the
+field holds `31.12.2026` and the user wants March. They put the cursor on
+the month and type `0`, then `3`. After the `0`, the month reads `02` for a
+moment:
+
+| After typing | With the cursor | Without the cursor |
+| ------------ | --------------- | ------------------ |
+| `0`          | `31.02.2026`    | `28.02.2026`       |
+| `3`          | `31.03.2026`    | `28.03.2026`       |
+
+The moment after the `0`, drawn twice:
+
+<FieldDiagram
+  text={zeroWithCursor.buffer.text}
+  head={zeroWithCursor.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="With the cursor: the block is still inside the month, so clampDay waits and 31 stays."
+/>
+
+<FieldDiagram
+  text={zeroWithoutCursor.buffer.text}
+  head={zeroWithoutCursor.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="Without the cursor: the day is cut to 28 at once, before the user has typed the 3."
+/>
+
+Without the cursor, the day is cut at the `0`, and the user ends up with
+28 March although they typed 31. With the cursor, `clampDay` waits while
+the cursor is still inside the part being typed, and only clamps once it has
+left.
+
+:::caution
+Always pass `state.buffer.selection.head` to `clampDay` in `normalize`.
+`clampDay(segments)` without the cursor clamps right away, which is only
+right once the user is done, for example on blur.
+:::
+
+### Finish on blur
+
+The last part has no separator after it, so a year typed as `26` stays
+`26__` until something finishes it. And if the user leaves while the cursor
+is still in the month, the clamp has not happened yet. Fix both when the
+field loses focus, with [`finishSegment`](../../../api/datefield/finish-segment/)
+and `clampDay` without the cursor:
+
+```ts
+import { finishSegment } from "datefield";
+
+element.addEventListener("blur", () => {
+  const finished = finishSegment(format, controller.getState());
+  controller.setState(clamped(finished));
+});
+```
+
+| The user types, then leaves | The field shows |
+| --------------------------- | --------------- |
+| `1.3.26`                    | `01.03.2026`    |
+| `1.3.5`                     | `01.03.2005`    |
+
+A year of one or two digits is read in a window from 80 years ago to 19
+years ahead; in 2026 that is 1946 to 2045.
+
+## 5. Arrow keys
+
+Native date inputs let you step the part under the cursor with ArrowUp and
+ArrowDown. [`rotateSegment`](../../../api/datefield/rotate-segment/) does the
+same. Find the part with
+[`segmentAtPosition`](../../../api/datefield/segment-at-position/), step it,
+and write it back. Hand this to the `onKeyDown` option; return `undefined`
+for every other key, so input-dom handles it as usual:
+
+```ts
+import {
+  parseSegments,
+  rotateSegment,
+  segmentAtPosition,
+  withSegments,
+} from "datefield";
+
+// ArrowUp / ArrowDown step the part under the cursor
+function rotated(state, key) {
+  if (key !== "ArrowUp" && key !== "ArrowDown") return undefined;
+  const segments = parseSegments(format, state.buffer.text);
+  const index = segmentAtPosition(segments, state.buffer.selection.head);
+  const direction = key === "ArrowUp" ? 1 : -1;
+  return withSegments(state, rotateSegment(segments, index, direction));
+}
+```
+
+Add it to the options of step 4:
+
+```ts
+onKeyDown: (event, state) => rotated(state, event.key),
+```
+
+| The field shows | The cursor is on | Key       | The field shows |
+| --------------- | ---------------- | --------- | --------------- |
+| `31.03.2026`    | the day          | ArrowUp   | `01.03.2026`    |
+| `31.03.2026`    | the month        | ArrowUp   | `30.04.2026`    |
+| `30.04.2026`    | the year         | ArrowDown | `30.04.2025`    |
+| `__.__.____`    | the year         | ArrowUp   | `__.__.2026`    |
+
+<FieldDiagram
+  text={march.buffer.text}
+  head={march.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="Before: 31.03.2026 with the cursor on the month; segmentAtPosition finds segment 2."
+/>
+
+<FieldDiagram
+  text={monthUp.buffer.text}
+  head={monthUp.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="After ArrowUp: the month is 04, the day was cut to 30, and the cursor stayed on the month for the next press."
+/>
+
+One key changes one part. Day 31 goes up to 01 of the _same_ month, as in a
+native date input. When the month changes, a day that no longer fits is cut
+for you, so ArrowUp on the month of `31.03` gives 30 April.
+
+## 6. Reading the date
+
+The field holds text. [`toDate`](../../../api/datefield/to-date/) reads the
+date out of it, and gives `undefined` while the date is not complete or does
+not exist:
+
+```ts
+import { parseSegments, toDate } from "datefield";
+
+toDate(parseSegments(format, "31.03.2026")); // → Tue Mar 31 2026, local midnight
+toDate(parseSegments(format, "31.03.____")); // → undefined (not finished)
+toDate(parseSegments(format, "00.03.2026")); // → undefined (no day 0)
+```
+
+<Flow
+  steps={[
+    {
+      code: '"31.03.2026"',
+      layer: "field",
+      text: "The text the user sees, state.buffer.text.",
+    },
+    {
+      code: readSegments
+        .filter((segment) => segment.type !== "literal")
+        .map((segment) => `${segment.type} "${segment.value}"`)
+        .join(", "),
+      layer: "parseSegments",
+      text: "Cut into day, month and year.",
+    },
+    {
+      code: toDate(readSegments).toDateString(),
+      layer: "toDate",
+      text: "A real, complete date: a Date at local midnight.",
+    },
+  ]}
+/>
+
+Read it in `onChange`, which runs after every change by the user:
+
+```ts
+onChange: (state) => {
+  const date = toDate(parseSegments(format, state.buffer.text));
+  console.log(date ?? "not a complete date yet");
+},
+```
+
+`toDate` never changes what the user typed. A half-typed date stays on
+screen; your code just gets `undefined` until it is a real date.
+
+To show a date in the field, write it with
+[`fromDate`](../../../api/datefield/from-date/) and replace the state:
+
+```ts
+import { dateMask, fromDate, segmentsToString } from "datefield";
+import { createInputState } from "input-state";
+
+const value = segmentsToString(fromDate(new Date(2026, 11, 24), format));
+controller.setState(createInputState({ mask: dateMask(format), value }));
+// the input shows "24.12.2026"
+```
+
+<FieldDiagram
+  text={christmas}
+  locale="de-CH"
+  caption="fromDate(new Date(2026, 11, 24), format): the Date written back as segments, ready to be the field's value."
+/>
+
+:::note
+`controller.setState` does not run `normalize` and does not call
+`onChange`. When you change the state yourself, as in the blur handler of
+step 4, read the date again yourself.
+:::
+
+## 7. Wrap it up
+
+All six steps together fit in one file of under 100 lines. Put them into one function that
+attaches a date field to an element and reports the date. React and Vue then
+need only a few lines each.
+
+```ts
+// date-field.js
+import {
+  clampDay,
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  finishSegment,
+  fromDate,
+  parseSegments,
+  rotateSegment,
+  segmentAtPosition,
+  segmentsToString,
+  toDate,
+  typeDate,
+  withSegments,
+} from "datefield";
+import { attachInput } from "input-dom";
+import { createInputState } from "input-state";
+import { parseDate } from "fechita";
+
+export function attachDateField(element, { locale, date, onChange }) {
+  const format = deriveFormat(locale);
+
+  // A field that shows `value`, or an empty one
+  function fieldFor(value) {
+    const mask = dateMask(format);
+    if (value === undefined) return createInputState({ mask });
+    return createInputState({
+      mask,
+      value: segmentsToString(fromDate(value, format)),
+    });
+  }
+
+  // Step 3: read pasted dates in the order the field shows
+  function parse(text) {
+    const result = parseDate(text, { locale, order: dateOrder(format) });
+    return result.valid ? result.date : undefined;
+  }
+
+  // Step 4: keep the day valid
+  function clamped(state, cursor) {
+    const segments = parseSegments(format, state.buffer.text);
+    return withSegments(state, clampDay(segments, cursor));
+  }
+
+  // Step 5: ArrowUp / ArrowDown
+  function rotated(state, key) {
+    if (key !== "ArrowUp" && key !== "ArrowDown") return undefined;
+    const segments = parseSegments(format, state.buffer.text);
+    const index = segmentAtPosition(segments, state.buffer.selection.head);
+    const direction = key === "ArrowUp" ? 1 : -1;
+    return withSegments(state, rotateSegment(segments, index, direction));
+  }
+
+  // Step 6: report the date, or undefined
+  function report(state) {
+    onChange(toDate(parseSegments(format, state.buffer.text)));
+  }
+
+  const controller = attachInput(element, fieldFor(date), {
+    insert: (state, text) => typeDate(format, state, text, { parse }),
+    normalize: (state) => clamped(state, state.buffer.selection.head),
+    onKeyDown: (event, state) => rotated(state, event.key),
+    onChange: report,
+  });
+
+  // Step 4: finish and clamp when the user leaves
+  function onBlur() {
+    const state = controller.getState();
+    const done = clamped(finishSegment(format, state));
+    if (done !== state) {
+      controller.setState(done);
+      report(done);
+    }
+  }
+  element.addEventListener("blur", onBlur);
+
+  return {
+    setDate(value) {
+      controller.setState(fieldFor(value));
+    },
+    destroy() {
+      element.removeEventListener("blur", onBlur);
+      controller.destroy();
+    },
+  };
+}
+```
+
+`attachDateField` takes the element, the locale, an optional start date and
+an `onChange` callback that gets the date (or `undefined`). It returns
+`setDate` to load a date and `destroy` to let go of the element.
+
+Where each step lands when the user works with the field:
+
+<Flow
+  steps={[
+    {
+      code: "insert: typeDate(format, state, text, { parse })",
+      layer: "step 2–3",
+      text: "Every typed, pasted or dropped text: separators finish a part, pastes go through fechita.",
+    },
+    {
+      code: "normalize: clamped(state, state.buffer.selection.head)",
+      layer: "step 4",
+      text: "Every new state: the day is cut once the cursor has left the part being typed.",
+    },
+    {
+      code: "onKeyDown: rotated(state, event.key)",
+      layer: "step 5",
+      text: "ArrowUp and ArrowDown step the part under the cursor; other keys go on as usual.",
+    },
+    {
+      code: "onChange: report",
+      layer: "step 6",
+      text: "After every change: toDate gives the Date, or undefined.",
+    },
+    {
+      code: "blur: clamped(finishSegment(format, state))",
+      layer: "step 4",
+      text: "When the user leaves: finish the last part, clamp without the cursor, report again.",
+    },
+  ]}
+/>
+
+Use it:
+
+<Tabs syncKey="framework">
+<TabItem label="Vanilla">
+
+```html
+<label for="date">Date</label>
+<input id="date" inputmode="numeric" autocomplete="off" />
+<p id="result">No date yet</p>
+```
+
+```ts
+import { attachDateField } from "./date-field.js";
+
+const result = document.querySelector("#result");
+
+const field = attachDateField(document.querySelector("#date"), {
+  locale: "de-CH",
+  onChange: (date) => {
+    result.textContent = date ? date.toDateString() : "No date yet";
+  },
+});
+
+// Load a date from your own code
+field.setDate(new Date(2026, 11, 24)); // the input shows "24.12.2026"
+
+// When the input goes away
+// field.destroy();
+```
+
+`setDate` does not call `onChange`: your code chose the date, so it knows it
+already.
+
+</TabItem>
+<TabItem label="React">
+
+A hook attaches the field when the input mounts and destroys it when it
+unmounts. input-dom owns the text; React only keeps the date for rendering.
+
+```jsx
+// use-date-field.js
+import { useEffect, useRef, useState } from "react";
+import { attachDateField } from "./date-field.js";
+
+export function useDateField(locale, initialDate) {
+  const inputRef = useRef(null);
+  const field = useRef(undefined);
+  const [date, setCurrent] = useState(initialDate);
+  // Survives a new locale, so the field keeps its date
+  const latest = useRef(initialDate);
+
+  useEffect(() => {
+    const attached = attachDateField(inputRef.current, {
+      locale,
+      date: latest.current,
+      onChange: (next) => {
+        latest.current = next;
+        setCurrent(next);
+      },
+    });
+    field.current = attached;
+    return () => attached.destroy();
+  }, [locale]);
+
+  function setDate(next) {
+    field.current?.setDate(next);
+    latest.current = next;
+    setCurrent(next);
+  }
+
+  return { inputRef, date, setDate };
+}
+```
+
+```jsx
+import { useId } from "react";
+import { useDateField } from "./use-date-field.js";
+
+export function DateInput({ locale = "de-CH" }) {
+  const id = useId();
+  const { inputRef, date } = useDateField(locale);
+
+  return (
+    <>
+      <label htmlFor={id}>Date</label>
+      <input id={id} ref={inputRef} inputMode="numeric" autoComplete="off" />
+      <p>{date ? date.toDateString() : "No date yet"}</p>
+    </>
+  );
+}
+```
+
+When `locale` changes, the effect runs again: the old field is destroyed and
+a new one is attached with the new format, still showing the same date. In
+`StrictMode` React attaches, destroys and attaches again on mount, which is
+fine.
+
+:::caution
+Do not pass `value` or `onChange` to the `<input>`. A controlled input lets
+React write the text, and input-dom must be the only one that does.
+:::
+
+</TabItem>
+<TabItem label="Vue">
+
+A composable attaches the field once the input is mounted, and again when
+the locale changes. input-dom owns the text; Vue only keeps the date for
+rendering.
+
+```js
+// use-date-field.js
+import { shallowRef, toValue, watch } from "vue";
+import { attachDateField } from "./date-field.js";
+
+export function useDateField(locale, initialDate) {
+  const element = shallowRef();
+  const date = shallowRef(initialDate);
+  let field;
+
+  watch(
+    [element, () => toValue(locale)],
+    ([input, currentLocale], _previous, onCleanup) => {
+      if (!input) return;
+      field = attachDateField(input, {
+        locale: currentLocale,
+        date: date.value,
+        onChange: (next) => {
+          date.value = next;
+        },
+      });
+      onCleanup(() => field.destroy());
+    },
+    { immediate: true }
+  );
+
+  function setDate(next) {
+    field?.setDate(next);
+    date.value = next;
+  }
+
+  return { element, date, setDate };
+}
+```
+
+```vue
+<script setup>
+import { useId } from "vue";
+import { useDateField } from "./use-date-field.js";
+
+const { locale = "de-CH" } = defineProps(["locale"]);
+const id = useId();
+const { element, date } = useDateField(() => locale);
+</script>
+
+<template>
+  <label :for="id">Date</label>
+  <input :id="id" ref="element" inputmode="numeric" autocomplete="off" />
+  <p>{{ date ? date.toDateString() : "No date yet" }}</p>
+</template>
+```
+
+`ref="element"` hands the input to the composable. `locale` can be a plain
+string, a ref or a getter; with a getter, a new `locale` prop re-attaches the
+field with the new format, still showing the same date.
+
+:::caution
+Do not use `v-model` or `:value` on the `<input>`. Vue would write the
+text, and input-dom must be the only one that does.
+:::
+
+</TabItem>
+</Tabs>
+
+To connect the field to a calendar, call `setDate(day.start)` from the
+calendar's `onSelect` or `@select`, see
+[Building a calendar](../../calendars/building-a-calendar/).
+
+## Next
+
+- [Building a calendar](../../calendars/building-a-calendar/) — the month
+  view to pick a date from.
+- [The input stack](../../../concepts/the-input-stack/) — what each layer
+  does on one keystroke and one paste.
+- [Parsing dates](../../../concepts/parsing-dates/) — how pasted dates are
+  read.
+- [`attachInput`](../../../api/input-dom/attach-input/) — all options of the
+  binding.
+- [`typeDate`](../../../api/datefield/type-date/),
+  [`clampDay`](../../../api/datefield/clamp-day/),
+  [`rotateSegment`](../../../api/datefield/rotate-segment/),
+  [`toDate`](../../../api/datefield/to-date/) — the functions of steps 2 to 6.
+- [datefield overview](../../../api/datefield/overview/) — every function,
+  including [`localeDigits`](../../../api/datefield/locale-digits/) to show
+  the field in a locale's own digits.

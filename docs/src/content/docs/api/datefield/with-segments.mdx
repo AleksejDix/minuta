@@ -1,0 +1,120 @@
+---
+title: withSegments
+description: Write changed segments back into a date field, keeping the cursor where it is.
+---
+
+import {
+  clampDay,
+  dateMask,
+  deriveFormat,
+  parseSegments,
+  withSegments,
+} from "datefield";
+import { createInputState, setSelection } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const format = deriveFormat("de-CH");
+export const before = setSelection(
+  createInputState({ mask: dateMask(format), value: "31.02.2026" }),
+  4
+);
+export const after = withSegments(
+  before,
+  clampDay(parseSegments(format, before.buffer.text))
+);
+
+Write segments back into a field, keeping the cursor and the mode: after a day
+clamp or an arrow-key step, the field shows the new date and the cursor has
+not moved.
+
+```ts
+import { withSegments } from "datefield";
+```
+
+```ts
+withSegments(state, segments);
+```
+
+## Example
+
+```ts
+import {
+  clampDay,
+  dateMask,
+  deriveFormat,
+  parseSegments,
+  withSegments,
+} from "datefield";
+import { createInputState, setSelection } from "input-state";
+
+const format = deriveFormat("de-CH");
+let field = createInputState({ mask: dateMask(format), value: "31.02.2026" });
+field = setSelection(field, 4);
+
+field = withSegments(field, clampDay(parseSegments(format, field.buffer.text)));
+field.buffer.text; // → "28.02.2026"
+field.buffer.selection; // → { anchor: 4, head: 4 }   unchanged
+```
+
+<FieldDiagram
+  text={before.buffer.text}
+  head={before.buffer.selection.head}
+  mode={before.mode}
+  locale="de-CH"
+  caption="Before: the cursor is on the second slot of the month."
+/>
+
+<FieldDiagram
+  text={after.buffer.text}
+  head={after.buffer.selection.head}
+  mode={after.mode}
+  locale="de-CH"
+  caption="After withSegments: the day reads 28, and the cursor block is still on the same slot of the month."
+/>
+
+## Parameters
+
+| Name       | What it is                                                                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `state`    | The field to update, an input state from [`createInputState`](../../input-state/create-input-state/).                                      |
+| `segments` | The segments of the new text, e.g. from [`clampDay`](../clamp-day/), [`rotateSegment`](../rotate-segment/) or [`fromDate`](../from-date/). |
+
+## Returns
+
+A new field with the text of `segments`, the same selection, the same mask and
+the same mode. When the text is the same as before, the very same field comes
+back, so `next === field` tells you nothing changed.
+
+## The pattern
+
+Most datefield helpers work on segments, not on the field. Every edit has the
+same three steps:
+
+1. Cut the field's text into segments with [`parseSegments`](../parse-segments/).
+2. Change them: [`rotateSegment`](../rotate-segment/), [`clampDay`](../clamp-day/),
+   [`clearSegment`](../clear-segment/).
+3. Write them back with `withSegments`.
+
+```ts
+const segments = parseSegments(format, field.buffer.text);
+const index = segmentAtPosition(segments, field.buffer.selection.head);
+field = withSegments(field, rotateSegment(segments, index, 1));
+```
+
+## Replace the whole date
+
+Segments from [`fromDate`](../from-date/) replace the date and keep the cursor:
+
+```ts
+field = withSegments(field, fromDate(new Date(2026, 2, 31), format));
+field.buffer.text; // → "31.03.2026"
+```
+
+`withSegments` does not check the segments against the mask. Segments from the
+same format always fit.
+
+## Related
+
+- [`parseSegments`](../parse-segments/) — get the segments.
+- [`segmentsToString`](../segments-to-string/) — the text it writes.
+- [`createInputState`](../../input-state/create-input-state/) (input-state) — the field itself.

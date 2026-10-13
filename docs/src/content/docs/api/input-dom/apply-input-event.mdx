@@ -1,0 +1,156 @@
+---
+title: applyInputEvent
+description: Turn one browser beforeinput event into the next input state — typing, pasting, dropping or deleting.
+---
+
+import { dateMask, deriveFormat, typeDate } from "datefield";
+import { applyInputEvent } from "input-dom";
+import { createInputState, parseMask } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const state = createInputState({ mask: parseMask("99.99.9999") });
+export const typedThree = applyInputEvent(state, {
+  data: "3",
+  inputType: "insertText",
+});
+export const format = deriveFormat("de-CH");
+export const field = createInputState({ mask: dateMask(format) });
+export const pasteEvent = { data: "1.3.2026", inputType: "insertFromPaste" };
+export const plainPaste = applyInputEvent(field, pasteEvent);
+export const datePaste = applyInputEvent(field, pasteEvent, (current, text) =>
+  typeDate(format, current, text)
+);
+
+Turn one `beforeinput` event into the next state: a typed `3` fills the next
+slot, a paste goes through your `insert` function, Backspace empties a slot.
+It is the core step of [`attachInput`](../attach-input/), exported for building
+your own binding.
+
+```ts
+import { applyInputEvent } from "input-dom";
+```
+
+```ts
+applyInputEvent(state, event, insert?)
+```
+
+## Example
+
+```ts
+import { applyInputEvent } from "input-dom";
+import { createInputState, parseMask } from "input-state";
+
+const state = createInputState({ mask: parseMask("99.99.9999") });
+
+element.addEventListener("beforeinput", (event) => {
+  event.preventDefault();
+  const next = applyInputEvent(state, event);
+  // a typed "3"      → next.buffer.text is "3_.__.____"
+  // undo, bold, …    → next is undefined
+});
+```
+
+What happens to the typed `3`, from the browser's event to the new text:
+
+<Flow
+  steps={[
+    {
+      code: 'beforeinput { inputType: "insertText", data: "3" }',
+      layer: "browser",
+      text: "The browser announces the key before it changes anything; you cancel the event.",
+    },
+    {
+      code: 'applyInputEvent(state, event) → paste(state, "3")',
+      layer: "input-dom",
+      text: "insertText is a kind of text input, so the event's data goes to insert, here the default paste.",
+    },
+    {
+      code: `"${state.buffer.text}" → "${typedThree.buffer.text}"`,
+      layer: "input-state",
+      text: "The mask puts the digit into the slot at the cursor and moves the cursor on.",
+    },
+  ]}
+/>
+
+<FieldDiagram
+  text={state.buffer.text}
+  head={state.buffer.selection.head}
+  mode={state.mode}
+  caption="The state before the event: an empty mask, the block cursor on slot 0."
+/>
+
+<FieldDiagram
+  text={typedThree.buffer.text}
+  head={typedThree.buffer.selection.head}
+  mode={typedThree.mode}
+  caption="The state applyInputEvent returns: 3 in slot 0, the block on slot 1. The element is not touched yet."
+/>
+
+## Parameters
+
+| Name     | What it is                                                                                                                                     |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state`  | The current input state.                                                                                                                       |
+| `event`  | A `beforeinput` event from the element.                                                                                                        |
+| `insert` | Optional. How text is applied: gets the state and the text, returns the new state. Default: input-state's [`paste`](../../input-state/paste/). |
+
+## Returns
+
+The next state, or `undefined` when the kind of input is not handled. It does
+not touch the element and does not cancel the event; that is up to you.
+
+## Which events do what
+
+The event's `inputType` decides:
+
+| `inputType`                                                                | What happens                                |
+| -------------------------------------------------------------------------- | ------------------------------------------- |
+| `insertText`, `insertReplacementText`, `insertFromPaste`, `insertFromDrop` | The text goes through `insert`.             |
+| `deleteContentBackward`, `deleteWordBackward`, `deleteByCut`               | [`backspace`](../../input-state/backspace/) |
+| `deleteContentForward`, `deleteWordForward`                                | `deleteForward`                             |
+| anything else (undo, redo, line breaks, formatting, …)                     | `undefined`                                 |
+
+The text is the event's `data`, or for a drop, the plain text being dropped.
+
+Deleting a word deletes the same as one Backspace or Delete. With a mask that
+empties one slot (or the selection); nothing shifts.
+
+## Dates
+
+Pass datefield's [`typeDate`](../../datefield/type-date/) as `insert`, so
+separators finish a segment and pastes are read as dates:
+
+```ts
+import { dateMask, deriveFormat, typeDate } from "datefield";
+
+const format = deriveFormat("de-CH");
+const field = createInputState({ mask: dateMask(format) });
+const insert = (state, text) => typeDate(format, state, text);
+
+const pasteEvent = new InputEvent("beforeinput", {
+  inputType: "insertFromPaste",
+  data: "1.3.2026",
+});
+
+applyInputEvent(field, pasteEvent).buffer.text; // → "13.20.26__"   plain paste
+applyInputEvent(field, pasteEvent, insert).buffer.text; // → "01.03.2026"
+```
+
+<FieldDiagram
+  text={plainPaste.buffer.text}
+  locale="de-CH"
+  caption="The paste with the default insert: the dots are skipped and the digits run on, 13.20.26__."
+/>
+
+<FieldDiagram
+  text={datePaste.buffer.text}
+  locale="de-CH"
+  caption="The same event with typeDate as insert: each dot finishes a part, 01.03.2026."
+/>
+
+## Related
+
+- [`attachInput`](../attach-input/) — the full binding that uses this.
+- [`visibleRange`](../visible-range/) — how to show the state's selection.
+- [`paste`](../../input-state/paste/) (input-state) — the default `insert`.

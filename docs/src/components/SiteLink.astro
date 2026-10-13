@@ -1,0 +1,18 @@
+---
+/*
+ * An `<a>` to a page of the site that works with or without a trailing
+ * slash in the address, e.g. on the home page.
+ */
+import { siteHref } from "./site-href";
+
+type Props = Readonly<{
+  /** Classes of the link */
+  class?: string;
+  /** A path inside the site, e.g. `concepts/time-zones/` */
+  to: string;
+}>;
+
+const { class: className, to } = Astro.props;
+---
+
+<a class={className} href={siteHref(to)}><slot /></a>

@@ -1,0 +1,179 @@
+---
+title: typeChar
+description: Type one character into an input field, respecting its mask and mode.
+---
+
+import {
+  createInputState,
+  parseMask,
+  setSelection,
+  toggleMode,
+  typeChar,
+} from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const empty = createInputState({ mask: parseMask("99.99.9999") });
+export const one = typeChar(empty, "3");
+export const two = typeChar(one, "1");
+export const full = createInputState({
+  mask: parseMask("99.99.9999"),
+  value: "31032026",
+});
+export const backward = setSelection(full, 5, 0);
+export const inserted = typeChar(
+  setSelection(createInputState({ value: "hello" }), 0),
+  "J"
+);
+export const overwritten = typeChar(toggleMode(inserted), "X");
+
+Type one character at the cursor. In a masked field it fills the next slot; in
+a free-text field it is inserted or overwrites, depending on the mode.
+
+```ts
+import { typeChar } from "input-state";
+```
+
+```ts
+typeChar(state, char);
+```
+
+## Example
+
+```ts
+import {
+  createInputState,
+  parseMask,
+  setSelection,
+  toggleMode,
+  typeChar,
+} from "input-state";
+
+let field = createInputState({ mask: parseMask("99.99.9999") });
+
+field = typeChar(field, "3"); // → "3_.__.____", cursor at 1
+field = typeChar(field, "1"); // → "31.__.____", cursor at 3, past the "."
+field = typeChar(field, "x"); // → unchanged: a digit slot rejects "x"
+```
+
+<FieldDiagram
+  {...one.buffer.selection}
+  text={one.buffer.text}
+  mode={one.mode}
+  caption='After typeChar(field, "3"): the first slot is filled and the block moves on to the next one.'
+/>
+
+<FieldDiagram
+  {...two.buffer.selection}
+  text={two.buffer.text}
+  mode={two.mode}
+  caption='After typeChar(field, "1"): the cursor jumps over the "." to 3, the first month slot. Typing "x" now would leave this picture unchanged.'
+/>
+
+## Parameters
+
+| Name    | What it is                                               |
+| ------- | -------------------------------------------------------- |
+| `state` | The field to type into.                                  |
+| `char`  | The typed character, e.g. the `key` of a keyboard event. |
+
+## Returns
+
+A new state. When the character is rejected, you get the same state back, so
+`next === state` tells you the key did nothing.
+
+## In a masked field
+
+- The character goes into the slot at the cursor, or the next slot after it.
+  Literals such as `.` are skipped over.
+- The cursor then moves to the next slot, or to the end after the last slot.
+- A slot that already holds a character is overwritten. Nothing shifts.
+- A character the slot does not accept is ignored and the state is returned
+  unchanged. Typing a `.` does not jump to the next segment; that is what
+  [`typeDate`](../../datefield/type-date/) in datefield adds.
+- When every slot after the cursor is taken (the cursor is at the end), the
+  key does nothing.
+- If text is selected, the selected slots are emptied first and the character
+  goes into the first of them, whichever way the selection was made.
+
+```ts
+const mask = parseMask("99.99.9999");
+let full = createInputState({ mask, value: "31032026" });
+
+typeChar(setSelection(full, 3), "1");
+// → "31.13.2026", cursor at 4: the "0" was overwritten
+
+typeChar(setSelection(full, 5, 0), "0");
+// → "0_.__.2026": "31.03" was selected, so it was cleared first
+```
+
+<FieldDiagram
+  {...setSelection(full, 3).buffer.selection}
+  text={setSelection(full, 3).buffer.text}
+  mode={setSelection(full, 3).mode}
+  caption='Before: a full field, the cursor at 3 on the "0" of the month.'
+/>
+
+<FieldDiagram
+  {...typeChar(setSelection(full, 3), "1").buffer.selection}
+  text={typeChar(setSelection(full, 3), "1").buffer.text}
+  mode={typeChar(setSelection(full, 3), "1").mode}
+  caption='After typeChar(field, "1"): the "0" was overwritten, "31.13.2026", and the cursor moved on to 4. Nothing shifted.'
+/>
+
+<FieldDiagram
+  {...backward.buffer.selection}
+  text={backward.buffer.text}
+  mode={backward.mode}
+  caption='Before: "31.03" selected backwards, from 5 to 0.'
+/>
+
+<FieldDiagram
+  {...typeChar(backward, "0").buffer.selection}
+  text={typeChar(backward, "0").buffer.text}
+  mode={typeChar(backward, "0").mode}
+  caption='After typeChar(field, "0"): the selected slots were emptied, the "0" went into the first of them, and the cursor waits on the next empty slot, 1.'
+/>
+
+Digit slots also accept digits from other scripts and store them as `0`–`9`.
+See [`slotChar`](../slot-char/).
+
+## In a free-text field
+
+In **insert** mode the character is inserted at the cursor and replaces any
+selection. In **overwrite** mode it replaces the character at the cursor;
+at the end of the text, or over a selection, it is inserted as usual.
+
+```ts
+let text = createInputState({ value: "hello" });
+text = setSelection(text, 0);
+text = typeChar(text, "J"); // → "Jhello" (insert)
+
+text = toggleMode(text);
+text = typeChar(text, "X"); // → "JXello" (overwrite)
+```
+
+<FieldDiagram
+  {...inserted.buffer.selection}
+  text={inserted.buffer.text}
+  mode={inserted.mode}
+  caption='Insert: "J" was added before "hello", which moved right. The caret is at 1.'
+/>
+
+<FieldDiagram
+  {...overwritten.buffer.selection}
+  text={overwritten.buffer.text}
+  mode={overwritten.mode}
+  caption='Overwrite: "X" replaced the "h" at 1 instead of pushing it. The block marks the "e", the next character a key would replace.'
+/>
+
+:::caution
+In free-text overwrite mode one call replaces one UTF-16 code unit. Typing
+over an emoji such as 😀, which takes two units, leaves half of it behind.
+:::
+
+## Related
+
+- [`paste`](../paste/) — type a whole string.
+- [`backspace`](../backspace/) and [`deleteForward`](../delete-forward/) — delete.
+- [`toggleMode`](../toggle-mode/) — switch between insert and overwrite.
+- [`typeDate`](../../datefield/type-date/) — typing into a date field, where separators finish a segment.

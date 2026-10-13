@@ -1,0 +1,73 @@
+---
+/*
+ * Text in, a reading out: what fechita's `parseDate` makes of the text —
+ * one date, the dates it could mean, or why there is none — computed at
+ * build time. With `compare`, `new Date(text)` is shown next to it.
+ */
+import type { Order } from "fechita";
+import { parseDate } from "fechita";
+
+type Props = Readonly<{
+  compare?: boolean;
+  locale?: string;
+  order?: Order;
+  text: string;
+}>;
+
+const { compare = false, locale, order, text } = Astro.props;
+
+const label = new Intl.DateTimeFormat("en-US", { dateStyle: "full" });
+const withTime = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
+
+/**
+ * What `new Date(text)` gives, as a label.
+ *
+ * @param date - The date `new Date` made
+ * @returns Its label, or "Invalid Date"
+ */
+function naiveLabel(date: Readonly<Date>): string {
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+  return withTime.format(date);
+}
+
+const result = parseDate(text, { locale, order });
+const naiveText = naiveLabel(new Date(text));
+---
+
+<figure class="parse-diagram not-content">
+  <div class="parse-diagram__input">
+    <span class="parse-diagram__tag">text</span>
+    <code>{JSON.stringify(text)}</code>
+  </div>
+  <span class="parse-diagram__arrow" aria-hidden="true">↓ parseDate</span>
+  {
+    result.valid ? (
+      <div class="parse-diagram__out is-valid">
+        <span class="parse-diagram__tag">valid</span>
+        <strong>{label.format(result.date)}</strong>
+      </div>
+    ) : (
+      <div class="parse-diagram__out is-invalid">
+        <span class="parse-diagram__tag">{result.errorCodes.join(" · ")}</span>
+        {result.candidates.length > 0 ? (
+          <ul>
+            {result.candidates.map((candidate) => (
+              <li>could be {label.format(candidate)}</li>
+            ))}
+          </ul>
+        ) : (
+          <strong>no date</strong>
+        )}
+      </div>
+    )
+  }
+  {
+    compare ? (
+      <p class="parse-diagram__naive">
+        <code>new Date(text)</code> → {naiveText}
+      </p>
+    ) : null
+  }
+</figure>

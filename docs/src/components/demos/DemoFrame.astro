@@ -1,0 +1,43 @@
+---
+/**
+ * A concept demo: shared controls, then the problem and minuta's answer.
+ * Slots: `controls`, `problem`, `solution`.
+ */
+type Props = Readonly<{
+  /** Name the demo's script looks for in `data-demo` */
+  name: string;
+  /** What goes wrong without minuta, in a few words */
+  problem: string;
+  /** What minuta does instead, in a few words */
+  solution: string;
+}>;
+
+const { name, problem, solution } = Astro.props;
+---
+
+<div
+  class="not-content concept-demo my-8 grid gap-4 rounded-xl border bg-card p-5 text-sm text-card-foreground shadow-sm"
+  data-demo={name}
+>
+  <div class="flex flex-wrap items-end gap-4">
+    <slot name="controls" />
+  </div>
+  <section class="grid gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+    <header class="grid gap-1">
+      <p class="text-xs font-semibold tracking-wide text-destructive uppercase">
+        The problem
+      </p>
+      <p class="font-medium">{problem}</p>
+    </header>
+    <slot name="problem" />
+  </section>
+  <section class="grid gap-3 rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-4">
+    <header class="grid gap-1">
+      <p class="text-xs font-semibold tracking-wide text-emerald-700 uppercase dark:text-emerald-400">
+        With minuta
+      </p>
+      <p class="font-medium">{solution}</p>
+    </header>
+    <slot name="solution" />
+  </section>
+</div>

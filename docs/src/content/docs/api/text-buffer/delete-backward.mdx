@@ -1,0 +1,99 @@
+---
+title: deleteBackward
+description: Backspace — delete the selection, or the character before the cursor.
+---
+
+import { createTextBuffer, deleteBackward } from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const cursor = createTextBuffer("hello");
+export const selection = createTextBuffer("hello", { anchor: 1, head: 3 });
+
+Do what Backspace does: delete the selected text, or the character before the
+cursor.
+
+```ts
+import { deleteBackward } from "text-buffer";
+```
+
+```ts
+deleteBackward(buffer);
+```
+
+## Example
+
+```ts
+import { createTextBuffer, deleteBackward } from "text-buffer";
+
+deleteBackward(createTextBuffer("hello"));
+// → "hell", cursor at 4
+
+deleteBackward(createTextBuffer("hello", { anchor: 1, head: 3 }));
+// → "hlo", cursor at 1 ("el" was selected)
+```
+
+With a cursor, the character before it goes. The cursor moves back by one:
+
+<FieldDiagram
+  {...cursor.selection}
+  text={cursor.text}
+  caption='Before: "hello" with the cursor at 5, after the "o".'
+/>
+
+<FieldDiagram
+  {...deleteBackward(cursor).selection}
+  text={deleteBackward(cursor).text}
+  caption='After deleteBackward: the "o" is gone and the cursor is at 4.'
+/>
+
+With a selection, only the selected text goes, and the cursor lands where the
+selection began:
+
+<FieldDiagram
+  {...selection.selection}
+  text={selection.text}
+  caption='Before: "el" selected, positions 1 to 3.'
+/>
+
+<FieldDiagram
+  {...deleteBackward(selection).selection}
+  text={deleteBackward(selection).text}
+  caption='After deleteBackward: "hlo", with the cursor at 1, where "el" started. The character before the selection stays.'
+/>
+
+## Parameters
+
+| Name     | What it is            |
+| -------- | --------------------- |
+| `buffer` | The buffer to change. |
+
+## Returns
+
+A new buffer with the text removed and a cursor where it was. At the very
+start of the text there is nothing before the cursor, so you get the same
+buffer back.
+
+```ts
+const start = createTextBuffer("hello", { anchor: 0, head: 0 });
+deleteBackward(start) === start; // → true
+```
+
+## Whole characters go at once
+
+One Backspace removes one character as people see it, even when it is made of
+several code units: emoji sequences, flags, and letters with a separate
+accent mark.
+
+```ts
+deleteBackward(createTextBuffer("hi 👨‍👩‍👧"));
+// → "hi ", the whole family emoji in one step
+
+deleteBackward(createTextBuffer("🇨🇭"));
+// → "", the whole flag
+```
+
+## Related
+
+- [`deleteForward`](../delete-forward/) — the Delete key.
+- [`insertText`](../insert-text/) — inserting `""` also deletes a selection.
+- [`backspace`](../../input-state/backspace/) — Backspace in a masked field, where slots empty instead of shifting.

@@ -1,0 +1,73 @@
+---
+title: minuta/format
+description: Labels for periods in any language, using the built-in Intl.DateTimeFormat — no locale data shipped.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+import { period, range } from "minuta";
+import { formatPeriod, formatRange } from "minuta/format";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 15), "month");
+export const marchToApril = range(new Date(2026, 2, 30), new Date(2026, 3, 5));
+
+`minuta/format` turns periods into text for people: "March 2026", "Mar 9 –
+15, 2026", "30. März – 5. Apr. 2026". It uses the `Intl.DateTimeFormat`
+built into browsers and Node, so it ships no language data and works in
+every locale they know.
+
+```ts
+import { formatPeriod, formatRange } from "minuta/format";
+```
+
+## Functions
+
+| Function                            | What it does                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------- |
+| [`formatPeriod`](../format-period/) | A label that fits the unit: a month as "March 2026", a week as a range. |
+| [`formatRange`](../format-range/)   | Always "start – end", without repeating shared parts.                   |
+
+## Example
+
+```ts
+import { formatPeriod, formatRange } from "minuta/format";
+import { period, range } from "minuta";
+
+formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH");
+// → "März 2026"
+
+formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH");
+// → "30. März – 5. Apr. 2026"
+```
+
+<Timeline
+  caption="The two periods of the example, each labelled with the text the format functions give in de-CH."
+  tracks={[
+    { label: formatPeriod(march, "de-CH"), periods: [march], tone: "accent" },
+    {
+      label: formatRange(marchToApril, "de-CH"),
+      periods: [marchToApril],
+      tone: "accent",
+    },
+  ]}
+/>
+
+## Key ideas
+
+- **The unit picks the format.** A `"month"` period shows month and year, a
+  `"day"` period the full date, an `"hour"` period the date and time. See
+  the [table](../format-period/#one-format-per-unit).
+- **Options override.** Pass any `Intl.DateTimeFormat` option to change one
+  field, e.g. `{ month: "short" }`. The rest of the defaults stay.
+- **Time zone.** Text is written in the computer's time zone unless you pass
+  `{ timeZone }`. For periods of zone-aware units, pass `units.timeZone`.
+- **No units needed.** The format functions only read `start`, `end` and
+  `unit` of the period.
+
+## Learn more
+
+- [Time zones](../../../concepts/time-zones/)
+- [Weeks and calendars](../../../concepts/weeks-and-calendars/) — other
+  calendar systems in labels.

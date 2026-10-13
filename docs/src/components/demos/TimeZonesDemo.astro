@@ -1,0 +1,55 @@
+---
+import DemoFrame from "./DemoFrame.astro";
+---
+
+<DemoFrame
+  name="time-zones"
+  problem="“A day is 24 hours” and getHours() are only true sometimes."
+  solution="Units computed in a zone know that zone's real days, clock changes included."
+>
+  <label class="demo-label" slot="controls">
+    Day
+    <input class="demo-input" type="date" value="2026-03-29" data-part="date" />
+  </label>
+  <label class="demo-label" slot="controls">
+    Time zone
+    <select class="demo-input" data-part="zone">
+      <option>Europe/Zurich</option>
+      <option>America/New_York</option>
+      <option>Australia/Sydney</option>
+      <option>Asia/Tokyo</option>
+      <option>Asia/Kolkata</option>
+      <option>UTC</option>
+    </select>
+  </label>
+
+  <div class="grid gap-2" slot="problem">
+    <code class="demo-code">new Date(dayStart.getTime() + 24 * 60 * 60 * 1000)  → <span data-part="naive-next"></span></code>
+    <code class="demo-code">new Date(dayStart).getHours()  → <span data-part="naive-hours"></span></code>
+    <p class="text-destructive" data-part="verdict"></p>
+  </div>
+
+  <div class="grid gap-2" slot="solution">
+    <pre class="demo-code">const time = withUnits(dateFnsTzUnits({"{"} timeZone {"}"}));
+const day = time.period(date, "day");</pre>
+    <p>
+      <span class="text-muted-foreground">day →</span>
+      <span class="font-mono text-xs" data-part="span"></span>
+    </p>
+    <p>
+      <code class="font-mono text-xs">time.duration(day, "hour")</code>
+      <span class="text-muted-foreground">→</span>
+      <span class="font-semibold" data-part="hours"></span>
+    </p>
+    <p class="text-muted-foreground">
+      <code class="font-mono text-xs">time.divide(day, "hour")</code>, on that zone's clock:
+    </p>
+    <code class="demo-code" data-part="clock"></code>
+  </div>
+</DemoFrame>
+
+<script>
+  import { mountTimeZonesDemos } from "./time-zones-demo";
+
+  mountTimeZonesDemos();
+</script>

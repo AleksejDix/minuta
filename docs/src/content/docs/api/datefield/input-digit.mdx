@@ -1,0 +1,134 @@
+---
+title: inputDigit
+description: Type one digit into a segment that fills from the right, like a calculator, and move on when it is full.
+---
+
+import {
+  deriveFormat,
+  inputDigit,
+  parseSegments,
+  segmentsToString,
+} from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const empty = parseSegments(deriveFormat("de-CH"), "__.__.____");
+export const first = inputDigit(empty, 0, "3");
+export const second = inputDigit(first.segments, first.activeIndex, "1");
+export const active = (result) => result.segments[result.activeIndex];
+
+Type one digit into a segment, calculator style: the new digit comes in on the
+right and the others move left, so `3` then `1` gives `_3`, then `31`. When the
+segment is full, the next segment becomes active.
+
+```ts
+import { inputDigit } from "datefield";
+```
+
+```ts
+inputDigit(segments, activeIndex, char);
+```
+
+:::note
+Most fields do not need this. A field built with
+[`dateMask`](../date-mask/) and [`typeDate`](../type-date/) types into slots
+at the cursor and handles separators. `inputDigit` is a lower-level way that
+works on the segments alone, with no field and no cursor.
+:::
+
+## Example
+
+```ts
+import {
+  deriveFormat,
+  inputDigit,
+  parseSegments,
+  segmentsToString,
+} from "datefield";
+
+const empty = parseSegments(deriveFormat("de-CH"), "__.__.____");
+
+const first = inputDigit(empty, 0, "3");
+segmentsToString(first.segments); // → "_3.__.____"
+first.activeIndex; // → 0   still the day
+
+const second = inputDigit(first.segments, first.activeIndex, "1");
+segmentsToString(second.segments); // → "31.__.____"
+second.activeIndex; // → 2   the day is full: now the month
+```
+
+The highlighted cells are the segment `activeIndex` points at after each
+digit: where the next digit goes.
+
+<FieldDiagram
+  text={segmentsToString(empty)}
+  anchor={empty[0].start}
+  head={empty[0].end}
+  locale="de-CH"
+  caption="Start: the day is active and empty."
+/>
+
+<FieldDiagram
+  text={segmentsToString(first.segments)}
+  anchor={active(first).start}
+  head={active(first).end}
+  locale="de-CH"
+  caption="After 3: the digit comes in on the right of the day. The day is not full, so it stays active."
+/>
+
+<FieldDiagram
+  text={segmentsToString(second.segments)}
+  anchor={active(second).start}
+  head={active(second).end}
+  locale="de-CH"
+  caption="After 1: the 3 moved left, the day reads 31 and is full, so the month becomes active."
+/>
+
+## Parameters
+
+| Name          | What it is                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| `segments`    | The current segments, from [`parseSegments`](../parse-segments/).                                    |
+| `activeIndex` | The index of the segment being typed into, e.g. from [`segmentAtPosition`](../segment-at-position/). |
+| `char`        | The typed character.                                                                                 |
+
+## Returns
+
+An object with two fields:
+
+| Field         | Meaning                                                                                      |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| `segments`    | The new segments.                                                                            |
+| `activeIndex` | The segment to type into next: the same one, or the next editable one once this one is full. |
+
+## How digits move in
+
+Empty slots (`_`) are dropped, the digit is added at the end, and only as many
+digits as the segment holds are kept, from the right. So a full segment keeps
+rolling:
+
+```ts
+const day31 = parseSegments(deriveFormat("de-CH"), "31.__.____");
+segmentsToString(inputDigit(day31, 0, "5").segments); // → "15.__.____"
+```
+
+A year fills the same way: `2`, `20`, `202`, `2026`, shown as `___2`,
+`__20`, `_202`, `2026`.
+
+When the last segment is full, `activeIndex` stays on it.
+
+## What is ignored
+
+Nothing changes, and the same segments come back, when:
+
+- `char` is not a single ASCII digit `0`–`9` (letters, separators, and also
+  digits of other scripts such as `٣`);
+- `activeIndex` points at a separator or a display-only part.
+
+Values are not checked: `99` is a fine day for `inputDigit`. Use
+[`toDate`](../to-date/) to check and [`clampDay`](../clamp-day/) to fix it.
+
+## Related
+
+- [`typeDate`](../type-date/) — typing into a real field, with separators and pasting.
+- [`clearSegment`](../clear-segment/) — empty a segment again.
+- [`nextSegment`](../next-segment/) — how the next segment is found.

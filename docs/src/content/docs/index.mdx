@@ -1,36 +1,97 @@
 ---
 title: minuta
-description: Divide time into pieces. A pure functional calendar library with a segmented date field for React and Vue.
+description: Divide time into pieces. A pure functional calendar library, a date parser for every locale, and a segmented date field for React and Vue.
 template: splash
 hero:
-  tagline: Divide time into pieces. A pure functional calendar library, a date parser for every locale, and a segmented date field for React and Vue.
+  tagline: A pure functional calendar library, a date parser for every locale, and a date field people can actually type in — for React, Vue or no framework at all.
   actions:
     - text: Get started
       link: getting-started/
       icon: right-arrow
-    - text: View on GitHub
-      link: https://github.com/AleksejDix/minuta
-      icon: external
+    - text: See it live
+      link: demo/
       variant: minimal
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
+import SiteLink from "../../components/SiteLink.astro";
 
-<CardGrid stagger>
-  <Card title="Periods, not timestamps" icon="seti:clock">
-    `period`, `divide`, `next` and `previous` work on spans of time: a year, a
-    month, a day. Pure functions over plain data.
-  </Card>
-  <Card title="Any date engine" icon="setting">
-    Native `Date`, date-fns, Luxon or Temporal. Swap the adapter without
-    changing your code.
-  </Card>
-  <Card title="A date field people can type in" icon="pencil">
-    Segmented input that reads typed and pasted dates in any locale, with
-    arrow-key stepping and day clamping.
-  </Card>
-  <Card title="React and Vue" icon="puzzle">
-    Headless roots, context and composable parts for both frameworks over the
-    same pure core.
-  </Card>
-</CardGrid>
+<section class="almanac-ideas not-content">
+  <article>
+    <span class="almanac-numeral">01</span>
+    <h2>Periods, not timestamps</h2>
+    <p>
+      A month is a month — from its first millisecond to its last. Split it with{" "}
+      <code>divide</code>, step it with <code>next</code>, compare it with{" "}
+      <code>same</code>. Pure functions over plain data.
+    </p>
+  </article>
+  <article>
+    <span class="almanac-numeral">02</span>
+    <h2>Any date engine</h2>
+    <p>
+      The built-in <code>Date</code>, date-fns, Luxon, Day.js, Moment or
+      Temporal. Swap the adapter; your code and its results stay the same.
+    </p>
+  </article>
+  <article>
+    <span class="almanac-numeral">03</span>
+    <h2>A date field that reads anything</h2>
+    <p>
+      Type <code>1.3.26</code>, paste <code>Wed Oct 28 2026</code> or
+      <code>28. Oktober 2026</code>: the field reads it in any locale and never
+      lets a segment fall apart.
+    </p>
+  </article>
+</section>
+
+<section class="almanac-strip not-content">
+  <div class="almanac-strip__text">
+    <p class="almanac-eyebrow">Three lines</p>
+    <h2>Every month, cut into its real weeks.</h2>
+    <p>
+      Edge weeks are clipped to the month and marked <code>custom</code>.
+      Months of 28 to 31 days, leap years and clock changes are already
+      handled.
+    </p>
+    <SiteLink class="almanac-link" to="concepts/periods-and-units/">How periods work →</SiteLink>
+  </div>
+  <div class="almanac-code">
+
+```ts
+import { divide, period } from "minuta";
+
+const march = period(new Date(2026, 2, 1), "month");
+divide(march, "week");
+
+// → Mar 1          custom
+//   Mar 2  – 8     week
+//   Mar 9  – 15    week
+//   Mar 16 – 22    week
+//   Mar 23 – 29    week
+//   Mar 30 – 31    custom
+```
+
+  </div>
+</section>
+
+<section class="almanac-frameworks not-content">
+  <SiteLink to="api/minuta-react/overview/">
+    <span class="almanac-eyebrow">minuta-react</span>
+    <strong>Hooks and calendar parts for React</strong>
+    <span>A root, a hook, and accessible grid parts you style yourself.</span>
+  </SiteLink>
+  <SiteLink to="api/minuta-vue/overview/">
+    <span class="almanac-eyebrow">minuta-vue</span>
+    <strong>Composables and components for Vue</strong>
+    <span>The same model, the Vue way: provide, inject, slots.</span>
+  </SiteLink>
+  <SiteLink to="concepts/the-input-stack/">
+    <span class="almanac-eyebrow">datefield · input-dom</span>
+    <strong>A segmented date field, framework-free</strong>
+    <span>Four small layers, from text buffer to DOM binding.</span>
+  </SiteLink>
+</section>
+
+<div class="almanac-closing not-content">
+  Every month has a last day. <em>minuta knows which one.</em>
+</div>

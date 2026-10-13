@@ -1,0 +1,146 @@
+---
+title: createInputState
+description: Create the state of an input field — free text or masked — with an optional start value.
+---
+
+import { createInputState, parseMask } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const mask = parseMask("99.99.9999");
+export const date = createInputState({ mask });
+export const name = createInputState({ value: "hello" });
+export const gap = createInputState({ mask, value: "31.__.2026" });
+export const wrongChar = createInputState({ mask, value: "31.0x.2026" });
+export const shortDate = createInputState({ mask, value: "3.3.2026" });
+
+Create the state of an input field. Give it a mask for a field like
+`__.__.____`, or leave the mask out for free text.
+
+```ts
+import { createInputState } from "input-state";
+```
+
+```ts
+createInputState(options?)
+```
+
+## Example
+
+```ts
+import { createInputState, parseMask } from "input-state";
+
+const date = createInputState({ mask: parseMask("99.99.9999") });
+date.buffer.text; // → "__.__.____"
+date.mode; // → "overwrite"
+
+const name = createInputState({ value: "hello" });
+name.buffer.text; // → "hello", cursor at the end
+name.mode; // → "insert"
+```
+
+The muted `_` cells are empty slots; the dots are literals. A masked field
+shows its cursor as a block on the slot the next key fills, a free-text field
+as a caret line between characters:
+
+<FieldDiagram
+  {...date.buffer.selection}
+  text={date.buffer.text}
+  mode={date.mode}
+  caption="createInputState({ mask }): the empty template, in overwrite mode, with the first slot waiting."
+/>
+
+<FieldDiagram
+  {...name.buffer.selection}
+  text={name.buffer.text}
+  mode={name.mode}
+  caption='createInputState({ value: "hello" }): free text in insert mode, the caret after the last character.'
+/>
+
+## Parameters
+
+| Name      | What it is                                                           |
+| --------- | -------------------------------------------------------------------- |
+| `options` | Optional. `mask`, `mode` and `value`, see [Options](#options) below. |
+
+## Options
+
+| Option  | Default    | What it does                                                                                  |
+| ------- | ---------- | --------------------------------------------------------------------------------------------- |
+| `mask`  | none       | A mask from [`parseMask`](../parse-mask/). Without it the field holds free text.              |
+| `mode`  | `"insert"` | `"insert"` or `"overwrite"`. Only used for free text: a masked field is always `"overwrite"`. |
+| `value` | `""`       | The starting text. In a masked field it is filled into the slots, see below.                  |
+
+## Returns
+
+A state: `{ buffer, mask, mode }`.
+
+- `buffer` is a [text buffer](../../text-buffer/overview/): `buffer.text` is
+  what the field shows and `buffer.selection` is the cursor or selection.
+- `mask` is the mask, or `undefined` for free text.
+- `mode` is `"insert"` or `"overwrite"`.
+
+## Where the cursor starts
+
+In a free-text field the cursor starts at the end of `value`. In a masked
+field it starts on the first empty slot, or at the end when every slot is
+filled.
+
+```ts
+const mask = parseMask("99.99.9999");
+
+createInputState({ mask, value: "31.__.2026" });
+// → "31.__.2026", cursor at 3 (the first empty slot)
+
+createInputState({ mask, value: "31032026" });
+// → "31.03.2026", cursor at 10 (the end)
+```
+
+<FieldDiagram
+  {...gap.buffer.selection}
+  text={gap.buffer.text}
+  mode={gap.mode}
+  caption='value "31.__.2026": the cursor starts on 3, the first slot that is still empty, not at the end.'
+/>
+
+## How a masked `value` is filled in
+
+When `value` already looks like the template (same length, literals in the
+right places), it is taken character by character. A character that does not
+fit its slot leaves that slot empty.
+
+```ts
+createInputState({ mask, value: "31.03.2026" }); // → "31.03.2026"
+createInputState({ mask, value: "31.0x.2026" }); // → "31.0_.2026"
+```
+
+<FieldDiagram
+  {...wrongChar.buffer.selection}
+  text={wrongChar.buffer.text}
+  mode={wrongChar.mode}
+  caption='value "31.0x.2026": the "x" does not fit its digit slot, so slot 4 stays empty and the cursor starts there.'
+/>
+
+Any other value is filled in slot by slot, like a [`paste`](../paste/):
+characters a slot does not take are skipped.
+
+```ts
+createInputState({ mask, value: "31032026" }); // → "31.03.2026"
+createInputState({ mask, value: "31.03" }); // → "31.03.____"
+```
+
+The value is not read as a date. `"3.3.2026"` gives `"33.20.26__"`, because
+the digits simply go into the next free slot. To fill a date field from any
+date text, use [`typeDate`](../../datefield/type-date/) with a date parser.
+
+<FieldDiagram
+  {...shortDate.buffer.selection}
+  text={shortDate.buffer.text}
+  mode={shortDate.mode}
+  caption='value "3.3.2026": the dots are skipped and the six digits fill the first six slots in turn. The day becomes 33, and the last two slots stay empty.'
+/>
+
+## Related
+
+- [`parseMask`](../parse-mask/) — build the mask.
+- [`typeChar`](../type-char/), [`paste`](../paste/), [`backspace`](../backspace/) — edit the field.
+- [`createTextBuffer`](../../text-buffer/create-text-buffer/) — the buffer underneath.

@@ -1,0 +1,303 @@
+---
+title: attachInput
+description: Bind a real <input> element to an input state, so every key press, paste and drop goes through the state's rules.
+---
+
+import {
+  clampDay,
+  dateMask,
+  deriveFormat,
+  parseSegments,
+  typeDate,
+  withSegments,
+} from "datefield";
+import { applyInputEvent, visibleRange } from "input-dom";
+import { createInputState } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const format = deriveFormat("de-CH");
+export const insert = (state, text) => typeDate(format, state, text);
+export const before = typeDate(
+  format,
+  createInputState({ mask: dateMask(format) }),
+  "1"
+);
+export const inserted = applyInputEvent(
+  before,
+  { data: ".", inputType: "insertText" },
+  insert
+);
+export const normalized = withSegments(
+  inserted,
+  clampDay(
+    parseSegments(format, inserted.buffer.text),
+    inserted.buffer.selection.head
+  )
+);
+export const range = visibleRange(normalized);
+
+Bind an `<input>` to an input state: every key press, paste and drop goes
+through the state's rules, and the element shows the result. The element never
+edits itself, so a mask like `__.__.____` cannot be broken.
+
+```ts
+import { attachInput } from "input-dom";
+```
+
+```ts
+attachInput(element, initial, options?)
+```
+
+## Example
+
+```ts
+import { attachInput } from "input-dom";
+import { createInputState, parseMask } from "input-state";
+
+const element = document.querySelector("input");
+
+const controller = attachInput(
+  element,
+  createInputState({ mask: parseMask("99.99.9999") }),
+  {
+    onChange: (state) => console.log(state.buffer.text),
+  }
+);
+
+// the element now shows "__.__.____"
+// the user types 3 → "3_.__.____"
+// later: controller.destroy();
+```
+
+## Parameters
+
+| Name      | What it is                                                                                                         |
+| --------- | ------------------------------------------------------------------------------------------------------------------ |
+| `element` | The `<input>` element to control.                                                                                  |
+| `initial` | The state to start with, from [`createInputState`](../../input-state/create-input-state/). It is shown right away. |
+| `options` | Optional. Hooks to change how text is applied and to hear about changes. See [Options](#options).                  |
+
+## Options
+
+| Option      | Default                                           | What it does                                                                                                                                                                  |
+| ----------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `insert`    | input-state's [`paste`](../../input-state/paste/) | Applies typed, pasted and dropped text: gets the state and the text, returns the new state. For dates, pass datefield's [`typeDate`](../../datefield/type-date/).             |
+| `normalize` | none                                              | Runs on every new state before it is shown, and may return a fixed one. For dates, keep the day valid with [`clampDay`](../../datefield/clamp-day/).                          |
+| `onKeyDown` | none                                              | Gets the key event and the state first. Return a new state to handle the key, or `undefined` to leave it to the defaults. For dates, step a segment on ArrowUp and ArrowDown. |
+| `onChange`  | none                                              | Called with the new state after the user changed it, by typing or by a key (an arrow key moving the cursor counts).                                                           |
+| `digits`    | none                                              | Ten characters to show for `0`–`9`, e.g. datefield's [`localeDigits("ar-EG")`](../../datefield/locale-digits/). The state keeps `0`–`9`.                                      |
+
+## Returns
+
+A controller with three functions:
+
+| Function          | What it does                                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| `getState()`      | The current state.                                                                                              |
+| `setState(state)` | Replace the state and show it, e.g. to load a value or reset the field. Does not run `normalize` or `onChange`. |
+| `destroy()`       | Stop listening to the element. The element keeps showing the last state.                                        |
+
+The controller owns the state. Read it with `getState()` or in `onChange`;
+do not keep your own copy that you edit.
+
+## What happens on each event
+
+One key press in the date field below: the field shows `1_.__.____` and the
+user types a dot.
+
+<Flow
+  steps={[
+    {
+      code: 'beforeinput { inputType: "insertText", data: "." }',
+      layer: "browser",
+      text: "The browser announces the dot. attachInput cancels the event, so the element's text is not edited.",
+    },
+    {
+      code: `insert → "${inserted.buffer.text}"`,
+      layer: "insert",
+      text: "The dot goes through insert, here typeDate: it finishes the day and moves the cursor to the month.",
+    },
+    {
+      code: `normalize → "${normalized.buffer.text}"`,
+      layer: "normalize",
+      text: "clampDay looks at the new state; there is nothing to cut, so the same state comes back.",
+    },
+    {
+      code: `setSelectionRange(${String(range.start)}, ${String(range.end)}, "${range.direction}")`,
+      layer: "element",
+      text: "The element gets the new text and, from visibleRange, the block over the slot the next key fills.",
+    },
+    {
+      code: "onChange(state)",
+      layer: "you",
+      text: "The text changed, so onChange is called with the new state.",
+    },
+  ]}
+/>
+
+**Typing, pasting, dropping, deleting.** Every `beforeinput` event is
+cancelled. Its text goes through `insert`; Backspace, Delete and cut go through
+input-state's [`backspace`](../../input-state/backspace/) and `deleteForward`.
+Other kinds of input, such as undo or a line break, are cancelled and do
+nothing. This works for physical and mobile keyboards, autocorrect and
+drag-and-drop alike.
+
+**Keys.** On `keydown`:
+
+1. Insert switches between insert and overwrite mode (a masked field always
+   stays in overwrite mode).
+2. `onKeyDown` gets the key. If it returns a state, that state is used and the
+   browser's default is cancelled.
+3. In overwrite mode, ArrowLeft, ArrowRight, Home and End move the cursor by
+   one slot or to an end. With Shift, Ctrl, Alt or Meta held, the browser
+   handles them.
+4. Any other key, such as Tab or Enter, is left to the browser.
+
+**Clicks and selection.** When the user clicks or selects with the mouse, the
+state's selection follows the element. This does not run `normalize` or call
+`onChange`.
+
+After every change from typing or a key, `normalize` runs, then the element is
+updated and `onChange` is called. When nothing changed (a rejected letter in a
+digit slot, say), `onChange` is not called.
+
+## The block cursor
+
+In overwrite mode the next key replaces the character at the cursor. To show
+that, the element selects that one character, like a block cursor in a
+terminal. The state keeps a plain cursor; `attachInput` ignores the echo of
+its own block. [`visibleRange`](../visible-range/) computes what is shown.
+
+<FieldDiagram
+  text={normalized.buffer.text}
+  head={normalized.buffer.selection.head}
+  locale="de-CH"
+  caption={`The state after the dot above: a plain cursor at ${String(normalized.buffer.selection.head)}, between the dot and the month.`}
+/>
+
+<FieldDiagram
+  text={normalized.buffer.text}
+  anchor={range.start}
+  head={range.end}
+  locale="de-CH"
+  caption={`What the element selects: ${String(range.start)} to ${String(range.end)}, the first slot of the month — the one the next digit replaces.`}
+/>
+
+## A complete date field
+
+This is a full `de-CH` date input: typing with separators, pasting dates in
+any form, keeping the day valid, and arrow keys.
+
+```ts
+import {
+  clampDay,
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  finishSegment,
+  parseSegments,
+  rotateSegment,
+  segmentAtPosition,
+  toDate,
+  typeDate,
+  withSegments,
+} from "datefield";
+import { attachInput } from "input-dom";
+import { createInputState } from "input-state";
+import { parseDate } from "fechita";
+
+const locale = "de-CH";
+const format = deriveFormat(locale);
+const element = document.querySelector("#date");
+
+const parse = (text) => {
+  const result = parseDate(text, { locale, order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+};
+
+const controller = attachInput(
+  element,
+  createInputState({ mask: dateMask(format) }),
+  {
+    // "1.3.2026" → 01.03.2026; a pasted "2026-03-31" → 31.03.2026
+    insert: (state, text) => typeDate(format, state, text, { parse }),
+
+    // 31.02 → 28.02, once the cursor has left the part being typed
+    normalize: (state) =>
+      withSegments(
+        state,
+        clampDay(
+          parseSegments(format, state.buffer.text),
+          state.buffer.selection.head
+        )
+      ),
+
+    // ArrowUp / ArrowDown step the segment under the cursor
+    onKeyDown: (event, state) => {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown")
+        return undefined;
+      const segments = parseSegments(format, state.buffer.text);
+      const index = segmentAtPosition(segments, state.buffer.selection.head);
+      const direction = event.key === "ArrowUp" ? 1 : -1;
+      return withSegments(state, rotateSegment(segments, index, direction));
+    },
+
+    onChange: (state) => {
+      console.log(toDate(parseSegments(format, state.buffer.text)));
+    },
+  }
+);
+
+// On blur: finish "1.3.26" → 01.03.2026 and clamp what is left
+element.addEventListener("blur", () => {
+  const finished = finishSegment(format, controller.getState());
+  controller.setState(
+    withSegments(
+      finished,
+      clampDay(parseSegments(format, finished.buffer.text))
+    )
+  );
+});
+```
+
+`normalize` passes the cursor to `clampDay`, so a day is only cut once the
+user has moved on. If the user clicks away while still inside the month, the
+clamp has not happened yet; that is what the blur handler is for.
+
+## Change the format
+
+To switch locales, derive the new format and replace the state. The `insert`,
+`normalize` and `onKeyDown` you passed keep running, so let them read the
+format from a variable:
+
+```ts
+let format = deriveFormat("de-CH");
+// … attachInput with options that use `format` …
+
+format = deriveFormat("en-US");
+controller.setState(createInputState({ mask: dateMask(format) }));
+```
+
+## In React or Vue
+
+Frameworks wrap `attachInput` in a few lines: attach it when the element
+mounts, call `destroy()` when it unmounts, and mirror the state from
+`onChange` for rendering. Let input-dom own the state; the framework only
+reads it.
+
+:::caution
+In a field without a mask, the Insert key switches to overwrite mode and the
+block cursor appears, but with the default `insert` typed characters are
+still inserted, not overwritten. To overwrite there, pass an `insert` that
+types each character with input-state's
+[`typeChar`](../../input-state/type-char/).
+:::
+
+## Related
+
+- [`applyInputEvent`](../apply-input-event/) — the event-to-state step, for your own binding.
+- [`visibleRange`](../visible-range/) — what the element selects for a state.
+- [`typeDate`](../../datefield/type-date/) — the `insert` for date fields.
+- [`createInputState`](../../input-state/create-input-state/) — the state to attach.
+- [The input stack](../../../concepts/the-input-stack/) — how the layers fit.

@@ -1,0 +1,135 @@
+---
+title: Date engines
+description: The seven adapters that turn a date library into minuta units — which to pick, what to install, and how they differ.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+import { divideWith, periodWith } from "minuta/core";
+import { dateFnsUnits } from "minuta/date-fns";
+import { dayjsUnits } from "minuta/dayjs";
+import { luxonUnits } from "minuta/luxon";
+import { momentUnits } from "minuta/moment";
+import { nativeUnits } from "minuta/native";
+import { temporalUnits } from "minuta/temporal";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const weeksOfMarch = (units) =>
+  divideWith(units, periodWith(units, new Date(2026, 2, 1), "month"), "week");
+
+minuta does not do date arithmetic itself. A **date engine** (also called an
+adapter) does it: a small function that turns a date library into
+**units**. Units are plain data, one rule set per unit of time (year,
+quarter, month, week, day, hour, minute, second), plus the week start, the
+weekend and the time zone.
+
+You make units once and pass them to `withUnits`, to the `…With` functions
+of `minuta/core`, or to the plugins.
+
+```ts
+import { nativeUnits } from "minuta/native";
+import { withUnits } from "minuta/core";
+
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+time.period(new Date(2026, 2, 18), "week");
+// → Sun Mar 15 – Sat Mar 21 2026
+```
+
+The default `minuta` entry already uses `nativeUnits()` with weeks starting
+on Monday. You need this page when you want another week start, a
+time zone, or the date library your app already uses.
+
+## The engines
+
+| Function                                  | Entry                | Library to install        | Time zone                                  | Pick it when                                   |
+| ----------------------------------------- | -------------------- | ------------------------- | ------------------------------------------ | ---------------------------------------------- |
+| [`nativeUnits`](../native-units/)         | `minuta/native`      | none                      | the computer's                             | you want no dependencies — the default choice. |
+| [`dateFnsUnits`](../date-fns-units/)      | `minuta/date-fns`    | `date-fns`                | the computer's                             | your app uses date-fns.                        |
+| [`dateFnsTzUnits`](../date-fns-tz-units/) | `minuta/date-fns-tz` | `date-fns`, `date-fns-tz` | **any IANA zone you choose** (default UTC) | you need one fixed zone, e.g. on a server.     |
+| [`luxonUnits`](../luxon-units/)           | `minuta/luxon`       | `luxon`                   | Luxon's default (the computer's)           | your app uses Luxon.                           |
+| [`dayjsUnits`](../dayjs-units/)           | `minuta/dayjs`       | `dayjs`                   | the computer's                             | your app uses Day.js.                          |
+| [`momentUnits`](../moment-units/)         | `minuta/moment`      | `moment`                  | the computer's                             | an existing app uses Moment.                   |
+| [`temporalUnits`](../temporal-units/)     | `minuta/temporal`    | `@js-temporal/polyfill`   | the computer's                             | you are moving to Temporal.                    |
+
+`date-fns`, `date-fns-tz`, `luxon` and `@js-temporal/polyfill` are optional
+dependencies of minuta. `dayjs` and `moment` are not; install them yourself.
+
+## Same options everywhere
+
+Every engine takes the same two options. `dateFnsTzUnits` adds `timeZone`.
+
+| Option         | Default                  | What it does                                                                        |
+| -------------- | ------------------------ | ----------------------------------------------------------------------------------- |
+| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday). |
+| `weekend`      | `["saturday", "sunday"]` | The days counted as weekend by `isWeekendWith` and `isWeekdayWith`.                 |
+| `timeZone`     | `"UTC"`                  | Only `dateFnsTzUnits`: the IANA zone to compute in.                                 |
+
+The week start is never taken from a library's locale. It is Monday unless
+you set it.
+
+## Same results
+
+All engines follow the same contract and are run against the same test
+suite, so they give the same periods for the same input. For example, on a
+computer in Europe/Zurich, every one of them says (`dateFnsTzUnits` with
+`timeZone: "Europe/Zurich"`):
+
+```ts
+time.period(new Date(2026, 2, 18), "week"); // → Mon Mar 16 – Sun Mar 22
+time.duration(time.period(new Date(2026, 2, 29), "day"), "hour"); // → 23 (clocks go forward)
+time.duration(time.period(new Date(2026, 1, 10), "month"), "day"); // → 28
+```
+
+The weeks of March 2026, computed by each engine in the computer's zone.
+Every row has the same bars:
+
+<Timeline
+  caption='divideWith(units, march, "week") with six engines. The hatched pieces are the first and last weeks, cut at the edges of March.'
+  tracks={[
+    {
+      label: "nativeUnits()",
+      periods: weeksOfMarch(nativeUnits()),
+      tone: "accent",
+    },
+    { label: "dateFnsUnits()", periods: weeksOfMarch(dateFnsUnits()) },
+    { label: "luxonUnits()", periods: weeksOfMarch(luxonUnits()) },
+    { label: "dayjsUnits()", periods: weeksOfMarch(dayjsUnits()) },
+    { label: "momentUnits()", periods: weeksOfMarch(momentUnits()) },
+    { label: "temporalUnits()", periods: weeksOfMarch(temporalUnits()) },
+  ]}
+/>
+
+The one real difference is the time zone: only `dateFnsTzUnits` computes in
+a zone you choose. The others compute in the computer's zone, so the same
+code gives other days on a server in UTC than on a laptop in Tokyo.
+
+## What the units contain
+
+Every engine returns the same shape:
+
+- a spec for each built-in unit: `year`, `quarter`, `month`, `week`, `day`,
+  `hour`, `minute`, `second`;
+- `timeZone` — the zone name, e.g. `"Europe/Zurich"`;
+- `weekStartsOn` — the week start as a number, e.g. `1`;
+- `weekend` — the weekend days as numbers, e.g. `[6, 0]`.
+
+Each spec has four functions: `startOf`, `endOf`, `add` and `diff`. That is
+all minuta needs from a date library. You can write your own spec the same
+way, see [Date engines](../../../concepts/date-engines/).
+
+## Engine notes
+
+- **dateFnsTzUnits** defaults to UTC, not to the computer's zone, and an
+  unknown zone name gives invalid dates instead of an error.
+- **luxonUnits** follows Luxon's `Settings.defaultZone`. Do not change it,
+  or the units' `timeZone` setting no longer matches.
+- **dayjsUnits** calls `dayjs.extend(quarterOfYear)` on your Day.js.
+- **temporalUnits** puts the polyfill on `globalThis.Temporal` when the
+  runtime has none. It does not use Temporal's time zones.
+
+## Learn more
+
+- [Date engines](../../../concepts/date-engines/) — the idea behind units.
+- [Time zones](../../../concepts/time-zones/)
+- [`withUnits`](../../minuta-core/with-units/)

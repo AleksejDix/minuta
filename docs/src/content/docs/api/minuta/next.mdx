@@ -1,0 +1,163 @@
+---
+title: next
+description: Get the period right after a period — the next day, the next week, the next month.
+---
+
+import { divide, next, period, range } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 15), "month");
+export const slot = range(
+  new Date(2026, 2, 2, 9),
+  new Date(2026, 2, 2, 9, 59, 59, 999)
+);
+export const lastPiece = divide(march, "week").at(-1);
+
+Get the period right after a period: the day after a day, the week after a
+week, the month after a month.
+
+```ts
+import { next } from "minuta";
+```
+
+```ts
+next(period);
+```
+
+## Example
+
+```ts
+import { next, period } from "minuta";
+
+const march = period(new Date(2026, 2, 15), "month");
+
+next(march);
+// → Wed Apr 1 00:00:00.000 – Thu Apr 30 23:59:59.999, unit "month"
+```
+
+<Timeline
+  caption="next(march) starts the millisecond after March ends, and is a whole month of its own: 30 days."
+  tracks={[
+    { label: "march", periods: [march], tone: "ink" },
+    { label: "next(march)", periods: [next(march)], tone: "accent" },
+  ]}
+/>
+
+## Parameters
+
+| Name     | What it is                                        |
+| -------- | ------------------------------------------------- |
+| `period` | The current period, e.g. a month from `period()`. |
+
+## Returns
+
+A new period of the same unit that starts right after `period`. It is a whole
+unit, with its own length: after March (31 days) comes April (30 days).
+
+`next(p)` is the same as [`shift(p, 1)`](../shift/).
+
+## Daylight saving is handled
+
+The next period is found on the calendar, not by adding a fixed number of
+milliseconds. In Europe/Zurich, Mar 29 2026 has only 23 hours, and the next
+day still starts at midnight:
+
+```ts
+next(period(new Date(2026, 2, 28), "day"));
+// → Sun Mar 29 00:00:00.000 – Sun Mar 29 23:59:59.999 (23 hours long)
+```
+
+The hour after 1:00 on that day is 3:00, because 2:00 does not exist:
+
+```ts
+next(period(new Date(2026, 2, 29, 1), "hour"));
+// → Sun Mar 29 03:00:00.000 – 03:59:59.999
+```
+
+## Custom periods move by their own length
+
+A period with the unit `"custom"` (from [`range`](../range/), or a piece cut
+by [`divide`](../divide/)) has no unit to step by. `next` moves it forward by
+exactly its own length in milliseconds, so the new period starts one
+millisecond after the old one ends.
+
+```ts
+import { next, range } from "minuta";
+
+const slot = range(
+  new Date(2026, 2, 2, 9),
+  new Date(2026, 2, 2, 9, 59, 59, 999)
+);
+
+next(slot);
+// → Mon Mar 2 10:00:00.000 – 10:59:59.999, unit "custom"
+```
+
+<Timeline
+  caption="A custom slot from 9:00 to 9:59:59.999 moves forward by its own length: one hour."
+  tracks={[
+    { label: "slot", periods: [slot], tone: "ink" },
+    { label: "next(slot)", periods: [next(slot)], tone: "accent" },
+  ]}
+/>
+
+This has two surprising results.
+
+A range that ends on a round time is one millisecond longer than it looks,
+so the next one drifts by a millisecond each time:
+
+```ts
+next(range(new Date(2026, 2, 2, 9), new Date(2026, 2, 2, 10)));
+// → Mon Mar 2 10:00:00.001 – 11:00:00.001
+```
+
+And a custom period is moved by elapsed time, not on the calendar. A custom
+week that ends on the night of a clock change ends an hour off:
+
+```ts
+const week = range(
+  new Date(2026, 2, 23),
+  new Date(2026, 2, 29, 23, 59, 59, 999)
+);
+
+next(week);
+// → Mon Mar 30 00:00:00.000 – Sun Apr 5 22:59:59.999 (in Europe/Zurich)
+```
+
+The first and last pieces of a [`divide`](../divide/) are often custom too.
+`next` of the clipped two-day week Mon Mar 30 – Tue Mar 31 gives Wed Apr 1 –
+Thu Apr 2, not the next week. To step by whole units, use a period from
+[`period`](../period/).
+
+<Timeline
+  caption="The clipped week at the end of March is two days long, so its next is the next two days, not the week after."
+  tracks={[
+    {
+      label: 'divide(march, "week").at(-1)',
+      periods: [lastPiece],
+      tone: "ink",
+    },
+    { label: "next(lastPiece)", periods: [next(lastPiece)], tone: "accent" },
+    {
+      label: 'period(lastPiece.start, "week")',
+      periods: [period(lastPiece.start, "week")],
+      tone: "muted",
+    },
+  ]}
+/>
+
+## Errors
+
+`next` throws a `RangeError` whose message starts with a code:
+
+| Code                 | When                                 |
+| -------------------- | ------------------------------------ |
+| `INVALID_DATE`       | `period.start` is an invalid `Date`. |
+| `UNIT_NOT_SUPPORTED` | `period.unit` is not a known unit.   |
+
+## Related
+
+- [`previous`](../previous/) — the period before.
+- [`shift`](../shift/) — move by any number of periods.
+- [`same`](../same/) — check whether two periods are in the same unit.
+- [`nextWith`](../../minuta-core/next-with/) (`minuta/core`) — the same, with your own units and week start.

@@ -1,0 +1,115 @@
+---
+title: usePeriod
+description: A React hook that returns the year, week, day or other period that contains the start of the browsed period.
+---
+
+import { period } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const browsing = period(new Date(2024, 2, 13), "month");
+
+A hook that returns the period of a given unit — a year, a week, a day, … —
+that contains the start of the browsed period of the closest
+[`MinutaRoot`](../minuta-root/).
+
+```js
+import { usePeriod } from "minuta-react";
+```
+
+```js
+const year = usePeriod("year");
+```
+
+## Example
+
+While the root browses months, show the year and the first week of the
+browsed month.
+
+```jsx
+import { MinutaRoot, usePeriod } from "minuta-react";
+
+function Context() {
+  const year = usePeriod("year");
+  const week = usePeriod("week");
+
+  return (
+    <p>
+      Year {year.start.getFullYear()}, first week starts{" "}
+      {week.start.toDateString()}
+    </p>
+  );
+}
+
+export function App() {
+  return (
+    <MinutaRoot unit="month" date={new Date(2024, 2, 13)}>
+      <Context />
+    </MinutaRoot>
+  );
+}
+```
+
+This renders "Year 2024, first week starts Mon Feb 26 2024": March 1, 2024 is
+a Friday, and its week starts on the Monday before.
+
+<Timeline
+  caption="Each usePeriod call takes the start of the browsed month, Fri Mar 1 2024, and returns the period of its unit around it. The week reaches back into February."
+  marks={[{ date: browsing.start, label: "browsing.start" }]}
+  tracks={[
+    { label: "browsing", periods: [browsing], tone: "ink" },
+    {
+      label: 'usePeriod("week")',
+      periods: [period(browsing.start, "week")],
+      tone: "accent",
+    },
+    {
+      label: 'usePeriod("day")',
+      periods: [period(browsing.start, "day")],
+      tone: "accent",
+    },
+  ]}
+/>
+
+<Timeline
+  caption='usePeriod("year") is far larger than the browsed month and holds it. Every month of 2024 the root browses returns the same year.'
+  tracks={[
+    {
+      label: 'usePeriod("year")',
+      periods: [period(browsing.start, "year")],
+      tone: "accent",
+    },
+    { label: "browsing", periods: [browsing], tone: "ink" },
+  ]}
+/>
+
+## Parameters
+
+| Name   | What it is                                                      |
+| ------ | --------------------------------------------------------------- |
+| `unit` | The unit of the period you want: `"year"`, `"week"`, `"day"`, … |
+
+## Returns
+
+A [period](../../minuta/period/) of `unit` that contains
+`browsing.start`. It is the same as
+`period(browsing.start, unit)` from [`useMinutaContext`](../use-minuta-context/).
+
+It uses the root's units, so `"week"` follows the root's week start.
+
+## When it updates
+
+The result changes when the root browses somewhere else, or when its units or
+`unit` change. Between those, the same period object is returned, so it is safe
+in dependency lists.
+
+## Errors
+
+Outside a `MinutaRoot` it throws the error of
+[`useMinutaContext`](../use-minuta-context/#errors):
+`useMinutaContext() must be used within <MinutaRoot>`.
+
+## Related
+
+- [`useMinutaContext`](../use-minuta-context/) — the whole state.
+- [`MinutaRoot`](../minuta-root/) — provides the browsed period.
+- [period](../../minuta/period/) — what a period is.

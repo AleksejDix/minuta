@@ -1,0 +1,78 @@
+---
+title: formatLength
+description: How many characters a date written in a format takes, separators included.
+---
+
+import {
+  deriveFormat,
+  formatLength,
+  fromDate,
+  segmentsToString,
+} from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const written = (locale) =>
+  segmentsToString(fromDate(new Date(2026, 2, 31), deriveFormat(locale)));
+export const length = (locale) => String(formatLength(deriveFormat(locale)));
+
+Count how many characters a date in a format takes, separators included:
+`de-CH` dates are 10 characters long (`31.03.2026`).
+
+```ts
+import { formatLength } from "datefield";
+```
+
+```ts
+formatLength(format);
+```
+
+## Example
+
+```ts
+import { deriveFormat, formatLength } from "datefield";
+
+formatLength(deriveFormat("de-CH")); // → 10   "31.03.2026"
+formatLength(deriveFormat("ko-KR")); // → 13   "2026. 03. 31."
+formatLength(deriveFormat("ar-EG")); // → 12   two invisible right-to-left marks
+```
+
+Every cell is one character the length counts; the numbers above the cells
+are the positions.
+
+<FieldDiagram
+  text={written("de-CH")}
+  locale="de-CH"
+  caption={`de-CH: ${length("de-CH")} characters, two of them dots.`}
+/>
+
+<FieldDiagram
+  text={written("ko-KR")}
+  locale="ko-KR"
+  caption={`ko-KR: ${length("ko-KR")} characters — each ". " separator takes two cells, and the date ends with a dot.`}
+/>
+
+<FieldDiagram
+  text={written("ar-EG")}
+  locale="ar-EG"
+  caption={`ar-EG: ${length("ar-EG")} characters. The empty-looking cells at 2 and 6 hold right-to-left marks, invisible but counted.`}
+/>
+
+## Parameters
+
+| Name     | What it is                                           |
+| -------- | ---------------------------------------------------- |
+| `format` | The format from [`deriveFormat`](../derive-format/). |
+
+## Returns
+
+The total number of characters: the length of every segment plus every
+separator. Positions are counted in UTF-16 units, the same unit the browser
+uses for `selectionStart` and `selectionEnd`.
+
+Use it for a `maxlength` or `size` attribute, or to size the field with CSS
+(`width: <n>ch`).
+
+## Related
+
+- [`placeholder`](../placeholder/) — the empty text, which has exactly this length.
+- [`deriveFormat`](../derive-format/) — where the format comes from.

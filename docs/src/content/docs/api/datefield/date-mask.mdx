@@ -1,0 +1,103 @@
+---
+title: dateMask
+description: Turn a date format into an input mask, so the field starts as __.__.____ and only takes digits in the slots.
+---
+
+import { dateMask, deriveFormat } from "datefield";
+import { createInputState } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const field = createInputState({
+  mask: dateMask(deriveFormat("de-CH")),
+});
+
+Turn a date format into an input mask: every digit of the date becomes an
+empty slot, every separator stays fixed, so `de-CH` becomes `__.__.____`.
+
+```ts
+import { dateMask } from "datefield";
+```
+
+```ts
+dateMask(format, placeholder?)
+```
+
+## Example
+
+```ts
+import { dateMask, deriveFormat } from "datefield";
+import { createInputState } from "input-state";
+
+const format = deriveFormat("de-CH");
+const field = createInputState({ mask: dateMask(format) });
+
+field.buffer.text; // → "__.__.____"
+field.mode; // → "overwrite"
+```
+
+<FieldDiagram
+  text={field.buffer.text}
+  head={field.buffer.selection.head}
+  mode={field.mode}
+  locale="de-CH"
+  caption="The new field: eight empty digit slots and two fixed dots. In overwrite mode the cursor is a block on the slot the next digit fills."
+/>
+
+## Parameters
+
+| Name          | What it is                                                     |
+| ------------- | -------------------------------------------------------------- |
+| `format`      | The format from [`deriveFormat`](../derive-format/).           |
+| `placeholder` | Optional. The character shown in an empty slot. Default `"_"`. |
+
+## What a mask is
+
+A mask is the template a field must always match. It is a list of positions,
+each one either:
+
+- a **slot** that accepts one digit (digits of any script, such as `٣` or
+  `３`, are stored as `0`–`9`), or
+- a **literal**, a fixed character such as `.` that the cursor skips.
+
+A field with a mask always has the full length and is always in **overwrite
+mode**: typing replaces the slot under the cursor and Backspace empties a slot,
+so nothing ever shifts. Correcting the month of `31.03.2026` cannot push the
+year out of place. The mask belongs to
+[input-state](../../input-state/overview/); `dateMask` only builds it.
+
+```ts
+dateMask(deriveFormat("de-CH"));
+// → { placeholder: "_", tokens: [slot, slot, ".", slot, slot, ".", slot, slot, slot, slot] }
+```
+
+## Returns
+
+The mask, a plain object you pass to
+[`createInputState`](../../input-state/create-input-state/) as `mask`.
+
+## Errors
+
+`dateMask` throws a `RangeError` when the format contains a part nobody can
+type: a weekday, era, AM/PM, fractional seconds or time zone name.
+
+```ts
+dateMask(deriveFormat("en-US", { hour: "2-digit", minute: "2-digit" }));
+// RangeError: Display-only part "dayPeriod" cannot be typed into a date mask
+```
+
+For a 12-hour locale, pass `hourCycle: "h23"` to `deriveFormat` to get a time
+without AM/PM.
+
+:::caution
+A different `placeholder` changes the mask, but some datefield helpers always
+write `_`: [`placeholder`](../placeholder/),
+[`clearSegment`](../clear-segment/) and [`inputDigit`](../input-digit/). Keep
+the default if you use them.
+:::
+
+## Related
+
+- [`deriveFormat`](../derive-format/) — the format to build the mask from.
+- [`createInputState`](../../input-state/create-input-state/) — create the field with the mask.
+- [`typeDate`](../type-date/) — type into the field.
+- [`placeholder`](../placeholder/) — the same empty text as a plain string.

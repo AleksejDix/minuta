@@ -1,0 +1,167 @@
+---
+title: isWeekdayWith
+description: Check whether a period lies completely on working days — no Saturday, no Sunday, or no day of the weekend you set.
+---
+
+import { divide, period, range } from "minuta";
+import { isWeekdayWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 1), "month");
+export const days = divide(march, "day");
+export const week = period(new Date(2026, 2, 18), "week");
+export const iso = (day) =>
+  [
+    day.start.getFullYear(),
+    String(day.start.getMonth() + 1).padStart(2, "0"),
+    String(day.start.getDate()).padStart(2, "0"),
+  ].join("-");
+
+Check whether a period lies completely on working days, that is, days that
+are not part of the weekend. The weekend is Saturday and Sunday unless you
+set other days in the units.
+
+```ts
+import { isWeekdayWith } from "minuta/calendar";
+```
+
+```ts
+isWeekdayWith(units, period);
+```
+
+## Example
+
+```ts
+import { isWeekdayWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+import { divide, period } from "minuta";
+
+const units = nativeUnits();
+
+isWeekdayWith(units, period(new Date(2026, 2, 18), "day")); // → true  (a Wednesday)
+isWeekdayWith(units, period(new Date(2026, 2, 21), "day")); // → false (a Saturday)
+
+// The working days of March 2026
+divide(period(new Date(2026, 2, 1), "month"), "day").filter((day) =>
+  isWeekdayWith(units, day)
+).length;
+// → 22
+```
+
+The dots mark those 22 days: every day of March 2026 for which
+`isWeekdayWith(units, day)` returns `true`. The shaded weekend days have
+none.
+
+<MonthGrid
+  month="2026-03"
+  marks={days.filter((day) => isWeekdayWith(nativeUnits(), day)).map(iso)}
+/>
+
+## Parameters
+
+| Name     | What it is                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. `nativeUnits()`. They carry the weekend days. Needs `day` and `week`. |
+| `period` | The period to check: a day, an hour, a range of days, …                                               |
+
+## Returns
+
+`true` when no day the period touches is a weekend day, otherwise `false`.
+
+## Another weekend
+
+Set the weekend when you create the units. Then Sunday is a working day:
+
+```ts
+const units = nativeUnits({ weekend: ["friday", "saturday"] });
+
+isWeekdayWith(units, period(new Date(2026, 2, 22), "day")); // → true  (a Sunday)
+isWeekdayWith(units, period(new Date(2026, 2, 20), "day")); // → false (a Friday)
+```
+
+The working days of March 2026 with both settings. With Friday and Saturday
+off, Sundays become working days, and March has 23 of them:
+
+<Timeline
+  caption="Each bar is a day of March 2026 for which isWeekdayWith returns true; the gaps are the weekends."
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: '["saturday", "sunday"]',
+      periods: days.filter((day) => isWeekdayWith(nativeUnits(), day)),
+      tone: "accent",
+    },
+    {
+      label: '["friday", "saturday"]',
+      periods: days.filter((day) =>
+        isWeekdayWith(nativeUnits({ weekend: ["friday", "saturday"] }), day)
+      ),
+      tone: "accent",
+    },
+  ]}
+/>
+
+minuta knows nothing about public holidays. A holiday on a Tuesday is a
+working day for `isWeekdayWith`.
+
+## Periods longer than a day
+
+Every day the period touches counts, even partly:
+
+```ts
+import { range } from "minuta";
+
+const units = nativeUnits();
+
+// Mon Mar 16 – Fri Mar 20
+isWeekdayWith(
+  units,
+  range(new Date(2026, 2, 16), new Date(2026, 2, 20, 23, 59, 59, 999))
+);
+// → true
+
+isWeekdayWith(units, period(new Date(2026, 2, 18), "week")); // → false (has Sat and Sun)
+isWeekdayWith(units, period(new Date(2026, 2, 1), "month")); // → false
+```
+
+<Timeline
+  caption="The week of Mar 16 2026. Monday to Friday stays inside the working days (top row); the whole week also covers the weekend."
+  tracks={[
+    {
+      label: "working days",
+      periods: divide(week, "day").filter((day) =>
+        isWeekdayWith(nativeUnits(), day)
+      ),
+      tone: "muted",
+    },
+    {
+      label: "Mon – Fri: true",
+      periods: [
+        range(new Date(2026, 2, 16), new Date(2026, 2, 20, 23, 59, 59, 999)),
+      ],
+      tone: "accent",
+    },
+    { label: "the week: false", periods: [week] },
+  ]}
+/>
+
+A period with both kinds of days is neither: both `isWeekdayWith` and
+[`isWeekendWith`](../is-weekend-with/) return `false`.
+
+The days are counted in the time zone of the `units`, see
+[`isWeekendWith`](../is-weekend-with/#time-zones).
+
+## Errors
+
+`isWeekdayWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED`
+when `units` has no `day` or `week`. It does not check the dates of the
+period: pass a valid period, e.g. one from `period()`.
+
+## Related
+
+- [`isWeekendWith`](../is-weekend-with/) — the opposite check: only weekend days.
+- [`calendar`](../calendar/) — use it as `time.isWeekday(period)` with `withUnits`.
+- [`divide`](../../minuta/divide/) — split a month into days to filter them.
+- [Weeks and calendars](../../../concepts/weeks-and-calendars/) — weekend explained.

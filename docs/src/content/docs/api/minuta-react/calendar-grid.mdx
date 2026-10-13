@@ -1,0 +1,182 @@
+---
+title: CalendarGrid
+description: A React component that renders the browsed month as a table of 6 weeks, with weekday headers and keyboard navigation.
+---
+
+import Flow from "../../../../components/diagrams/Flow.astro";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
+A component that renders the browsed month as a table: a row of weekday names,
+then 6 weeks of 7 days. It follows the WAI-ARIA date picker grid, so the
+keyboard works the way screen reader users expect.
+
+```js
+import { CalendarGrid } from "minuta-react/components";
+```
+
+```jsx
+<CalendarGrid locale="en-US">{(day) => <CalendarDay day={day} />}</CalendarGrid>
+```
+
+## Example
+
+The default grid, and a grid that renders each day itself.
+
+```jsx
+import {
+  CalendarDay,
+  CalendarGrid,
+  CalendarHeader,
+  CalendarRoot,
+} from "minuta-react/components";
+
+export function Calendar() {
+  return (
+    <CalendarRoot>
+      <CalendarHeader />
+      <CalendarGrid />
+    </CalendarRoot>
+  );
+}
+
+export function CalendarWithDots({ busyDays }) {
+  return (
+    <CalendarRoot>
+      <CalendarHeader />
+      <CalendarGrid>
+        {(day) => (
+          <>
+            <CalendarDay day={day} />
+            {busyDays.has(day.start.toDateString()) && <span className="dot" />}
+          </>
+        )}
+      </CalendarGrid>
+    </CalendarRoot>
+  );
+}
+```
+
+Both show the current month. The second adds a dot under every day whose date
+is in the `busyDays` set.
+
+<MonthGrid month="2026-03" marks={["2026-03-04", "2026-03-12", "2026-03-20"]} />
+
+The second grid in March 2026, with `busyDays` holding March 4, 12 and 20:
+each of those cells gets the dot next to its `CalendarDay`. The grey days of
+February and April are rendered too, with the class `is-outside`.
+
+## Props
+
+| Name       | What it is                                                                                      | Default                                     |
+| ---------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `locale`   | The language of the weekday names and of the default day buttons.                               | `"en-US"`                                   |
+| `children` | A function that gets a day [period](../../minuta/period/) and returns what to show in its cell. | `<CalendarDay day={day} locale={locale} />` |
+
+When you pass `children`, `locale` only changes the weekday names. Pass the
+locale to your own `CalendarDay` too.
+
+:::caution
+The keyboard navigation lives in [`CalendarDay`](../calendar-day/). If your
+`children` function does not render a `CalendarDay`, the arrow keys do
+nothing.
+:::
+
+## Always 42 days
+
+The grid always has 6 rows of 7 days, even when the month fits in 4 or 5
+weeks, so the calendar does not jump in height. The first row is the week that
+contains the 1st of the month. Days before and after the month fill the
+rest and get the class `is-outside`.
+
+The column order comes from the units: Monday first by default,
+Sunday first with `nativeUnits({ weekStartsOn: "sunday" })`. The weekday row is
+a [`CalendarWeekdays`](../calendar-weekdays/), rendered for you.
+
+<MonthGrid month="2021-02" />
+
+February 2021 starts on a Monday and has 28 days, so the month fills exactly
+4 rows. The grid still renders 6: the last 2 rows are March days.
+
+## Keyboard
+
+Only one day is in the tab order (roving focus). Tab moves into the grid on:
+the last focused day of the browsed month, else the selected day, else today,
+else the 1st of the month.
+
+| Key                     | Moves the focus to                                   |
+| ----------------------- | ---------------------------------------------------- |
+| ArrowLeft / ArrowRight  | the previous / next day                              |
+| ArrowUp / ArrowDown     | the same weekday one week earlier / later            |
+| Home / End              | the first / last day of the week (units' week start) |
+| PageUp / PageDown       | the same day one month earlier / later               |
+| Shift+PageUp / PageDown | the same day one year earlier / later                |
+| Enter / Space           | selects the focused day                              |
+
+When the target day is outside the browsed month, the grid browses to its
+month first and then focuses it. When the target month is shorter, the day is
+clamped to its last day: PageDown on January 31, 2024 goes to February 29.
+
+<Flow
+  steps={[
+    {
+      code: "keydown PageDown",
+      layer: "browser",
+      text: "January 2024 is shown and January 31 has the focus.",
+    },
+    {
+      code: "Jan 31 → day 31 of February → Feb 29",
+      layer: "CalendarDay",
+      text: "Finds the same day one month later; February has only 29 days, so it is clamped.",
+    },
+    {
+      code: "focus(Feb 29) → browse(Feb 29)",
+      layer: "CalendarRoot",
+      text: "Remembers Feb 29 as the focused day. It is not in January, so the root browses to February first.",
+    },
+    {
+      code: 'tabindex="0" · .focus()',
+      layer: "CalendarGrid",
+      text: "Renders February. The button of Feb 29 is the one in the tab order and takes the focus.",
+    },
+  ]}
+/>
+
+Nothing is selected on the way: `onSelect` is not called until Enter or Space.
+
+## Accessibility
+
+- The table has `role="grid"` and is labelled by the month heading of
+  [`CalendarHeader`](../calendar-header/) (`aria-labelledby`).
+- Each cell has `aria-selected`, `true` only for the selected day.
+- Weekday headers are `<th scope="col">` with the full weekday name in
+  `abbr`.
+
+## What it renders
+
+```html
+<table class="weeks-grid" role="grid" aria-labelledby="…">
+  <thead class="weekday-grid">
+    …
+  </thead>
+  <tbody>
+    <tr class="week-row">
+      <td class="grid-cell" aria-selected="false">…day…</td>
+      …
+    </tr>
+    …
+  </tbody>
+</table>
+```
+
+## Errors
+
+It must be inside a [`CalendarRoot`](../calendar-root/). Outside any root it
+throws `useMinutaContext() must be used within <MinutaRoot>`; inside a plain
+`MinutaRoot` it throws `Calendar parts must be used within <CalendarRoot>`.
+
+## Related
+
+- [`CalendarDay`](../calendar-day/) — the default day in each cell.
+- [`CalendarWeekdays`](../calendar-weekdays/) — the weekday row.
+- [`CalendarRoot`](../calendar-root/) — holds the browsed month and the selection.
+- `monthGridWith` (`minuta/calendar`) — the 42 days, without React.

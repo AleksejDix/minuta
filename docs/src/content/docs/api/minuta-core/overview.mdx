@@ -1,0 +1,132 @@
+---
+title: minuta/core
+description: The pure core — every operation with the units passed in, so you choose the date library, week start and time zone.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+import { periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = new Date(2026, 2, 18);
+
+`minuta/core` has the same operations as [`minuta`](../../minuta/overview/),
+without any units built in. You bring the units, and with them the date
+library, the first day of the week, the weekend and the time zone.
+
+```ts
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+
+time.period(new Date(2026, 2, 18), "week");
+// → Sun Mar 15 00:00:00.000 – Sat Mar 21 23:59:59.999
+```
+
+## The core idea
+
+_Units_ are plain data: for each unit of time (day, week, month …) four small
+functions that find its start and end, add to it, and count it. An _adapter_
+such as `nativeUnits()` or `luxonUnits()` makes them for one date library,
+with your settings.
+
+Every function here that needs to know what a week or a month is takes the
+units as its **first** argument and ends in `With`:
+`periodWith(units, date, "week")`. Functions that only compare times, such
+as `contains`, need no units and have no `With`.
+
+<Timeline
+  caption='The same periodWith(units, date, "week") call with three sets of units: the units alone decide where the week around Mar 18 starts.'
+  marks={[{ date, label: "Mar 18" }]}
+  tracks={[
+    {
+      label: "nativeUnits()",
+      periods: [periodWith(nativeUnits(), date, "week")],
+      tone: "accent",
+    },
+    {
+      label: 'weekStartsOn: "sunday"',
+      periods: [
+        periodWith(nativeUnits({ weekStartsOn: "sunday" }), date, "week"),
+      ],
+      tone: "accent",
+    },
+    {
+      label: 'weekStartsOn: "saturday"',
+      periods: [
+        periodWith(nativeUnits({ weekStartsOn: "saturday" }), date, "week"),
+      ],
+      tone: "accent",
+    },
+  ]}
+/>
+
+Each row is the week the pin falls in. The date and the call stay the same;
+only the units passed first change, and the week moves with them.
+
+You can pass the units on every call, or bind them once with
+[`withUnits`](../with-units/) and call `time.period(date, "week")`. See
+[Date engines](../../../concepts/date-engines/) for the full picture.
+
+## Functions
+
+| Function                            | What it does                                                |
+| ----------------------------------- | ----------------------------------------------------------- |
+| [`withUnits`](../with-units/)       | Bind every operation, and any plugins, to one set of units. |
+| [`bind`](../bind/)                  | Bind the functions of one plugin to one set of units.       |
+| [`periodWith`](../period-with/)     | The whole day, week, month … that a date falls in.          |
+| [`nextWith`](../next-with/)         | The period right after a period.                            |
+| [`previousWith`](../previous-with/) | The period right before a period.                           |
+| [`shiftWith`](../shift-with/)       | Move a period forward or back by a number of its own unit.  |
+| [`divideWith`](../divide-with/)     | Split a period into smaller periods: a month into weeks.    |
+| [`sameWith`](../same-with/)         | Do two periods fall in the same day, week, month …?         |
+| [`durationWith`](../duration-with/) | How many whole units fit into a period.                     |
+| [`specFor`](../spec-for/)           | Look up the rules of one unit in a set of units.            |
+
+These need no units. They are the same functions as in `minuta`, exported
+here too so you can import everything from one place:
+
+| Function                                    | What it does                                   |
+| ------------------------------------------- | ---------------------------------------------- |
+| [`range`](../../minuta/range/)              | A period between any two dates.                |
+| [`contains`](../../minuta/contains/)        | Is a date or another period inside a period?   |
+| [`overlaps`](../../minuta/overlaps/)        | Do two periods share any time?                 |
+| [`length`](../../minuta/length/)            | How long a period is, in milliseconds.         |
+| [`MinutaError`](../../minuta/minuta-error/) | The codes at the start of every error message. |
+
+## When to use `minuta/core`
+
+Use `minuta/core` instead of `minuta` when you need:
+
+- weeks that start on another day, such as Sunday;
+- another date library (date-fns, Luxon, Day.js, Moment, Temporal) or a fixed
+  time zone;
+- your own weekend days, or a unit of your own;
+- plugins, such as calendar grids from `minuta/calendar`, bound to the same
+  settings;
+- the smallest bundle: pass only the units you use.
+
+```ts
+import { nextWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+
+const { day, month } = nativeUnits();
+const units = { day, month }; // only these two end up in the bundle
+
+nextWith(units, periodWith(units, new Date(2026, 2, 18), "month"));
+// → Wed Apr 1 – Thu Apr 30
+```
+
+If the built-in `Date`, local time and Monday weeks are fine, `minuta` is
+simpler: no units to pass.
+
+## Units must match
+
+A period is plain data and does not remember which units made it. Use the
+same units for a period from start to finish. Mixing units, such as moving a
+Monday week with Sunday units, gives a period on the other units' grid; see
+[`nextWith`](../next-with/#use-the-same-units-as-the-period). Binding once
+with `withUnits` avoids this.
