@@ -164,7 +164,8 @@
     {
       "files": ["**/*.astro"],
       "rules": {
-        "import/unambiguous": "off"
+        "import/unambiguous": "off",
+        "node/no-top-level-await": "off"
       }
     },
     {
