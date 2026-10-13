@@ -1,8 +1,10 @@
 import type { AstroIntegration, ViteUserConfig } from "astro";
+import { API_GROUPS } from "./src/components/api-groups";
 import { defineConfig } from "astro/config";
 import path from "node:path";
 import react from "@astrojs/react";
 import starlight from "@astrojs/starlight";
+import starlightSidebarTopics from "starlight-sidebar-topics";
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@astrojs/vue";
 
@@ -50,39 +52,69 @@ const demoAlias: VitePlugin = {
   },
 };
 
-// One reference group per entry point: [directory under api/, label]
-const API_GROUPS: readonly (readonly [string, string])[] = [
-  ["minuta", "minuta"],
-  ["minuta-core", "minuta/core"],
-  ["minuta-calendar", "minuta/calendar"],
-  ["minuta-intervals", "minuta/intervals"],
-  ["minuta-format", "minuta/format"],
-  ["adapters", "Date engines"],
-  ["minuta-react", "minuta-react"],
-  ["minuta-vue", "minuta-vue"],
-  ["datefield", "datefield"],
-  ["input-dom", "input-dom"],
-  ["input-state", "input-state"],
-  ["text-buffer", "text-buffer"],
-  ["fechita", "fechita"],
-];
-
 const docs: AstroIntegration = starlight({
+  components: { Hero: "./src/components/Hero.astro" },
   customCss: ["./src/styles/global.css"],
-  sidebar: [
-    {
-      items: ["introduction", "installation", "getting-started", "demo"],
-      label: "Start here",
+  expressiveCode: {
+    styleOverrides: {
+      borderRadius: "0.75rem",
+      codeFontFamily: "'Fragment Mono', ui-monospace, monospace",
     },
-    { items: [{ autogenerate: { directory: "concepts" } }], label: "Concepts" },
-    {
-      items: API_GROUPS.map(([directory, label]) => ({
-        collapsed: true,
-        items: [{ autogenerate: { directory: `api/${directory}` } }],
-        label,
-      })),
-      label: "Reference",
-    },
+    themes: ["vitesse-dark", "vitesse-light"],
+  },
+  plugins: [
+    // Guide and API, each with its own sidebar, like Vue's docs
+    starlightSidebarTopics([
+      {
+        icon: "open-book",
+        items: [
+          {
+            items: ["introduction", "getting-started", "installation"],
+            label: "Getting started",
+          },
+          {
+            items: [
+              "concepts/periods-and-units",
+              { autogenerate: { directory: "guide/essentials" } },
+            ],
+            label: "Essentials",
+          },
+          {
+            items: [
+              "concepts/weeks-and-calendars",
+              "concepts/time-zones",
+              { autogenerate: { directory: "guide/calendars" } },
+            ],
+            label: "Calendars",
+          },
+          { items: ["concepts/date-engines"], label: "Date engines" },
+          {
+            items: [
+              "concepts/the-input-stack",
+              "concepts/parsing-dates",
+              { autogenerate: { directory: "guide/date-field" } },
+            ],
+            label: "The date field",
+          },
+          { items: ["demo"], label: "Try it" },
+        ],
+        label: "Guide",
+        link: "/introduction/",
+      },
+      {
+        icon: "seti:json",
+        items: [
+          "api",
+          ...API_GROUPS.map(([directory, label]) => ({
+            collapsed: true,
+            items: [{ autogenerate: { directory: `api/${directory}` } }],
+            label,
+          })),
+        ],
+        label: "API",
+        link: "/api/",
+      },
+    ]),
   ],
   social: [
     {

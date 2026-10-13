@@ -1,0 +1,156 @@
+---
+/*
+ * The API index, like vuejs.org/api: every entry point with its pages,
+ * read from the reference's own pages, and a filter over all of them.
+ */
+import { API_GROUPS } from "./api-groups";
+import { getCollection } from "astro:content";
+import { siteHref } from "./site-href";
+
+const OVERVIEW = "overview";
+
+/**
+ * The one-line description of an entry point, from its overview page.
+ *
+ * @param overview - The overview page, if the group has one
+ * @returns The description, empty without an overview
+ */
+function descriptionOf(
+  overview: Readonly<{ data: Readonly<{ description?: string | undefined }> }> | undefined
+): string {
+  if (overview === undefined || overview.data.description === undefined) {
+    return "";
+  }
+  return overview.data.description;
+}
+
+const pages = await getCollection("docs", (entry) =>
+  entry.id.startsWith("api/")
+);
+
+const groups = API_GROUPS.map(([directory, label]) => {
+  const inGroup = pages.filter((entry) =>
+    entry.id.startsWith(`api/${directory}/`)
+  );
+  const overview = inGroup.find((entry) => entry.id.endsWith(`/${OVERVIEW}`));
+  return {
+    description: descriptionOf(overview),
+    href: siteHref(`api/${directory}/${OVERVIEW}/`),
+    label,
+    links: inGroup
+      .filter((entry) => !entry.id.endsWith(`/${OVERVIEW}`))
+      .map((entry) => ({ href: siteHref(`${entry.id}/`), title: entry.data.title }))
+      .toSorted((left, right) => left.title.localeCompare(right.title)),
+  };
+});
+---
+
+<div class="api-index not-content" data-api-index>
+  <label class="api-index__filter">
+    <span class="sr-only">Filter the API</span>
+    <input type="search" placeholder="Filter: divide, Calendar, parse…" data-api-filter />
+  </label>
+  <div class="api-index__groups">
+    {
+      groups.map((group) => (
+        <section class="api-index__group" data-api-group>
+          <h2>
+            <a href={group.href}>{group.label}</a>
+          </h2>
+          <p>{group.description}</p>
+          <ul>
+            {group.links.map((link) => (
+              <li data-api-name={link.title.toLowerCase()}>
+                <a href={link.href}>{link.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+  <p class="api-index__empty" data-api-empty hidden>Nothing matches.</p>
+</div>
+
+<script>
+  import { mountApiFilters } from "./api-filter";
+
+  mountApiFilters();
+</script>
+
+<style is:global>
+  .api-index__filter input {
+    width: 100%;
+    max-width: 26rem;
+    margin-block: 0.5rem 2rem;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 0.6rem;
+    background: transparent;
+    color: var(--sl-color-white);
+    font: inherit;
+  }
+
+  .api-index__filter input:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 1px;
+  }
+
+  .api-index__groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+
+  .api-index__group {
+    padding: 1.25rem 1.25rem 1rem;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 0.9rem;
+  }
+
+  .api-index__group h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.5rem;
+  }
+
+  .api-index__group h2 a {
+    color: var(--sl-color-white);
+    text-decoration: none;
+  }
+
+  .api-index__group h2 a:hover {
+    color: var(--sl-color-accent);
+  }
+
+  .api-index__group p {
+    margin: 0.35rem 0 0.9rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-3);
+  }
+
+  .api-index__group ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .api-index__group li a {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+
+  .api-index__group li a:hover {
+    color: var(--sl-color-accent);
+  }
+
+  .api-index__empty {
+    color: var(--sl-color-gray-3);
+  }
+</style>
