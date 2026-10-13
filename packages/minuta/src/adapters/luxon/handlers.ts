@@ -1,22 +1,13 @@
+import {
+  elapsedHour,
+  elapsedMinute,
+  elapsedSecond,
+} from "#src/adapters/elapsed-units";
 import { DateTime } from "luxon";
 import type { UnitSpec } from "#src/types";
 
-type LuxonUnit =
-  | "years"
-  | "quarters"
-  | "months"
-  | "days"
-  | "hours"
-  | "minutes"
-  | "seconds";
-type LuxonStartOf =
-  | "year"
-  | "quarter"
-  | "month"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second";
+type LuxonUnit = "years" | "quarters" | "months" | "days";
+type LuxonStartOf = "year" | "quarter" | "month" | "day";
 
 function handler(
   unit: LuxonStartOf,
@@ -44,9 +35,10 @@ const yearHandler: UnitSpec = handler("year", "years", "years");
 const quarterHandler: UnitSpec = handler("quarter", "quarters", "quarters");
 const monthHandler: UnitSpec = handler("month", "months", "months");
 const dayHandler: UnitSpec = handler("day", "days", "days");
-const hourHandler: UnitSpec = handler("hour", "hours", "hours");
-const minuteHandler: UnitSpec = handler("minute", "minutes", "minutes");
-const secondHandler: UnitSpec = handler("second", "seconds", "seconds");
+// Luxon's endOf("hour") runs through both occurrences of a repeated hour
+const hourHandler: UnitSpec = elapsedHour;
+const minuteHandler: UnitSpec = elapsedMinute;
+const secondHandler: UnitSpec = elapsedSecond;
 
 export {
   dayHandler,

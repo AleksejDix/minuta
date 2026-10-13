@@ -285,6 +285,8 @@ durationWith(units: Units, period: Period, unit: Unit): number
 
 How many complete `unit`s fit into a period, measured over the half-open
 range `[start, end + 1 ms)` with the units' own calendar and DST rules.
+From a unit start, calendar units are counted by their boundaries, so a
+day without a midnight is still one day.
 
 ```ts
 durationWith(units, period(new Date(2026, 9, 8), "day"), "hour"); // 24
@@ -392,7 +394,8 @@ Same as `MinutaError` in `minuta`.
 specFor(units: Units, unit: Unit): UnitSpec
 ```
 
-The spec for `unit`.
+The spec for `unit`. For calendar units its `endOf` ends right before the
+next period starts, even where the clocks go back at midnight.
 
 ```ts
 specFor(nativeUnits(), "week").startOf(new Date(2026, 2, 18)); // Monday Mar 16, 00:00

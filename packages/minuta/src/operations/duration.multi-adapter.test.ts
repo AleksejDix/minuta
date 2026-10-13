@@ -14,6 +14,7 @@ const TWELVE = 12;
 const TWENTY_FOUR = 24;
 const TWENTY_EIGHT = 28;
 const TWENTY_NINE = 29;
+const THIRTY = 30;
 const THIRTY_ONE = 31;
 const NINETY = 90;
 
@@ -28,12 +29,17 @@ const UNITS: readonly Unit[] = [
   "second",
 ];
 
-// Spring forward and fall back in Europe and in North America
+/*
+ * Spring forward and fall back in Europe and in North America, and days
+ * that start at 01:00 because the clocks jump at midnight (Beirut, Santiago)
+ */
 const DST_DAYS: readonly Readonly<Date>[] = [
   new Date("2026-03-29T12:00"),
   new Date("2026-10-25T12:00"),
   new Date("2026-03-08T12:00"),
   new Date("2026-11-01T12:00"),
+  new Date("2024-03-31T12:00"),
+  new Date("2026-09-06T12:00"),
 ];
 
 type CalendarCase = Readonly<{
@@ -124,5 +130,21 @@ describe.each(unitsCases)(
         expect(durationWith(units, day, "day")).toBe(ONE);
       }
     });
+
+    it(
+      "counts a day without a midnight in its month",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        const march = periodWith(units, new Date("2024-03-15T12:00"), "month");
+        const september = periodWith(
+          units,
+          new Date("2026-09-15T12:00"),
+          "month"
+        );
+        expect(durationWith(units, march, "day")).toBe(THIRTY_ONE);
+        expect(durationWith(units, september, "day")).toBe(THIRTY);
+      }
+    );
   }
 );

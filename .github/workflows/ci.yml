@@ -99,13 +99,9 @@ jobs:
         run: npm run format:check
 
   test:
-    name: Test (${{ matrix.tz }})
+    name: Test
     runs-on: ubuntu-latest
     needs: [build]
-    strategy:
-      fail-fast: false
-      matrix:
-        tz: [UTC, Europe/Zurich, America/New_York, Asia/Tokyo]
     steps:
       - uses: actions/checkout@v4
 
@@ -124,6 +120,45 @@ jobs:
 
       - name: Run tests
         run: npm test
+        env:
+          TZ: Europe/Zurich
+
+  # Only the packages that compute in the computer's zone; the rest run once above
+  test-time-zones:
+    name: Test (${{ matrix.tz }})
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      fail-fast: false
+      matrix:
+        tz:
+          [
+            UTC,
+            America/New_York,
+            Asia/Tokyo,
+            America/Santiago,
+            Pacific/Apia,
+            Australia/Lord_Howe,
+            Asia/Kathmandu,
+          ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dist
+          path: packages/
+
+      - name: Run date tests
+        run: npx vitest run --project minuta --project datefield
         env:
           TZ: ${{ matrix.tz }}
 

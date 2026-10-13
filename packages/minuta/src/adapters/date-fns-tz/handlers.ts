@@ -5,14 +5,12 @@ import {
   differenceInQuarters,
   differenceInYears,
   endOfDay,
-  endOfHour,
   endOfMinute,
   endOfMonth,
   endOfQuarter,
   endOfSecond,
   endOfYear,
   startOfDay,
-  startOfHour,
   startOfMinute,
   startOfMonth,
   startOfQuarter,
@@ -22,6 +20,7 @@ import {
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import type { Duration } from "date-fns";
 import type { UnitSpec } from "#src/types";
+import { elapsedSpec } from "#src/adapters/elapsed-units";
 import { fromZonedForward } from "./zoned-forward";
 
 const MONTHS_PER_QUARTER = 3;
@@ -149,12 +148,19 @@ function subDayHandler(parts: SubDayHandlerParts): UnitSpec {
   };
 }
 
+/*
+ * Hours from the minutes past the hour on the zone's clock: a repeated hour
+ * of a fall-back night stays two hours, and in a zone that moves its clocks
+ * by 30 minutes no hour swallows the half hour around it.
+ */
 function createHourHandler(tz: string): UnitSpec {
-  return subDayHandler({
-    endOfFn: endOfHour,
-    startOfFn: startOfHour,
-    timezone: tz,
-    unitMs: HOUR_MS,
+  return elapsedSpec(HOUR_MS, (date) => {
+    const zoned = toZonedTime(date, tz);
+    return (
+      zoned.getMinutes() * MINUTE_MS +
+      zoned.getSeconds() * SECOND_MS +
+      zoned.getMilliseconds()
+    );
   });
 }
 function createMinuteHandler(tz: string): UnitSpec {
