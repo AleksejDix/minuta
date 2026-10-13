@@ -57,7 +57,8 @@ function buildChunk(
   start: Readonly<Date>
 ): Period | undefined {
   const { period, spec, step } = ctx;
-  const end = new Date(spec.add(start, step).getTime() - ONE_MS);
+  // Up to where the next chunk starts, even when a day starts at 01:00
+  const end = new Date(spec.startOf(spec.add(start, step)).getTime() - ONE_MS);
 
   // Only include periods that overlap with the parent period
   if (end < period.start || start > period.end) {

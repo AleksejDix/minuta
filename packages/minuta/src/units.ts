@@ -31,8 +31,40 @@ const SETTINGS: ReadonlySet<string> = new Set([
   "weekend",
 ]);
 
+// Units of a fixed length: an engine's end of one is never ambiguous
+const FIXED_LENGTH: ReadonlySet<string> = new Set(["hour", "minute", "second"]);
+
 /**
- * The spec for `unit`.
+ * The spec with an `endOf` that ends right before the next period starts.
+ * On a night the clocks go back at midnight (Santiago, Apr 5 2026:
+ * 00:00 → 23:00) the wall time 23:59:59.999 happens twice; engines pick the
+ * first, which left the repeated hour in no day at all. When the moment
+ * after the engine's end still belongs to the period, the end is the moment
+ * before the next period's start instead, which exists only once.
+ *
+ * @param spec - An engine's spec for a calendar unit
+ * @returns The same spec with that `endOf`
+ */
+function endingBeforeNext(spec: UnitSpec): UnitSpec {
+  return {
+    add: spec.add,
+    diff: spec.diff,
+    endOf: (date: Readonly<Date>): Date => {
+      const end = spec.endOf(date);
+      const after = new Date(end.getTime() + ONE);
+      if (spec.startOf(after).getTime() > end.getTime()) {
+        return end;
+      }
+      const next = spec.startOf(spec.add(spec.startOf(date), ONE));
+      return new Date(next.getTime() - ONE);
+    },
+    startOf: spec.startOf,
+  };
+}
+
+/**
+ * The spec for `unit`. For calendar units its `endOf` ends right before the
+ * next period starts, even where the clocks go back at midnight.
  *
  * @example
  * specFor(nativeUnits(), "week").startOf(new Date(2026, 2, 18)); // Monday Mar 16, 00:00
@@ -54,7 +86,10 @@ function specFor(units: Units, unit: Unit): UnitSpec {
         `Pass a full set such as nativeUnits(), or add a "${unit}" spec to your units.`
     );
   }
-  return spec;
+  if (FIXED_LENGTH.has(unit)) {
+    return spec;
+  }
+  return endingBeforeNext(spec);
 }
 
 /**
