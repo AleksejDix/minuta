@@ -2,13 +2,14 @@ import { add, differenceInWeeks, endOfWeek, startOfWeek } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import type { Day } from "date-fns";
 import type { UnitSpec } from "#src/types";
+import { fromZonedForward } from "#src/adapters/date-fns-tz/zoned-forward";
 
 function createWeekHandler(timezone: string, weekStartsOn: Day): UnitSpec {
   return {
     add(date: Readonly<Date>, amount: number): Date {
       const zonedDate = toZonedTime(date, timezone);
       const resultInZone = add(zonedDate, { weeks: amount });
-      return fromZonedTime(resultInZone, timezone);
+      return fromZonedForward(resultInZone, timezone);
     },
 
     diff(from: Readonly<Date>, to: Readonly<Date>): number {
@@ -26,7 +27,7 @@ function createWeekHandler(timezone: string, weekStartsOn: Day): UnitSpec {
     startOf(date: Readonly<Date>): Date {
       const zonedDate = toZonedTime(date, timezone);
       const startInZone = startOfWeek(zonedDate, { weekStartsOn });
-      return fromZonedTime(startInZone, timezone);
+      return fromZonedForward(startInZone, timezone);
     },
   };
 }

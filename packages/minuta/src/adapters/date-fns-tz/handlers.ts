@@ -22,6 +22,7 @@ import {
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import type { Duration } from "date-fns";
 import type { UnitSpec } from "#src/types";
+import { fromZonedForward } from "./zoned-forward";
 
 const MONTHS_PER_QUARTER = 3;
 
@@ -46,7 +47,7 @@ function handler(parts: HandlerParts): UnitSpec {
   const { timezone } = parts;
   return {
     add: (date: Readonly<Date>, amount: number): Date =>
-      fromZonedTime(
+      fromZonedForward(
         add(toZonedTime(date, timezone), { [parts.addKey]: amount }),
         timezone
       ),
@@ -55,7 +56,7 @@ function handler(parts: HandlerParts): UnitSpec {
     endOf: (date: Readonly<Date>): Date =>
       fromZonedTime(parts.endOfFn(toZonedTime(date, timezone)), timezone),
     startOf: (date: Readonly<Date>): Date =>
-      fromZonedTime(parts.startOfFn(toZonedTime(date, timezone)), timezone),
+      fromZonedForward(parts.startOfFn(toZonedTime(date, timezone)), timezone),
   };
 }
 
@@ -71,7 +72,7 @@ function createYearHandler(tz: string): UnitSpec {
 function createQuarterHandler(tz: string): UnitSpec {
   return {
     add: (date: Readonly<Date>, amount: number): Date =>
-      fromZonedTime(
+      fromZonedForward(
         add(toZonedTime(date, tz), { months: amount * MONTHS_PER_QUARTER }),
         tz
       ),
@@ -80,7 +81,7 @@ function createQuarterHandler(tz: string): UnitSpec {
     endOf: (date: Readonly<Date>): Date =>
       fromZonedTime(endOfQuarter(toZonedTime(date, tz)), tz),
     startOf: (date: Readonly<Date>): Date =>
-      fromZonedTime(startOfQuarter(toZonedTime(date, tz)), tz),
+      fromZonedForward(startOfQuarter(toZonedTime(date, tz)), tz),
   };
 }
 function createMonthHandler(tz: string): UnitSpec {
