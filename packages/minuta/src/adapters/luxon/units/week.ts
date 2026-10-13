@@ -3,7 +3,6 @@ import type { UnitSpec } from "#src/types";
 
 const DAYS_PER_WEEK = 7;
 const LAST_DAY_OF_WEEK_OFFSET = 6;
-const ISO_MONDAY = 1;
 const ISO_SUNDAY = 7;
 
 const SUNDAY = 0;
@@ -42,34 +41,19 @@ function daysSinceWeekStart(
   return (currentWeekday - isoWeekday + DAYS_PER_WEEK) % DAYS_PER_WEEK;
 }
 
-function endOfWeekStartingOn(date: Readonly<Date>, isoWeekday: number): Date {
-  const dateTime = DateTime.fromJSDate(date);
-  const endOfWeek = dateTime.endOf("week");
-
-  // Adjust if week doesn't start on Monday
-  if (isoWeekday !== ISO_MONDAY) {
-    const mondayStart = dateTime.startOf("week");
-    const daysToSubtract = daysSinceWeekStart(mondayStart.weekday, isoWeekday);
-    const weekStart = mondayStart.minus({ days: daysToSubtract });
-    return weekStart
-      .plus({ days: LAST_DAY_OF_WEEK_OFFSET })
-      .endOf("day")
-      .toJSDate();
-  }
-
-  return endOfWeek.toJSDate();
+// Count back from the date's own weekday, so a Sunday is the start of its own week
+function startOfWeekStartingOn(date: Readonly<Date>, isoWeekday: number): Date {
+  const day = DateTime.fromJSDate(date).startOf("day");
+  return day
+    .minus({ days: daysSinceWeekStart(day.weekday, isoWeekday) })
+    .toJSDate();
 }
 
-function startOfWeekStartingOn(date: Readonly<Date>, isoWeekday: number): Date {
-  const startOfWeek = DateTime.fromJSDate(date).startOf("week");
-
-  // Adjust if week doesn't start on the configured day
-  if (isoWeekday !== ISO_MONDAY) {
-    const daysToSubtract = daysSinceWeekStart(startOfWeek.weekday, isoWeekday);
-    return startOfWeek.minus({ days: daysToSubtract }).toJSDate();
-  }
-
-  return startOfWeek.toJSDate();
+function endOfWeekStartingOn(date: Readonly<Date>, isoWeekday: number): Date {
+  return DateTime.fromJSDate(startOfWeekStartingOn(date, isoWeekday))
+    .plus({ days: LAST_DAY_OF_WEEK_OFFSET })
+    .endOf("day")
+    .toJSDate();
 }
 
 function createWeekHandler(weekStartsOn: WeekStartsOn = MONDAY): UnitSpec {
