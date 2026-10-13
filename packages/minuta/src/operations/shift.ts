@@ -1,7 +1,7 @@
 import type { Period, Unit, UnitSpec, Units } from "#src/types";
+import { endFrom, specFor, startFrom } from "#src/units";
 import { move } from "./move";
 import { periodWith } from "./period";
-import { specFor } from "#src/units";
 
 const NO_STEPS = 0;
 const ONE = 1;
@@ -17,10 +17,10 @@ const FIXED_LENGTH: ReadonlySet<string> = new Set(["minute", "second"]);
 function neighbour(spec: UnitSpec, period: Period, forward: boolean): Period {
   if (forward) {
     const after = new Date(period.end.getTime() + INCLUSIVE_END_MS);
-    return { end: spec.endOf(after), start: after, unit: period.unit };
+    return { end: endFrom(spec, after), start: after, unit: period.unit };
   }
   const before = new Date(period.start.getTime() - INCLUSIVE_END_MS);
-  return { end: before, start: spec.startOf(before), unit: period.unit };
+  return { end: before, start: startFrom(spec, before), unit: period.unit };
 }
 
 /**

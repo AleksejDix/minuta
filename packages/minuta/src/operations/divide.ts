@@ -1,4 +1,9 @@
-import { MinutaError, assertPositiveInteger, specFor } from "#src/units";
+import {
+  MinutaError,
+  assertPositiveInteger,
+  endFrom,
+  specFor,
+} from "#src/units";
 import type { Period, Unit, UnitSpec, Units } from "#src/types";
 
 const DEFAULT_MAX_PERIODS = 100_000;
@@ -32,9 +37,9 @@ function earlierOf(left: Readonly<Date>, right: Readonly<Date>): Date {
 // The end of the `step`-th unit from `start`, walking unit ends
 function stepEnd(ctx: DivideContext, start: Readonly<Date>): Date {
   const { spec, step } = ctx;
-  let end = spec.endOf(start);
+  let end = endFrom(spec, start);
   for (let unit = DEFAULT_STEP; unit < step; unit += DEFAULT_STEP) {
-    end = spec.endOf(new Date(end.getTime() + ONE_MS));
+    end = endFrom(spec, new Date(end.getTime() + ONE_MS));
   }
   return end;
 }

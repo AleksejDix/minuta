@@ -93,6 +93,40 @@ function specFor(units: Units, unit: Unit): UnitSpec {
 }
 
 /**
+ * The end of the unit holding `date`, never before `date`. V8 caches zone
+ * offsets and misses a clock change that comes days after another one
+ * (Recife's week of DST in October 2000), so a `Date` engine can put
+ * `date` in a unit that ended before it; the end is then one unit later.
+ *
+ * @param spec - The unit's spec
+ * @param date - Any moment
+ * @returns The unit's last millisecond
+ */
+function endFrom(spec: UnitSpec, date: Readonly<Date>): Date {
+  const end = spec.endOf(date);
+  if (end >= date) {
+    return end;
+  }
+  return new Date(spec.add(date, ONE).getTime() - ONE);
+}
+
+/**
+ * The start of the unit holding `date`, never after `date`; one unit earlier
+ * when the engine puts `date` in a unit that starts after it.
+ *
+ * @param spec - The unit's spec
+ * @param date - Any moment
+ * @returns The unit's first millisecond
+ */
+function startFrom(spec: UnitSpec, date: Readonly<Date>): Date {
+  const start = spec.startOf(date);
+  if (start <= date) {
+    return start;
+  }
+  return new Date(spec.add(date, -ONE).getTime() + ONE);
+}
+
+/**
  * Throw for an invalid Date, like Temporal does: it is a programming error,
  * not a missing result.
  *
@@ -125,5 +159,12 @@ function assertPositiveInteger(value: number, option: string): void {
   }
 }
 
-export { MinutaError, assertPositiveInteger, assertValidDate, specFor };
+export {
+  MinutaError,
+  assertPositiveInteger,
+  assertValidDate,
+  endFrom,
+  specFor,
+  startFrom,
+};
 export type { MinutaErrorCode };
