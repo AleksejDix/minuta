@@ -1,0 +1,99 @@
+---
+/*
+ * An input's text as slots: every character in a cell, the caret positions
+ * between them, the selection or the overwrite block, and — with a locale —
+ * the date segments bracketed underneath.
+ */
+import { deriveFormat, parseSegments } from "datefield";
+
+type Props = Readonly<{
+  /** Where the selection starts; defaults to `head` */
+  anchor?: number;
+  caption?: string;
+  /** Where the cursor is: a position between characters, 0 to the length */
+  head?: number;
+  /** A locale to bracket the date segments of, e.g. `de-CH` */
+  locale?: string;
+  /** `overwrite` shows a collapsed cursor as a block on the next slot */
+  mode?: "insert" | "overwrite";
+  /** The empty-slot character, muted; default `_` */
+  placeholder?: string;
+  text: string;
+}>;
+
+const ONE = 1;
+
+const {
+  anchor,
+  caption,
+  head,
+  locale,
+  mode = "insert",
+  placeholder = "_",
+  text,
+} = Astro.props;
+const chars = [...text];
+const from = Math.min(anchor ?? head ?? -ONE, head ?? -ONE);
+const to = Math.max(anchor ?? head ?? -ONE, head ?? -ONE);
+const collapsed = from === to;
+const block = collapsed && mode === "overwrite" && head !== undefined && head < chars.length;
+
+/**
+ * The date segments of the text, when a locale is given.
+ *
+ * @returns Each editable segment with its first column and width
+ */
+function segmentsOf(): Readonly<{ start: number; type: string; width: number }>[] {
+  if (locale === undefined) {
+    return [];
+  }
+  return parseSegments(deriveFormat(locale), text)
+    .filter((segment) => segment.type !== "literal")
+    .map((segment) => ({ start: segment.start, type: segment.type, width: segment.end - segment.start }));
+}
+
+const segments = segmentsOf();
+const cells = chars.map((char, index) => ({
+  char,
+  empty: char === placeholder,
+  selected: (!collapsed && index >= from && index < to) || (block && index === head),
+}));
+---
+
+<figure class="field-diagram not-content" style={`--cells: ${String(chars.length)}`}>
+  <div class="field-diagram__grid">
+    {
+      cells.map((cell, index) => (
+        <span
+          class:list={["field-diagram__cell", { "is-empty": cell.empty, "is-selected": cell.selected }]}
+          style={`grid-column: ${String(index + ONE)}`}
+        >
+          {cell.char}
+        </span>
+      ))
+    }
+    {
+      collapsed && !block && head !== undefined ? (
+        <span class="field-diagram__caret" style={`--at: ${String(head)}`} />
+      ) : null
+    }
+    {
+      chars.map((_char, index) => (
+        <span class="field-diagram__index" style={`grid-column: ${String(index + ONE)}`}>
+          {index}
+        </span>
+      ))
+    }
+    {
+      segments.map((segment) => (
+        <span
+          class="field-diagram__segment"
+          style={`grid-column: ${String(segment.start + ONE)} / span ${String(segment.width)}`}
+        >
+          {segment.type}
+        </span>
+      ))
+    }
+  </div>
+  {caption === undefined ? null : <figcaption>{caption}</figcaption>}
+</figure>

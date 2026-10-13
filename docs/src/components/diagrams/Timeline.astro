@@ -1,0 +1,96 @@
+---
+/*
+ * Periods on a time axis, computed at build time: one track per row of
+ * periods, optional marked moments, ticks chosen from the span. Pages pass
+ * real minuta results, so the picture always matches the code.
+ */
+import { barOf, pinAlign, position, spanOf, ticksOf } from "./timeline";
+import type { Period } from "minuta";
+
+type Track = Readonly<{
+  /** What the row shows, e.g. `divide(march, "week")` */
+  label: string;
+  periods: readonly Period[];
+  /** `accent` for the result the page is about, `muted` for context */
+  tone?: "accent" | "ink" | "muted";
+}>;
+
+type Mark = Readonly<{ date: Readonly<Date>; label: string }>;
+
+type Props = Readonly<{
+  /** One sentence under the picture */
+  caption?: string;
+  marks?: readonly Mark[];
+  tracks: readonly Track[];
+}>;
+
+const { caption, marks = [], tracks } = Astro.props;
+const span = spanOf(
+  tracks.flatMap((track) => track.periods),
+  marks.map((mark) => mark.date)
+);
+const ticks = ticksOf(span);
+const rows = tracks.map((track) => ({
+  bars: track.periods.map((piece) => barOf(span, piece)),
+  label: track.label,
+  tone: track.tone ?? "ink",
+}));
+const pins = marks.map((mark) => {
+  const left = position(span, mark.date.getTime());
+  return { align: pinAlign(left), label: mark.label, left };
+});
+---
+
+<figure class="timeline not-content">
+  <div class="timeline__rows">
+    {
+      pins.length > 0 ? (
+        <div class="timeline__row timeline__row--marks">
+          <span />
+          <div class="timeline__lane timeline__marks">
+            {pins.map((pin) => (
+              <strong class={`is-${pin.align}`} style={`left: ${String(pin.left)}%`}>
+                {pin.label}
+              </strong>
+            ))}
+          </div>
+        </div>
+      ) : null
+    }
+    {
+      rows.map((row) => (
+        <div class="timeline__row">
+          <code class="timeline__label">{row.label}</code>
+          <div class="timeline__lane">
+            {ticks.map((tick) => (
+              <span class="timeline__gridline" style={`left: ${String(tick.left)}%`} />
+            ))}
+            {row.bars.map((bar) => (
+              <span
+                class:list={["timeline__bar", `is-${row.tone}`, { "is-custom": bar.custom }]}
+                style={`left: ${String(bar.left)}%; width: ${String(bar.width)}%`}
+                title={bar.title}
+              >
+                <span>{bar.label}</span>
+              </span>
+            ))}
+            {pins.map((pin) => (
+              <span class="timeline__pin" style={`left: ${String(pin.left)}%`} />
+            ))}
+          </div>
+        </div>
+      ))
+    }
+    <div class="timeline__row timeline__row--axis">
+      <span></span>
+      <div class="timeline__lane timeline__axis">
+        {
+          ticks.map((tick) => (
+            <span style={`left: ${String(tick.left)}%`}>{tick.label}</span>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+  {caption === undefined ? null : <figcaption>{caption}</figcaption>}
+</figure>

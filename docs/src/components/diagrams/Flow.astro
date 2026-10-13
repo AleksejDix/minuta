@@ -1,0 +1,30 @@
+---
+/*
+ * A sequence of steps as a timeline: which layer acts, what it does, and
+ * the call or value involved.
+ */
+type Step = Readonly<{
+  /** The call or value, shown in code */
+  code?: string;
+  layer: string;
+  text: string;
+}>;
+
+type Props = Readonly<{ steps: readonly Step[] }>;
+
+const { steps } = Astro.props;
+---
+
+<ol class="flow not-content">
+  {
+    steps.map((step) => (
+      <li>
+        <span class="flow__layer">{step.layer}</span>
+        <div class="flow__body">
+          <p>{step.text}</p>
+          {step.code === undefined ? null : <code>{step.code}</code>}
+        </div>
+      </li>
+    ))
+  }
+</ol>
