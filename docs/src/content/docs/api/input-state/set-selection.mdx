@@ -3,6 +3,17 @@ title: setSelection
 description: Move the cursor of an input field, or select part of its text.
 ---
 
+import {
+  createInputState,
+  parseMask,
+  setSelection,
+  typeChar,
+} from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const field = createInputState({ mask: parseMask("99.99.9999") });
+export const onDot = setSelection(field, 2);
+
 Move the cursor, or select part of the text. Use it when the user clicks into
 the field or selects with the mouse or Shift and the arrow keys.
 
@@ -26,6 +37,27 @@ setSelection(field, 0, 5); // → "__.__" selected
 setSelection(field, 99); // → cursor at 10, the end
 ```
 
+<FieldDiagram
+  {...setSelection(field, 3).buffer.selection}
+  text={setSelection(field, 3).buffer.text}
+  mode={setSelection(field, 3).mode}
+  caption="setSelection(field, 3): the cursor on the first month slot. In a masked field it shows as a block on the slot the next key fills."
+/>
+
+<FieldDiagram
+  {...setSelection(field, 0, 5).buffer.selection}
+  text={setSelection(field, 0, 5).buffer.text}
+  mode={setSelection(field, 0, 5).mode}
+  caption='setSelection(field, 0, 5): "__.__" selected, literals included.'
+/>
+
+<FieldDiagram
+  {...setSelection(field, 99).buffer.selection}
+  text={setSelection(field, 99).buffer.text}
+  mode={setSelection(field, 99).mode}
+  caption="setSelection(field, 99): clamped to 10, the end of the text, after the last slot."
+/>
+
 ## Parameters
 
 | Name     | What it is                                                                           |
@@ -47,6 +79,20 @@ When the selection is already exactly that, you get the same state back.
 `setSelection` does not snap the cursor to a slot. That is fine: the next
 [`typeChar`](../type-char/) fills the next slot after the cursor, and
 [`backspace`](../backspace/) empties the slot before it.
+
+<FieldDiagram
+  {...onDot.buffer.selection}
+  text={onDot.buffer.text}
+  mode={onDot.mode}
+  caption='setSelection(field, 2): the cursor stays on the "." literal.'
+/>
+
+<FieldDiagram
+  {...typeChar(onDot, "1").buffer.selection}
+  text={typeChar(onDot, "1").buffer.text}
+  mode={typeChar(onDot, "1").mode}
+  caption='Then typeChar(field, "1"): the digit goes into the next slot after the cursor, 3, and the cursor moves on to 4.'
+/>
 
 ## Related
 

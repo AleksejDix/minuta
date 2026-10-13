@@ -3,6 +3,11 @@ title: segmentAtPosition
 description: Find which segment — day, month or year — the cursor is in.
 ---
 
+import { deriveFormat, parseSegments, segmentAtPosition } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
+
 Find the segment the cursor is in, so a cursor at position 4 of `31.03.2026`
 is in the month. Use it to know which segment an arrow key should change.
 
@@ -26,6 +31,13 @@ segmentAtPosition(segments, 0); // → 0   day
 segmentAtPosition(segments, 4); // → 2   month
 segmentAtPosition(segments, 8); // → 4   year
 ```
+
+<FieldDiagram
+  text="31.03.2026"
+  head={4}
+  locale="de-CH"
+  caption={`The cursor at 4 sits between the two digits of the month, so segmentAtPosition(segments, 4) → ${String(segmentAtPosition(segments, 4))}.`}
+/>
 
 ## Parameters
 
@@ -54,6 +66,13 @@ one wins.
 | `0`, `1`, `2`          | day     |
 | `3`, `4`, `5`          | month   |
 | `6` … `10`             | year    |
+
+<FieldDiagram
+  text="31.03.2026"
+  head={2}
+  locale="de-CH"
+  caption={`The cursor at 2 is right after the last digit of the day, so it still belongs to the day: segmentAtPosition(segments, 2) → ${String(segmentAtPosition(segments, 2))}. One step further, at 3 after the dot, it is ${String(segmentAtPosition(segments, 3))}, the month.`}
+/>
 
 When the position is in no editable segment, for example past the end or
 negative, the **last** editable segment is returned:

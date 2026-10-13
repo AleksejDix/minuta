@@ -6,6 +6,13 @@ sidebar:
   label: Overview
 ---
 
+import { period, range } from "minuta";
+import { formatPeriod, formatRange } from "minuta/format";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 15), "month");
+export const marchToApril = range(new Date(2026, 2, 30), new Date(2026, 3, 5));
+
 `minuta/format` turns periods into text for people: "March 2026", "Mar 9 –
 15, 2026", "30. März – 5. Apr. 2026". It uses the `Intl.DateTimeFormat`
 built into browsers and Node, so it ships no language data and works in
@@ -34,6 +41,18 @@ formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH");
 formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH");
 // → "30. März – 5. Apr. 2026"
 ```
+
+<Timeline
+  caption="The two periods of the example, each labelled with the text the format functions give in de-CH."
+  tracks={[
+    { label: formatPeriod(march, "de-CH"), periods: [march], tone: "accent" },
+    {
+      label: formatRange(marchToApril, "de-CH"),
+      periods: [marchToApril],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Key ideas
 

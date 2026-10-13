@@ -6,6 +6,26 @@ sidebar:
   label: Overview
 ---
 
+import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
+import { parseDate } from "fechita";
+import { applyInputEvent, visibleRange } from "input-dom";
+import { createInputState } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const format = deriveFormat("de-CH");
+export const empty = createInputState({ mask: dateMask(format) });
+export const parse = (text) => {
+  const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+};
+export const pasted = applyInputEvent(
+  empty,
+  { data: "2026-03-31", inputType: "insertFromPaste" },
+  (state, text) => typeDate(format, state, text, { parse })
+);
+export const shown = visibleRange(empty);
+
 input-dom connects a real `<input>` element to an input state. Key presses,
 pastes, drops and mouse selections go in; the text and the cursor come out.
 The element never edits itself: every change goes through the state's rules,
@@ -112,6 +132,21 @@ What the user sees:
 
 Call `controller.destroy()` when the element goes away.
 
+<FieldDiagram
+  text={empty.buffer.text}
+  anchor={shown.start}
+  head={shown.end}
+  locale="de-CH"
+  caption="The focused empty field as the element shows it: the first slot selected as a block, where the first digit goes."
+/>
+
+<FieldDiagram
+  text={pasted.buffer.text}
+  head={pasted.buffer.selection.head}
+  locale="de-CH"
+  caption="After pasting 2026-03-31: fechita read the date, typeDate wrote it in the field's order, and the cursor is at the end."
+/>
+
 ## Functions
 
 | Function                                   | What it does                                                     |
@@ -124,6 +159,38 @@ Call `controller.destroy()` when the element goes away.
 of your own.
 
 ## How it works
+
+The paste from the table, step by step:
+
+<Flow
+  steps={[
+    {
+      code: 'beforeinput { inputType: "insertFromPaste", data: "2026-03-31" }',
+      layer: "browser",
+      text: "The browser announces the paste. input-dom cancels it, so the element's text is never edited by the browser.",
+    },
+    {
+      code: 'insert(state, "2026-03-31")',
+      layer: "input-dom",
+      text: "applyInputEvent hands the pasted text to the insert option.",
+    },
+    {
+      code: `parse("2026-03-31") → ${parse("2026-03-31").toDateString()}`,
+      layer: "fechita",
+      text: "typeDate asks the parser first; fechita reads the ISO date.",
+    },
+    {
+      code: `"${pasted.buffer.text}"`,
+      layer: "datefield",
+      text: "The date is written in the field's format, DMY with dots.",
+    },
+    {
+      code: `setSelectionRange(${String(visibleRange(pasted).start)}, ${String(visibleRange(pasted).end)})`,
+      layer: "element",
+      text: "input-dom shows the new text and the cursor, then calls onChange.",
+    },
+  ]}
+/>
 
 - Every `beforeinput` event is cancelled and applied to the state instead.
   The state is then shown in the element. Because the browser never edits the

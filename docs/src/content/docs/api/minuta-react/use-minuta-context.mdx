@@ -3,6 +3,12 @@ title: useMinutaContext
 description: A React hook that reads the minuta state of the closest MinutaRoot.
 ---
 
+import { divide, period } from "minuta";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const february = period(new Date(2024, 1, 10), "month");
+
 A hook that reads the minuta state of the closest
 [`MinutaRoot`](../minuta-root/) (or [`CalendarRoot`](../calendar-root/))
 above the component.
@@ -45,6 +51,22 @@ export function App() {
 
 This renders "February has 29 days" (2024 is a leap year).
 
+<Timeline
+  caption="What MonthInfo reads and computes: the browsed month from the root, and its 29 days from the bound divide."
+  marks={[{ date: new Date(2024, 1, 10), label: "date: Feb 10" }]}
+  tracks={[
+    { label: "browsing", periods: [february], tone: "ink" },
+    {
+      label: 'divide(browsing, "day")',
+      periods: divide(february, "day"),
+      tone: "accent",
+    },
+  ]}
+/>
+
+The `date` prop only picks the month: the root browses the whole of
+February, from Feb 1 00:00, not from Feb 10.
+
 ## Returns
 
 The same object that [`useMinuta`](../use-minuta/#returns) returns:
@@ -54,6 +76,42 @@ The same object that [`useMinuta`](../use-minuta/#returns) returns:
 Every component that calls `useMinutaContext()` under the same root gets the
 same object. When one of them calls `browse()`, all of them re-render with the
 new `browsing`.
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "<MinutaRoot>",
+        note: "runs useMinuta once",
+        children: [
+          {
+            name: "<MonthInfo>",
+            note: "this page: useMinutaContext() → the root's object",
+          },
+          {
+            name: "<Toolbar>",
+            note: "useMinutaContext() → the same object",
+            children: [
+              {
+                name: '<MinutaRoot unit="week">',
+                note: "a nested root",
+                children: [
+                  {
+                    name: "<WeekInfo>",
+                    note: "useMinutaContext() → the closest root: the week one",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
+`Toolbar` and `WeekInfo` are made-up components to show the rule: each call
+reads the closest root above it.
 
 ## Errors
 

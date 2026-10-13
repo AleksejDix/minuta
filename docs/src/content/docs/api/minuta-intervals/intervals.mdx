@@ -3,6 +3,18 @@ title: intervals
 description: The intervals plugin — pass it to withUnits to get clamp, gap, merge, move, resize, snap and split on the bound object.
 ---
 
+import { withUnits } from "minuta/core";
+import { intervals } from "minuta/intervals";
+import { nativeUnits } from "minuta/native";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const time = withUnits(nativeUnits(), { plugins: [intervals] });
+export const days = time.divide(
+  time.period(new Date(2026, 2, 1), "month"),
+  "day"
+);
+
 The intervals plugin. Pass it to `withUnits` and the interval functions
 join the operations on the bound object.
 
@@ -28,7 +40,51 @@ time.merge(days, "month"); // → March, unit "month"
 time.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
 ```
 
+<Timeline
+  caption="An operation and a plugin function on the same object: time.divide cuts March into 31 days, time.merge joins them back into one period with the unit month (solid, not hatched)."
+  tracks={[
+    { label: 'time.divide(march, "day")', periods: days },
+    {
+      label: 'time.merge(days, "month")',
+      periods: [time.merge(days, "month")],
+      tone: "accent",
+    },
+  ]}
+/>
+
 ## What it contains
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "time = withUnits(units, { plugins: [intervals] })",
+        note: "one object, every function bound to the same units",
+        children: [
+          {
+            name: "period, next, divide, duration, …",
+            note: "the operations of minuta/core",
+          },
+          {
+            name: "intervals",
+            note: "the plugin's seven functions",
+            children: [
+              { name: "merge(periods, unit?)", note: "needs units: filled in" },
+              {
+                name: "snap(date, unit, options?)",
+                note: "needs units: filled in",
+              },
+              {
+                name: "clamp, gap, move, resize, split",
+                note: "work on the dates alone",
+              },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
 
 `intervals` is a plain object of seven functions:
 

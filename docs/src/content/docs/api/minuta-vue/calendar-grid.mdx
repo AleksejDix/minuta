@@ -3,6 +3,9 @@ title: CalendarGrid
 description: A Vue component that renders the browsed month as a table of 6 weeks, with weekday headers and keyboard navigation.
 ---
 
+import Flow from "../../../../components/diagrams/Flow.astro";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
 A component that renders the browsed month as a table: a row of weekday names,
 then 6 weeks of 7 days. It follows the WAI-ARIA date picker grid, so the
 keyboard works the way screen reader users expect.
@@ -53,6 +56,13 @@ const { busyDays } = defineProps(["busyDays"]);
 Both show the current month. The second adds a dot under every day whose date
 is in the `busyDays` set.
 
+<MonthGrid month="2026-03" marks={["2026-03-04", "2026-03-12", "2026-03-20"]} />
+
+The second grid in March 2026, with `busyDays` holding March 4, 12 and 20:
+each of those cells gets the dot next to its `CalendarDay`. The `#day` slot
+runs for the grey days of February and April too; their buttons get the class
+`is-outside`.
+
 ## Props
 
 | Name     | What it is                                                        | Default   |
@@ -84,6 +94,11 @@ The column order comes from the units: Monday first by default,
 Sunday first with `nativeUnits({ weekStartsOn: "sunday" })`. The weekday row is
 a [`CalendarWeekdays`](../calendar-weekdays/), rendered for you.
 
+<MonthGrid month="2021-02" />
+
+February 2021 starts on a Monday and has 28 days, so the month fills exactly
+4 rows. The grid still renders 6: the last 2 rows are March days.
+
 ## Keyboard
 
 Only one day is in the tab order (roving focus). Tab moves into the grid on:
@@ -102,6 +117,33 @@ else the 1st of the month.
 When the target day is outside the browsed month, the grid browses to its
 month first and then focuses it. When the target month is shorter, the day is
 clamped to its last day: PageDown on January 31, 2024 goes to February 29.
+
+<Flow
+  steps={[
+    {
+      code: "keydown PageDown",
+      layer: "browser",
+      text: "January 2024 is shown and January 31 has the focus.",
+    },
+    {
+      code: "Jan 31 → day 31 of February → Feb 29",
+      layer: "CalendarDay",
+      text: "Finds the same day one month later; February has only 29 days, so it is clamped.",
+    },
+    {
+      code: "focus(Feb 29) · browse(Feb 29)",
+      layer: "CalendarRoot",
+      text: "Feb 29 becomes the focused day. It is not in January, so the root browses to February.",
+    },
+    {
+      code: 'nextTick() · tabindex="0" · .focus()',
+      layer: "CalendarGrid",
+      text: "After Vue re-renders February, the button of Feb 29 is the one in the tab order and takes the focus.",
+    },
+  ]}
+/>
+
+Nothing is selected on the way: no `select` event until Enter or Space.
 
 ## Accessibility
 

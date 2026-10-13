@@ -3,6 +3,14 @@ title: divideWith
 description: Split a period into smaller periods — a month into weeks, a day into hours — with the units you pass.
 ---
 
+import { divideWith, periodWith, range } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const monday = nativeUnits();
+export const sunday = nativeUnits({ weekStartsOn: "sunday" });
+export const march = periodWith(sunday, new Date(2026, 2, 1), "month");
+
 Split a period into smaller periods (a month into weeks, a day into hours, an
 hour into 15-minute slots), computed with the units you pass.
 
@@ -33,6 +41,26 @@ divideWith(units, march, "week");
 
 With weeks from Sunday, March 2026 starts on a whole week. With the default
 Monday start, the same call gives six pieces, and the first one is cut.
+
+<Timeline
+  caption='divideWith(units, march, "week") with Sunday units and with Monday units. Cut pieces are hatched.'
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: "sunday units",
+      periods: divideWith(sunday, march, "week"),
+      tone: "accent",
+    },
+    {
+      label: "monday units",
+      periods: divideWith(monday, march, "week"),
+      tone: "ink",
+    },
+  ]}
+/>
+
+March 1 2026 is a Sunday. With Sunday units the first week fits, and only the
+last one is cut; with Monday units the 1st is a piece of its own.
 
 ## Parameters
 
@@ -79,6 +107,27 @@ divideWith(
 );
 // → 9:07–9:21:59.999, 9:22–9:36:59.999, 9:37–9:51:59.999, 9:52–10:00:00.000
 ```
+
+<Timeline
+  caption="15-minute steps from 9:07: the pieces start at the range's start, not at 9:00 or 9:15. The last one is cut at 10:00."
+  tracks={[
+    {
+      label: "range(9:07, 10:00)",
+      periods: [range(new Date(2026, 2, 1, 9, 7), new Date(2026, 2, 1, 10))],
+      tone: "muted",
+    },
+    {
+      label: "{ step: 15 }",
+      periods: divideWith(
+        monday,
+        range(new Date(2026, 2, 1, 9, 7), new Date(2026, 2, 1, 10)),
+        "minute",
+        { step: 15 }
+      ),
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Hours follow the clock change
 

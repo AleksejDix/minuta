@@ -3,6 +3,12 @@ title: replaceRange
 description: Replace a range of the text with new text and put the cursor after it.
 ---
 
+import { createTextBuffer, replaceRange } from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const buffer = createTextBuffer("hello world");
+export const early = createTextBuffer("hello", { anchor: 1, head: 1 });
+
 Replace the text between two positions with new text. The cursor ends up right
 after the new text.
 
@@ -24,6 +30,22 @@ const buffer = createTextBuffer("hello world");
 replaceRange(buffer, { from: 0, to: 5 }, "goodbye");
 // → "goodbye world", cursor at 7
 ```
+
+The range does not have to be selected. Here the cursor is at the end, and
+the range is the first word:
+
+<FieldDiagram
+  anchor={0}
+  head={5}
+  text={buffer.text}
+  caption='The range { from: 0, to: 5 } covers "hello". The buffer itself has its cursor at 11.'
+/>
+
+<FieldDiagram
+  {...replaceRange(buffer, { from: 0, to: 5 }, "goodbye").selection}
+  text={replaceRange(buffer, { from: 0, to: 5 }, "goodbye").text}
+  caption='After replaceRange: "goodbye world", with the cursor at 7, right after the new text, no longer at the end.'
+/>
 
 ## Parameters
 
@@ -52,6 +74,18 @@ replaceRange(
 );
 // → "hello!", cursor at 6 (moved from 1 to after the "!")
 ```
+
+<FieldDiagram
+  {...early.selection}
+  text={early.text}
+  caption="Before: the cursor at 1."
+/>
+
+<FieldDiagram
+  {...replaceRange(early, { from: 5, to: 5 }, "!").selection}
+  text={replaceRange(early, { from: 5, to: 5 }, "!").text}
+  caption='After replaceRange(buffer, { from: 5, to: 5 }, "!"): nothing removed, "!" added at 5, and the cursor follows it to 6.'
+/>
 
 ## Positions are clamped
 

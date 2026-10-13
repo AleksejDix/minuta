@@ -3,6 +3,15 @@ title: fromDate
 description: Write a Date as segments in a format, ready to show in a date field.
 ---
 
+import { deriveFormat, fromDate, segmentsToString } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const format = deriveFormat("de-CH");
+export const segments = fromDate(new Date(2026, 2, 31), format);
+export const written = (locale) =>
+  segmentsToString(fromDate(new Date(2026, 2, 1), deriveFormat(locale)));
+
 Write a `Date` in a format, so `new Date(2026, 2, 1)` becomes `01.03.2026` for
 `de-CH` and `03/01/2026` for `en-US`.
 
@@ -32,6 +41,42 @@ fromDate(new Date(2026, 2, 31), format);
 
 segmentsToString(fromDate(new Date(2026, 2, 1), format)); // → "01.03.2026"
 ```
+
+<Flow
+  steps={[
+    {
+      code: "new Date(2026, 2, 31)",
+      layer: "date",
+      text: "A Date, read in local time: day 31, month 3, year 2026.",
+    },
+    {
+      code: segments
+        .map((segment) => `${segment.type} "${segment.value}"`)
+        .join(", "),
+      layer: "fromDate",
+      text: "Each part of the format gets the date's number, padded with zeros to the segment's length.",
+    },
+    {
+      code: `"${segmentsToString(segments)}"`,
+      layer: "segmentsToString",
+      text: "Joined, the segments are the text a field can show.",
+    },
+  ]}
+/>
+
+The same date in two formats: one `Date`, two texts.
+
+<FieldDiagram
+  text={written("de-CH")}
+  locale="de-CH"
+  caption='fromDate(new Date(2026, 2, 1), deriveFormat("de-CH")): day 1 is padded to 01.'
+/>
+
+<FieldDiagram
+  text={written("en-US")}
+  locale="en-US"
+  caption='The same date with deriveFormat("en-US"): the month segment comes first.'
+/>
 
 ## Parameters
 

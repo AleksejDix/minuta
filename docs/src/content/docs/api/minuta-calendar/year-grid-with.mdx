@@ -3,6 +3,14 @@ title: yearGridWith
 description: Get the whole weeks that cover a year, from the week of January 1 to the week of December 31.
 ---
 
+import { period } from "minuta";
+import { yearGridWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const year2026 = period(new Date(2026, 5, 1), "year");
+export const year2012 = period(new Date(2012, 0, 1), "year");
+
 Get the whole weeks that cover a year: from the week that contains January 1
 to the week that contains December 31.
 
@@ -49,6 +57,18 @@ An object with three fields:
 
 ## Weeks stick out of the year
 
+<Timeline
+  caption="The 53 weeks of the 2026 grid, one bar each, under the year itself. The first bar starts before Jan 1 and the last one ends after Dec 31."
+  tracks={[
+    { label: "2026", periods: [year2026], tone: "muted" },
+    {
+      label: "yearGridWith(units, 2026)",
+      periods: yearGridWith(nativeUnits(), new Date(2026, 5, 1)).periods,
+      tone: "accent",
+    },
+  ]}
+/>
+
 The weeks are never cut. The first week usually starts in December of the
 year before, and the last one usually ends in January of the next year. If
 you need the days of the year only, use [`divide`](../../minuta/divide/)
@@ -68,6 +88,29 @@ yearGridWith(nativeUnits({ weekStartsOn: "sunday" }), new Date(2012, 0, 1))
   .periods.length;
 // → 53
 ```
+
+Both grids of 2012 under the year. With Monday weeks, the first week holds
+only Sunday Jan 1 of 2012, and the grid needs one more week at the end:
+
+<Timeline
+  caption="2012 has 366 days and starts on a Sunday: 54 Monday weeks, but 53 Sunday weeks."
+  tracks={[
+    { label: "2012", periods: [year2012], tone: "muted" },
+    {
+      label: "Monday weeks",
+      periods: yearGridWith(nativeUnits(), new Date(2012, 0, 1)).periods,
+      tone: "accent",
+    },
+    {
+      label: 'weekStartsOn: "sunday"',
+      periods: yearGridWith(
+        nativeUnits({ weekStartsOn: "sunday" }),
+        new Date(2012, 0, 1)
+      ).periods,
+      tone: "ink",
+    },
+  ]}
+/>
 
 Do not use the position in `periods` as a week number. The first week of the
 grid is the week that contains January 1, which is not always week 1 in the

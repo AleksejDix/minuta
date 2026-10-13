@@ -3,6 +3,13 @@ title: durationWith
 description: Count how many whole units fit into a period — the hours in a day, the days in a month — with the units you pass.
 ---
 
+import { divideWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const units = nativeUnits();
+export const february = periodWith(units, new Date(2026, 1, 1), "month");
+
 Count how many whole units fit into a period (the hours in a day, the days in
 a month), computed with the units you pass.
 
@@ -28,6 +35,18 @@ durationWith(units, periodWith(units, new Date(2026, 1, 1), "month"), "day");
 durationWith(units, periodWith(units, new Date(2026, 2, 29), "day"), "hour");
 // → 23 in Europe/Zurich, the clocks go forward that night
 ```
+
+<Timeline
+  caption='The 28 whole days that durationWith(units, february, "day") counts, drawn here with divideWith.'
+  tracks={[
+    { label: "february", periods: [february], tone: "ink" },
+    {
+      label: 'divideWith(units, february, "day")',
+      periods: divideWith(units, february, "day"),
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Parameters
 

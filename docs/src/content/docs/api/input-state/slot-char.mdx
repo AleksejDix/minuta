@@ -3,6 +3,14 @@ title: slotChar
 description: The character a mask slot stores for a typed character, or nothing when the slot rejects it.
 ---
 
+import { createInputState, parseMask, paste } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const arabic = paste(
+  createInputState({ mask: parseMask("99.99.9999") }),
+  "٣١٠٣٢٠٢٦"
+);
+
 Find out what a slot stores when the user types a character. Digits of every
 script become `0`–`9`; characters the slot does not take give nothing.
 
@@ -25,6 +33,16 @@ slotChar("digit", "३"); // → "3"   (Devanagari)
 slotChar("digit", "x"); // → undefined
 slotChar("letter", "ä"); // → "ä"
 ```
+
+A field calls `slotChar` for every character it is given. Pasting the
+Arabic-Indic digits `٣١٠٣٢٠٢٦` into a date mask stores this:
+
+<FieldDiagram
+  {...arabic.buffer.selection}
+  text={arabic.buffer.text}
+  mode={arabic.mode}
+  caption='paste(field, "٣١٠٣٢٠٢٦"): each digit was turned into its ASCII digit before it went into its slot, so the text is plain 0 to 9.'
+/>
 
 ## Parameters
 

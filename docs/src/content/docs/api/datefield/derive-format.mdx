@@ -3,6 +3,11 @@ title: deriveFormat
 description: Ask the browser how a locale writes a date, and get it back as a list of parts you can build a date field from.
 ---
 
+import { deriveFormat, placeholder } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const empty = (locale) => placeholder(deriveFormat(locale));
+
 Ask the browser how a locale writes a date, so `de-CH` gives you
 day–dot–month–dot–year and `en-US` gives you month–slash–day–slash–year. You
 never write a format string yourself.
@@ -25,6 +30,34 @@ placeholder(deriveFormat("en-US")); // → "__/__/____"
 placeholder(deriveFormat("ja-JP")); // → "____/__/__"
 placeholder(deriveFormat("ko-KR")); // → "____. __. __."
 ```
+
+Each field below is built from `deriveFormat(locale)` alone. The brackets
+under the slots are the format's segments; the cells between them are its
+literals.
+
+<FieldDiagram
+  text={empty("de-CH")}
+  locale="de-CH"
+  caption="de-CH: day, month, year, separated by dots."
+/>
+
+<FieldDiagram
+  text={empty("en-US")}
+  locale="en-US"
+  caption="en-US: the month comes first, separated by slashes."
+/>
+
+<FieldDiagram
+  text={empty("ja-JP")}
+  locale="ja-JP"
+  caption="ja-JP: the year comes first, so the four-digit segment is on the left."
+/>
+
+<FieldDiagram
+  text={empty("ko-KR")}
+  locale="ko-KR"
+  caption="ko-KR: year first too, with a dot and a space as separator and a final dot — 13 characters."
+/>
 
 The result itself is a plain list of parts, in the order the locale writes
 them:

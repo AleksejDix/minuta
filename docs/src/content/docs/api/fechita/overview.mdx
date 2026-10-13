@@ -6,6 +6,8 @@ sidebar:
   label: Overview
 ---
 
+import ParseDiagram from "../../../../components/diagrams/ParseDiagram.astro";
+
 `fechita` reads a date out of text the way people write it: `2026-03-31`,
 `31.03.2026`, `3/31/2026`, `31. März 2026`, `Tue, 31 Mar 2026 10:00:00 +0200`,
 `2026年3月31日`. It knows month names, weekday names and AM/PM words of 104
@@ -44,6 +46,15 @@ parseDate("04/05/2026");
 parseDate("04/05/2026", { locale: "en-US" });
 // → valid: 5 April 2026
 ```
+
+One text written with a month name, read as one date; one written with only
+numbers, which has two readings until a locale picks one:
+
+<ParseDiagram text="31. März 2026" />
+
+<ParseDiagram text="04/05/2026" />
+
+<ParseDiagram text="04/05/2026" locale="en-US" />
 
 ## Two entry points
 

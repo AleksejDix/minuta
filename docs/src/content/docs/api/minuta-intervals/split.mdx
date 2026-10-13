@@ -3,6 +3,12 @@ title: split
 description: Cut a period in two at a date — the part before it and the part from it on.
 ---
 
+import { period } from "minuta";
+import { split } from "minuta/intervals";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 1), "month");
+
 Cut a period in two at a date: the part before that date, and the part from
 that date on.
 
@@ -28,6 +34,19 @@ split(march, new Date(2026, 2, 15));
 //     { start: Mar 15 00:00, end: Mar 31 23:59:59.999, unit: "custom" },
 //   ]
 ```
+
+<Timeline
+  caption="March cut at Mar 15 (pin): the first part ends just before it, the second starts on it. Both are hatched, because half a month has the unit custom."
+  marks={[{ date: new Date(2026, 2, 15), label: "Mar 15" }]}
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: "split(march, Mar 15)",
+      periods: split(march, new Date(2026, 2, 15)),
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Parameters
 

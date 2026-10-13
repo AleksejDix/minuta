@@ -3,6 +3,8 @@ title: MinutaError
 description: The error codes that start the message of every error minuta throws.
 ---
 
+import Flow from "../../../../components/diagrams/Flow.astro";
+
 The error codes that minuta puts at the start of every error message. Use them
 to tell one kind of error from another.
 
@@ -37,6 +39,33 @@ followed by a colon, what went wrong, and how to fix it:
 // RangeError: INVALID_DATE: date is an invalid Date. Pass a valid Date such as
 // new Date(2026, 0, 31), and check the string or numbers it was built from.
 ```
+
+From the bad call to the code your `catch` checks:
+
+<Flow
+  steps={[
+    {
+      code: 'period(new Date("nope"), "day")',
+      layer: "your code",
+      text: "Passes a Date that is invalid.",
+    },
+    {
+      code: "INVALID_DATE",
+      layer: "period",
+      text: "Checks the date where it comes in, finds it invalid and picks the code.",
+    },
+    {
+      code: "RangeError: INVALID_DATE: date is an invalid Date. …",
+      layer: "RangeError",
+      text: "A plain RangeError is thrown. Its message is the code, a colon, what went wrong and how to fix it.",
+    },
+    {
+      code: "error.message.startsWith(MinutaError.InvalidDate)",
+      layer: "your catch",
+      text: "Compares the start of the message with a key of MinutaError, which is just the string INVALID_DATE.",
+    },
+  ]}
+/>
 
 :::caution
 `error instanceof MinutaError` does not work, because `MinutaError` is not a

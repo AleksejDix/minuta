@@ -3,6 +3,14 @@ title: isComplete
 description: Whether every slot of a masked input field is filled.
 ---
 
+import { createInputState, isComplete, parseMask } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const mask = parseMask("99.99.9999");
+export const done = createInputState({ mask, value: "31032026" });
+export const half = createInputState({ mask, value: "3103" });
+export const impossible = createInputState({ mask, value: "31022026" });
+
 Check whether the user has filled every slot of a masked field.
 
 ```ts
@@ -24,6 +32,20 @@ isComplete(createInputState({ mask, value: "31032026" })); // → true
 isComplete(createInputState({ mask, value: "3103" })); // → false
 ```
 
+<FieldDiagram
+  {...half.buffer.selection}
+  text={half.buffer.text}
+  mode={half.mode}
+  caption={`value "3103": four slots still hold "_", so isComplete → ${String(isComplete(half))}.`}
+/>
+
+<FieldDiagram
+  {...done.buffer.selection}
+  text={done.buffer.text}
+  mode={done.mode}
+  caption={`value "31032026": no slot holds "_" any more, so isComplete → ${String(isComplete(done))}.`}
+/>
+
 ## Parameters
 
 | Name    | What it is            |
@@ -40,6 +62,13 @@ field has no slots, so it is always complete.
 `isComplete` only counts filled slots. `"31.02.2026"` is complete, even
 though February has no 31st. Check the value itself, for example with
 [`toDate`](../../datefield/to-date/) in datefield.
+
+<FieldDiagram
+  {...impossible.buffer.selection}
+  text={impossible.buffer.text}
+  mode={impossible.mode}
+  caption={`"31.02.2026": every slot is filled, so isComplete → ${String(isComplete(impossible))}, though the date does not exist.`}
+/>
 
 :::caution
 A slot counts as empty when it holds the placeholder character. If your

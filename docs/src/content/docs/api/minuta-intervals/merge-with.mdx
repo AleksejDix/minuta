@@ -3,6 +3,23 @@ title: mergeWith
 description: Join periods into one that runs from the earliest start to the latest end — and keep a unit like "month" when the result is exactly one.
 ---
 
+import { divide, period, range } from "minuta";
+import { mergeWith } from "minuta/intervals";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const units = nativeUnits();
+export const jan = period(new Date(2026, 0, 1), "month");
+export const mar = period(new Date(2026, 2, 1), "month");
+export const meetings = [
+  range(new Date(2026, 0, 1, 9), new Date(2026, 0, 1, 11)),
+  range(new Date(2026, 0, 1, 10), new Date(2026, 0, 1, 12)),
+];
+export const days7 = divide(
+  range(new Date(2026, 2, 16), new Date(2026, 2, 22, 23, 59, 59, 999)),
+  "day"
+);
+
 Join several periods into one that runs from the earliest start to the
 latest end. When the result is exactly one whole unit, such as one month, it
 gets that unit.
@@ -63,6 +80,18 @@ mergeWith(units, [
 // → Jan 1 – Mar 31 23:59:59.999, unit "custom" (February is included)
 ```
 
+<Timeline
+  caption="January and March go in; the merged period (accent) runs from Jan 1 to Mar 31 and covers February too. It is hatched: three months are not one month."
+  tracks={[
+    { label: "jan, mar", periods: [jan, mar] },
+    {
+      label: "mergeWith(units, [jan, mar])",
+      periods: [mergeWith(units, [jan, mar])],
+      tone: "accent",
+    },
+  ]}
+/>
+
 The same goes for overlapping periods: they become one period with no
 double counting.
 
@@ -75,6 +104,19 @@ mergeWith(units, [
 ]);
 // → 09:00 – 12:00, unit "custom"
 ```
+
+<Timeline
+  caption="Two meetings that overlap from 10:00 to 11:00 become one block from 9:00 to 12:00."
+  tracks={[
+    { label: "9:00 – 11:00", periods: [meetings[0]] },
+    { label: "10:00 – 12:00", periods: [meetings[1]] },
+    {
+      label: "mergeWith(units, meetings)",
+      periods: [mergeWith(units, meetings)],
+      tone: "accent",
+    },
+  ]}
+/>
 
 If you need to keep separate blocks apart, use [`gap`](../gap/) or
 [`overlaps`](../../minuta/overlaps/) to group them first, then merge each
@@ -127,6 +169,25 @@ const days7 = divide(
 mergeWith(nativeUnits(), days7, "week"); // → unit "week"
 mergeWith(nativeUnits({ weekStartsOn: "sunday" }), days7, "week"); // → unit "custom"
 ```
+
+<Timeline
+  caption="The same seven days merged twice. With Monday weeks the result is a whole week (solid); with Sunday weeks it is custom (hatched)."
+  tracks={[
+    { label: "days7", periods: days7 },
+    {
+      label: "Monday weeks",
+      periods: [mergeWith(nativeUnits(), days7, "week")],
+      tone: "accent",
+    },
+    {
+      label: "Sunday weeks",
+      periods: [
+        mergeWith(nativeUnits({ weekStartsOn: "sunday" }), days7, "week"),
+      ],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Errors
 

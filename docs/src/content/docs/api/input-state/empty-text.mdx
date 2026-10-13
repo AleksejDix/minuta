@@ -3,6 +3,9 @@ title: emptyText
 description: The text of a mask with every slot empty, such as __.__.____.
 ---
 
+import { emptyText, parseMask } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
 Get the text a masked field shows before anything is typed: literals in
 place, the placeholder in every slot.
 
@@ -23,6 +26,25 @@ emptyText(parseMask("99.99.9999")); // → "__.__.____"
 emptyText(parseMask("99/99", "·")); // → "··/··"
 emptyText(parseMask("+41 99 999 99 99")); // → "+41 __ ___ __ __"
 ```
+
+The muted cells are the slots, holding the placeholder. Everything else is a
+literal and is shown as it is:
+
+<FieldDiagram
+  text={emptyText(parseMask("99.99.9999"))}
+  caption='emptyText(parseMask("99.99.9999")): eight empty digit slots and two dots.'
+/>
+
+<FieldDiagram
+  text={emptyText(parseMask("+41 99 999 99 99"))}
+  caption='emptyText(parseMask("+41 99 999 99 99")): the "+41" and the spaces are literals, so only the nine "_" cells can be typed into.'
+/>
+
+<FieldDiagram
+  text={emptyText(parseMask("99/99", "·"))}
+  placeholder="·"
+  caption='emptyText(parseMask("99/99", "·")): with "·" as the placeholder, the empty slots show "·".'
+/>
 
 ## Parameters
 

@@ -3,6 +3,9 @@ title: parseMask
 description: Turn a pattern such as 99.99.9999 into a mask of slots and literals.
 ---
 
+import { emptyText, parseMask } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
 Turn a pattern such as `99.99.9999` into a mask: a fixed list of slots, which
 the user fills, and literals, which are always there.
 
@@ -24,6 +27,14 @@ const mask = parseMask("99.99.9999");
 emptyText(mask); // → "__.__.____"
 createInputState({ mask }).buffer.text; // → "__.__.____"
 ```
+
+The mask has one token per cell of the field. Each `9` became a slot, shown
+muted with the placeholder; each `.` stayed a literal:
+
+<FieldDiagram
+  text={emptyText(parseMask("99.99.9999"))}
+  caption='parseMask("99.99.9999"): ten tokens, slots at 0, 1, 3, 4 and 6 to 9, literals at 2 and 5.'
+/>
 
 ## Parameters
 
@@ -48,6 +59,17 @@ emptyText(parseMask("+41 99 999 99 99")); // → "+41 __ ___ __ __"
 emptyText(parseMask("\\9 9", "#")); // → "9 #", the first 9 is a literal
 emptyText(parseMask("99/99", "·")); // → "··/··"
 ```
+
+<FieldDiagram
+  text={emptyText(parseMask("AAA-999"))}
+  caption='parseMask("AAA-999"): three letter slots, the "-" literal, three digit slots. Letter and digit slots look the same empty; they differ in what they take.'
+/>
+
+<FieldDiagram
+  text={emptyText(parseMask("\\9 9", "#"))}
+  placeholder="#"
+  caption='parseMask("\\9 9", "#"): the escaped 9 is a literal and shown as "9"; only the last cell is a slot, shown as "#".'
+/>
 
 In a JavaScript string the backslash itself must be escaped, so `\9` is
 written `"\\9"`.

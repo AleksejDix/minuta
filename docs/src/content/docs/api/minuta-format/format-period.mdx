@@ -3,6 +3,19 @@ title: formatPeriod
 description: Turn a period into a label in any language — "March 2026", "15. März 2026", "Mar 9 – 15, 2026" — picked by the period's unit.
 ---
 
+import { divide, period } from "minuta";
+import { formatPeriod, formatRange } from "minuta/format";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = new Date(2026, 2, 15, 14, 5, 9);
+export const labelled = (units) =>
+  units.map((unit) => ({
+    label: `${unit}: ${formatPeriod(period(date, unit), "en-US")}`,
+    periods: [period(date, unit)],
+    tone: "accent",
+  }));
+export const q2 = period(new Date(2026, 4, 1), "quarter");
+
 Turn a period into a label for people to read, in any language: "March
 2026", "15. März 2026", "Mar 9 – 15, 2026". The format is picked by the
 period's unit.
@@ -58,6 +71,21 @@ The unit of the period decides what the label shows. For Sun Mar 15 2026,
 | `minute`  | Mar 15, 2:05 PM    | 15. März, 14:05    | 3月15日 14:05          |
 | `second`  | Mar 15, 2:05:09 PM | 15. März, 14:05:09 | 3月15日 14:05:09       |
 
+The periods around that moment, each labelled with its `"en-US"` text. The
+larger units first:
+
+<Timeline
+  caption="The year, the quarter and the month that contain Mar 15 2026, each with the label formatPeriod gives it."
+  tracks={labelled(["year", "quarter", "month"])}
+/>
+
+And the smaller ones, on the scale of one week:
+
+<Timeline
+  caption="The week, the day and the hour of Mar 15 2026, 14:05. The week is labelled as a range; the day and the hour by their start."
+  tracks={labelled(["week", "day", "hour"])}
+/>
+
 Weeks and `"custom"` periods are shown as a range from start to end, the
 same as [`formatRange`](../format-range/). All other units show their start.
 
@@ -82,6 +110,23 @@ const q2 = period(new Date(2026, 4, 1), "quarter");
 formatPeriod(q2, "en-US"); // → "Apr 2026"
 formatRange(q2, "en-US"); // → "Apr – Jun 2026"
 ```
+
+<Timeline
+  caption="One quarter, two labels: formatPeriod names only the first month, formatRange the first and the last."
+  tracks={[
+    { label: "its months", periods: divide(q2, "month"), tone: "muted" },
+    {
+      label: `formatPeriod: ${formatPeriod(q2, "en-US")}`,
+      periods: [q2],
+      tone: "accent",
+    },
+    {
+      label: `formatRange: ${formatRange(q2, "en-US")}`,
+      periods: [q2],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Options
 

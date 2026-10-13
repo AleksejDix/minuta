@@ -3,6 +3,14 @@ title: accepts
 description: Whether a kind of mask slot — digit, letter or alphanumeric — takes a character.
 ---
 
+import { accepts, createInputState, parseMask, paste } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const code = paste(
+  createInputState({ mask: parseMask("AAA-999") }),
+  "1a2b3c4"
+);
+
 Check whether a kind of slot takes a character: a digit slot takes digits, a
 letter slot takes letters, an alphanumeric slot takes both.
 
@@ -24,6 +32,17 @@ accepts("digit", "a"); // → false
 accepts("letter", "ä"); // → true
 accepts("alphanumeric", "-"); // → false
 ```
+
+A field asks this question for every character typed or pasted. Here
+`"1a2b3c4"` was pasted into the mask `AAA-999`, three letter slots and three
+digit slots:
+
+<FieldDiagram
+  {...code.buffer.selection}
+  text={code.buffer.text}
+  mode={code.mode}
+  caption='paste(field, "1a2b3c4"): the letter slots refused 1, 2 and 3 and took a, b and c; the first digit slot took 4. The last two slots are still empty, and the cursor waits on the next one.'
+/>
 
 ## Parameters
 

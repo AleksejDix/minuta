@@ -3,6 +3,15 @@ title: previous
 description: Get the period right before a period — the day before, the week before, the month before.
 ---
 
+import { divide, period, previous } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 15), "month");
+export const firstPiece = divide(
+  period(new Date(2026, 2, 1), "month"),
+  "week"
+)[0];
+
 Get the period right before a period: the day before a day, the week before
 a week, the month before a month.
 
@@ -24,6 +33,14 @@ const march = period(new Date(2026, 2, 15), "month");
 previous(march);
 // → Sun Feb 1 00:00:00.000 – Sat Feb 28 23:59:59.999, unit "month"
 ```
+
+<Timeline
+  caption="previous(march) ends the millisecond before March starts, and is a whole February: 28 days."
+  tracks={[
+    { label: "previous(march)", periods: [previous(march)], tone: "accent" },
+    { label: "march", periods: [march], tone: "ink" },
+  ]}
+/>
 
 ## Parameters
 
@@ -68,6 +85,23 @@ const [firstPiece] = divide(period(new Date(2026, 2, 1), "month"), "week");
 previous(firstPiece);
 // → Sat Feb 28 00:00:00.000 – 23:59:59.999, unit "custom"
 ```
+
+<Timeline
+  caption="The first piece of March split into weeks is one day long, so previous moves it back one day. The whole week it was cut from is shown for comparison."
+  tracks={[
+    {
+      label: 'period(firstPiece.start, "week")',
+      periods: [period(firstPiece.start, "week")],
+      tone: "muted",
+    },
+    { label: "firstPiece", periods: [firstPiece], tone: "ink" },
+    {
+      label: "previous(firstPiece)",
+      periods: [previous(firstPiece)],
+      tone: "accent",
+    },
+  ]}
+/>
 
 See [`next`](../next/#custom-periods-move-by-their-own-length) for more on
 custom periods, including ranges that end on a round time.

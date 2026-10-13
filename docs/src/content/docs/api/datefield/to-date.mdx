@@ -3,6 +3,14 @@ title: toDate
 description: Read the date out of a field's segments, or get undefined while it is incomplete or impossible.
 ---
 
+import { deriveFormat, parseSegments, toDate } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const format = deriveFormat("de-CH");
+export const segments = parseSegments(format, "31.03.2026");
+export const read = (text) => String(toDate(parseSegments(format, text)));
+
 Read the date the user typed: the segments of `31.03.2026` give
 `new Date(2026, 2, 31)`. While a slot is empty, or the date does not exist,
 you get `undefined`.
@@ -26,6 +34,43 @@ toDate(parseSegments(format, "31.03.2026")); // → Tue Mar 31 2026 00:00 (local
 toDate(parseSegments(format, "31.03.____")); // → undefined   (not finished)
 toDate(parseSegments(format, "30.02.2026")); // → undefined   (no 30 February)
 ```
+
+<Flow
+  steps={[
+    {
+      code: '"31.03.2026"',
+      layer: "field",
+      text: "The field holds text, field.buffer.text.",
+    },
+    {
+      code: segments
+        .filter((segment) => segment.type !== "literal")
+        .map((segment) => `${segment.type} "${segment.value}"`)
+        .join(", "),
+      layer: "parseSegments",
+      text: "The text is cut into day, month and year.",
+    },
+    {
+      code: toDate(segments).toDateString(),
+      layer: "toDate",
+      text: "All three are digits and form a real date, so you get a Date at local midnight.",
+    },
+  ]}
+/>
+
+When the text is not a real date yet, the picture stops at the last step:
+
+<FieldDiagram
+  text="31.03.____"
+  locale="de-CH"
+  caption={`The year is still empty: toDate → ${read("31.03.____")}.`}
+/>
+
+<FieldDiagram
+  text="30.02.2026"
+  locale="de-CH"
+  caption={`Every slot is filled, but there is no 30 February: toDate → ${read("30.02.2026")}. The text stays as typed.`}
+/>
 
 Read it from the field after every change:
 

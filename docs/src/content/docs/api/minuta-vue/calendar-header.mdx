@@ -3,6 +3,11 @@ title: CalendarHeader
 description: A Vue component that shows the browsed month between "previous month" and "next month" buttons.
 ---
 
+import { next, period, previous } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2024, 2, 13), "month");
+
 A component that shows the name of the browsed month between a "previous
 month" and a "next month" button.
 
@@ -35,6 +40,23 @@ import {
 
 The heading reads "März 2024". "← Previous" shows February 2024, "Next →"
 shows April 2024.
+
+<Timeline
+  caption="The browsed month and the months the two buttons go to. A click calls browse() with one of the outer bars, and the heading and the grid follow."
+  tracks={[
+    {
+      label: "← Previous: previous(browsing)",
+      periods: [previous(march)],
+      tone: "muted",
+    },
+    { label: "heading: browsing", periods: [march], tone: "accent" },
+    { label: "Next →: next(browsing)", periods: [next(march)], tone: "muted" },
+  ]}
+/>
+
+The header keeps no state of its own. It reads `browsing` from the root and
+calls `browse(previous(browsing.value))` or `browse(next(browsing.value))`, so
+every part inside the same [`CalendarRoot`](../calendar-root/) moves with it.
 
 ## Props
 

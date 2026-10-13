@@ -3,6 +3,15 @@ title: range
 description: Make a period between any two dates, such as a meeting, a trip or a billing cycle.
 ---
 
+import { period, range } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const trip = range(new Date(2026, 2, 18), new Date(2026, 2, 25));
+export const wholeTrip = range(
+  period(new Date(2026, 2, 18), "day").start,
+  period(new Date(2026, 2, 25), "day").end
+);
+
 Make a period between any two dates: a meeting from 9:00 to 10:00, a trip
 from Jan 1 to Mar 31, a billing cycle.
 
@@ -69,6 +78,23 @@ const q1 = range(
 
 duration(q1, "day"); // → 90
 ```
+
+<Timeline
+  caption="The same difference on a short trip. Ending at new Date(2026, 2, 25) stops at the start of Mar 25, so noon that day (the pin) is outside. Ending at the day's end takes the whole day in."
+  marks={[{ date: new Date(2026, 2, 25, 12), label: "Mar 25, 12:00" }]}
+  tracks={[
+    { label: "range(Mar 18, Mar 25)", periods: [trip], tone: "ink" },
+    { label: "range(…, day.end)", periods: [wholeTrip], tone: "accent" },
+    {
+      label: 'period(Mar 25, "day")',
+      periods: [period(new Date(2026, 2, 25), "day")],
+      tone: "muted",
+    },
+  ]}
+/>
+
+Ranges are hatched because their unit is `"custom"`. The first one stops
+where the last day begins; the second one ends with it.
 
 :::caution
 A range from 9:00 to 10:00 includes 10:00:00.000 itself, so it is one hour

@@ -3,6 +3,8 @@ title: select
 description: Set the selection of a text buffer, or place a cursor.
 ---
 
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
 Select part of the text, or place the cursor at one position.
 
 ```ts
@@ -26,6 +28,19 @@ select(buffer, 0, 5);
 select(buffer, 4);
 // → a cursor at 4: { anchor: 4, head: 4 }
 ```
+
+<FieldDiagram
+  text="hello world"
+  anchor={0}
+  head={5}
+  caption="select(buffer, 0, 5): positions sit between characters, so 0 to 5 covers h, e, l, l, o."
+/>
+
+<FieldDiagram
+  text="hello world"
+  head={4}
+  caption="select(buffer, 4): anchor and head at the same position — a collapsed selection, the cursor."
+/>
 
 ## Parameters
 

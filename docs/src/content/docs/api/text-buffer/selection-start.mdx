@@ -3,6 +3,12 @@ title: selectionStart
 description: The left edge of a buffer's selection, whichever way it was made.
 ---
 
+import { createTextBuffer, selectionStart } from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const forward = createTextBuffer("hello", { anchor: 1, head: 4 });
+export const backward = createTextBuffer("hello", { anchor: 4, head: 1 });
+
 Get the left edge of the selection: the smaller of `anchor` and `head`.
 
 ```ts
@@ -21,6 +27,22 @@ import { createTextBuffer, selectionStart } from "text-buffer";
 selectionStart(createTextBuffer("hello", { anchor: 1, head: 4 })); // → 1
 selectionStart(createTextBuffer("hello", { anchor: 4, head: 1 })); // → 1
 ```
+
+The two selections below were made in opposite directions but cover the same
+cells, "ell". `selectionStart` gives the left edge of the highlight, not one of the
+two ends:
+
+<FieldDiagram
+  {...forward.selection}
+  text={forward.text}
+  caption={`Forward, anchor 1 and head 4: selectionStart → ${String(selectionStart(forward))}.`}
+/>
+
+<FieldDiagram
+  {...backward.selection}
+  text={backward.text}
+  caption={`Backward, anchor 4 and head 1, as when dragging from right to left: selectionStart → ${String(selectionStart(backward))}.`}
+/>
 
 ## Parameters
 

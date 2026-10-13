@@ -3,6 +3,15 @@ title: resize
 description: Move the start or the end of a period and keep the other edge — e.g. make a meeting longer.
 ---
 
+import { range } from "minuta";
+import { resize } from "minuta/intervals";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const meeting = range(
+  new Date(2026, 2, 29, 9, 0),
+  new Date(2026, 2, 29, 10, 0)
+);
+
 Move the start or the end of a period while the other edge stays where it
 is. Use it to make a meeting longer or to start a booking earlier.
 
@@ -32,6 +41,27 @@ resize(meeting, "start", new Date(2026, 2, 29, 8, 0));
 // → { start: 08:00, end: 10:00, unit: "custom" }
 ```
 
+<Timeline
+  caption="The meeting from 9:00 to 10:00, with its end moved to 11:30 and, separately, its start moved to 8:00 (pins). The other edge stays put."
+  marks={[
+    { date: new Date(2026, 2, 29, 8, 0), label: "8:00" },
+    { date: new Date(2026, 2, 29, 11, 30), label: "11:30" },
+  ]}
+  tracks={[
+    { label: "meeting", periods: [meeting] },
+    {
+      label: 'resize(meeting, "end", …)',
+      periods: [resize(meeting, "end", new Date(2026, 2, 29, 11, 30))],
+      tone: "accent",
+    },
+    {
+      label: 'resize(meeting, "start", …)',
+      periods: [resize(meeting, "start", new Date(2026, 2, 29, 8, 0))],
+      tone: "accent",
+    },
+  ]}
+/>
+
 ## Parameters
 
 | Name      | What it is                                |
@@ -57,6 +87,15 @@ resize(meeting, "start", new Date(2026, 2, 29, 11, 0));
 resize(meeting, "end", new Date(2026, 2, 29, 8, 59));
 // → undefined (8:59 is before the start, 9:00)
 ```
+
+<Timeline
+  caption="11:00 (pin) lies after the end of the meeting. A start there would cross the end, so the result row stays empty: undefined."
+  marks={[{ date: new Date(2026, 2, 29, 11, 0), label: "11:00" }]}
+  tracks={[
+    { label: "meeting", periods: [meeting] },
+    { label: 'resize(meeting, "start", …)', periods: [], tone: "accent" },
+  ]}
+/>
 
 Moving an edge onto the other one is allowed. The result is a period of a
 single moment:

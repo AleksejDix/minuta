@@ -3,6 +3,19 @@ title: duration
 description: Count how many whole units fit into a period — the hours in a day, the days in a month.
 ---
 
+import { divide, period, range } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const february = period(new Date(2026, 1, 1), "month");
+export const meeting = range(
+  new Date(2026, 2, 1, 9),
+  new Date(2026, 2, 1, 10, 30)
+);
+export const overnight = range(
+  new Date(2026, 2, 15, 14),
+  new Date(2026, 2, 16, 13)
+);
+
 Count how many whole units fit into a period: the hours in a day, the days in
 a month, the weeks in a year.
 
@@ -26,6 +39,18 @@ duration(period(new Date(2026, 9, 8), "day"), "hour");
 // → 24
 ```
 
+<Timeline
+  caption='February 2026 split into days: 28 bars. duration(february, "day") counts them without making them.'
+  tracks={[
+    { label: "february", periods: [february], tone: "ink" },
+    {
+      label: 'divide(february, "day")',
+      periods: divide(february, "day"),
+      tone: "accent",
+    },
+  ]}
+/>
+
 ## Parameters
 
 | Name     | What it is                                               |
@@ -45,6 +70,18 @@ duration(period(new Date(2026, 2, 1), "month"), "week"); // → 4  (31 days)
 duration(period(new Date(2026, 2, 1), "month"), "year"); // → 0
 duration(range(new Date(2026, 2, 1, 9), new Date(2026, 2, 1, 10, 30)), "hour"); // → 1
 ```
+
+<Timeline
+  caption="The meeting from 9:00 to 10:30 holds one whole hour. The half hour after it is only part of an hour (hatched), so it does not count."
+  tracks={[
+    { label: "meeting", periods: [meeting], tone: "ink" },
+    {
+      label: 'divide(meeting, "hour")',
+      periods: divide(meeting, "hour"),
+      tone: "accent",
+    },
+  ]}
+/>
 
 `duration` only counts. To get the pieces themselves, use
 [`divide`](../divide/).
@@ -72,6 +109,21 @@ whole days:
 duration(range(new Date(2026, 2, 15, 14), new Date(2026, 2, 16, 13)), "day");
 // → 0
 ```
+
+<Timeline
+  caption="The range from 14:00 to 13:00 the next day crosses midnight but is shorter than one day, so it holds zero whole days."
+  tracks={[
+    {
+      label: "days",
+      periods: [
+        period(new Date(2026, 2, 15), "day"),
+        period(new Date(2026, 2, 16), "day"),
+      ],
+      tone: "muted",
+    },
+    { label: "range(14:00, 13:00)", periods: [overnight], tone: "accent" },
+  ]}
+/>
 
 Month steps follow the calendar too. One month after Jan 31 is Feb 28 (the
 day is cut to the shorter month), so this period already holds one month:

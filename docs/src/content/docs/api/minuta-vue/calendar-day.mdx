@@ -3,6 +3,9 @@ title: CalendarDay
 description: A Vue component that renders one day of the calendar as a button that selects the day and handles the arrow keys.
 ---
 
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
 A component that renders one day as a button. A click, Enter or Space selects
 the day; the arrow keys and Home, End, PageUp, PageDown move the focus.
 
@@ -39,6 +42,37 @@ import { CalendarDay, CalendarGrid, CalendarRoot } from "minuta-vue/components";
 It shows January 2024 with French weekday names. The button of January 15
 shows "15" and is named "lundi 15 janvier 2024" for screen readers.
 
+Where the day sits in the calendar, and what is inside its button:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "<CalendarGrid>",
+        note: "fills the #day slot once per day, 42 times",
+        children: [
+          {
+            name: "<tr> × 6",
+            note: "one row per week, no class",
+            children: [
+              {
+                name: '<td class="calendar-cell"> × 7',
+                note: "the table cell, with aria-selected",
+                children: [
+                  {
+                    name: '<CalendarDay> → <button class="calendar-day">',
+                    note: 'this page: shows "15", named "lundi 15 janvier 2024"',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
 ## Props
 
 | Name     | What it is                                                                   | Default   |
@@ -62,6 +96,12 @@ they apply:
 | `is-selected` | The day is the selected day.                                               |
 | `is-disabled` | `isDisabled` of [`CalendarRoot`](../calendar-root/) returns `true` for it. |
 | `is-weekend`  | The day is a weekend day of the units (Saturday and Sunday by default).    |
+
+<MonthGrid month="2024-01" selected="2024-01-17" />
+
+In January 2024 with January 17 selected, the accent day gets `is-selected`.
+The grey days, Feb 1–11 (January 2024 starts on a Monday, so no December
+days), get `is-outside`. The shaded Saturdays and Sundays get `is-weekend`.
 
 The button holds only the day number.
 

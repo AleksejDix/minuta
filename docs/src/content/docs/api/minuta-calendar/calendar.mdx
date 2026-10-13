@@ -3,6 +3,9 @@ title: calendar
 description: The calendar plugin — pass it to withUnits to get monthGrid, yearGrid, dayGrid, isWeekday and isWeekend bound to your units.
 ---
 
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
 The calendar plugin. Pass it to `withUnits` and you get the calendar
 functions bound to your units, so you no longer pass the units on every
 call.
@@ -35,6 +38,36 @@ time.next(time.period(new Date(2026, 2, 15), "week")); // the normal operations 
 
 ## What it contains
 
+The object `withUnits` returns, and where each part comes from:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "time = withUnits(units, { plugins: [calendar] })",
+        note: "one object, every function bound to the same units",
+        children: [
+          {
+            name: "period, next, divide, duration, …",
+            note: "the operations of minuta/core",
+          },
+          {
+            name: "calendar",
+            note: "the plugin: its five functions, with units filled in",
+            children: [
+              { name: "monthGrid(date)", note: "the 42 days of a month view" },
+              { name: "yearGrid(date)", note: "the whole weeks of a year" },
+              { name: "dayGrid(date)", note: "the real hours of a day" },
+              { name: "isWeekday(period)", note: "only working days?" },
+              { name: "isWeekend(period)", note: "only weekend days?" },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
 `calendar` is a plain object of five functions. Each takes the units first.
 `withUnits` (or `bind`) fills in the units for you and drops that first
 argument:
@@ -59,6 +92,11 @@ const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
 
 grids.monthGrid(new Date(2026, 2, 15)).periods[0]; // → Sun Mar 1 2026
 ```
+
+This is the grid `grids.monthGrid` gives for March 2026: it starts on Sunday
+Mar 1 because the units start weeks on Sunday.
+
+<MonthGrid month="2026-03" weekStartsOn="sunday" />
 
 ## Combining plugins
 

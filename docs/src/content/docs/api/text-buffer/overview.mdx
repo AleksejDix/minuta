@@ -6,6 +6,20 @@ sidebar:
   label: Overview
 ---
 
+import {
+  createTextBuffer,
+  deleteBackward,
+  insertText,
+  moveCursor,
+  select,
+} from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const step1 = insertText(createTextBuffer("hello"), " world");
+export const step2 = select(step1, 0, 5);
+export const step3 = insertText(step2, "goodbye");
+export const step5 = deleteBackward(moveCursor(step3, 1));
+
 `text-buffer` holds the text of a field and where the cursor is. Every edit is
 a plain function: you pass in a buffer and get a new buffer back. Nothing is
 changed in place, and there is no DOM.
@@ -47,6 +61,19 @@ When `anchor` and `head` are equal, nothing is selected. The selection is
 Positions count UTF-16 code units, the same unit the DOM uses for
 `selectionStart` and `selectionEnd`. Position 0 is before the first character.
 
+<FieldDiagram
+  text="hello"
+  anchor={1}
+  head={4}
+  caption="A selection from 1 to 4: positions are the gaps between characters, so it covers e, l, l."
+/>
+
+<FieldDiagram
+  text="hello"
+  head={2}
+  caption="A collapsed selection at 2: anchor and head are equal, and the caret sits between e and l."
+/>
+
 ## Example
 
 ```ts
@@ -65,6 +92,26 @@ buffer = insertText(buffer, "goodbye"); // "goodbye world", cursor at 7
 buffer = moveCursor(buffer, 1); // cursor at 8, after the space
 buffer = deleteBackward(buffer); // "goodbyeworld", cursor at 7
 ```
+
+Three moments of that sequence, each a new buffer:
+
+<FieldDiagram
+  {...step2.selection}
+  text={step2.text}
+  caption='After select(buffer, 0, 5): the text is unchanged, "hello" is selected.'
+/>
+
+<FieldDiagram
+  {...step3.selection}
+  text={step3.text}
+  caption='After insertText(buffer, "goodbye"): the selection is replaced and the cursor is at 7.'
+/>
+
+<FieldDiagram
+  {...step5.selection}
+  text={step5.text}
+  caption="After moveCursor(buffer, 1) and deleteBackward: the space before the cursor is gone, the cursor is back at 7."
+/>
 
 When an edit changes nothing, most functions return the very same buffer, so
 `next === buffer` tells you that nothing happened.

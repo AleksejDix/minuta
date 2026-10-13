@@ -3,6 +3,23 @@ title: typeDate
 description: Type or paste text into a date field the way people write dates, so 1.3.2026 becomes 01.03.2026.
 ---
 
+import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
+import { parseDate } from "fechita";
+import { createInputState, paste } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const format = deriveFormat("de-CH");
+export const empty = createInputState({ mask: dateMask(format) });
+export const typed = (keys) =>
+  [...keys].reduce((state, key) => typeDate(format, state, key), empty);
+export const plain = paste(empty, "1.3.2026");
+export const parse = (text) => {
+  const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });
+  return result.valid ? result.date : undefined;
+};
+export const unparsed = typeDate(format, empty, "2026-03-31");
+export const parsed = typeDate(format, empty, "2026-03-31", { parse });
+
 Type text into a date field the way people write dates: digits fill the slots,
 and a separator finishes the part being typed, so `1.3.2026` becomes
 `01.03.2026` instead of `13.20.26__`. With a parser, a pasted date in any form
@@ -29,6 +46,22 @@ typeDate(format, field, "1.3.2026").buffer.text; // → "01.03.2026"
 typeDate(format, field, "31032026").buffer.text; // → "31.03.2026"
 typeDate(format, field, "1.3.26").buffer.text; // → "01.03.2026"
 ```
+
+<FieldDiagram
+  text={plain.buffer.text}
+  head={plain.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="1.3.2026 with input-state's plain paste: the dots are skipped, the digits fill the slots in a row, and the date is wrong."
+/>
+
+<FieldDiagram
+  text={typed("1.3.2026").buffer.text}
+  head={typed("1.3.2026").buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="1.3.2026 with typeDate: each dot finishes the part before it, so the day and the month get their leading zeros."
+/>
 
 ## Parameters
 
@@ -80,6 +113,32 @@ for (const key of "1.3.2026") field = typeDate(format, field, key);
 // "." → "01.03.____"   the month is finished
 // "2026" → "01.03.2026"
 ```
+
+Three moments of that loop. The block is the slot the next key fills.
+
+<FieldDiagram
+  text={typed("1").buffer.text}
+  head={typed("1").buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="After 1: the digit is in the first slot of the day; the cursor waits on the second."
+/>
+
+<FieldDiagram
+  text={typed("1.").buffer.text}
+  head={typed("1.").buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="After the dot: the day is finished as 01 and the cursor has jumped to the month."
+/>
+
+<FieldDiagram
+  text={typed("1.3.").buffer.text}
+  head={typed("1.3.").buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="After 3 and the second dot: the month is 03 and the year is next."
+/>
 
 A separator at the very start of a segment does nothing. So after `31` the
 cursor has already jumped to the month, and the `.` the user types next does
@@ -152,6 +211,18 @@ wrong. Pass a parser if users paste dates.
 ```ts
 typeDate(format, field, "2026-03-31").buffer.text; // → "20.26.2003"
 ```
+
+<FieldDiagram
+  text={unparsed.buffer.text}
+  locale="de-CH"
+  caption="2026-03-31 pasted without parse: 20 lands in the day and 26 in the month, the dash after 03 finishes the year as 2003, and the 31 has no slot left."
+/>
+
+<FieldDiagram
+  text={parsed.buffer.text}
+  locale="de-CH"
+  caption="The same paste with parse: fechita reads 31 March 2026, and the field shows it in its own format."
+/>
 
 ## It does not check the date
 

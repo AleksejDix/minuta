@@ -6,6 +6,9 @@ sidebar:
   label: Overview
 ---
 
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
 `minuta-react` connects [minuta](../../minuta/divide/) to React. It keeps the
 period you are looking at (for example "March 2026") in React state, and it
 ships calendar components you can put together like building blocks.
@@ -40,6 +43,33 @@ There are three layers, each one small:
 The calendar parts render plain HTML with class names and no styles. You
 write the CSS.
 
+One click on "Next →" passes through all three layers:
+
+<Flow
+  steps={[
+    {
+      code: "browse(next(browsing))",
+      layer: "calendar parts",
+      text: "CalendarHeader asks for the month after the browsed one.",
+    },
+    {
+      code: "next(March 2026) → April 2026",
+      layer: "minuta core",
+      text: "The core computes the next month with your units. No state is touched.",
+    },
+    {
+      code: "browsing → April 2026",
+      layer: "hook and root",
+      text: "useMinuta stores the new browsed period; MinutaRoot shares it with every reader.",
+    },
+    {
+      code: "monthGridWith(units, April 1)",
+      layer: "calendar parts",
+      text: 'The heading reads "April 2026" and CalendarGrid renders April\'s 42 days.',
+    },
+  ]}
+/>
+
 ## Example
 
 A month calendar. Clicking a day (or pressing Enter on it) selects it, and the
@@ -70,6 +100,37 @@ This renders the current month with "← Previous" and "Next →" buttons, a row
 of weekday names starting on Monday, and 6 weeks of days. `day` is a
 [period](../../minuta/period/): `day.start` is midnight at the start of the
 chosen day.
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "<DatePicker>",
+        note: "your component; keeps the picked date in useState",
+        children: [
+          {
+            name: "<CalendarRoot onSelect>",
+            note: "the browsed month, the selected and the focused day",
+            children: [
+              {
+                name: "<CalendarHeader>",
+                note: "← Previous · the month's name · Next →",
+              },
+              {
+                name: "<CalendarGrid>",
+                note: "weekday names and 6 weeks of day buttons",
+              },
+              {
+                name: "<p>",
+                note: 'your own markup: the chosen date or "Pick a day"',
+              },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
 
 ## Exports
 

@@ -3,6 +3,18 @@ title: nextWith
 description: Get the period right after a period — the next day, week or month — with the units you pass.
 ---
 
+import { nextWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const sunday = nativeUnits({ weekStartsOn: "sunday" });
+export const week = periodWith(sunday, new Date(2026, 2, 18), "week");
+export const mondayWeek = periodWith(
+  nativeUnits(),
+  new Date(2026, 2, 18),
+  "week"
+);
+
 Get the period right after a period (the next day, week or month), computed
 with the units you pass.
 
@@ -27,6 +39,18 @@ const week = periodWith(units, new Date(2026, 2, 18), "week");
 nextWith(units, week);
 // → Sun Mar 22 00:00:00.000 – Sat Mar 28 23:59:59.999, unit "week"
 ```
+
+<Timeline
+  caption="A Sunday week and the week nextWith gives with the same Sunday units: it starts right after the first one ends."
+  tracks={[
+    { label: "week", periods: [week], tone: "ink" },
+    {
+      label: "nextWith(units, week)",
+      periods: [nextWith(sunday, week)],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Parameters
 
@@ -60,6 +84,23 @@ const mondayWeek = periodWith(nativeUnits(), new Date(2026, 2, 18), "week");
 nextWith(nativeUnits({ weekStartsOn: "sunday" }), mondayWeek);
 // → Sun Mar 22 – Sat Mar 28
 ```
+
+<Timeline
+  caption="A Monday week moved with Sunday units lands on the Sunday grid: it starts on Sun Mar 22, the last day of mondayWeek, instead of on Mon Mar 23."
+  tracks={[
+    { label: "mondayWeek", periods: [mondayWeek], tone: "ink" },
+    {
+      label: "nextWith(monday, …)",
+      periods: [nextWith(nativeUnits(), mondayWeek)],
+      tone: "muted",
+    },
+    {
+      label: "nextWith(sunday, …)",
+      periods: [nextWith(sunday, mondayWeek)],
+      tone: "accent",
+    },
+  ]}
+/>
 
 [`withUnits`](../with-units/) makes this hard to get wrong: everything on the
 bound object uses one set of units.

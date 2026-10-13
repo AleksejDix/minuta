@@ -3,6 +3,9 @@ title: placeholder
 description: The empty text of a date format, such as __.__.____ for de-CH.
 ---
 
+import { deriveFormat, placeholder } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
 Build the empty text of a format: an underscore for each digit, the separators
 as they are, so `de-CH` gives `__.__.____`.
 
@@ -24,6 +27,27 @@ placeholder(deriveFormat("en-US")); // → "__/__/____"
 placeholder(deriveFormat("ko-KR")); // → "____. __. __."
 placeholder(deriveFormat("de-CH", { hour: "2-digit", minute: "2-digit" })); // → "__:__"
 ```
+
+One `_` per digit slot, the separators as they are. The brackets show which
+segment each run of underscores belongs to.
+
+<FieldDiagram
+  text={placeholder(deriveFormat("de-CH"))}
+  locale="de-CH"
+  caption='placeholder(deriveFormat("de-CH"))'
+/>
+
+<FieldDiagram
+  text={placeholder(deriveFormat("en-US"))}
+  locale="en-US"
+  caption='placeholder(deriveFormat("en-US"))'
+/>
+
+<FieldDiagram
+  text={placeholder(deriveFormat("ko-KR"))}
+  locale="ko-KR"
+  caption='placeholder(deriveFormat("ko-KR")): the separators keep their spaces.'
+/>
 
 ## Parameters
 

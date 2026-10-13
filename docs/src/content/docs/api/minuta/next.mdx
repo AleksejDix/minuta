@@ -3,6 +3,16 @@ title: next
 description: Get the period right after a period — the next day, the next week, the next month.
 ---
 
+import { divide, next, period, range } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 15), "month");
+export const slot = range(
+  new Date(2026, 2, 2, 9),
+  new Date(2026, 2, 2, 9, 59, 59, 999)
+);
+export const lastPiece = divide(march, "week").at(-1);
+
 Get the period right after a period: the day after a day, the week after a
 week, the month after a month.
 
@@ -24,6 +34,14 @@ const march = period(new Date(2026, 2, 15), "month");
 next(march);
 // → Wed Apr 1 00:00:00.000 – Thu Apr 30 23:59:59.999, unit "month"
 ```
+
+<Timeline
+  caption="next(march) starts the millisecond after March ends, and is a whole month of its own: 30 days."
+  tracks={[
+    { label: "march", periods: [march], tone: "ink" },
+    { label: "next(march)", periods: [next(march)], tone: "accent" },
+  ]}
+/>
 
 ## Parameters
 
@@ -75,6 +93,14 @@ next(slot);
 // → Mon Mar 2 10:00:00.000 – 10:59:59.999, unit "custom"
 ```
 
+<Timeline
+  caption="A custom slot from 9:00 to 9:59:59.999 moves forward by its own length: one hour."
+  tracks={[
+    { label: "slot", periods: [slot], tone: "ink" },
+    { label: "next(slot)", periods: [next(slot)], tone: "accent" },
+  ]}
+/>
+
 This has two surprising results.
 
 A range that ends on a round time is one millisecond longer than it looks,
@@ -102,6 +128,23 @@ The first and last pieces of a [`divide`](../divide/) are often custom too.
 `next` of the clipped two-day week Mon Mar 30 – Tue Mar 31 gives Wed Apr 1 –
 Thu Apr 2, not the next week. To step by whole units, use a period from
 [`period`](../period/).
+
+<Timeline
+  caption="The clipped week at the end of March is two days long, so its next is the next two days, not the week after."
+  tracks={[
+    {
+      label: 'divide(march, "week").at(-1)',
+      periods: [lastPiece],
+      tone: "ink",
+    },
+    { label: "next(lastPiece)", periods: [next(lastPiece)], tone: "accent" },
+    {
+      label: 'period(lastPiece.start, "week")',
+      periods: [period(lastPiece.start, "week")],
+      tone: "muted",
+    },
+  ]}
+/>
 
 ## Errors
 

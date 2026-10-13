@@ -3,6 +3,13 @@ title: useMinuta
 description: A React hook that binds every minuta function to your units and keeps the browsed period in state.
 ---
 
+import { period } from "minuta";
+import Flow from "../../../../components/diagrams/Flow.astro";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 1), "month");
+export const someDay = period(new Date(2026, 2, 18), "day");
+
 A hook that gives you every minuta function bound to your units, plus a
 _browsed period_ — the month (or week, day, …) the user is looking at — kept
 in React state.
@@ -35,6 +42,33 @@ function MonthPager() {
 
 The first render shows the first day of the current month, for example
 "Sun Mar 01 2026". Each click shows the first day of the next month.
+
+What one click does to the state:
+
+<Flow
+  steps={[
+    {
+      code: "browsing → March 2026",
+      layer: "first render",
+      text: "No date given, so the hook browses the month of now.",
+    },
+    {
+      code: "minuta.next(minuta.browsing) → April 2026",
+      layer: "click",
+      text: "next only computes the month after it; nothing changes yet.",
+    },
+    {
+      code: "minuta.browse(April 2026)",
+      layer: "browse",
+      text: "Stores the start of April as the browsed date and re-renders the component.",
+    },
+    {
+      code: "browsing → April 2026",
+      layer: "next render",
+      text: 'The button reads "Wed Apr 01 2026".',
+    },
+  ]}
+/>
 
 ## Options
 
@@ -82,6 +116,18 @@ These are the same functions as in the core, without the units argument.
 `browse` takes any period, not only one of `unit`. With `unit: "month"`,
 `browse(someDay)` browses the month of that day.
 
+<Timeline
+  caption='browse(someDay) with unit "month": the hook keeps only the start of the day and browses the month around it.'
+  tracks={[
+    { label: "someDay", periods: [someDay], tone: "ink" },
+    {
+      label: "browsing",
+      periods: [period(someDay.start, "month")],
+      tone: "accent",
+    },
+  ]}
+/>
+
 ## When it re-renders
 
 - `browse()` changes the browsed period and re-renders the component.
@@ -96,6 +142,21 @@ These are the same functions as in the core, without the units argument.
 - The returned object stays the same between renders until something above
   changes, so it is safe in effect and memo dependency lists. `browse` never
   changes.
+
+Switching the unit from `"month"` to `"week"` after `browse(march)`:
+
+<Timeline
+  caption='After browse(march), a new unit "week" browses the week that contains March 1, 2026: Monday Feb 23 to Sunday Mar 1.'
+  marks={[{ date: march.start, label: "Mar 1" }]}
+  tracks={[
+    { label: 'browsing, unit "month"', periods: [march], tone: "muted" },
+    {
+      label: 'browsing, unit "week"',
+      periods: [period(march.start, "week")],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## "Today" stays correct
 

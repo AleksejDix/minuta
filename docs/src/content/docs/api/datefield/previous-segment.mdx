@@ -3,6 +3,12 @@ title: previousSegment
 description: The index of the previous segment you can type into, skipping separators.
 ---
 
+import { deriveFormat, parseSegments, previousSegment } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
+export const previous = segments[previousSegment(segments, 4)];
+
 Find the previous segment you can type into, skipping separators: before the
 year of `31.03.2026` comes the month.
 
@@ -26,6 +32,22 @@ previousSegment(segments, 4); // → 2   year → month
 previousSegment(segments, 2); // → 0   month → day
 previousSegment(segments, 0); // → 0   the day is first: stays
 ```
+
+<FieldDiagram
+  text="31.03.2026"
+  locale="de-CH"
+  anchor={segments[4].start}
+  head={segments[4].end}
+  caption="current = 4: the year."
+/>
+
+<FieldDiagram
+  text="31.03.2026"
+  locale="de-CH"
+  anchor={previous.start}
+  head={previous.end}
+  caption={`previousSegment(segments, 4) → ${String(previousSegment(segments, 4))}: the dot at index 3 is skipped, the month comes before the year.`}
+/>
 
 ## Parameters
 

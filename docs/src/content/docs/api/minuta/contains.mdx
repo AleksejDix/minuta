@@ -3,6 +3,12 @@ title: contains
 description: Check whether a date, or a whole other period, lies inside a period.
 ---
 
+import { period } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 1), "month");
+export const week = period(new Date(2026, 2, 31), "week");
+
 Check whether a date, or a whole other period, lies inside a period: is this
 appointment in March, is this day in this week.
 
@@ -27,6 +33,15 @@ contains(march, new Date(2026, 2, 20));
 contains(march, period(new Date(2026, 3, 1), "day"));
 // → false, Apr 1 is outside March
 ```
+
+<Timeline
+  caption="March contains the pin at Mar 20, but not the one at Apr 1, the first millisecond after March ends."
+  marks={[
+    { date: new Date(2026, 2, 20), label: "Mar 20" },
+    { date: new Date(2026, 3, 1), label: "Apr 1" },
+  ]}
+  tracks={[{ label: "march", periods: [march], tone: "accent" }]}
+/>
 
 ## Parameters
 
@@ -70,6 +85,14 @@ const week = period(new Date(2026, 2, 31), "week");
 contains(march, week); // → false
 overlaps(march, week); // → true
 ```
+
+<Timeline
+  caption="The week starts inside March but sticks out into April, so March does not contain it. They do overlap."
+  tracks={[
+    { label: "march", periods: [march], tone: "ink" },
+    { label: "week", periods: [week], tone: "accent" },
+  ]}
+/>
 
 ## The unit does not matter
 

@@ -3,6 +3,40 @@ title: attachInput
 description: Bind a real <input> element to an input state, so every key press, paste and drop goes through the state's rules.
 ---
 
+import {
+  clampDay,
+  dateMask,
+  deriveFormat,
+  parseSegments,
+  typeDate,
+  withSegments,
+} from "datefield";
+import { applyInputEvent, visibleRange } from "input-dom";
+import { createInputState } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const format = deriveFormat("de-CH");
+export const insert = (state, text) => typeDate(format, state, text);
+export const before = typeDate(
+  format,
+  createInputState({ mask: dateMask(format) }),
+  "1"
+);
+export const inserted = applyInputEvent(
+  before,
+  { data: ".", inputType: "insertText" },
+  insert
+);
+export const normalized = withSegments(
+  inserted,
+  clampDay(
+    parseSegments(format, inserted.buffer.text),
+    inserted.buffer.selection.head
+  )
+);
+export const range = visibleRange(normalized);
+
 Bind an `<input>` to an input state: every key press, paste and drop goes
 through the state's rules, and the element shows the result. The element never
 edits itself, so a mask like `__.__.____` cannot be broken.
@@ -69,6 +103,39 @@ do not keep your own copy that you edit.
 
 ## What happens on each event
 
+One key press in the date field below: the field shows `1_.__.____` and the
+user types a dot.
+
+<Flow
+  steps={[
+    {
+      code: 'beforeinput { inputType: "insertText", data: "." }',
+      layer: "browser",
+      text: "The browser announces the dot. attachInput cancels the event, so the element's text is not edited.",
+    },
+    {
+      code: `insert → "${inserted.buffer.text}"`,
+      layer: "insert",
+      text: "The dot goes through insert, here typeDate: it finishes the day and moves the cursor to the month.",
+    },
+    {
+      code: `normalize → "${normalized.buffer.text}"`,
+      layer: "normalize",
+      text: "clampDay looks at the new state; there is nothing to cut, so the same state comes back.",
+    },
+    {
+      code: `setSelectionRange(${String(range.start)}, ${String(range.end)}, "${range.direction}")`,
+      layer: "element",
+      text: "The element gets the new text and, from visibleRange, the block over the slot the next key fills.",
+    },
+    {
+      code: "onChange(state)",
+      layer: "you",
+      text: "The text changed, so onChange is called with the new state.",
+    },
+  ]}
+/>
+
 **Typing, pasting, dropping, deleting.** Every `beforeinput` event is
 cancelled. Its text goes through `insert`; Backspace, Delete and cut go through
 input-state's [`backspace`](../../input-state/backspace/) and `deleteForward`.
@@ -101,6 +168,21 @@ In overwrite mode the next key replaces the character at the cursor. To show
 that, the element selects that one character, like a block cursor in a
 terminal. The state keeps a plain cursor; `attachInput` ignores the echo of
 its own block. [`visibleRange`](../visible-range/) computes what is shown.
+
+<FieldDiagram
+  text={normalized.buffer.text}
+  head={normalized.buffer.selection.head}
+  locale="de-CH"
+  caption={`The state after the dot above: a plain cursor at ${String(normalized.buffer.selection.head)}, between the dot and the month.`}
+/>
+
+<FieldDiagram
+  text={normalized.buffer.text}
+  anchor={range.start}
+  head={range.end}
+  locale="de-CH"
+  caption={`What the element selects: ${String(range.start)} to ${String(range.end)}, the first slot of the month — the one the next digit replaces.`}
+/>
 
 ## A complete date field
 

@@ -3,6 +3,12 @@ title: slotPositions
 description: The positions in the text where a mask has slots the user can fill.
 ---
 
+import { emptyText, parseMask, slotPositions } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const dateMask = parseMask("99.99.9999");
+export const codeMask = parseMask("AAA-999");
+
 Get the positions in the field's text that are slots, in order from left to
 right. Every other position is a literal.
 
@@ -25,6 +31,20 @@ slotPositions(parseMask("99.99.9999"));
 slotPositions(parseMask("AAA-999"));
 // → [0, 1, 2, 4, 5, 6]
 ```
+
+The positions are the small numbers under the cells. The slots are the muted
+cells holding `_`; the numbers under the other cells are missing from the
+result:
+
+<FieldDiagram
+  text={emptyText(dateMask)}
+  caption={`slotPositions → [${slotPositions(dateMask).join(", ")}]. Cells 2 and 5 hold the dots and are left out.`}
+/>
+
+<FieldDiagram
+  text={emptyText(codeMask)}
+  caption={`slotPositions → [${slotPositions(codeMask).join(", ")}]. Cell 3 holds the "-" and is left out.`}
+/>
 
 ## Parameters
 

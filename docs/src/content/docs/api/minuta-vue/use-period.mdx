@@ -3,6 +3,11 @@ title: usePeriod
 description: A Vue composable that returns the year, week, day or other period that contains the start of the browsed period.
 ---
 
+import { period } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const browsing = period(new Date(2024, 2, 13), "month");
+
 A composable that returns, as a computed ref, the period of a given unit — a
 year, a week, a day, … — that contains the start of the browsed period of the
 nearest [`MinutaRoot`](../minuta-root/).
@@ -46,6 +51,36 @@ const week = usePeriod("week");
 This renders "Year 2024, first week starts Mon Feb 26 2024": March 1, 2024 is
 a Friday, and its week starts on the Monday before.
 
+<Timeline
+  caption="Each usePeriod call takes the start of the browsed month, Fri Mar 1 2024, and returns the period of its unit around it. The week reaches back into February."
+  marks={[{ date: browsing.start, label: "browsing.start" }]}
+  tracks={[
+    { label: "browsing", periods: [browsing], tone: "ink" },
+    {
+      label: 'usePeriod("week")',
+      periods: [period(browsing.start, "week")],
+      tone: "accent",
+    },
+    {
+      label: 'usePeriod("day")',
+      periods: [period(browsing.start, "day")],
+      tone: "accent",
+    },
+  ]}
+/>
+
+<Timeline
+  caption='usePeriod("year") is far larger than the browsed month and holds it. Every month of 2024 the root browses gives the same year.'
+  tracks={[
+    {
+      label: 'usePeriod("year")',
+      periods: [period(browsing.start, "year")],
+      tone: "accent",
+    },
+    { label: "browsing", periods: [browsing], tone: "ink" },
+  ]}
+/>
+
 ## Parameters
 
 | Name   | What it is                                                                                         |
@@ -60,6 +95,23 @@ const current = usePeriod(unit);
 
 unit.value = "day"; // current now holds the day
 ```
+
+<Timeline
+  caption='The same usePeriod(unit) inside the root above, before and after unit.value = "day": the ref swaps the week for the day, both around Fri Mar 1 2024.'
+  marks={[{ date: browsing.start, label: "browsing.start" }]}
+  tracks={[
+    {
+      label: 'current, unit "week"',
+      periods: [period(browsing.start, "week")],
+      tone: "muted",
+    },
+    {
+      label: 'current, unit "day"',
+      periods: [period(browsing.start, "day")],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Returns
 

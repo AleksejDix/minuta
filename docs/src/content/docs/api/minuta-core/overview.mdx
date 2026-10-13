@@ -6,6 +6,12 @@ sidebar:
   label: Overview
 ---
 
+import { periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = new Date(2026, 2, 18);
+
 `minuta/core` has the same operations as [`minuta`](../../minuta/overview/),
 without any units built in. You bring the units, and with them the date
 library, the first day of the week, the weekend and the time zone.
@@ -31,6 +37,35 @@ Every function here that needs to know what a week or a month is takes the
 units as its **first** argument and ends in `With`:
 `periodWith(units, date, "week")`. Functions that only compare times, such
 as `contains`, need no units and have no `With`.
+
+<Timeline
+  caption='The same periodWith(units, date, "week") call with three sets of units: the units alone decide where the week around Mar 18 starts.'
+  marks={[{ date, label: "Mar 18" }]}
+  tracks={[
+    {
+      label: "nativeUnits()",
+      periods: [periodWith(nativeUnits(), date, "week")],
+      tone: "accent",
+    },
+    {
+      label: 'weekStartsOn: "sunday"',
+      periods: [
+        periodWith(nativeUnits({ weekStartsOn: "sunday" }), date, "week"),
+      ],
+      tone: "accent",
+    },
+    {
+      label: 'weekStartsOn: "saturday"',
+      periods: [
+        periodWith(nativeUnits({ weekStartsOn: "saturday" }), date, "week"),
+      ],
+      tone: "accent",
+    },
+  ]}
+/>
+
+Each row is the week the pin falls in. The date and the call stay the same;
+only the units passed first change, and the week moves with them.
 
 You can pass the units on every call, or bind them once with
 [`withUnits`](../with-units/) and call `time.period(date, "week")`. See

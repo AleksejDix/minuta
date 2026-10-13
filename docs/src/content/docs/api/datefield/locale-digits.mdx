@@ -3,6 +3,20 @@ title: localeDigits
 description: The ten digits a locale writes numbers with, such as ٠–٩ for ar-EG, to show a date field in them.
 ---
 
+import {
+  deriveFormat,
+  fromDate,
+  localeDigits,
+  segmentsToString,
+} from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const stored = segmentsToString(
+  fromDate(new Date(2026, 2, 31), deriveFormat("ar-EG"))
+);
+export const digits = localeDigits("ar-EG");
+export const shown = stored.replace(/[0-9]/g, (digit) => digits[Number(digit)]);
+
 Get the ten digits a locale writes numbers with: `٠`–`٩` for `ar-EG`, `۰`–`۹`
 for `fa-IR`, plain `0`–`9` for `de-CH`.
 
@@ -52,6 +66,18 @@ attachInput(element, field, { digits: localeDigits("ar-EG") });
 // the element shows   ٣١‏/٠٣‏/٢٠٢٦
 // field.buffer.text   31‏/03‏/2026
 ```
+
+<FieldDiagram
+  text={stored}
+  locale="ar-EG"
+  caption="The state: field.buffer.text holds the digits 0–9."
+/>
+
+<FieldDiagram
+  text={shown}
+  locale="ar-EG"
+  caption='The element: every digit swapped for localeDigits("ar-EG")[digit]. Same cells, same positions, same segments — only the glyphs differ.'
+/>
 
 Each digit is one character, so cursor positions in the element and in the
 state stay the same.

@@ -3,6 +3,25 @@ title: firstEditableIndex
 description: The index of the first segment you can type into, such as the day in de-CH or the year in ja-JP.
 ---
 
+import {
+  deriveFormat,
+  firstEditableIndex,
+  fromDate,
+  segmentsToString,
+} from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const segments = fromDate(
+  new Date(2026, 2, 31),
+  deriveFormat("en-US", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+);
+export const first = segments[firstEditableIndex(segments)];
+
 Find the first segment you can type into: the day in `de-CH`, the month in
 `en-US`, the year in `ja-JP`.
 
@@ -30,6 +49,13 @@ const segments = fromDate(new Date(2026, 2, 31), format);
 
 firstEditableIndex(segments); // → 2   the month; the weekday cannot be typed
 ```
+
+<FieldDiagram
+  text={segmentsToString(segments)}
+  anchor={first.start}
+  head={first.end}
+  caption={`The highlighted cells are segment ${String(firstEditableIndex(segments))}, the month, at positions ${String(first.start)} to ${String(first.end)}. "Tue" and ", " come before it but cannot be typed.`}
+/>
 
 ## Parameters
 

@@ -3,6 +3,15 @@ title: shift
 description: Move a period forward or back by a number of its own unit — three months ahead, two weeks back.
 ---
 
+import { period, range, shift } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 15), "month");
+export const slot = range(
+  new Date(2026, 2, 2, 9),
+  new Date(2026, 2, 2, 9, 59, 59, 999)
+);
+
 Move a period forward or back by a number of its own unit: three months
 ahead, two weeks back, one year back.
 
@@ -27,6 +36,19 @@ shift(march, 3);
 shift(march, -14);
 // → Wed Jan 1 2025 00:00:00.000 – Fri Jan 31 2025 23:59:59.999, unit "month"
 ```
+
+<Timeline
+  caption="shift jumps whole months from March: 3 forward to June, 14 back to January 2025."
+  tracks={[
+    {
+      label: "shift(march, -14)",
+      periods: [shift(march, -14)],
+      tone: "accent",
+    },
+    { label: "march", periods: [march], tone: "ink" },
+    { label: "shift(march, 3)", periods: [shift(march, 3)], tone: "accent" },
+  ]}
+/>
 
 ## Parameters
 
@@ -75,6 +97,14 @@ const slot = range(
 shift(slot, 2);
 // → Mon Mar 2 11:00:00.000 – 11:59:59.999, unit "custom"
 ```
+
+<Timeline
+  caption="A one-hour custom slot shifted by 2 moves two of its own lengths: from 9:00 to 11:00."
+  tracks={[
+    { label: "slot", periods: [slot], tone: "ink" },
+    { label: "shift(slot, 2)", periods: [shift(slot, 2)], tone: "accent" },
+  ]}
+/>
 
 This is elapsed time, not calendar time: across a daylight-saving change, a
 custom period ends up an hour off the clock. And a range that ends on a round

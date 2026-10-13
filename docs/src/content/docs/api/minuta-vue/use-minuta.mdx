@@ -3,6 +3,15 @@ title: useMinuta
 description: A Vue composable that binds every minuta function to your units and keeps the browsed period reactive.
 ---
 
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Flow from "../../../../components/diagrams/Flow.astro";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const day = new Date(2026, 2, 18);
+export const mondayWeeks = withUnits(nativeUnits());
+export const sundayWeeks = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+
 A composable that gives you every minuta function bound to your units, plus a
 _browsed period_ — the month (or week, day, …) the user is looking at — as
 reactive state.
@@ -38,6 +47,33 @@ The first render shows the first day of the current month, for example
 
 `browsing` is a computed ref inside an object, so the template needs
 `.value` too. Vue only unwraps refs at the top level of `<script setup>`.
+
+What one click does to the state:
+
+<Flow
+  steps={[
+    {
+      code: "browsing.value → March 2026",
+      layer: "setup",
+      text: "No date given, so the composable browses the month of now.",
+    },
+    {
+      code: "minuta.next(minuta.browsing.value) → April 2026",
+      layer: "click",
+      text: "next only computes the month after it; nothing changes yet.",
+    },
+    {
+      code: "minuta.browse(April 2026)",
+      layer: "browse",
+      text: "Stores the start of April as the browsed date.",
+    },
+    {
+      code: "browsing.value → April 2026",
+      layer: "re-render",
+      text: 'The computed ref follows, and the button reads "Wed Apr 01 2026".',
+    },
+  ]}
+/>
 
 ## Options
 
@@ -100,6 +136,23 @@ Read the functions from the object when the units can change:
 `minuta.period(date, "week")`. A destructured function,
 `const { period } = minuta`, keeps the units it had when you destructured it.
 :::
+
+<Timeline
+  caption="The week of Wed Mar 18, 2026, after units.value switched to Sunday weeks. minuta.period follows the new units; a period destructured before the switch still gives a Monday week."
+  marks={[{ date: day, label: "Mar 18" }]}
+  tracks={[
+    {
+      label: 'minuta.period(day, "week")',
+      periods: [sundayWeeks.period(day, "week")],
+      tone: "accent",
+    },
+    {
+      label: 'period(day, "week"), destructured',
+      periods: [mondayWeeks.period(day, "week")],
+      tone: "muted",
+    },
+  ]}
+/>
 
 ## "Today" stays correct
 

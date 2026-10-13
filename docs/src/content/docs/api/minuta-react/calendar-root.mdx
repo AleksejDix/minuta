@@ -3,6 +3,10 @@ title: CalendarRoot
 description: The React component that holds the state of a month calendar — the browsed month, the selected day and the focused day.
 ---
 
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
 The component that holds the state of a month calendar: the browsed month,
 the selected day and the focused day. Put the other calendar parts inside it.
 
@@ -51,6 +55,45 @@ It shows January 2024 with Sunday as the first column. Saturdays and Sundays
 get the class `is-disabled` and can't be selected. Clicking a weekday logs the
 `Date` at midnight of that day.
 
+<MonthGrid month="2024-01" weekStartsOn="sunday" />
+
+This is the month the example opens on. Sunday is the first column, the
+shaded weekend days are the ones `isDisabled` blocks, and the grey days
+belong to December and February.
+
+The parts of a calendar, and which sits inside which:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "<CalendarRoot>",
+        note: 'this page: holds the browsed month, the selection and the focus; renders <section class="calendar-shell">',
+        children: [
+          {
+            name: "<CalendarHeader>",
+            note: "‹ previous · the month's name · next ›",
+          },
+          {
+            name: "<CalendarGrid>",
+            note: 'the month as a table with role="grid"',
+            children: [
+              {
+                name: "<CalendarWeekdays>",
+                note: "the row of weekday names, rendered for you",
+              },
+              {
+                name: "<CalendarDay> × 42",
+                note: "one button per day; arrow keys move the focus",
+              },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
 ## Props
 
 | Name         | What it is                                                                      | Default                       |
@@ -73,6 +116,39 @@ Enter or Space while it has focus. Selecting a day:
 2. browses to its month — selecting a grey day of the next month shows the
    next month,
 3. calls `onSelect(day)`.
+
+<Flow
+  steps={[
+    {
+      code: "click · Enter · Space",
+      layer: "CalendarDay",
+      text: "The user picks Feb 2, one of the grey February days in the January grid.",
+    },
+    {
+      code: "isDisabled(day) → false",
+      layer: "CalendarRoot",
+      text: "Remembers Feb 2 as the focused day and checks that it may be selected.",
+    },
+    {
+      code: 'is-selected · aria-selected="true"',
+      layer: "CalendarRoot",
+      text: "Marks Feb 2 as the selected day.",
+    },
+    {
+      code: "browse(day)",
+      layer: "useMinuta",
+      text: "Browses to the month of Feb 2: the grid now shows February.",
+    },
+    {
+      code: "onSelect(day)",
+      layer: "your code",
+      text: "Gets the day period, Fri Feb 2 2024 00:00 to 23:59:59.999.",
+    },
+  ]}
+/>
+
+For a disabled day the flow stops after the second step: the day becomes the
+focused one, nothing else changes.
 
 Moving the focus with the arrow keys does not select anything. `onSelect` is
 only called on click, Enter or Space.

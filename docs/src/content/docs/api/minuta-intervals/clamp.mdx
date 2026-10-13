@@ -3,6 +3,14 @@ title: clamp
 description: Cut a period down to the part that lies inside some bounds — e.g. a selection limited to the allowed dates.
 ---
 
+import { period, range } from "minuta";
+import { clamp } from "minuta/intervals";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const selection = range(new Date(2026, 0, 5), new Date(2026, 0, 25));
+export const allowed = range(new Date(2026, 0, 10), new Date(2026, 0, 20));
+export const march = period(new Date(2026, 2, 1), "month");
+
 Cut a period down to the part that lies inside some bounds. Use it to keep a
 selection within the allowed dates, or to find the overlap of two periods.
 
@@ -26,6 +34,19 @@ const allowed = range(new Date(2026, 0, 10), new Date(2026, 0, 20));
 clamp(selection, allowed);
 // → { start: Sat Jan 10 2026 00:00, end: Tue Jan 20 2026 00:00, unit: "custom" }
 ```
+
+<Timeline
+  caption="The result (accent) is the part of the selection that lies inside the allowed dates. It is hatched: its unit is custom."
+  tracks={[
+    { label: "selection", periods: [selection] },
+    { label: "allowed", periods: [allowed], tone: "muted" },
+    {
+      label: "clamp(selection, allowed)",
+      periods: [clamp(selection, allowed)],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Parameters
 
@@ -55,6 +76,20 @@ clamp(period(new Date(2026, 2, 15), "day"), march);
 clamp(period(new Date(2026, 3, 15), "day"), march);
 // → undefined (April 15 is not in March)
 ```
+
+<Timeline
+  caption="Mar 15 lies inside March and comes back whole. Apr 15 does not overlap March, so its row stays empty: undefined."
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: "clamp(mar15, march)",
+      periods: [clamp(period(new Date(2026, 2, 15), "day"), march)],
+      tone: "accent",
+    },
+    { label: "apr15", periods: [period(new Date(2026, 3, 15), "day")] },
+    { label: "clamp(apr15, march)", periods: [], tone: "accent" },
+  ]}
+/>
 
 ## Touching at one moment
 

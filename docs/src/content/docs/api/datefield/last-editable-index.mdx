@@ -3,6 +3,12 @@ title: lastEditableIndex
 description: The index of the last segment you can type into, such as the year in de-CH or the day in ja-JP.
 ---
 
+import { deriveFormat, lastEditableIndex, parseSegments } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const segments = parseSegments(deriveFormat("ko-KR"), "2026. 03. 31.");
+export const last = segments[lastEditableIndex(segments)];
+
 Find the last segment you can type into: the year in `de-CH` and `en-US`, the
 day in `ja-JP`.
 
@@ -25,6 +31,14 @@ lastEditableIndex(parseSegments(deriveFormat("de-CH"), "31.03.2026"));
 lastEditableIndex(parseSegments(deriveFormat("ko-KR"), "2026. 03. 31."));
 // → 4   the day; the "." after it is a separator
 ```
+
+<FieldDiagram
+  text="2026. 03. 31."
+  locale="ko-KR"
+  anchor={last.start}
+  head={last.end}
+  caption={`ko-KR: segment ${String(lastEditableIndex(segments))}, the day at ${String(last.start)} to ${String(last.end)}, is the last one you can type into. The final dot at 12 is a separator, so it is skipped.`}
+/>
 
 ## Parameters
 

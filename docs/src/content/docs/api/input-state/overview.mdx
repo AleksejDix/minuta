@@ -6,6 +6,20 @@ sidebar:
   label: Overview
 ---
 
+import {
+  backspace,
+  createInputState,
+  parseMask,
+  paste,
+  typeChar,
+} from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const empty = createInputState({ mask: parseMask("99.99.9999") });
+export const typed = typeChar(typeChar(empty, "3"), "1");
+export const pasted = paste(typed, "032026");
+export const free = createInputState({ value: "hello" });
+
 `input-state` is the state of one input field: the text and cursor (a
 [text buffer](../../text-buffer/overview/)), an optional **mask** such as
 `__.__.____`, and a **mode**, insert or overwrite. Each key press is a plain
@@ -42,6 +56,20 @@ slots show a **placeholder** character, `_` by default. A masked field is
 always in overwrite mode: typing fills the next slot, deleting empties a
 slot, and nothing ever shifts. That keeps a half-corrected date in place.
 
+<FieldDiagram
+  {...free.buffer.selection}
+  text={free.buffer.text}
+  mode={free.mode}
+  caption="Free text, insert mode: the caret sits between characters, and typing pushes the text after it to the right."
+/>
+
+<FieldDiagram
+  {...empty.buffer.selection}
+  text={empty.buffer.text}
+  mode={empty.mode}
+  caption='Masked, overwrite mode: the muted "_" cells are slots, the dots are literals, and the block is the slot the next key fills.'
+/>
+
 ## Example
 
 ```ts
@@ -64,6 +92,29 @@ isComplete(field); // → true
 
 field = backspace(field); // → "31.03.202_", the slot empties, nothing shifts
 ```
+
+The same field after three of those steps:
+
+<FieldDiagram
+  {...typed.buffer.selection}
+  text={typed.buffer.text}
+  mode={typed.mode}
+  caption='After typing "3" and "1": the cursor has jumped over the "." and waits on the first month slot, 3.'
+/>
+
+<FieldDiagram
+  {...pasted.buffer.selection}
+  text={pasted.buffer.text}
+  mode={pasted.mode}
+  caption='After paste(field, "032026"): the six digits fill the remaining slots and the cursor is at the end.'
+/>
+
+<FieldDiagram
+  {...backspace(pasted).buffer.selection}
+  text={backspace(pasted).buffer.text}
+  mode={backspace(pasted).mode}
+  caption="After backspace: the last slot is empty again and every other digit stays where it was."
+/>
 
 Every function returns a new state, or the same state when nothing changed.
 The current text is `state.buffer.text` and the selection is

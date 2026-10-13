@@ -3,6 +3,21 @@ title: backspace
 description: The Backspace key for an input field; in a masked field the previous slot empties and nothing shifts.
 ---
 
+import {
+  backspace,
+  createInputState,
+  parseMask,
+  setSelection,
+} from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const full = createInputState({
+  mask: parseMask("99.99.9999"),
+  value: "31032026",
+});
+export const afterDot = setSelection(full, 3);
+export const selected = setSelection(full, 0, 5);
+
 Do what the Backspace key does. In a masked field the slot before the cursor
 becomes empty again and nothing moves; in a free-text field the character
 before the cursor is removed.
@@ -34,6 +49,20 @@ field = backspace(field); // → "31.03.202_", cursor at 9
 field = backspace(field); // → "31.03.20__", cursor at 8
 ```
 
+<FieldDiagram
+  {...full.buffer.selection}
+  text={full.buffer.text}
+  mode={full.mode}
+  caption="Before: every slot filled, the cursor at the end, 10."
+/>
+
+<FieldDiagram
+  {...backspace(full).buffer.selection}
+  text={backspace(full).buffer.text}
+  mode={backspace(full).mode}
+  caption="After backspace: the last slot holds the placeholder again, and the cursor sits on it (the highlighted block is the slot the next key fills). Nothing moved."
+/>
+
 ## Parameters
 
 | Name    | What it is           |
@@ -64,6 +93,34 @@ const full = createInputState({
 backspace(setSelection(full, 3)); // → "3_.03.2026", cursor at 1
 backspace(setSelection(full, 0, 5)); // → "__.__.2026", cursor at 0
 ```
+
+<FieldDiagram
+  {...afterDot.buffer.selection}
+  text={afterDot.buffer.text}
+  mode={afterDot.mode}
+  caption='The cursor at 3, right after the first ".".'
+/>
+
+<FieldDiagram
+  {...backspace(afterDot).buffer.selection}
+  text={backspace(afterDot).buffer.text}
+  mode={backspace(afterDot).mode}
+  caption='After backspace: the "." is skipped and the "1" before it is emptied. The cursor moves onto that slot, at 1.'
+/>
+
+<FieldDiagram
+  {...selected.buffer.selection}
+  text={selected.buffer.text}
+  mode={selected.mode}
+  caption='A selection from 0 to 5, covering "31.03".'
+/>
+
+<FieldDiagram
+  {...backspace(selected).buffer.selection}
+  text={backspace(selected).buffer.text}
+  mode={backspace(selected).mode}
+  caption="After backspace: all four selected slots are empty, the dot stays, and the cursor is at 0."
+/>
 
 ## In a free-text field
 

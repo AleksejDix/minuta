@@ -5,6 +5,8 @@ sidebar:
   order: 5
 ---
 
+import Flow from "../../../components/diagrams/Flow.astro";
+import StackIsometric from "../../../components/diagrams/StackIsometric.astro";
 import InputStackDemo from "../../../components/demos/InputStackDemo.astro";
 
 A date field like `__.__.____` looks simple, but it has to handle typing,
@@ -12,18 +14,26 @@ pasting, deleting, arrow keys, many locales and many keyboards. minuta splits
 that work into four small packages. Each one does one job and builds on the
 one below.
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ 4  input-dom     the <input> element: events in, text out     │  DOM
-├──────────────────────────────────────────────────────────────┤
-│ 3  datefield     dates: locale formats, segments, typing     │
-│                  rules, arrow keys, day clamping              │
-├──────────────────────────────────────────────────────────────┤
-│ 2  input-state   insert/overwrite mode and masks (__.__.____) │  pure,
-├──────────────────────────────────────────────────────────────┤  no DOM
-│ 1  text-buffer   text and a selection                         │
-└──────────────────────────────────────────────────────────────┘
-```
+<StackIsometric
+  layers={[
+    {
+      name: "input-dom",
+      owns: "The <input> element: events in, text out.",
+      tag: "DOM",
+    },
+    {
+      name: "datefield",
+      owns: "Dates: locale formats, segments, typing rules, arrow keys, day clamping.",
+      tag: "pure",
+    },
+    {
+      name: "input-state",
+      owns: "Insert and overwrite mode, and masks such as __.__.____.",
+      tag: "pure",
+    },
+    { name: "text-buffer", owns: "Text and a selection.", tag: "pure" },
+  ]}
+/>
 
 ## See the problem
 
@@ -95,24 +105,40 @@ autocorrect, a paste, a drag-and-drop — it goes through the same pure rules.
 The field shows `3_.__.____` with the cursor after the `3`. The user presses
 `1`.
 
-```text
-browser    beforeinput { inputType: "insertText", data: "1" }
-  │
-input-dom  cancel the event
-  │        applyInputEvent → insert(state, "1")
-  ▼
-datefield  typeDate(format, state, "1")
-  │          "1" is a digit → input-state's typeChar
-  ▼
-input-state typeChar: overwrite the slot at the cursor,
-  │          skip the "." literal after the full day
-  ▼
-text-buffer new text "31.__.____", cursor at 3
-  │
-input-dom  normalize: clampDay(segments, cursor) — nothing to cut
-  │        show "31.__.____", select the slot at 3 (block cursor)
-  ▼        onChange(state)
-```
+<Flow
+  steps={[
+    {
+      code: 'beforeinput { inputType: "insertText", data: "1" }',
+      layer: "browser",
+      text: "The browser announces the key before it changes anything.",
+    },
+    {
+      code: 'applyInputEvent → insert(state, "1")',
+      layer: "input-dom",
+      text: "Cancels the event and hands the text to the field's insert.",
+    },
+    {
+      code: 'typeDate(format, state, "1")',
+      layer: "datefield",
+      text: "“1” is a digit, so it goes on to input-state.",
+    },
+    {
+      code: 'typeChar(state, "1")',
+      layer: "input-state",
+      text: "Overwrites the slot at the cursor and skips the “.” after the full day.",
+    },
+    {
+      code: '"31.__.____", cursor at 3',
+      layer: "text-buffer",
+      text: "Holds the new text and selection.",
+    },
+    {
+      code: "clampDay(segments, cursor) → onChange(state)",
+      layer: "input-dom",
+      text: "Normalizes (nothing to cut), shows the text, selects the slot at 3 as the block cursor and reports the change.",
+    },
+  ]}
+/>
 
 If the user had typed `.` instead, `typeDate` would call `finishSegment`, and
 the day would become `03` with the cursor jumping to the month.
@@ -121,23 +147,40 @@ the day would become `03` with the cursor jumping to the month.
 
 The empty field gets a paste of `31. März 2026`.
 
-```text
-browser    beforeinput { inputType: "insertFromPaste", data: "31. März 2026" }
-  │
-input-dom  cancel the event
-  │        applyInputEvent → insert(state, "31. März 2026")
-  ▼
-datefield  typeDate(format, state, text, { parse })
-  │          more than one character → a paste: ask the parser
-  ▼
-fechita    parseDate(text, { locale: "de-CH", order: "DMY" }) → 31 March 2026
-  │
-datefield  fromDate(date, format) → segments "31" "." "03" "." "2026"
-  │        withSegments: replace the whole text, cursor at the end
-  ▼
-input-dom  normalize: clampDay — nothing to cut
-           show "31.03.2026", onChange(state)
-```
+<Flow
+  steps={[
+    {
+      code: 'beforeinput { inputType: "insertFromPaste", data: "31. März 2026" }',
+      layer: "browser",
+      text: "The browser announces the paste.",
+    },
+    {
+      code: 'applyInputEvent → insert(state, "31. März 2026")',
+      layer: "input-dom",
+      text: "Cancels the event and hands the text to the field's insert.",
+    },
+    {
+      code: "typeDate(format, state, text, { parse })",
+      layer: "datefield",
+      text: "More than one character means a paste, so it asks the parser.",
+    },
+    {
+      code: 'parseDate(text, { locale: "de-CH", order: "DMY" }) → 31 March 2026',
+      layer: "fechita",
+      text: "Reads the date in German, day first.",
+    },
+    {
+      code: 'fromDate(date, format) → "31" "." "03" "." "2026"',
+      layer: "datefield",
+      text: "Writes the date in the field's format and replaces the whole text, cursor at the end.",
+    },
+    {
+      code: '"31.03.2026" → onChange(state)',
+      layer: "input-dom",
+      text: "Normalizes (nothing to cut), shows the text and reports the change.",
+    },
+  ]}
+/>
 
 When the parser cannot read the text, `typeDate` types it character by
 character instead, as if the user had typed it, and finishes the last segment.

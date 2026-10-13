@@ -3,6 +3,13 @@ title: MinutaRoot
 description: A Vue component that runs useMinuta once and provides the result to every component inside it.
 ---
 
+import { next, period } from "minuta";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const december = period(new Date(2026, 11, 1), "month");
+export const january = next(december);
+
 A component that runs [`useMinuta`](../use-minuta/) once and provides the
 result to every component inside it, so they all see the same browsed period.
 
@@ -64,6 +71,48 @@ import Year from "./Year.vue";
 ```
 
 Clicking "Next" in December changes the heading to the next year.
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: '<MinutaRoot unit="month">',
+        note: "this page: runs useMinuta once and provides the result; renders only its slot",
+        children: [
+          {
+            name: "<Year>",
+            note: 'usePeriod("year") — reads the provided browsing',
+          },
+          {
+            name: "<NextMonth>",
+            note: "useMinutaContext() — calls minuta.browse(minuta.next(minuta.browsing.value))",
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
+`Year` and `NextMonth` don't know each other. Both inject the one state of the
+root, so the click in one updates the other:
+
+<Timeline
+  caption='December 2026 is browsed. Next browses January 2027, whose start lies in the next year, so usePeriod("year") in Year holds 2027.'
+  tracks={[
+    { label: "browsing before", periods: [december], tone: "muted" },
+    { label: "browsing after Next", periods: [january], tone: "accent" },
+    {
+      label: 'usePeriod("year") before',
+      periods: [period(december.start, "year")],
+      tone: "muted",
+    },
+    {
+      label: 'usePeriod("year") after',
+      periods: [period(january.start, "year")],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Props
 

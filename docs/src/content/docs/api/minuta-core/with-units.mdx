@@ -3,6 +3,15 @@ title: withUnits
 description: Bind every operation to one set of units once, and get them back ready to use.
 ---
 
+import { next, period } from "minuta";
+import { withUnits } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = new Date(2026, 2, 18);
+export const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+export const week = time.period(date, "week");
+
 Bind every operation to one set of units once, and get them all back ready to
 use. This is how you get weeks from Sunday, another date library or a time
 zone, with the same easy calls as `minuta`.
@@ -32,6 +41,23 @@ time.next(week);
 
 Do this once, for example in a module of its own, and import `time` wherever
 you need it.
+
+<Timeline
+  caption="The same two calls with minuta (Monday weeks) and with time, bound to Sunday weeks."
+  marks={[{ date, label: "Mar 18" }]}
+  tracks={[
+    {
+      label: 'period(date, "week")',
+      periods: [period(date, "week")],
+      tone: "ink",
+    },
+    { label: "next(…)", periods: [next(period(date, "week"))], tone: "ink" },
+    { label: 'time.period(date, "week")', periods: [week], tone: "accent" },
+    { label: "time.next(week)", periods: [time.next(week)], tone: "accent" },
+  ]}
+/>
+
+The calls read the same; the bound units shift every week one day earlier.
 
 ## Parameters
 

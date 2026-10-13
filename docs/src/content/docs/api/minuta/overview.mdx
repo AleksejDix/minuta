@@ -6,6 +6,11 @@ sidebar:
   label: Overview
 ---
 
+import { divide, next, period } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 15), "month");
+
 `minuta` is the main entry point. It has every operation, ready to use: no
 setup, no configuration. It computes with the built-in `Date` in the local
 time zone, and weeks start on Monday (ISO 8601).
@@ -29,6 +34,24 @@ You make a period with [`period`](../period/) (a whole day, week, month …) or
 [`range`](../range/) (any two dates). Then you move it, split it, measure it
 or compare it. Every function takes plain data and returns new plain data;
 nothing is changed in place.
+
+<Timeline
+  caption="One date becomes a period, and the period becomes new periods: the month after it, and the weeks inside it."
+  marks={[{ date: new Date(2026, 2, 15), label: "Mar 15" }]}
+  tracks={[
+    { label: 'period(date, "month")', periods: [march], tone: "ink" },
+    { label: "next(march)", periods: [next(march)], tone: "accent" },
+    {
+      label: 'divide(march, "week")',
+      periods: divide(march, "week"),
+      tone: "accent",
+    },
+  ]}
+/>
+
+The pin is the date you start from. Each row is a plain period drawn as a bar
+from its `start` to its `end`; the hatched pieces are cut to fit March and
+have the unit `"custom"`.
 
 Read [Periods and units](../../../concepts/periods-and-units/) for the full
 picture.

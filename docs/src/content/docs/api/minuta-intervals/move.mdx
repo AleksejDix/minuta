@@ -3,6 +3,12 @@ title: move
 description: Move a period to a new start and keep its length — e.g. drag an appointment to another day.
 ---
 
+import { period, shift } from "minuta";
+import { move } from "minuta/intervals";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const february = period(new Date(2026, 1, 1), "month");
+
 Move a period so it starts at a new date, and keep its length. Use it to
 drag an appointment to another time.
 
@@ -55,6 +61,24 @@ import { period } from "minuta";
 move(period(new Date(2026, 1, 1), "month"), new Date(2026, 2, 1));
 // → Mar 1 00:00 – Mar 28 23:59:59.999, unit "custom" (not all of March)
 ```
+
+<Timeline
+  caption="February moved to Mar 1 (pin) keeps its 28 days and stops at Mar 28. shift moves by one calendar month instead and gives all of March."
+  marks={[{ date: new Date(2026, 2, 1), label: "Mar 1" }]}
+  tracks={[
+    { label: "february", periods: [february] },
+    {
+      label: "move(february, Mar 1)",
+      periods: [move(february, new Date(2026, 2, 1))],
+      tone: "accent",
+    },
+    {
+      label: "shift(february, 1)",
+      periods: [shift(february, 1)],
+      tone: "muted",
+    },
+  ]}
+/>
 
 Mar 28 2026 is a normal 24-hour day. Moved to Mar 29, when the clocks in
 Europe/Zurich go forward, it still lasts 24 hours and ends one hour into the

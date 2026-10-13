@@ -6,6 +6,18 @@ sidebar:
   label: Overview
 ---
 
+import { divideWith, periodWith } from "minuta/core";
+import { dateFnsUnits } from "minuta/date-fns";
+import { dayjsUnits } from "minuta/dayjs";
+import { luxonUnits } from "minuta/luxon";
+import { momentUnits } from "minuta/moment";
+import { nativeUnits } from "minuta/native";
+import { temporalUnits } from "minuta/temporal";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const weeksOfMarch = (units) =>
+  divideWith(units, periodWith(units, new Date(2026, 2, 1), "month"), "week");
+
 minuta does not do date arithmetic itself. A **date engine** (also called an
 adapter) does it: a small function that turns a date library into
 **units**. Units are plain data, one rule set per unit of time (year,
@@ -68,6 +80,25 @@ time.period(new Date(2026, 2, 18), "week"); // → Mon Mar 16 – Sun Mar 22
 time.duration(time.period(new Date(2026, 2, 29), "day"), "hour"); // → 23 (clocks go forward)
 time.duration(time.period(new Date(2026, 1, 10), "month"), "day"); // → 28
 ```
+
+The weeks of March 2026, computed by each engine in the computer's zone.
+Every row has the same bars:
+
+<Timeline
+  caption='divideWith(units, march, "week") with six engines. The hatched pieces are the first and last weeks, cut at the edges of March.'
+  tracks={[
+    {
+      label: "nativeUnits()",
+      periods: weeksOfMarch(nativeUnits()),
+      tone: "accent",
+    },
+    { label: "dateFnsUnits()", periods: weeksOfMarch(dateFnsUnits()) },
+    { label: "luxonUnits()", periods: weeksOfMarch(luxonUnits()) },
+    { label: "dayjsUnits()", periods: weeksOfMarch(dayjsUnits()) },
+    { label: "momentUnits()", periods: weeksOfMarch(momentUnits()) },
+    { label: "temporalUnits()", periods: weeksOfMarch(temporalUnits()) },
+  ]}
+/>
 
 The one real difference is the time zone: only `dateFnsTzUnits` computes in
 a zone you choose. The others compute in the computer's zone, so the same

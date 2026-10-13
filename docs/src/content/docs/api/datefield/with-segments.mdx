@@ -3,6 +3,26 @@ title: withSegments
 description: Write changed segments back into a date field, keeping the cursor where it is.
 ---
 
+import {
+  clampDay,
+  dateMask,
+  deriveFormat,
+  parseSegments,
+  withSegments,
+} from "datefield";
+import { createInputState, setSelection } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const format = deriveFormat("de-CH");
+export const before = setSelection(
+  createInputState({ mask: dateMask(format), value: "31.02.2026" }),
+  4
+);
+export const after = withSegments(
+  before,
+  clampDay(parseSegments(format, before.buffer.text))
+);
+
 Write segments back into a field, keeping the cursor and the mode: after a day
 clamp or an arrow-key step, the field shows the new date and the cursor has
 not moved.
@@ -35,6 +55,22 @@ field = withSegments(field, clampDay(parseSegments(format, field.buffer.text)));
 field.buffer.text; // → "28.02.2026"
 field.buffer.selection; // → { anchor: 4, head: 4 }   unchanged
 ```
+
+<FieldDiagram
+  text={before.buffer.text}
+  head={before.buffer.selection.head}
+  mode={before.mode}
+  locale="de-CH"
+  caption="Before: the cursor is on the second slot of the month."
+/>
+
+<FieldDiagram
+  text={after.buffer.text}
+  head={after.buffer.selection.head}
+  mode={after.mode}
+  locale="de-CH"
+  caption="After withSegments: the day reads 28, and the cursor block is still on the same slot of the month."
+/>
 
 ## Parameters
 

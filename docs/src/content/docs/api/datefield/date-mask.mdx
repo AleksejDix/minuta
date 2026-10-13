@@ -3,6 +3,14 @@ title: dateMask
 description: Turn a date format into an input mask, so the field starts as __.__.____ and only takes digits in the slots.
 ---
 
+import { dateMask, deriveFormat } from "datefield";
+import { createInputState } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const field = createInputState({
+  mask: dateMask(deriveFormat("de-CH")),
+});
+
 Turn a date format into an input mask: every digit of the date becomes an
 empty slot, every separator stays fixed, so `de-CH` becomes `__.__.____`.
 
@@ -26,6 +34,14 @@ const field = createInputState({ mask: dateMask(format) });
 field.buffer.text; // → "__.__.____"
 field.mode; // → "overwrite"
 ```
+
+<FieldDiagram
+  text={field.buffer.text}
+  head={field.buffer.selection.head}
+  mode={field.mode}
+  locale="de-CH"
+  caption="The new field: eight empty digit slots and two fixed dots. In overwrite mode the cursor is a block on the slot the next digit fills."
+/>
 
 ## Parameters
 

@@ -3,6 +3,16 @@ title: clearSegment
 description: Empty one segment of a date, so 31.03.2026 becomes 31.__.2026.
 ---
 
+import {
+  clearSegment,
+  deriveFormat,
+  parseSegments,
+  segmentsToString,
+} from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
+
 Empty one segment and leave the rest alone, so clearing the month of
 `31.03.2026` gives `31.__.2026`.
 
@@ -29,6 +39,20 @@ const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
 
 segmentsToString(clearSegment(segments, 2)); // → "31.__.2026"
 ```
+
+<FieldDiagram
+  text="31.03.2026"
+  anchor={segments[2].start}
+  head={segments[2].end}
+  locale="de-CH"
+  caption="Segment 2 is the month, positions 3 to 5 (highlighted)."
+/>
+
+<FieldDiagram
+  text={segmentsToString(clearSegment(segments, 2))}
+  locale="de-CH"
+  caption="clearSegment(segments, 2): both month slots are empty again; the day, the year and the dots are untouched."
+/>
 
 ## Parameters
 

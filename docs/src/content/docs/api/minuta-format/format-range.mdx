@@ -3,6 +3,19 @@ title: formatRange
 description: Show a period as "start – end" in any language, without repeating the month or year they share.
 ---
 
+import { divide, period, range } from "minuta";
+import { formatRange } from "minuta/format";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const ranges = [
+  range(new Date(2026, 2, 1), new Date(2026, 2, 31)),
+  range(new Date(2026, 2, 30), new Date(2026, 3, 5)),
+  range(new Date(2025, 11, 29), new Date(2026, 0, 4)),
+];
+export const q2 = period(new Date(2026, 4, 1), "quarter");
+export const may = period(new Date(2026, 4, 1), "month");
+export const may15 = period(new Date(2026, 4, 15), "day");
+
 Show a period as "start – end" in any language. Parts that start and end
 share, such as the month or the year, are written only once.
 
@@ -29,6 +42,18 @@ formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH");
 formatRange(range(new Date(2025, 11, 29), new Date(2026, 0, 4)), "de-CH");
 // → "29. Dez. 2025 – 4. Jan. 2026"
 ```
+
+The three ranges on one axis, each labelled with its `"de-CH"` text. What
+start and end share is written once:
+
+<Timeline
+  caption="Inside one month, the month and the year appear once; across a month, only the year; across a year, nothing is shared."
+  tracks={ranges.map((piece) => ({
+    label: formatRange(piece, "de-CH"),
+    periods: [piece],
+    tone: "accent",
+  }))}
+/>
 
 ## Parameters
 
@@ -81,6 +106,20 @@ formatRange(period(new Date(2026, 2, 15), "day"), "en-US"); // → "March 15, 20
 formatRange(period(new Date(2026, 2, 15, 14), "hour"), "en-US"); // → "Mar 15, 2:00 – 2:59 PM"
 formatRange(period(new Date(2026, 4, 1), "quarter"), "en-US"); // → "Apr – Jun 2026"
 ```
+
+The same collapse on one axis: the quarter has a different first and last
+month, so it gets a dash. May and May 15 start and end in the same month or
+day, so they get none.
+
+<Timeline
+  caption="A quarter, one of its months and one of its days, each labelled with formatRange in en-US."
+  tracks={[
+    { label: formatRange(q2, "en-US"), periods: [q2], tone: "accent" },
+    { label: formatRange(may, "en-US"), periods: [may], tone: "accent" },
+    { label: formatRange(may15, "en-US"), periods: [may15], tone: "accent" },
+    { label: "the days of May", periods: divide(may, "day"), tone: "muted" },
+  ]}
+/>
 
 The hour shows its end as 2:59 because a period ends at its last
 millisecond, 14:59:59.999.

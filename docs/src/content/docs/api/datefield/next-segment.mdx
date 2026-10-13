@@ -3,6 +3,12 @@ title: nextSegment
 description: The index of the next segment you can type into, skipping separators.
 ---
 
+import { deriveFormat, nextSegment, parseSegments } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
+export const next = segments[nextSegment(segments, 0)];
+
 Find the next segment you can type into, skipping separators: after the day of
 `31.03.2026` comes the month.
 
@@ -26,6 +32,22 @@ nextSegment(segments, 0); // → 2   day → month
 nextSegment(segments, 2); // → 4   month → year
 nextSegment(segments, 4); // → 4   the year is last: stays
 ```
+
+<FieldDiagram
+  text="31.03.2026"
+  locale="de-CH"
+  anchor={segments[0].start}
+  head={segments[0].end}
+  caption="current = 0: the day."
+/>
+
+<FieldDiagram
+  text="31.03.2026"
+  locale="de-CH"
+  anchor={next.start}
+  head={next.end}
+  caption={`nextSegment(segments, 0) → ${String(nextSegment(segments, 0))}: the dot at index 1 is skipped, the month is next.`}
+/>
 
 ## Parameters
 

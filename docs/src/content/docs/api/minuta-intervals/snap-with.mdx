@@ -3,6 +3,15 @@ title: snapWith
 description: Round a date to a neat boundary — the nearest quarter hour, the next midnight, the start of the week.
 ---
 
+import { divide, period } from "minuta";
+import { snapWith } from "minuta/intervals";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const units = nativeUnits();
+export const date = new Date(2026, 2, 15, 10, 37);
+export const march = period(new Date(2026, 2, 1), "month");
+
 Round a date to a neat boundary: the nearest quarter hour, the next
 midnight, the start of the week.
 
@@ -28,6 +37,25 @@ snapWith(units, date, "minute", { step: 15, mode: "ceil" }); // → 10:45
 snapWith(units, date, "day", { mode: "ceil" }); // → Mon Mar 16 00:00
 snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // → Mon Mar 16 00:00
 ```
+
+<Timeline
+  caption="The hour from 10:00 in steps of 15 minutes. 10:37 lies between the boundaries 10:30 and 10:45: the default, nearest, picks 10:30; ceil picks 10:45."
+  marks={[
+    { date, label: "10:37" },
+    { date: snapWith(units, date, "minute", { step: 15 }), label: "10:30" },
+    {
+      date: snapWith(units, date, "minute", { step: 15, mode: "ceil" }),
+      label: "10:45",
+    },
+  ]}
+  tracks={[
+    {
+      label: "{ step: 15 } boundaries",
+      periods: divide(period(date, "hour"), "minute", { step: 15 }),
+      tone: "muted",
+    },
+  ]}
+/>
 
 ## Parameters
 
@@ -100,7 +128,31 @@ the larger unit ends. Days in steps of 7 from the start of March are Mar 1,
 ```ts
 snapWith(units, new Date(2026, 2, 30), "day", { step: 7, mode: "ceil" });
 // → Wed Apr 1 00:00
+```
 
+<Timeline
+  caption="The 7-day steps of March start on Mar 1, 8, 15, 22 and 29; the last one is only 3 days long. Rounding Mar 30 up (ceil) lands on Apr 1, where the next month starts."
+  marks={[
+    { date: new Date(2026, 2, 30), label: "Mar 30" },
+    {
+      date: snapWith(units, new Date(2026, 2, 30), "day", {
+        step: 7,
+        mode: "ceil",
+      }),
+      label: "Apr 1",
+    },
+  ]}
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: "{ step: 7 } from Mar 1",
+      periods: divide(march, "day", { step: 7 }),
+      tone: "accent",
+    },
+  ]}
+/>
+
+```ts
 snapWith(units, new Date(2026, 2, 15, 22, 37), "hour", {
   step: 5,
   mode: "ceil",

@@ -3,6 +3,13 @@ title: createTextBuffer
 description: Create a text buffer from some text and an optional selection.
 ---
 
+import { createTextBuffer } from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const atEnd = createTextBuffer("hello");
+export const all = createTextBuffer("hello", { anchor: 0, head: 5 });
+export const clamped = createTextBuffer("hello", { anchor: 1, head: 99 });
+
 Create a buffer that holds some text and a cursor or selection.
 
 ```ts
@@ -28,6 +35,21 @@ createTextBuffer();
 // → { text: "", selection: { anchor: 0, head: 0 } }
 ```
 
+Each cell is one character; the numbers under the cells are the positions
+between them, from 0 before the first character to 5 after the last.
+
+<FieldDiagram
+  {...atEnd.selection}
+  text={atEnd.text}
+  caption='createTextBuffer("hello"): without a selection, the cursor sits at position 5, after the last character.'
+/>
+
+<FieldDiagram
+  {...all.selection}
+  text={all.text}
+  caption='createTextBuffer("hello", { anchor: 0, head: 5 }): from position 0 to 5, so all five characters are selected.'
+/>
+
 ## Parameters
 
 | Name        | What it is                                                                                                                         |
@@ -51,6 +73,12 @@ createTextBuffer("hello", { anchor: 1, head: 99 });
 createTextBuffer("hello", { anchor: -3, head: 2 });
 // → selection { anchor: 0, head: 2 }
 ```
+
+<FieldDiagram
+  {...clamped.selection}
+  text={clamped.text}
+  caption='createTextBuffer("hello", { anchor: 1, head: 99 }): the head is pulled back to 5, the end of the text, so "ello" is selected.'
+/>
 
 ## Backward selections are kept
 

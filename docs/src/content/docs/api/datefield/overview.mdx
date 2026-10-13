@@ -6,6 +6,31 @@ sidebar:
   label: Overview
 ---
 
+import {
+  clampDay,
+  dateMask,
+  deriveFormat,
+  parseSegments,
+  toDate,
+  typeDate,
+  withSegments,
+} from "datefield";
+import { createInputState } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const format = deriveFormat("de-CH");
+export const empty = createInputState({ mask: dateMask(format) });
+export const typed = typeDate(format, empty, "1.3.2026");
+export const impossible = createInputState({
+  mask: dateMask(format),
+  value: "31.02.2026",
+});
+export const clamped = withSegments(
+  impossible,
+  clampDay(parseSegments(format, impossible.buffer.text))
+);
+
 datefield is the logic of a date input that is split into segments, like
 `__.__.____` in Switzerland or `__/__/____` in the US. It knows how each locale
 writes a date, how people type and paste dates, what the arrow keys do, and
@@ -77,6 +102,46 @@ toDate(parseSegments(format, field.buffer.text)); // → Sat Feb 28 2026
 
 In a browser, [input-dom](../../input-dom/overview/) runs these steps for you
 on every key press and paste.
+
+The same steps as a sequence, each with the value it produces:
+
+<Flow
+  steps={[
+    {
+      code: 'deriveFormat("de-CH")',
+      layer: "format",
+      text: "Ask the browser how the locale writes a date: day, dot, month, dot, year.",
+    },
+    {
+      code: `"${empty.buffer.text}"`,
+      layer: "dateMask",
+      text: "Turn the format into a mask; the new field is all empty slots.",
+    },
+    {
+      code: `typeDate("1.3.2026") → "${typed.buffer.text}"`,
+      layer: "typeDate",
+      text: "Type the way people write: each dot finishes the part before it.",
+    },
+    {
+      code: `"${impossible.buffer.text}" → "${clamped.buffer.text}"`,
+      layer: "clampDay",
+      text: "Cut a day that is too large for its month.",
+    },
+    {
+      code: toDate(parseSegments(format, clamped.buffer.text)).toDateString(),
+      layer: "toDate",
+      text: "Read the Date once the text is complete and real.",
+    },
+  ]}
+/>
+
+<FieldDiagram
+  text={typed.buffer.text}
+  head={typed.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="The field after step 3: the text is cut into the day, month and year segments that every function on these pages works with."
+/>
 
 ## Words used on these pages
 

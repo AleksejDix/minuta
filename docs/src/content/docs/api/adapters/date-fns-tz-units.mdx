@@ -3,6 +3,22 @@ title: dateFnsTzUnits
 description: Units computed with date-fns-tz in one fixed time zone — Tokyo days on a computer in Zurich.
 ---
 
+import { divideWith, periodWith } from "minuta/core";
+import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { formatPeriod } from "minuta/format";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const moment = new Date("2026-03-20T20:00:00Z");
+export const dayIn = (timeZone) => {
+  const units = dateFnsTzUnits({ timeZone });
+  const day = periodWith(units, moment, "day");
+  return {
+    label: `${timeZone.split("/")[1].replace("_", " ")}: ${formatPeriod(day, "en-US", { timeZone, year: undefined })}`,
+    periods: divideWith(units, day, "hour"),
+    tone: timeZone === "Asia/Tokyo" ? "accent" : "ink",
+  };
+};
+
 Units computed with [date-fns](https://date-fns.org) and
 [date-fns-tz](https://github.com/marnusw/date-fns-tz) in one fixed time zone
 that you choose. A day is a day in that zone, wherever the code runs.
@@ -29,6 +45,20 @@ const day = tokyo.period(new Date("2026-03-20T20:00:00Z"), "day");
 day.start.toISOString(); // → "2026-03-20T15:00:00.000Z" (Mar 21 00:00 in Tokyo)
 day.end.toISOString(); // → "2026-03-21T14:59:59.999Z" (Mar 21 23:59:59.999 in Tokyo)
 ```
+
+One moment, three zones. Each row is the day that contains 20:00 UTC on
+Mar 20 (the pin) in that zone, drawn as its 24 hours. The days start at
+different moments, and in Tokyo it is already the next day:
+
+<Timeline
+  caption="The day that contains one moment, with dateFnsTzUnits in three zones. In Zurich and New York the moment falls on Mar 20; in Tokyo it is already Mar 21, a day that began at 15:00 UTC."
+  marks={[{ date: moment, label: "20:00 UTC" }]}
+  tracks={[
+    dayIn("Asia/Tokyo"),
+    dayIn("Europe/Zurich"),
+    dayIn("America/New_York"),
+  ]}
+/>
 
 ## When to choose it
 

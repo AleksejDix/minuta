@@ -3,6 +3,26 @@ title: withLocales
 description: Get a parseDate that knows only the locales you load, for a smaller bundle.
 ---
 
+import { withLocales } from "fechita/core";
+import { de } from "fechita/locales/de";
+import { en } from "fechita/locales/en";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import ParseDiagram from "../../../../components/diagrams/ParseDiagram.astro";
+
+export const deEn = withLocales({ de, en });
+export const none = withLocales({});
+export const texts = [
+  "31. März 2026",
+  "March 31, 2026",
+  "31 марта 2026",
+  "2026-03-31",
+];
+export const dayLabel = new Intl.DateTimeFormat("en-US", { dateStyle: "long" });
+export const describe = (result) =>
+  result.valid
+    ? `valid: ${dayLabel.format(result.date)}`
+    : `invalid: ${result.errorCodes.join(", ")}`;
+
 Get a `parseDate` function that knows only the languages you pass in. Your
 bundle then contains only their data, not all 104 locales.
 
@@ -28,6 +48,37 @@ parseDate("March 31, 2026"); // → valid: 31 March 2026
 parseDate("31 марта 2026"); // → invalid: NO_DATE, Russian is not loaded
 parseDate("04/05/2026", { locale: "de-CH" }); // → valid: 4 May 2026
 ```
+
+The same four texts, read by a `parseDate` with only `de` and `en` loaded and
+by one with no locales at all:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "withLocales({ de, en }).parseDate",
+        note: "knows German and English words",
+        children: texts.map((text) => ({
+          name: JSON.stringify(text),
+          note: describe(deEn.parseDate(text)),
+        })),
+      },
+      {
+        name: "withLocales({}).parseDate",
+        note: "knows no words, only numbers and ISO",
+        children: texts.map((text) => ({
+          name: JSON.stringify(text),
+          note: describe(none.parseDate(text)),
+        })),
+      },
+    ]}
+  />
+</div>
+
+The default `parseDate` from `fechita` has all 104 locales, so it reads the
+Russian text that the `de` and `en` version cannot:
+
+<ParseDiagram text="31 марта 2026" />
 
 ## Parameters
 

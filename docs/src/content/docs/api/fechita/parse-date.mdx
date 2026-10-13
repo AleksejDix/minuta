@@ -3,6 +3,8 @@ title: parseDate
 description: Read the date in a text — ISO, numbers in any order, month and weekday names in 104 languages — and report when it is ambiguous.
 ---
 
+import ParseDiagram from "../../../../components/diagrams/ParseDiagram.astro";
+
 Read the date in a piece of text, written in almost any way and in any of 104
 languages. You get a date only when the text means exactly one date.
 Otherwise you get the reason and the dates it could mean.
@@ -37,6 +39,15 @@ parseDate("04/05/2026", { order: "MDY" }); // → valid: 5 April 2026
 
 All results on this page were made in the time zone Europe/Zurich, with today
 being in 2026.
+
+What `parseDate` makes of three texts — one clear date, one that could mean
+two days, and one that is not a date:
+
+<ParseDiagram text="28. Oktober 2026" compare />
+
+<ParseDiagram text="03/04/2026" compare />
+
+<ParseDiagram text="31.02.2026" compare />
 
 ## Parameters
 
@@ -118,6 +129,13 @@ parseDate("04/05/2026", { locale: "en-US" }); // → 5 April 2026
 parseDate("04/05/2026", { order: "DMY", locale: "en-US" }); // → 4 May 2026
 ```
 
+The same text with two locales: British English reads the day first, American
+English the month first.
+
+<ParseDiagram text="04/05/2026" locale="en-GB" />
+
+<ParseDiagram text="04/05/2026" locale="en-US" />
+
 The order only picks among real readings. If it matches none of them, the
 result stays ambiguous. Japanese writes year first, so `ja` does not help
 with `04/05/2026`, where the year comes last. An unknown locale is ignored.
@@ -167,6 +185,10 @@ parseDate("31.03.26");
 parseDate("31.03.26", { order: "DMY" }); // → 31 March 2026
 ```
 
+Both readings of `31.03.26` are real dates, five years apart:
+
+<ParseDiagram text="31.03.26" />
+
 ## Month names in many languages
 
 Month names are read in all 104 locales, in their full and short forms.
@@ -190,6 +212,10 @@ parseDate("12 listopad 2026", { locale: "pl" }); // → 12 November 2026
 parseDate("12 listopad 2026", { locale: "hr" }); // → 12 October 2026
 ```
 
+<ParseDiagram text="12 listopad 2026" />
+
+<ParseDiagram text="12 listopad 2026" locale="pl" />
+
 A month name needs a year next to it. `31 March` and `March 2026` give
 `NO_DATE`.
 
@@ -203,6 +229,11 @@ parseDate("Tuesday 31 March 2026"); // → 31 March 2026
 parseDate("mardi 31 mars 2026"); // → 31 March 2026
 parseDate("Monday 31 March 2026"); // → invalid: WEEKDAY_MISMATCH
 ```
+
+31 March 2026 is a Tuesday, so the Monday is reported. `new Date` quietly
+ignores it:
+
+<ParseDiagram text="Monday 31 March 2026" compare />
 
 ## ISO dates and times
 
@@ -220,6 +251,10 @@ parseDate("2026-03-31T10:00:00.250+02:00");
 parseDate("Tue, 31 Mar 2026 10:00:00 +0200");
 // → the moment 2026-03-31T08:00:00Z (an email date, RFC 2822)
 ```
+
+The ISO form of the text that was ambiguous above has only one reading:
+
+<ParseDiagram text="2026-04-05" />
 
 Times are also found in free text: 24-hour, 12-hour with AM/PM, the day
 period words of other languages, and offsets such as `UTC` or `GMT+1`.
@@ -247,6 +282,13 @@ parseDate("31.03.2026 10:61"); // → invalid: INVALID_TIME
 `29.02.2026` gets two codes because it was tried in every order: day first
 gives a day that does not exist, month first gives month 29. Each problem is
 listed once.
+
+<ParseDiagram text="29.02.2026" />
+
+`new Date` reads `2026-02-30` and rolls it over into March. fechita reports
+the day instead:
+
+<ParseDiagram text="2026-02-30" compare />
 
 ## More that it reads
 

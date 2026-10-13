@@ -3,6 +3,21 @@ title: finishSegment
 description: Finish the half-typed segment at the cursor — pad it with zeros and move on, so 1 becomes 01.
 ---
 
+import { dateMask, deriveFormat, finishSegment, typeDate } from "datefield";
+import { createInputState } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const format = deriveFormat("de-CH");
+export const typed = (keys) =>
+  [...keys].reduce(
+    (state, key) => typeDate(format, state, key),
+    createInputState({ mask: dateMask(format) })
+  );
+export const before = typed("1.3.5");
+export const after = finishSegment(format, before);
+export const day = typed("1");
+export const dayDone = finishSegment(format, day);
+
 Finish the segment the cursor is in: pad what was typed with zeros and move the
 cursor to the next segment, so a day of `1_` becomes `01`.
 
@@ -30,6 +45,22 @@ field = finishSegment(format, field);
 field.buffer.text; // → "01.03.2005"
 ```
 
+<FieldDiagram
+  text={before.buffer.text}
+  head={before.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="Before: the year holds only 5 and the cursor waits on its second slot."
+/>
+
+<FieldDiagram
+  text={after.buffer.text}
+  head={after.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="After finishSegment: the year is padded to 2005 (a one-digit year is read as a two-digit one) and the cursor sits after the last segment."
+/>
+
 ## Parameters
 
 | Name     | What it is                                                    |
@@ -53,6 +84,22 @@ must be digits. Then those digits are padded on the left with zeros:
 // cursor after "1" in "1_.__.____"
 finishSegment(format, field); // → "01.__.____", cursor at the month
 ```
+
+<FieldDiagram
+  text={day.buffer.text}
+  head={day.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="The cursor is after the 1, inside the day: there is something to finish."
+/>
+
+<FieldDiagram
+  text={dayDone.buffer.text}
+  head={dayDone.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="finishSegment pads the day to 01 and moves the cursor over the dot to the start of the month."
+/>
 
 Nothing happens when the cursor is at the start of a segment, at its end
 (the segment is full) or on a separator. That is why a `.` typed right after

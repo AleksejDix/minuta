@@ -3,6 +3,18 @@ title: parseDateWith
 description: Read the date in a text with the locales you pass in, in one call.
 ---
 
+import { parseDateWith } from "fechita/core";
+import { de } from "fechita/locales/de";
+import { en } from "fechita/locales/en";
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+export const locales = { de, en };
+export const dayLabel = new Intl.DateTimeFormat("en-US", { dateStyle: "long" });
+export const describe = (result) =>
+  result.valid
+    ? `valid: ${dayLabel.format(result.date)}`
+    : `invalid: ${result.errorCodes.join(", ")}`;
+
 Read the date in a text using only the locales you pass in. It is the
 function behind both `parseDate` and `withLocales`.
 
@@ -28,6 +40,36 @@ parseDateWith(locales, "04/05/2026"); // → invalid: AMBIGUOUS_DAY_MONTH
 parseDateWith(locales, "04/05/2026", { order: "MDY" }); // → valid: 5 April 2026
 ```
 
+What `parseDateWith(locales, "04/05/2026", { order: "MDY" })` goes through.
+The candidates and the result are what the calls above return:
+
+<Flow
+  steps={[
+    {
+      code: `{ ${Object.keys(locales).join(", ")} }`,
+      layer: "locales",
+      text: "The words and date orders of the loaded languages. fechita indexes them once per object and keeps the index.",
+    },
+    {
+      code: parseDateWith(locales, "04/05/2026")
+        .candidates.map((date) => dayLabel.format(date))
+        .join(" or "),
+      layer: "text",
+      text: "“04/05/2026” has no words, only numbers. Two orders give a real date.",
+    },
+    {
+      code: '{ order: "MDY" }',
+      layer: "options",
+      text: "The order option keeps the month-first reading.",
+    },
+    {
+      code: describe(parseDateWith(locales, "04/05/2026", { order: "MDY" })),
+      layer: "result",
+      text: "One date is left, so the result is valid.",
+    },
+  ]}
+/>
+
 ## Parameters
 
 | Name      | What it is                                                                                              |
@@ -38,8 +80,8 @@ parseDateWith(locales, "04/05/2026", { order: "MDY" }); // → valid: 5 April 20
 
 ## Returns
 
-The same result as [`parseDate`](../parse-date/#returns): `{ valid: true,
-date, parts }` or `{ valid: false, errorCodes, candidates }`.
+The same result as [`parseDate`](../parse-date/#returns):
+`{ valid: true, date, parts }` or `{ valid: false, errorCodes, candidates }`.
 
 ## `parseDateWith` or `withLocales`?
 

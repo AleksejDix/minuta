@@ -3,6 +3,20 @@ title: ParseError
 description: The error codes parseDate reports, as named constants.
 ---
 
+import { ParseError, parseDate } from "fechita";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import ParseDiagram from "../../../../components/diagrams/ParseDiagram.astro";
+
+export const triggers = {
+  AmbiguousDayMonth: "04/05/2026",
+  AmbiguousMonth: "12 listopad 2026",
+  InvalidDay: "2026-02-30",
+  InvalidMonth: "13/13/2026",
+  InvalidTime: "31.03.2026 10:61",
+  NoDate: "hello",
+  WeekdayMismatch: "Monday 31 March 2026",
+};
+
 The codes `parseDate` puts in `errorCodes`, as named constants. Use them
 instead of typing the strings yourself.
 
@@ -39,6 +53,23 @@ A plain object. Each name maps to the code string that appears in
 | `NoDate`            | `NO_DATE`             | No day, month and year were found in the text.                                           |
 | `WeekdayMismatch`   | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                                  |
 
+Each constant with a text that makes `parseDate` report it. The codes on the
+right are what `parseDate` returned for that text:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "ParseError",
+        children: Object.entries(ParseError).map(([name, code]) => ({
+          name: `${name} = "${code}"`,
+          note: `parseDate(${JSON.stringify(triggers[name])}) → ${parseDate(triggers[name]).valid ? "valid" : parseDate(triggers[name]).errorCodes.join(", ")}`,
+        })),
+      },
+    ]}
+  />
+</div>
+
 The codes are plain strings, so you can store them, send them to a server or
 use them as keys for your own error messages.
 
@@ -59,6 +90,8 @@ parseDate("29.02.2026").errorCodes;
 // → ["INVALID_DAY", "INVALID_MONTH"]
 //   day first: no 29 February in 2026; month first: no month 29
 ```
+
+<ParseDiagram text="29.02.2026" />
 
 `candidates` holds dates only for `AMBIGUOUS_DAY_MONTH`. For every other code
 it is empty.

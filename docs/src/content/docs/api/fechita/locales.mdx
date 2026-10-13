@@ -3,6 +3,16 @@ title: Locales
 description: The 104 per-locale imports of fechita, how to load only the ones you need, and how to list them.
 ---
 
+import { de } from "fechita/locales/de";
+import { en } from "fechita/locales/en";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+
+export const enRegions = Object.entries(en.regionOrders);
+export const regionsWith = (order) =>
+  enRegions
+    .filter(([, regionOrder]) => regionOrder === order)
+    .map(([tag]) => tag);
+
 fechita's language data is split into one module per locale, under
 `fechita/locales/<tag>`. Each one holds the month names, weekday names, AM/PM
 and day period words, era names and usual date order of one language, taken
@@ -11,6 +21,35 @@ from Unicode CLDR 48. Load the ones you need and pass them to
 
 The default entry, `fechita`, already includes all of them. You only need
 these imports with `fechita/core`.
+
+How the two entry points get their data:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      { name: "fechita", note: "parseDate with all 104 locales built in" },
+      {
+        name: "fechita/core",
+        note: "no locale data; withLocales and parseDateWith take the locales you pass",
+        children: [
+          {
+            name: "fechita/locales/de",
+            note: "exports de: one language, all its regions",
+          },
+          { name: "fechita/locales/en", note: "exports en" },
+          {
+            name: "fechita/locales/zh-Hant",
+            note: 'exports zhHant, passed as { "zh-Hant": zhHant }',
+          },
+          {
+            name: "fechita/locales/all",
+            note: "exports allLocales, all 104 in one object",
+          },
+        ],
+      },
+    ]}
+  />
+</div>
 
 ## Import one locale
 
@@ -51,6 +90,34 @@ const { parseDate } = withLocales({ en });
 parseDate("04/05/2026", { locale: "en-US" }); // → 5 April 2026
 parseDate("04/05/2026", { locale: "en-GB" }); // → 4 May 2026
 ```
+
+Inside `en`, the language order and the regions that differ from it:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: `en.order = "${en.order}"`,
+        note: "en-US and every region not listed below",
+        children: [
+          {
+            name: `"DMY" · ${String(regionsWith("DMY").length)} regions`,
+            note:
+              regionsWith("DMY")
+                .filter((tag) =>
+                  ["en-GB", "en-AU", "en-CH", "en-IN"].includes(tag)
+                )
+                .join(", ") + ", …",
+          },
+          {
+            name: `"YMD" · ${String(regionsWith("YMD").length)} regions`,
+            note: regionsWith("YMD").join(", "),
+          },
+        ],
+      },
+    ]}
+  />
+</div>
 
 ## The 104 locales
 
@@ -93,6 +160,42 @@ Each module is plain data, safe to inspect:
 | `weekdays`     | The names of each weekday, Sunday first.                                        |
 | `dayPeriods`   | AM and PM words, and words like "evening" with the hours they cover.            |
 | `eras`         | The words for before and after the common era: `"v. Chr."`, `"n. Chr."`.        |
+
+The German module, `de`, with one example from each field:
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: `de · tag "${de.tag}"`,
+        children: [
+          {
+            name: `order "${de.order}"`,
+            note: `regionOrders: ${Object.keys(de.regionOrders).length === 0 ? "none, every German region writes day first" : Object.keys(de.regionOrders).join(", ")}`,
+          },
+          { name: "months[2]", note: de.months[2].join(" · ") },
+          { name: "weekdays[2]", note: de.weekdays[2].join(" · ") },
+          {
+            name: "dayPeriods",
+            note:
+              `am ${de.dayPeriods.am.join(", ")} · ` +
+              de.dayPeriods.flexible
+                .filter((period) => period.from === 18)
+                .map(
+                  (period) =>
+                    `${period.names.join(", ")}: ${String(period.from)}–${String(period.before)} h`
+                )
+                .join(""),
+          },
+          {
+            name: "eras",
+            note: `bc ${de.eras.bc.join(", ")} · ad ${de.eras.ad.join(", ")}`,
+          },
+        ],
+      },
+    ]}
+  />
+</div>
 
 ## Related
 

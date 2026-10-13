@@ -3,6 +3,33 @@ title: rotateSegment
 description: Step one segment up or down with the arrow keys, wrapping around in its own range — day 31 goes to 01 and keeps the month.
 ---
 
+import {
+  dateMask,
+  deriveFormat,
+  parseSegments,
+  rotateSegment,
+  segmentAtPosition,
+  withSegments,
+} from "datefield";
+import { createInputState, setSelection } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const format = deriveFormat("de-CH");
+export const field = createInputState({
+  mask: dateMask(format),
+  value: "31.03.2026",
+});
+export const arrowUp = (cursor) => {
+  const state = setSelection(field, cursor);
+  const segments = parseSegments(format, state.buffer.text);
+  return withSegments(
+    state,
+    rotateSegment(segments, segmentAtPosition(segments, cursor), 1)
+  );
+};
+export const onDay = arrowUp(0);
+export const onMonth = arrowUp(3);
+
 Step one segment up or down, like the arrow keys of a native date input. The
 segment wraps in its own range and never changes its neighbours: day `31` goes
 up to `01` and the month stays the same.
@@ -33,6 +60,28 @@ segmentsToString(rotateSegment(segments, 0, 1)); // → "01.03.2026"   day up, w
 segmentsToString(rotateSegment(segments, 2, 1)); // → "30.04.2026"   month up, day fits April
 segmentsToString(rotateSegment(segments, 4, -1)); // → "31.03.2025"   year down
 ```
+
+<FieldDiagram
+  text={field.buffer.text}
+  locale="de-CH"
+  caption="The field before any key: 31 March 2026."
+/>
+
+<FieldDiagram
+  text={onDay.buffer.text}
+  head={onDay.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="Cursor on the day, ArrowUp: 31 wraps to 01. The month and the year do not move."
+/>
+
+<FieldDiagram
+  text={onMonth.buffer.text}
+  head={onMonth.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="Cursor on the month, ArrowUp: 03 becomes 04, and the day is cut to 30 because April has no 31st."
+/>
 
 ## Parameters
 

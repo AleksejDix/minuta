@@ -3,6 +3,13 @@ title: previousWith
 description: Get the period right before a period — the day, week or month before — with the units you pass.
 ---
 
+import { periodWith, previousWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const units = nativeUnits({ weekStartsOn: "sunday" });
+export const week = periodWith(units, new Date(2026, 2, 18), "week");
+
 Get the period right before a period (the day, week or month before),
 computed with the units you pass.
 
@@ -27,6 +34,18 @@ const week = periodWith(units, new Date(2026, 2, 18), "week");
 previousWith(units, week);
 // → Sun Mar 8 00:00:00.000 – Sat Mar 14 23:59:59.999, unit "week"
 ```
+
+<Timeline
+  caption="previousWith with Sunday units gives the whole Sunday-to-Saturday week that ends right before week starts."
+  tracks={[
+    {
+      label: "previousWith(units, week)",
+      periods: [previousWith(units, week)],
+      tone: "accent",
+    },
+    { label: "week", periods: [week], tone: "ink" },
+  ]}
+/>
 
 ## Parameters
 

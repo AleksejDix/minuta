@@ -3,6 +3,14 @@ title: dateFnsUnits
 description: Units computed with date-fns — for apps that already use date-fns, in the computer's time zone.
 ---
 
+import { divideWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import { dateFnsUnits } from "minuta/date-fns";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const weeksOfMarch = (units) =>
+  divideWith(units, periodWith(units, new Date(2026, 2, 1), "month"), "week");
+
 Units computed with [date-fns](https://date-fns.org), the library of small
 functions on plain `Date` objects. Dates are read in the time zone of the
 computer the code runs on.
@@ -40,6 +48,25 @@ time.monthGrid(new Date(2026, 2, 15)).periods.length; // → 42
 
 The results are the same as with [`nativeUnits`](../native-units/). The
 difference is which library does the work.
+
+The weeks of March 2026, computed once by date-fns and once by the built-in
+`Date`. The bars are the same, down to the cut pieces at the month's edges:
+
+<Timeline
+  caption='divideWith(units, march, "week") with both engines. The hatched pieces are the first and last weeks, cut at the edges of March.'
+  tracks={[
+    {
+      label: "dateFnsUnits()",
+      periods: weeksOfMarch(dateFnsUnits()),
+      tone: "accent",
+    },
+    {
+      label: "nativeUnits()",
+      periods: weeksOfMarch(nativeUnits()),
+      tone: "muted",
+    },
+  ]}
+/>
 
 ## Install
 

@@ -3,6 +3,14 @@ title: overlaps
 description: Check whether two periods share any time, for example to find clashing bookings.
 ---
 
+import { period, range } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const booking = range(new Date(2026, 2, 1), new Date(2026, 2, 10));
+export const other = range(new Date(2026, 2, 5), new Date(2026, 2, 20));
+export const march = period(new Date(2026, 2, 1), "month");
+export const april = period(new Date(2026, 3, 1), "month");
+
 Check whether two periods share any time, for example two bookings that
 clash.
 
@@ -25,6 +33,14 @@ const other = range(new Date(2026, 2, 5), new Date(2026, 2, 20));
 overlaps(booking, other);
 // → true, both include Mar 5 to Mar 10
 ```
+
+<Timeline
+  caption="The two bookings share the days from Mar 5 to Mar 10, so they overlap."
+  tracks={[
+    { label: "booking", periods: [booking], tone: "accent" },
+    { label: "other", periods: [other], tone: "accent" },
+  ]}
+/>
 
 ## Parameters
 
@@ -62,6 +78,19 @@ A period that crosses the border does overlap both sides:
 overlaps(period(new Date(2026, 2, 31), "week"), april);
 // → true, the week Mon Mar 30 – Sun Apr 5
 ```
+
+<Timeline
+  caption="March and April touch but share no millisecond. The week from Mar 30 to Apr 5 crosses the border and overlaps both."
+  tracks={[
+    { label: "march", periods: [march], tone: "ink" },
+    { label: "april", periods: [april], tone: "ink" },
+    {
+      label: 'period(Mar 31, "week")',
+      periods: [period(new Date(2026, 2, 31), "week")],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Touching ranges do overlap
 

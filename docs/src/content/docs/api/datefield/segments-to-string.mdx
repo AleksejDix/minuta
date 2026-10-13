@@ -3,6 +3,12 @@ title: segmentsToString
 description: Join segments back into the date text, such as 31.03.2026.
 ---
 
+import { deriveFormat, fromDate, segmentsToString } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const written = (locale) =>
+  segmentsToString(fromDate(new Date(2026, 2, 1), deriveFormat(locale)));
+
 Join segments back into text: the values of all parts, one after another, so
 the segments of `31.03.2026` give `"31.03.2026"` again.
 
@@ -25,6 +31,21 @@ segmentsToString(fromDate(new Date(2026, 2, 1), format)); // → "01.03.2026"
 segmentsToString(fromDate(new Date(2026, 2, 1), deriveFormat("en-US"))); // → "03/01/2026"
 segmentsToString(fromDate(new Date(2026, 2, 1), deriveFormat("ko-KR"))); // → "2026. 03. 01."
 ```
+
+The joined text of each, with the segments it was made of bracketed below.
+The values are placed one after another; nothing is added between them.
+
+<FieldDiagram
+  text={written("de-CH")}
+  locale="de-CH"
+  caption="de-CH: day, dot, month, dot, year."
+/>
+
+<FieldDiagram
+  text={written("ko-KR")}
+  locale="ko-KR"
+  caption="ko-KR: the separator segments carry their own spaces and the final dot."
+/>
 
 ## Parameters
 

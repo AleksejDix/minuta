@@ -3,6 +3,8 @@ title: CalendarWeekdays
 description: A React component that renders the row of weekday names above the calendar grid, in the week order of the units.
 ---
 
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
 A component that renders the row of weekday names ("Mon", "Tue", …) above the
 calendar grid, in the week order of the units.
 
@@ -36,6 +38,14 @@ export function Calendar() {
 
 The header row reads "So Mo Di Mi Do Fr Sa": German short names, starting on
 Sunday because the units say so.
+
+<MonthGrid month="2024-01" weekStartsOn="sunday" locale="de-CH" />
+
+The top row of this grid is what `CalendarWeekdays` renders; here for
+January 2024. The order comes from the units, the names from `locale`. With the
+defaults, Monday weeks and `"en-US"`, the same month starts with "Mon":
+
+<MonthGrid month="2024-01" />
 
 ## Props
 

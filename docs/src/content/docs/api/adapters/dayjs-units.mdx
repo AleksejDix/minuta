@@ -3,6 +3,14 @@ title: dayjsUnits
 description: Units computed with Day.js — for apps that already use Day.js, in the computer's time zone.
 ---
 
+import { divideWith, periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import { dayjsUnits } from "minuta/dayjs";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const weeksOfMarch = (units) =>
+  divideWith(units, periodWith(units, new Date(2026, 2, 1), "month"), "week");
+
 Units computed with [Day.js](https://day.js.org), the small date library
 with a Moment-like API. Dates are read in the time zone of the computer the
 code runs on.
@@ -35,6 +43,25 @@ minuta takes and returns plain `Date` objects. Convert at the edges:
 - Your app already uses Day.js and you want its rules everywhere.
 
 The results are the same as with [`nativeUnits`](../native-units/).
+
+The weeks of March 2026, computed once by Day.js and once by the built-in
+`Date`. The bars are the same, down to the cut pieces at the month's edges:
+
+<Timeline
+  caption='divideWith(units, march, "week") with both engines. The hatched pieces are the first and last weeks, cut at the edges of March.'
+  tracks={[
+    {
+      label: "dayjsUnits()",
+      periods: weeksOfMarch(dayjsUnits()),
+      tone: "accent",
+    },
+    {
+      label: "nativeUnits()",
+      periods: weeksOfMarch(nativeUnits()),
+      tone: "muted",
+    },
+  ]}
+/>
 
 ## Install
 

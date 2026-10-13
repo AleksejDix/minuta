@@ -3,6 +3,13 @@ title: same
 description: Check whether two periods fall in the same day, week, month or year.
 ---
 
+import { period } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const monday = period(new Date(2026, 2, 16), "day");
+export const friday = period(new Date(2026, 2, 20), "day");
+export const week = period(new Date(2026, 2, 31), "week");
+
 Check whether two periods fall in the same day, week, month or year: are
 Monday and Friday in the same week, are these two appointments on the same
 day.
@@ -26,6 +33,19 @@ const friday = period(new Date(2026, 2, 20), "day");
 same(monday, friday, "week"); // → true
 same(monday, friday, "day"); // → false
 ```
+
+<Timeline
+  caption="Monday and Friday start in the same week, so they are the same by week. They start on different days, so not by day."
+  tracks={[
+    {
+      label: 'period(monday.start, "week")',
+      periods: [period(monday.start, "week")],
+      tone: "muted",
+    },
+    { label: "monday", periods: [monday], tone: "accent" },
+    { label: "friday", periods: [friday], tone: "accent" },
+  ]}
+/>
 
 ## Parameters
 
@@ -63,6 +83,24 @@ const week = period(new Date(2026, 2, 31), "week");
 same(week, period(new Date(2026, 2, 1), "month"), "month"); // → true
 same(week, period(new Date(2026, 3, 1), "month"), "month"); // → false
 ```
+
+<Timeline
+  caption="The pin marks where the week starts: in March. That is all same looks at, even though five of its seven days are in April."
+  marks={[{ date: week.start, label: "week.start" }]}
+  tracks={[
+    {
+      label: "march",
+      periods: [period(new Date(2026, 2, 1), "month")],
+      tone: "muted",
+    },
+    {
+      label: "april",
+      periods: [period(new Date(2026, 3, 1), "month")],
+      tone: "muted",
+    },
+    { label: "week", periods: [week], tone: "accent" },
+  ]}
+/>
 
 To check that a period lies entirely in a month, use
 [`contains`](../contains/).

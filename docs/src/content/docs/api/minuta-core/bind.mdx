@@ -3,6 +3,20 @@ title: bind
 description: Bind every function of a plugin to one set of units, so you can call them without passing the units.
 ---
 
+import { period } from "minuta";
+import { bind, divideWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const workdays = {
+  workdaysIn: (units, month) =>
+    divideWith(units, month, "day").filter(
+      (day) => day.start.getDay() % 6 !== 0
+    ),
+};
+export const march = period(new Date(2026, 2, 1), "month");
+
 Bind every function of a plugin to one set of units, so you can call them
 without passing the units each time.
 
@@ -26,6 +40,11 @@ const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
 grids.monthGrid(new Date(2026, 2, 18)).periods;
 // → 42 days, starting Sun Mar 1
 ```
+
+<MonthGrid month="2026-03" weekStartsOn="sunday" selected="2026-03-18" />
+
+The grid `grids.monthGrid` builds: the Sunday units were bound once, so every
+row starts on a Sunday without passing them again.
 
 ## Parameters
 
@@ -65,6 +84,18 @@ const march = period(new Date(2026, 2, 1), "month");
 bind(nativeUnits(), workdays).workdaysIn(march);
 // → 22 day periods, Monday to Friday
 ```
+
+<Timeline
+  caption="The days of March 2026 that workdaysIn keeps: 22 bars, with a gap at every weekend."
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: "workdaysIn(march)",
+      periods: bind(nativeUnits(), workdays).workdaysIn(march),
+      tone: "accent",
+    },
+  ]}
+/>
 
 [`minuta/calendar`](../../minuta-calendar/overview/) and
 [`minuta/intervals`](../../minuta-intervals/overview/) ship plugins built this way.

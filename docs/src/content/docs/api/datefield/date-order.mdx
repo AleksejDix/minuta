@@ -3,6 +3,13 @@ title: dateOrder
 description: Tell whether a format puts the day, the month or the year first — "DMY", "MDY" or "YMD".
 ---
 
+import { dateOrder, deriveFormat, fromDate, segmentsToString } from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const written = (locale) =>
+  segmentsToString(fromDate(new Date(2026, 2, 31), deriveFormat(locale)));
+export const order = (locale) => dateOrder(deriveFormat(locale));
+
 Tell in which order a format writes day, month and year: `"DMY"` for `de-CH`,
 `"MDY"` for `en-US`, `"YMD"` for `ja-JP`.
 
@@ -24,6 +31,33 @@ dateOrder(deriveFormat("en-US")); // → "MDY"
 dateOrder(deriveFormat("ja-JP")); // → "YMD"
 dateOrder(deriveFormat("ko-KR")); // → "YMD"
 ```
+
+The same date, 31 March 2026, in four fields. The brackets under the slots
+show where each locale puts day, month and year; `dateOrder` names that order.
+
+<FieldDiagram
+  text={written("de-CH")}
+  locale="de-CH"
+  caption={`de-CH: ${order("de-CH")}`}
+/>
+
+<FieldDiagram
+  text={written("en-US")}
+  locale="en-US"
+  caption={`en-US: ${order("en-US")}`}
+/>
+
+<FieldDiagram
+  text={written("ja-JP")}
+  locale="ja-JP"
+  caption={`ja-JP: ${order("ja-JP")}`}
+/>
+
+<FieldDiagram
+  text={written("ko-KR")}
+  locale="ko-KR"
+  caption={`ko-KR: ${order("ko-KR")} — the same order as ja-JP, with ". " between the parts and a dot at the end.`}
+/>
 
 ## Parameters
 

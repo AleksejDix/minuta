@@ -3,6 +3,12 @@ title: deleteBackward
 description: Backspace — delete the selection, or the character before the cursor.
 ---
 
+import { createTextBuffer, deleteBackward } from "text-buffer";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const cursor = createTextBuffer("hello");
+export const selection = createTextBuffer("hello", { anchor: 1, head: 3 });
+
 Do what Backspace does: delete the selected text, or the character before the
 cursor.
 
@@ -25,6 +31,35 @@ deleteBackward(createTextBuffer("hello"));
 deleteBackward(createTextBuffer("hello", { anchor: 1, head: 3 }));
 // → "hlo", cursor at 1 ("el" was selected)
 ```
+
+With a cursor, the character before it goes. The cursor moves back by one:
+
+<FieldDiagram
+  {...cursor.selection}
+  text={cursor.text}
+  caption='Before: "hello" with the cursor at 5, after the "o".'
+/>
+
+<FieldDiagram
+  {...deleteBackward(cursor).selection}
+  text={deleteBackward(cursor).text}
+  caption='After deleteBackward: the "o" is gone and the cursor is at 4.'
+/>
+
+With a selection, only the selected text goes, and the cursor lands where the
+selection began:
+
+<FieldDiagram
+  {...selection.selection}
+  text={selection.text}
+  caption='Before: "el" selected, positions 1 to 3.'
+/>
+
+<FieldDiagram
+  {...deleteBackward(selection).selection}
+  text={deleteBackward(selection).text}
+  caption='After deleteBackward: "hlo", with the cursor at 1, where "el" started. The character before the selection stays.'
+/>
 
 ## Parameters
 

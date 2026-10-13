@@ -3,6 +3,17 @@ title: clampDay
 description: Keep the day within the month's real length, so 31.02.2026 becomes 28.02.2026 — without getting in the way while the user types.
 ---
 
+import {
+  clampDay,
+  deriveFormat,
+  parseSegments,
+  segmentsToString,
+} from "datefield";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const format = deriveFormat("de-CH");
+export const s = (text) => parseSegments(format, text);
+
 Keep the day within the month's real length, so `31.02.2026` becomes
 `28.02.2026`. With the cursor, it waits until the user has finished typing the
 part they are in.
@@ -34,6 +45,18 @@ segmentsToString(clampDay(s("31.04.2026"))); // → "30.04.2026"
 segmentsToString(clampDay(s("15.02.2026"))); // → "15.02.2026"   fine as it is
 ```
 
+<FieldDiagram
+  text="31.02.2026"
+  locale="de-CH"
+  caption="Before: the slots hold day 31 and month 02, a date that does not exist."
+/>
+
+<FieldDiagram
+  text={segmentsToString(clampDay(s("31.02.2026")))}
+  locale="de-CH"
+  caption="After clampDay: only the day changed, cut to 28, the last day of February 2026."
+/>
+
 ## Parameters
 
 | Name       | What it is                                                                                                     |
@@ -63,6 +86,22 @@ clampDay(s("31.02.2026"), 4); // cursor inside the month → "31.02.2026", uncha
 clampDay(s("31.02.2026"), 6); // cursor has left the month → "28.02.2026"
 clampDay(s("31.02.20__"), 8); // cursor inside the year → unchanged
 ```
+
+<FieldDiagram
+  text={segmentsToString(clampDay(s("31.02.2026"), 4))}
+  head={4}
+  mode="overwrite"
+  locale="de-CH"
+  caption="clampDay(segments, 4): the cursor is still inside the month, so 31.02 is left as it is — the user may be about to type a 3."
+/>
+
+<FieldDiagram
+  text={segmentsToString(clampDay(s("31.02.2026"), 6))}
+  head={6}
+  mode="overwrite"
+  locale="de-CH"
+  caption="clampDay(segments, 6): the cursor has left the month for the year, so the day is cut to 28."
+/>
 
 So pass the cursor after every edit, and leave it out when the user is done,
 for example on blur:

@@ -3,6 +3,17 @@ title: shiftWith
 description: Move a period forward or back by a number of its own unit, with the units you pass.
 ---
 
+import { periodWith, range, shiftWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const units = nativeUnits({ weekStartsOn: "sunday" });
+export const week = periodWith(units, new Date(2026, 2, 18), "week");
+export const slot = range(
+  new Date(2026, 2, 2, 9),
+  new Date(2026, 2, 2, 9, 59, 59, 999)
+);
+
 Move a period forward or back by a number of its own unit (two weeks ahead,
 three months back), computed with the units you pass.
 
@@ -27,6 +38,18 @@ const week = periodWith(units, new Date(2026, 2, 18), "week");
 shiftWith(units, week, 2);
 // → Sun Mar 29 00:00:00.000 – Sat Apr 4 23:59:59.999, unit "week"
 ```
+
+<Timeline
+  caption="Two Sunday weeks forward: the week in between is skipped, and the result is again a whole Sunday-to-Saturday week."
+  tracks={[
+    { label: "week", periods: [week], tone: "ink" },
+    {
+      label: "shiftWith(units, week, 2)",
+      periods: [shiftWith(units, week, 2)],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Parameters
 
@@ -62,6 +85,18 @@ const slot = range(
 shiftWith({}, slot, 2);
 // → Mon Mar 2 11:00:00.000 – 11:59:59.999, unit "custom"
 ```
+
+<Timeline
+  caption="With empty units, the custom slot still moves two of its own lengths, from 9:00 to 11:00."
+  tracks={[
+    { label: "slot", periods: [slot], tone: "ink" },
+    {
+      label: "shiftWith({}, slot, 2)",
+      periods: [shiftWith({}, slot, 2)],
+      tone: "accent",
+    },
+  ]}
+/>
 
 Pass the units the period was made with for every other period; see
 [`nextWith`](../next-with/#use-the-same-units-as-the-period) for why.
