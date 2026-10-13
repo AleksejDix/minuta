@@ -1,6 +1,6 @@
 ---
 title: dateFnsTzUnits
-description: Units computed with date-fns-tz in one fixed time zone — Tokyo days on a computer in Zurich.
+description: Units computed with date-fns in one fixed time zone — Tokyo days on a computer in Zurich.
 ---
 
 import { divideWith, periodWith } from "minuta/core";
@@ -20,8 +20,9 @@ export const dayIn = (timeZone) => {
 };
 
 Units computed with [date-fns](https://date-fns.org) and
-[date-fns-tz](https://github.com/marnusw/date-fns-tz) in one fixed time zone
-that you choose. A day is a day in that zone, wherever the code runs.
+[@date-fns/tz](https://github.com/date-fns/tz) in one fixed time zone that
+you choose. A day is a day in that zone, wherever the code runs (see
+[Known limits](#known-limits) for one exception).
 
 ```ts
 import { dateFnsTzUnits } from "minuta/date-fns-tz";
@@ -74,11 +75,17 @@ computer's time zone.
 ## Install
 
 ```sh
-npm install minuta date-fns date-fns-tz
+npm install minuta date-fns @date-fns/tz
 ```
 
-minuta is tested with date-fns 4 and date-fns-tz 3. Both are listed as
+minuta is tested with date-fns 4 and @date-fns/tz 1.5. Both are listed as
 optional dependencies of minuta, so npm may install them already.
+
+:::note[Before 1.0]
+This adapter used [date-fns-tz](https://github.com/marnusw/date-fns-tz)
+until 1.0.0-beta.1. The import and the options are the same; only the
+library underneath changed. You can uninstall `date-fns-tz`.
+:::
 
 ## Parameters
 
@@ -156,6 +163,40 @@ for an unknown zone:
 new Intl.DateTimeFormat("en", { timeZone: "Mars/Base" });
 // RangeError: Invalid time zone specified: Mars/Base
 ```
+
+## Known limits
+
+These come from the date libraries underneath, not from minuta.
+
+**A wall time the computer's zone skips.** `@date-fns/tz` 1.5 sets wall
+times with the built-in `Date`, which works in the computer's zone. When
+the time it sets does not exist there, it shifts by the computer's jump.
+On a computer in Beirut, where the clocks jump from 00:00 to 01:00 on
+Mar 31 2024, London's midnight that night shifts:
+
+```ts
+// Computer in Asia/Beirut
+const london = dateFnsTzUnits({ timeZone: "Europe/London" });
+periodWith(london, new Date("2024-03-31T12:00:00Z"), "day").start;
+// → 2024-03-31T01:00:00Z, should be 00:00:00Z
+```
+
+`@date-fns/tz` then guesses which offset to undo, and guesses wrong when
+the chosen zone changes its own clocks a few hours later: Beirut jumps at
+22:00 UTC, London at 01:00 UTC. Zurich, which changes at 01:00 UTC as
+well, still comes out right. The adapter mostly computes midnights, so it
+mostly shows on computers in zones that jump at midnight (Beirut, the
+Azores, Havana, Asunción, Santiago). A computer in UTC never skips a
+time, so servers in UTC are never affected. minuta has a test that tells
+us when `@date-fns/tz` fixes it.
+
+**Why not date-fns-tz.** date-fns-tz 3 has the same flaw wider:
+`toZonedTime` returns a `Date` whose fields are read in the computer's
+zone, so any target time the computer's zone skips shifts, and
+`getTimezoneOffset` is an hour off in the first hour after a clock change
+(+1 instead of +2 at 01:30 UTC on Mar 31 2024 in Zurich).
+
+Tracked in [minuta#166](https://github.com/AleksejDix/minuta/issues/166).
 
 ## Related
 
