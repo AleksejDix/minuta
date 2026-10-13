@@ -1,0 +1,306 @@
+---
+title: Dividing time
+description: Split a period into smaller ones with divide — the days of a month, the 15-minute slots of a day, the weeks of a month.
+sidebar:
+  order: 3
+---
+
+import { divide, period, range } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 18), "month");
+export const open = range(
+  new Date(2026, 2, 18, 9),
+  new Date(2026, 2, 18, 16, 59, 59, 999)
+);
+export const meeting = range(
+  new Date(2026, 2, 18, 9, 10),
+  new Date(2026, 2, 18, 10, 39, 59, 999)
+);
+
+Most date screens are lists: the days of a month, the hours of a day, the
+time slots someone can book. Each of them is one period split into smaller
+ones. [`divide`](../../../api/minuta/divide/) does that split.
+
+All examples run in Europe/Zurich, with weeks from Monday to Sunday.
+
+## The days of this month
+
+Get the month, then divide it into days:
+
+```ts
+import { divide, period } from "minuta";
+
+const march = period(new Date(2026, 2, 18), "month");
+const days = divide(march, "day");
+
+days.length; // → 31
+days[0]; //     → Sun Mar 1 00:00:00.000 – 23:59:59.999, unit "day"
+days.at(-1); // → Tue Mar 31 00:00:00.000 – 23:59:59.999, unit "day"
+```
+
+Each piece is a full period, so everything else works on it: you can label it,
+check it with `contains`, or step from it with `next`.
+
+The pieces are in order and cover the month exactly. Each one ends one
+millisecond before the next one starts, so there are no gaps and no overlaps.
+
+## Any period, any smaller unit
+
+The same call works for every pair of units:
+
+```ts
+divide(period(new Date(2026, 2, 18), "day"), "hour").length; //   → 24
+divide(period(new Date(2026, 2, 18), "year"), "month").length; // → 12
+divide(period(new Date(2026, 2, 18), "year"), "quarter");
+// → Jan 1 – Mar 31, Apr 1 – Jun 30, Jul 1 – Sep 30, Oct 1 – Dec 31, unit "quarter"
+```
+
+The pieces are real calendar units. On the nights the clocks change, a day has
+23 or 25 hours, and `divide` gives you exactly those:
+
+```ts
+divide(period(new Date(2026, 2, 29), "day"), "hour").length; // → 23
+divide(period(new Date(2026, 9, 25), "day"), "hour").length; // → 25
+```
+
+:::tip
+To only count the pieces, not make them, use
+[`duration`](../../../api/minuta/duration/): `duration(march, "day")` is `31`.
+See [Comparing and measuring](../comparing-and-measuring/).
+:::
+
+## Slots with step
+
+A booking page shows slots of 15 or 30 minutes. Pass `step` to make each piece
+span several units:
+
+```ts
+const day = period(new Date(2026, 2, 18), "day");
+const slots = divide(day, "minute", { step: 15 });
+
+slots.length; // → 96
+slots[0]; //     → Wed Mar 18 00:00:00.000 – 00:14:59.999, unit "custom"
+slots[1]; //     → Wed Mar 18 00:15:00.000 – 00:29:59.999, unit "custom"
+slots.at(-1); // → Wed Mar 18 23:45:00.000 – 23:59:59.999, unit "custom"
+```
+
+The slots have the unit `"custom"`, because 15 minutes is not one whole unit.
+Pieces made with a `step` above 1 are always custom, even when they happen to
+line up with a calendar unit:
+
+```ts
+divide(period(new Date(2026, 2, 18), "year"), "month", { step: 3 })[0];
+// → Thu Jan 1 00:00:00.000 – Tue Mar 31 23:59:59.999, unit "custom"
+```
+
+If you want real quarters, divide by `"quarter"` instead.
+
+## Only the opening hours
+
+You often want slots for part of a day, such as 9:00 to 17:00. Make that part
+with [`range`](../../../api/minuta/range/), then divide it:
+
+```ts
+import { divide, range } from "minuta";
+
+const open = range(
+  new Date(2026, 2, 18, 9),
+  new Date(2026, 2, 18, 16, 59, 59, 999)
+);
+
+divide(open, "hour");
+// → 8 periods: 9:00–9:59:59.999, 10:00–10:59:59.999, … 16:00–16:59:59.999, unit "hour"
+```
+
+<Timeline
+  caption="The opening hours from 9:00 to 16:59:59.999 split into eight whole hours."
+  tracks={[
+    { label: "open", periods: [open], tone: "ink" },
+    {
+      label: 'divide(open, "hour")',
+      periods: divide(open, "hour"),
+      tone: "accent",
+    },
+  ]}
+/>
+
+:::caution
+End the range at 16:59:59.999, not at 17:00. A range includes its end, so a
+range up to 17:00:00.000 also holds that one millisecond, and `divide` gives
+you a ninth piece for it:
+
+```ts
+divide(range(new Date(2026, 2, 18, 9), new Date(2026, 2, 18, 17)), "hour").at(
+  -1
+);
+// → Wed Mar 18 17:00:00.000 – 17:00:00.000, unit "custom"
+```
+
+:::
+
+## Weeks of a month: the edges are cut
+
+Weeks and months don't line up. When you divide March into weeks, the first
+and last weeks stick out into February and April. `divide` never gives you a
+piece outside the period you split, so it cuts those two at the month's edges
+and marks them `"custom"`:
+
+```ts
+divide(march, "week");
+// → Sun Mar 1          "custom"  (the week started in February)
+//   Mon Mar 2 – Sun 8  "week"
+//   Mon Mar 9 – Sun 15 "week"
+//   Mon Mar 16 – Sun 22 "week"
+//   Mon Mar 23 – Sun 29 "week"
+//   Mon Mar 30 – Tue 31 "custom"  (the week ends in April)
+```
+
+This is what you want for "how much of each week falls in this month", for
+example a monthly report with one row per week.
+
+The same happens when the start of the period is not on a unit border. A
+meeting from 9:10 to 10:39 divided by hour gives two cut pieces:
+
+```ts
+divide(
+  range(new Date(2026, 2, 18, 9, 10), new Date(2026, 2, 18, 10, 39, 59, 999)),
+  "hour"
+);
+// → 9:10:00.000 – 9:59:59.999   "custom"
+//   10:00:00.000 – 10:39:59.999 "custom"
+```
+
+<Timeline
+  caption="The meeting starts at 9:10 and ends at 10:39:59.999, so both pieces are cut from the hours around them."
+  tracks={[
+    {
+      label: "hours",
+      periods: [
+        period(new Date(2026, 2, 18, 9), "hour"),
+        period(new Date(2026, 2, 18, 10), "hour"),
+      ],
+      tone: "muted",
+    },
+    { label: "meeting", periods: [meeting], tone: "ink" },
+    {
+      label: 'divide(meeting, "hour")',
+      periods: divide(meeting, "hour"),
+      tone: "accent",
+    },
+  ]}
+/>
+
+:::note
+A cut piece moves by its own length, not by a week. `next` of the one-day
+piece Sun Mar 1 is Mon Mar 2. See
+[Navigating time](../navigating-time/#custom-periods-move-by-their-length).
+:::
+
+## Weeks of a month: whole weeks
+
+A calendar view wants the opposite: whole weeks that cover the month, from the
+Monday before the 1st to the Sunday after the 31st. Make that span from the
+week of the first day and the week of the last day, then divide it:
+
+```ts
+import { divide, period, range } from "minuta";
+
+const weeks = divide(
+  range(period(march.start, "week").start, period(march.end, "week").end),
+  "week"
+);
+// → Mon Feb 23 – Sun Mar 1   "week"
+//   Mon Mar 2  – Sun Mar 8   "week"
+//   …
+//   Mon Mar 30 – Sun Apr 5   "week"   (6 whole weeks)
+```
+
+Every piece is now a whole `"week"`, so `next` steps them by a week.
+
+<Timeline
+  caption="Both ways side by side. Dividing March cuts the edge weeks to fit (hatched); dividing the span from week to week gives six whole weeks that stick out on both sides."
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: 'divide(march, "week")',
+      periods: divide(march, "week"),
+      tone: "ink",
+    },
+    {
+      label: "whole weeks",
+      periods: divide(
+        range(period(march.start, "week").start, period(march.end, "week").end),
+        "week"
+      ),
+      tone: "accent",
+    },
+  ]}
+/>
+
+## Dividing by a bigger unit
+
+If the unit is not smaller than the period, you get one piece. A month divided
+by month is that month; a day divided by month is the day, marked custom
+because it is not a whole month:
+
+```ts
+divide(march, "month");
+// → [Sun Mar 1 – Tue Mar 31, unit "month"]
+
+divide(period(new Date(2026, 2, 18), "day"), "month");
+// → [Wed Mar 18 00:00:00.000 – 23:59:59.999, unit "custom"]
+```
+
+## The safety limit
+
+A year split into seconds would be over 31 million objects. `divide` stops
+long before that: by default it throws once it would make more than
+100 000 pieces.
+
+```ts
+divide(period(new Date(2026, 0, 1), "year"), "second");
+// RangeError: TOO_MANY_PERIODS: divideWith() generated over 100000 periods. …
+```
+
+Set your own limit with `maxPeriods`, lower to protect a screen, or higher
+when you really need more:
+
+```ts
+divide(period(new Date(2026, 0, 1), "year"), "minute", { maxPeriods: 1000 });
+// RangeError: TOO_MANY_PERIODS: divideWith() generated over 1000 periods. …
+```
+
+`step` and `maxPeriods` must be positive whole numbers. `{ step: 0 }` or
+`{ step: 1.5 }` throws a `RangeError` with the code `INVALID_OPTION`.
+
+## Calendar grids are the next step
+
+A month view in a calendar is a grid: always six rows of seven days, starting
+on the first day of the week, with the days of the months around it filled
+in. You could build it with `divide`, but
+[`minuta/calendar`](../../../api/minuta-calendar/overview/) does it for you,
+and follows your week start:
+
+```ts
+import { monthGridWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+
+const grid = monthGridWith(nativeUnits(), new Date(2026, 2, 18));
+
+grid.periods.length; // → 42
+grid.periods[0]; //     → Mon Feb 23 00:00:00.000 – 23:59:59.999, unit "day"
+grid.periods.at(-1); // → Sun Apr 5 00:00:00.000 – 23:59:59.999, unit "day"
+```
+
+See [Weeks and calendars](../../../concepts/weeks-and-calendars/) for grids,
+week start and weekends.
+
+## Next
+
+- [Comparing and measuring](../comparing-and-measuring/) — is this today, do
+  these overlap, how long is it?
+- Reference: [`divide`](../../../api/minuta/divide/),
+  [`range`](../../../api/minuta/range/),
+  [`duration`](../../../api/minuta/duration/),
+  [`monthGridWith`](../../../api/minuta-calendar/month-grid-with/).

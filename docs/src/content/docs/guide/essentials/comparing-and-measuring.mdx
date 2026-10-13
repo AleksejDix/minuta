@@ -1,0 +1,346 @@
+---
+title: Comparing and measuring
+description: Answer everyday questions with same, contains, overlaps, duration and length — is this today, do these bookings clash, how many days are in this month?
+sidebar:
+  order: 4
+---
+
+import { period, range } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const week = period(new Date(2026, 2, 18), "week");
+export const meeting = range(
+  new Date(2026, 2, 20, 9),
+  new Date(2026, 2, 20, 9, 59, 59, 999)
+);
+export const party = range(new Date(2026, 2, 22, 23), new Date(2026, 2, 23, 1));
+export const trip = range(new Date(2026, 2, 18), new Date(2026, 2, 25));
+export const wholeTrip = range(
+  period(new Date(2026, 2, 18), "day").start,
+  period(new Date(2026, 2, 25), "day").end
+);
+
+Once you have periods, you ask questions about them. Is this event today?
+Does it fall in the week on screen? Do two bookings clash? How many days does
+this month have? Each question has one function.
+
+| Question                                  | Function                                    |
+| ----------------------------------------- | ------------------------------------------- |
+| Is this date or period inside that one?   | [`contains`](../../../api/minuta/contains/) |
+| Are these two in the same day, week, …?   | [`same`](../../../api/minuta/same/)         |
+| Do these two share any time?              | [`overlaps`](../../../api/minuta/overlaps/) |
+| How many whole days, hours, … fit inside? | [`duration`](../../../api/minuta/duration/) |
+| How long is it, in milliseconds?          | [`length`](../../../api/minuta/length/)     |
+
+All examples run in Europe/Zurich, with weeks from Monday to Sunday.
+
+## Is this today?
+
+Make the period for today, then ask whether it contains the date:
+
+```ts
+import { contains, next, period } from "minuta";
+
+const today = period(new Date(2026, 2, 18, 14, 30), "day");
+
+contains(today, new Date(2026, 2, 18, 9)); // → true
+contains(today, new Date(2026, 2, 19)); //     → false, that is tomorrow at 0:00
+```
+
+Both ends of a period are included. The last millisecond of today counts, the
+first millisecond of tomorrow does not:
+
+```ts
+contains(today, today.end); //       → true, Wed Mar 18 23:59:59.999
+contains(today, next(today).start); // → false, Thu Mar 19 00:00:00.000
+```
+
+## Same day, same week, same month
+
+[`same`](../../../api/minuta/same/) compares two periods at the level you
+choose. The periods can have any units of their own:
+
+```ts
+import { period, same } from "minuta";
+
+const today = period(new Date(2026, 2, 18), "day"); // a Wednesday
+const meeting = period(new Date(2026, 2, 18, 9), "hour");
+
+same(meeting, today, "day"); // → true
+
+same(today, period(new Date(2026, 2, 17), "day"), "week"); // → true, Tuesday
+same(today, period(new Date(2026, 2, 23), "day"), "week"); // → false, next Monday
+
+same(today, period(new Date(2025, 2, 18), "day"), "month"); // → false, March 2025
+```
+
+That last line shows that "same month" means the same month _of the same
+year_, not just the same month name.
+
+This is how a calendar highlights today's cell: `same(cell, today, "day")`.
+
+:::caution
+`same` only looks at where each period **starts**. The week Mon Mar 30 – Sun
+Apr 5 counts as March, even though most of it is in April:
+
+```ts
+const week = period(new Date(2026, 2, 31), "week");
+
+same(week, period(new Date(2026, 2, 1), "month"), "month"); // → true
+same(week, period(new Date(2026, 3, 1), "month"), "month"); // → false
+```
+
+To ask whether the whole week lies in a month, use `contains`.
+:::
+
+## Does this event fall in the week?
+
+`contains` also takes a period. It is `true` only when the whole period lies
+inside:
+
+```ts
+import { contains, overlaps, period, range } from "minuta";
+
+const week = period(new Date(2026, 2, 18), "week");
+// → Mon Mar 16 00:00:00.000 – Sun Mar 22 23:59:59.999
+
+const meeting = range(
+  new Date(2026, 2, 20, 9),
+  new Date(2026, 2, 20, 9, 59, 59, 999)
+);
+contains(week, meeting); // → true
+```
+
+An event that starts on Sunday night and ends on Monday is only partly in the
+week. `contains` says no; [`overlaps`](../../../api/minuta/overlaps/) says
+they share time:
+
+```ts
+const party = range(new Date(2026, 2, 22, 23), new Date(2026, 2, 23, 1));
+
+contains(week, party); // → false
+overlaps(week, party); // → true
+```
+
+<Timeline
+  caption="The meeting lies fully inside the week: contains is true. The party starts on Sunday night and ends on Monday, past the week's end: contains is false, overlaps is true."
+  tracks={[
+    { label: "week", periods: [week], tone: "ink" },
+    { label: "meeting", periods: [meeting], tone: "accent" },
+    { label: "party", periods: [party], tone: "accent" },
+  ]}
+/>
+
+For a week view, use `overlaps` to decide which events to draw: an event that
+sticks out on one side still belongs on the screen.
+
+## Do these bookings clash?
+
+Two bookings clash when they share at least one millisecond:
+
+```ts
+import { overlaps, range } from "minuta";
+
+const first = range(
+  new Date(2026, 2, 18, 9),
+  new Date(2026, 2, 18, 10, 59, 59, 999)
+); // 9:00 – 11:00
+const second = range(
+  new Date(2026, 2, 18, 10, 30),
+  new Date(2026, 2, 18, 11, 59, 59, 999)
+); // 10:30 – 12:00
+const third = range(
+  new Date(2026, 2, 18, 11),
+  new Date(2026, 2, 18, 11, 59, 59, 999)
+); // 11:00 – 12:00
+
+overlaps(first, second); // → true
+overlaps(first, third); //  → false, third starts right after first ends
+```
+
+<Timeline
+  caption="first and second share the half hour from 10:30 to 11:00. third starts at 11:00, right after first ends, so the two do not clash."
+  tracks={[
+    {
+      label: "first",
+      periods: [
+        range(new Date(2026, 2, 18, 9), new Date(2026, 2, 18, 10, 59, 59, 999)),
+      ],
+      tone: "accent",
+    },
+    {
+      label: "second",
+      periods: [
+        range(
+          new Date(2026, 2, 18, 10, 30),
+          new Date(2026, 2, 18, 11, 59, 59, 999)
+        ),
+      ],
+      tone: "accent",
+    },
+    {
+      label: "third",
+      periods: [
+        range(
+          new Date(2026, 2, 18, 11),
+          new Date(2026, 2, 18, 11, 59, 59, 999)
+        ),
+      ],
+      tone: "ink",
+    },
+  ]}
+/>
+
+The order does not matter: `overlaps(a, b)` is the same as `overlaps(b, a)`.
+Periods from `period`, `next` and `divide` never overlap their neighbours,
+because each ends one millisecond before the next begins.
+
+:::caution
+Look at how the bookings above end: at 10:59:59.999, not at 11:00. That is on
+purpose. A [`range`](../../../api/minuta/range/) includes its end, so a range
+up to 11:00:00.000 shares that one millisecond with a range that starts at
+11:00. Back-to-back bookings would then clash:
+
+```ts
+overlaps(
+  range(new Date(2026, 2, 18, 9), new Date(2026, 2, 18, 10)),
+  range(new Date(2026, 2, 18, 10), new Date(2026, 2, 18, 11))
+);
+// → true
+```
+
+End each range one millisecond early, or make the slots with
+[`divide`](../dividing-time/#slots-with-step), which does it for you.
+:::
+
+## How many days are in this month?
+
+[`duration`](../../../api/minuta/duration/) counts how many whole units fit
+into a period:
+
+```ts
+import { duration, period, range } from "minuta";
+
+duration(period(new Date(2026, 2, 18), "month"), "day"); // → 31
+duration(period(new Date(2026, 1, 1), "month"), "day"); //  → 28
+duration(period(new Date(2028, 1, 1), "month"), "day"); //  → 29, a leap year
+
+duration(period(new Date(2026, 0, 1), "year"), "day"); //   → 365
+duration(period(new Date(2026, 0, 1), "year"), "week"); //  → 52
+```
+
+It counts on the calendar, so a day is not always 24 hours:
+
+```ts
+duration(period(new Date(2026, 2, 18), "day"), "hour"); // → 24
+duration(period(new Date(2026, 2, 29), "day"), "hour"); // → 23, clocks go forward
+```
+
+Only **whole** units count. A 90-minute meeting is one hour, and March is four
+weeks (31 days is not five):
+
+```ts
+duration(range(new Date(2026, 2, 1, 9), new Date(2026, 2, 1, 10, 30)), "hour"); // → 1
+duration(period(new Date(2026, 2, 18), "month"), "week"); // → 4
+```
+
+Counting starts at the period's start, not at a unit border: from 14:00 one
+day to 13:00 the next is 23 hours, so zero whole days.
+
+## How long is this range?
+
+[`length`](../../../api/minuta/length/) gives the plain elapsed time in
+milliseconds. Divide it to get minutes or hours:
+
+```ts
+import { length, period, range } from "minuta";
+
+const meeting = range(
+  new Date(2026, 2, 18, 9),
+  new Date(2026, 2, 18, 10, 59, 59, 999)
+);
+
+length(meeting); //          → 7200000
+length(meeting) / 60_000; // → 120 minutes
+
+length(period(new Date(2026, 2, 18), "day")); // → 86400000 (24 hours)
+length(period(new Date(2026, 2, 29), "day")); // → 82800000 (23 hours)
+```
+
+`length` adds the last millisecond back, so a whole day is exactly
+86 400 000 ms, not one less.
+
+Use `length` for "how much time passes" (a timer, a progress bar). Use
+`duration` for "how many days or hours on the calendar" (a label like "31
+days").
+
+## The surprise: range includes its end
+
+A range ends exactly at the `Date` you pass, and that moment belongs to it.
+`new Date(2026, 2, 25)` is midnight at the **start** of Mar 25, so a trip
+"from the 18th to the 25th" made like this leaves out the 25th:
+
+```ts
+import { contains, duration, length, period, range } from "minuta";
+
+const trip = range(new Date(2026, 2, 18), new Date(2026, 2, 25));
+// → Wed Mar 18 00:00:00.000 – Wed Mar 25 00:00:00.000, unit "custom"
+
+contains(trip, new Date(2026, 2, 25, 12)); // → false
+duration(trip, "day"); // → 7
+```
+
+To include the whole last day, end the range at the end of that day. The
+`end` of a day period is exactly its last millisecond:
+
+```ts
+const wholeTrip = range(
+  period(new Date(2026, 2, 18), "day").start,
+  period(new Date(2026, 2, 25), "day").end
+);
+// → Wed Mar 18 00:00:00.000 – Wed Mar 25 23:59:59.999
+
+contains(wholeTrip, new Date(2026, 2, 25, 12)); // → true
+duration(wholeTrip, "day"); // → 8
+```
+
+<Timeline
+  caption="trip stops at midnight at the start of Mar 25, so noon that day (the pin) is outside. wholeTrip ends with the day and takes it in."
+  marks={[{ date: new Date(2026, 2, 25, 12), label: "Mar 25, 12:00" }]}
+  tracks={[
+    { label: "trip", periods: [trip], tone: "ink" },
+    { label: "wholeTrip", periods: [wholeTrip], tone: "accent" },
+    {
+      label: 'period(Mar 25, "day")',
+      periods: [period(new Date(2026, 2, 25), "day")],
+      tone: "muted",
+    },
+  ]}
+/>
+
+And a range that ends on a round time is one millisecond longer than it looks:
+
+```ts
+length(range(new Date(2026, 2, 18, 9), new Date(2026, 2, 18, 10))); // → 3600001
+```
+
+:::tip
+For a whole day, week or month, don't build a range at all: use `period`. It
+always ends at the right millisecond. Use `range` for spans that are not one
+whole unit, and end them at `…:59.999` when they should stop before a round
+time.
+:::
+
+`range` is forgiving about order: if the start is after the end, it swaps
+them.
+
+## Next
+
+- [Formatting labels](../formatting/) — turn periods into text such as
+  "March 2026" or "Mar 2 – 8, 2026".
+- Reference: [`contains`](../../../api/minuta/contains/),
+  [`same`](../../../api/minuta/same/),
+  [`overlaps`](../../../api/minuta/overlaps/),
+  [`duration`](../../../api/minuta/duration/),
+  [`length`](../../../api/minuta/length/),
+  [`range`](../../../api/minuta/range/).

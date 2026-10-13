@@ -1,0 +1,778 @@
+---
+title: Building a calendar
+description: Build a month calendar step by step — from 42 plain days to a React or Vue date picker with styling and full keyboard support.
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { period, shift } from "minuta";
+import { isWeekendWith, monthGridWith } from "minuta/calendar";
+import { periodWith } from "minuta/core";
+import { nativeUnits } from "minuta/native";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
+export const iso = (day) =>
+  [
+    day.start.getFullYear(),
+    String(day.start.getMonth() + 1).padStart(2, "0"),
+    String(day.start.getDate()).padStart(2, "0"),
+  ].join("-");
+export const fridaySaturday = nativeUnits({
+  weekStartsOn: "sunday",
+  weekend: ["friday", "saturday"],
+});
+export const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
+export const focused = period(new Date(2026, 2, 18), "day");
+export const focusedWeek = periodWith(sundayFirst, focused.start, "week");
+
+This page builds a month calendar in six steps. The first three use plain
+JavaScript and a few lines of HTML, so you see where every day comes from.
+Then the React and Vue components do the same work for you, with selection,
+styling hooks and keyboard support.
+
+You need `minuta`. For steps 4 to 6 you also need `minuta-react` or
+`minuta-vue`:
+
+```sh
+npm install minuta
+```
+
+All results on this page are for March 2026, with the computer in the time
+zone Europe/Zurich. Why weeks and weekends work the way they do is explained
+in [Weeks and calendars](../../../concepts/weeks-and-calendars/); this page
+only shows how to use them.
+
+## 1. The days of a month
+
+A month view needs more days than the month has: the first row starts in the
+previous month and the last rows end in the next one.
+[`monthGridWith`](../../../api/minuta-calendar/month-grid-with/) gives you
+exactly those days. It takes the units (here the built-in `Date`, through
+`nativeUnits()`) and any date in the month you want:
+
+```ts
+import { monthGridWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+
+const grid = monthGridWith(nativeUnits(), new Date(2026, 2, 15));
+
+grid.periods.length; //   → 42
+grid.periods[0]; //       → Mon Feb 23 2026, a whole day
+grid.periods[41]; //      → Sun Apr 5 2026
+grid.monthStart; //       → Sun Mar 1 2026 00:00
+```
+
+There are always 42 days: 6 weeks of 7. Every day is a
+[period](../../../api/minuta/period/) with a `start`, an `end` and the unit
+`"day"`.
+
+To show them, cut the list into rows of 7. Start with an empty table:
+
+```html
+<table id="calendar"></table>
+```
+
+```ts
+import { monthGridWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+
+const units = nativeUnits();
+const grid = monthGridWith(units, new Date(2026, 2, 15));
+
+// Cut the 42 days into 6 weeks of 7
+const weeks = [];
+for (let i = 0; i < grid.periods.length; i += 7) {
+  weeks.push(grid.periods.slice(i, i + 7));
+}
+
+const rows = weeks.map((week) => {
+  const cells = week.map((day) => `<td>${day.start.getDate()}</td>`);
+  return `<tr>${cells.join("")}</tr>`;
+});
+
+document.querySelector("#calendar").innerHTML =
+  `<tbody>${rows.join("")}</tbody>`;
+```
+
+The table now has 6 rows of 7 numbers, from Feb 23 to Apr 5. Laid out as a
+calendar, March 2026 looks like this:
+
+<MonthGrid month="2026-03" />
+
+The grey numbers are the days from February and April; the shaded ones are
+Saturdays and Sundays, which step 2 marks with a class.
+
+### Weekday names and days outside the month
+
+Two things are missing: the names above the columns, and a way to tell the
+days of March from the grey days around it.
+
+- The names come from the first row. Its 7 days are in the order of the
+  grid, so format each one with `Intl.DateTimeFormat`. You never write a
+  list of names that could fall out of step with the week start.
+- A day is outside the month when the month does not
+  [`contain`](../../../api/minuta/contains/) it.
+
+```ts
+import { contains, period } from "minuta";
+import { monthGridWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+
+const units = nativeUnits();
+const grid = monthGridWith(units, new Date(2026, 2, 15));
+const month = period(grid.monthStart, "month");
+const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+
+const weeks = [];
+for (let i = 0; i < grid.periods.length; i += 7) {
+  weeks.push(grid.periods.slice(i, i + 7));
+}
+
+// The first week gives the weekday names, in the order of the grid
+const names = weeks[0].map((day) => `<th>${weekday.format(day.start)}</th>`);
+
+const rows = weeks.map((week) => {
+  const cells = week.map((day) => {
+    const outside = contains(month, day) ? "" : ` class="outside"`;
+    return `<td${outside}>${day.start.getDate()}</td>`;
+  });
+  return `<tr>${cells.join("")}</tr>`;
+});
+
+document.querySelector("#calendar").innerHTML = `
+  <thead><tr>${names.join("")}</tr></thead>
+  <tbody>${rows.join("")}</tbody>
+`;
+```
+
+The header row reads `Mon Tue Wed Thu Fri Sat Sun`, and 11 cells get the
+class `outside`: Feb 23–28 and Apr 1–5.
+
+Those 11 cells are the grey ones in the picture of step 1.
+
+:::tip
+Use `contains`, not `day.start.getMonth()`. `getMonth()` reads the month in
+the computer's time zone. With units of another zone, such as
+`dateFnsTzUnits({ timeZone: "Asia/Tokyo" })`, it gives the wrong answer for
+some days. `contains` always works in the zone of the units. See
+[Time zones](../../../concepts/time-zones/).
+:::
+
+## 2. Week start and weekend
+
+The week starts on Monday unless you say otherwise. Both the week start and
+the weekend are settings of the units, so you change them in one place:
+
+```ts
+const units = nativeUnits({
+  weekStartsOn: "sunday",
+  weekend: ["friday", "saturday"],
+});
+```
+
+The grid follows the week start on its own. March 2026 starts on a Sunday,
+so the first row is now Mar 1–7 and the last day is Sat Apr 11:
+
+<MonthGrid month="2026-03" weekStartsOn="sunday" />
+
+The weekend does not change the grid. Mark weekend days yourself with
+[`isWeekendWith`](../../../api/minuta-calendar/is-weekend-with/). Here is the
+code from step 1 with the new units and a `weekend` class:
+
+```ts
+import { contains, period } from "minuta";
+import { isWeekendWith, monthGridWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+
+const units = nativeUnits({
+  weekStartsOn: "sunday",
+  weekend: ["friday", "saturday"],
+});
+const grid = monthGridWith(units, new Date(2026, 2, 15));
+const month = period(grid.monthStart, "month");
+const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+
+const weeks = [];
+for (let i = 0; i < grid.periods.length; i += 7) {
+  weeks.push(grid.periods.slice(i, i + 7));
+}
+
+const names = weeks[0].map((day) => `<th>${weekday.format(day.start)}</th>`);
+
+const rows = weeks.map((week) => {
+  const cells = week.map((day) => {
+    const classes = [];
+    if (!contains(month, day)) classes.push("outside");
+    if (isWeekendWith(units, day)) classes.push("weekend");
+    return `<td class="${classes.join(" ")}">${day.start.getDate()}</td>`;
+  });
+  return `<tr>${cells.join("")}</tr>`;
+});
+
+document.querySelector("#calendar").innerHTML = `
+  <thead><tr>${names.join("")}</tr></thead>
+  <tbody>${rows.join("")}</tbody>
+`;
+```
+
+The header row now reads `Sun Mon Tue Wed Thu Fri Sat`, and the Friday and
+Saturday columns have the class `weekend`.
+
+The dots mark the cells that get the class `weekend`: every day of the grid
+for which `isWeekendWith(units, day)` is `true` with these units. (The
+shaded columns in these pictures are always Saturday and Sunday.)
+
+<MonthGrid
+  month="2026-03"
+  weekStartsOn="sunday"
+  marks={monthGridWith(fridaySaturday, new Date(2026, 2, 15))
+    .periods.filter((day) => isWeekendWith(fridaySaturday, day))
+    .map(iso)}
+/>
+
+:::note
+To take both settings from the user's locale, use
+`Intl.Locale#getWeekInfo()` where the browser has it. The conversion is in
+[Taking both from the user's locale](../../../concepts/weeks-and-calendars/#taking-both-from-the-users-locale).
+:::
+
+## 3. Moving between months
+
+A calendar needs "previous" and "next" buttons. Keep the month on screen as
+a period, and step it with [`next`](../../../api/minuta/next/) and
+[`previous`](../../../api/minuta/previous/). No day arithmetic: months of
+28, 30 or 31 days and the step from December to January are handled for you.
+
+```ts
+import { next, period, previous } from "minuta";
+
+const march = period(new Date(2026, 2, 15), "month");
+
+next(march); //     → April 2026
+previous(march); // → February 2026
+next(period(new Date(2026, 11, 1), "month")); // → January 2027
+```
+
+Now put it together. The month is the only state; `render` draws the label
+and the grid for it:
+
+```html
+<header>
+  <button type="button" id="previous">← Previous</button>
+  <h2 id="label"></h2>
+  <button type="button" id="next">Next →</button>
+</header>
+<table id="grid"></table>
+```
+
+```ts
+import { contains, next, period, previous } from "minuta";
+import { isWeekendWith, monthGridWith } from "minuta/calendar";
+import { formatPeriod } from "minuta/format";
+import { nativeUnits } from "minuta/native";
+
+const locale = "en-US";
+const units = nativeUnits({ weekStartsOn: "sunday" });
+const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" });
+
+// The month on screen: the only state of the calendar
+let month = period(new Date(2026, 2, 15), "month");
+
+function render() {
+  const grid = monthGridWith(units, month.start);
+
+  const weeks = [];
+  for (let i = 0; i < grid.periods.length; i += 7) {
+    weeks.push(grid.periods.slice(i, i + 7));
+  }
+
+  const names = weeks[0].map((day) => `<th>${weekday.format(day.start)}</th>`);
+  const rows = weeks.map((week) => {
+    const cells = week.map((day) => {
+      const classes = [];
+      if (!contains(month, day)) classes.push("outside");
+      if (isWeekendWith(units, day)) classes.push("weekend");
+      return `<td class="${classes.join(" ")}">${day.start.getDate()}</td>`;
+    });
+    return `<tr>${cells.join("")}</tr>`;
+  });
+
+  document.querySelector("#label").textContent = formatPeriod(month, locale);
+  document.querySelector("#grid").innerHTML = `
+    <thead><tr>${names.join("")}</tr></thead>
+    <tbody>${rows.join("")}</tbody>
+  `;
+}
+
+document.querySelector("#previous").addEventListener("click", () => {
+  month = previous(month);
+  render();
+});
+document.querySelector("#next").addEventListener("click", () => {
+  month = next(month);
+  render();
+});
+
+render();
+```
+
+The label reads "March 2026". One click on "Next →" shows "April 2026",
+whose grid starts on Sun Mar 29. The table always has 6 rows, so the page
+never jumps when the user pages through months.
+[`formatPeriod`](../../../api/minuta-format/format-period/) writes the label in
+any locale: `"de-CH"` gives "März 2026".
+
+This is the table after that click: April 2026, still 6 rows, from Sun
+Mar 29 to Sat May 9.
+
+<MonthGrid month="2026-04" weekStartsOn="sunday" />
+
+:::tip
+`period`, `next` and `previous` from `minuta` use the built-in `Date`. With
+another engine or a time zone, bind everything to your units once with
+[`withUnits`](../../../api/minuta-core/with-units/) and the
+[`calendar`](../../../api/minuta-calendar/calendar/) plugin, and call
+`time.monthGrid(date)`, `time.next(month)` and so on.
+:::
+
+This is a working calendar, but it is not a date picker yet. Selecting a day,
+moving with the keyboard and telling screen readers what is going on is a
+lot more work. That is what the components do.
+
+## 4. The same in React or Vue
+
+`minuta-react` and `minuta-vue` ship the calendar as parts you put together:
+
+- **`CalendarRoot`** holds the state: the browsed month, the selected day
+  and the focused day. It is a `MinutaRoot` that browses months, so
+  everything below it shares one state.
+- **`CalendarHeader`** shows the month name between "← Previous" and
+  "Next →".
+- **`CalendarGrid`** renders the 42 days of `monthGridWith`, with the
+  weekday names on top.
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "<CalendarRoot>",
+        note: "the state: browsed month, selected day, focused day",
+        children: [
+          {
+            name: "<CalendarHeader>",
+            note: "← Previous · the month's name · Next →",
+          },
+          {
+            name: "<CalendarGrid>",
+            note: "the 42 days of monthGridWith as a table",
+            children: [
+              {
+                name: "<CalendarDay> × 42",
+                note: "one button per day; the arrow keys live here",
+              },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</div>
+
+Install the package for your framework:
+
+<Tabs syncKey="framework">
+<TabItem label="React">
+
+```sh
+npm install minuta minuta-react
+```
+
+</TabItem>
+<TabItem label="Vue">
+
+```sh
+npm install minuta minuta-vue
+```
+
+</TabItem>
+</Tabs>
+
+Here is the calendar from step 3 with Sunday weeks, plus selecting a day. A
+click on a day, or Enter or Space while it has the focus, selects it and
+reports the day period. `day.start` is midnight at the start of that day.
+
+<Tabs syncKey="framework">
+<TabItem label="React">
+
+```jsx
+import { useState } from "react";
+import {
+  CalendarGrid,
+  CalendarHeader,
+  CalendarRoot,
+} from "minuta-react/components";
+import { nativeUnits } from "minuta/native";
+
+// Create the units once, outside the component
+const units = nativeUnits({ weekStartsOn: "sunday" });
+
+export function DatePicker() {
+  const [picked, setPicked] = useState();
+
+  return (
+    <CalendarRoot
+      units={units}
+      date={new Date(2026, 2, 15)}
+      onSelect={(day) => setPicked(day.start)}
+    >
+      <CalendarHeader />
+      <CalendarGrid />
+      <p>{picked ? picked.toDateString() : "Pick a day"}</p>
+    </CalendarRoot>
+  );
+}
+```
+
+`onSelect` is called with the day. Selecting a grey day of April also
+browses to April.
+
+`date` is only read on the first render; after that the calendar keeps its
+own month. Create `units` outside the component (or with `useMemo`): new
+units on every render rebind every function on every render.
+
+</TabItem>
+<TabItem label="Vue">
+
+```vue
+<script setup>
+import { shallowRef } from "vue";
+import {
+  CalendarGrid,
+  CalendarHeader,
+  CalendarRoot,
+} from "minuta-vue/components";
+import { nativeUnits } from "minuta/native";
+import "minuta-vue/style.css";
+
+const units = nativeUnits({ weekStartsOn: "sunday" });
+const start = new Date(2026, 2, 15);
+const picked = shallowRef();
+</script>
+
+<template>
+  <CalendarRoot
+    :units="units"
+    :date="start"
+    @select="(day) => (picked = day.start)"
+  >
+    <CalendarHeader />
+    <CalendarGrid />
+  </CalendarRoot>
+  <p>{{ picked ? picked.toDateString() : "Pick a day" }}</p>
+</template>
+```
+
+The `select` event carries the day. Selecting a grey day of April also
+browses to April. There is no `v-model`: keep your own copy from `@select`,
+as `picked` does here.
+
+`date` is only read once; after that the calendar keeps its own month.
+`units` is reactive: pass new units and the grid rebuilds with the new week
+start, keeping the month and the selection.
+
+</TabItem>
+</Tabs>
+
+Both show "March 2026", a row `Sun Mon Tue Wed Thu Fri Sat` and 6 weeks of
+day buttons. Pass a `locale` to the header and the grid for other languages:
+`locale="de-CH"` gives "März 2026" and `So Mo Di Mi Do Fr Sa`.
+
+To block days, pass a function that gets a day and returns `true` when it
+can't be selected: `isDisabled` in React, `:is-disabled` in Vue. See
+[`CalendarRoot`](../../../api/minuta-react/calendar-root/) for React and
+[`CalendarRoot`](../../../api/minuta-vue/calendar-root/) for Vue.
+
+## 5. Styling
+
+The parts render plain HTML with class names. **The class names are not the
+same in React and Vue**, and only Vue ships a stylesheet.
+
+Some classes are the same in both: the day button gets `is-outside` and
+`is-selected`. In this picture of March 2026 with Mar 18 selected, the grey
+days are the ones with `is-outside`, and the accent day is the one with
+`is-selected`:
+
+<MonthGrid month="2026-03" weekStartsOn="sunday" selected="2026-03-18" />
+
+<Tabs syncKey="framework">
+<TabItem label="React">
+
+React ships no styles at all. These are the classes to write CSS for:
+
+| Element           | Class                                                      |
+| ----------------- | ---------------------------------------------------------- |
+| around everything | `section.calendar-shell` (rendered by `CalendarRoot`)      |
+| header            | `header.toolbar-row`                                       |
+| previous / next   | `button.nav-button`                                        |
+| grid              | `table.weeks-grid`                                         |
+| weekday row       | `thead.weekday-grid`                                       |
+| one week          | `tr.week-row`                                              |
+| one cell          | `td.grid-cell`, `aria-selected="true"` on the selected one |
+| one day           | `button.day-cell`                                          |
+| inside the day    | `span.date-number` and `span.weekday-label`                |
+
+The day button also gets `is-outside`, `is-today`, `is-selected` and
+`is-disabled` when they apply. A starting point:
+
+```css
+.calendar-shell .weeks-grid {
+  border-collapse: separate;
+  border-spacing: 0.25rem;
+}
+.day-cell {
+  width: 100%;
+  padding: 0.5rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.day-cell .weekday-label {
+  display: none;
+}
+.day-cell.is-outside {
+  opacity: 0.4;
+}
+.day-cell.is-today {
+  font-weight: 700;
+}
+.day-cell.is-selected {
+  background: navy;
+  color: white;
+}
+.day-cell.is-disabled {
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+.day-cell:focus-visible {
+  outline: 2px solid navy;
+}
+```
+
+React has no weekend class. To mark weekends, render each day yourself and
+wrap it:
+
+```jsx
+import {
+  CalendarDay,
+  CalendarGrid,
+  CalendarHeader,
+  CalendarRoot,
+} from "minuta-react/components";
+import { isWeekendWith } from "minuta/calendar";
+import { nativeUnits } from "minuta/native";
+
+const units = nativeUnits({ weekStartsOn: "sunday" });
+
+export function WeekendCalendar() {
+  return (
+    <CalendarRoot units={units}>
+      <CalendarHeader />
+      <CalendarGrid>
+        {(day) => (
+          <span className={isWeekendWith(units, day) ? "weekend" : undefined}>
+            <CalendarDay day={day} />
+          </span>
+        )}
+      </CalendarGrid>
+    </CalendarRoot>
+  );
+}
+```
+
+Then style `.weekend .day-cell`.
+
+Keep a `CalendarDay` in there: the arrow keys live in it.
+
+</TabItem>
+<TabItem label="Vue">
+
+`minuta-vue/style.css` gives the parts a complete look. Import it once, as in
+step 4. These are the classes behind it:
+
+| Element         | Class                                                          |
+| --------------- | -------------------------------------------------------------- |
+| header          | `div.calendar-header`                                          |
+| previous / next | `button.nav-button`                                            |
+| grid            | `table.calendar-grid`                                          |
+| weekday row     | `thead.calendar-weekdays`                                      |
+| one cell        | `td.calendar-cell`, `aria-selected="true"` on the selected one |
+| one day         | `button.calendar-day`, holding only the day number             |
+
+`CalendarRoot` renders no element of its own. The day button also gets
+`is-outside`, `is-today`, `is-selected`, `is-disabled` and `is-weekend` when
+they apply. `is-weekend` follows the weekend of the units.
+
+The styles in `minuta-vue/style.css` are scoped, so they win over your own
+rules with the same selector. To restyle the calendar fully, leave the
+stylesheet out and write your own:
+
+```css
+.calendar-grid {
+  border-collapse: separate;
+  border-spacing: 0.25rem;
+}
+.calendar-day {
+  width: 100%;
+  padding: 0.5rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.calendar-day.is-outside {
+  opacity: 0.4;
+}
+.calendar-day.is-weekend {
+  color: crimson;
+}
+.calendar-day.is-today {
+  font-weight: 700;
+}
+.calendar-day.is-selected {
+  background: navy;
+  color: white;
+}
+.calendar-day.is-disabled {
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+.calendar-day:focus-visible {
+  outline: 2px solid navy;
+}
+```
+
+</TabItem>
+</Tabs>
+
+## 6. Keyboard and accessibility
+
+The grid follows the WAI-ARIA date picker pattern. You get all of this
+without writing a line:
+
+| Key                     | What it does                                      |
+| ----------------------- | ------------------------------------------------- |
+| Tab                     | moves into the grid, onto one day                 |
+| ArrowLeft / ArrowRight  | the previous / next day                           |
+| ArrowUp / ArrowDown     | the same weekday one week earlier / later         |
+| Home / End              | the first / last day of the week (the week start) |
+| PageUp / PageDown       | the same day one month earlier / later            |
+| Shift+PageUp / PageDown | the same day one year earlier / later             |
+| Enter / Space           | selects the focused day                           |
+
+Say Wed Mar 18 has the focus (accent) in the Sunday-first calendar of step 4.
+The dots are the days the keys above move it to: Mar 17 and 19 with the left
+and right arrows, Mar 11 and 25 with up and down, Sun Mar 15 with Home and
+Sat Mar 21 with End.
+
+<MonthGrid
+  month="2026-03"
+  weekStartsOn="sunday"
+  selected={iso(focused)}
+  marks={[
+    shift(focused, -1),
+    shift(focused, 1),
+    shift(focused, -7),
+    shift(focused, 7),
+    period(focusedWeek.start, "day"),
+    period(focusedWeek.end, "day"),
+  ].map(iso)}
+/>
+
+- **One tab stop.** Only one day has `tabindex="0"`, so Tab jumps over the
+  grid instead of through 42 buttons. Tab lands on the last focused day of
+  the month, else the selected day, else today, else the 1st.
+- **Months follow the focus.** When an arrow key leaves the month, the grid
+  browses to the next month first. A day that does not exist there is
+  clamped: PageDown on January 31, 2024 goes to February 29.
+- **Moving is not choosing.** Arrow keys only move the focus. A day is
+  selected only by a click, Enter or Space.
+- **Disabled days stay focusable**, so keyboard users can move past them.
+- **The grid is labelled.** The table has `role="grid"` and points to the
+  month heading with `aria-labelledby`. The heading is `aria-live="polite"`,
+  so a screen reader announces "April 2026" after a click on "Next →". The
+  buttons are named "Previous month" and "Next month".
+- **Weekday headers** are `<th scope="col">` with the full name in `abbr`.
+
+Each day button carries its full date for screen readers. This is March 1,
+2026 in the calendar of step 4:
+
+<Tabs syncKey="framework">
+<TabItem label="React">
+
+```html
+<td class="grid-cell" aria-selected="false">
+  <button
+    type="button"
+    class="day-cell"
+    tabindex="0"
+    title="Sun"
+    aria-label="Sunday, March 1, 2026"
+    aria-disabled="false"
+  >
+    <span class="date-number">1</span>
+    <span class="weekday-label">Sun</span>
+  </button>
+</td>
+```
+
+Today also gets `aria-current="date"`.
+
+</TabItem>
+<TabItem label="Vue">
+
+```html
+<td class="calendar-cell" aria-selected="false">
+  <button
+    type="button"
+    class="calendar-day is-weekend"
+    tabindex="0"
+    aria-label="Sunday, March 1, 2026"
+    aria-current="false"
+    aria-disabled="false"
+  >
+    1
+  </button>
+</td>
+```
+
+Today gets `aria-current="date"` instead of `"false"`.
+
+</TabItem>
+</Tabs>
+
+:::caution
+The keyboard handling lives in `CalendarDay`. When you render the days
+yourself (the `children` function in React, the `#day` slot in Vue), always
+render a `CalendarDay` inside, or the arrow keys do nothing.
+:::
+
+The plain calendar from step 3 has none of this. If you build your own
+calendar on `monthGridWith`, the keyboard and the ARIA attributes are yours
+to write; the components are a good template to copy from.
+
+## Next
+
+- [Building a date field](../../date-field/building-a-date-field/) — the
+  typed partner of the calendar.
+- [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start,
+  weekend and grids explained.
+- [`monthGridWith`](../../../api/minuta-calendar/month-grid-with/) and
+  [`isWeekendWith`](../../../api/minuta-calendar/is-weekend-with/) — the
+  functions of steps 1 to 3.
+- React: [`CalendarRoot`](../../../api/minuta-react/calendar-root/),
+  [`CalendarGrid`](../../../api/minuta-react/calendar-grid/),
+  [`CalendarDay`](../../../api/minuta-react/calendar-day/).
+- Vue: [`CalendarRoot`](../../../api/minuta-vue/calendar-root/),
+  [`CalendarGrid`](../../../api/minuta-vue/calendar-grid/),
+  [`CalendarDay`](../../../api/minuta-vue/calendar-day/).

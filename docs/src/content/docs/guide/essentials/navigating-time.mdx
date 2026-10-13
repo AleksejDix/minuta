@@ -1,0 +1,306 @@
+---
+title: Navigating time
+description: Step from one period to the next with next, previous and shift — like the ‹ › buttons of a calendar, without month-end or leap-year bugs.
+sidebar:
+  order: 2
+---
+
+import { next, period, previous, range, shift } from "minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(new Date(2026, 2, 18), "month");
+export const january = period(new Date(2026, 0, 31), "month");
+export const trip = range(
+  new Date(2026, 2, 13),
+  new Date(2026, 2, 15, 23, 59, 59, 999)
+);
+
+A calendar has two buttons: ‹ and ›. A week planner has them too, and so has
+a report that shows "this quarter". All of them ask the same question: _what
+comes after this period, and what came before?_
+
+This page shows how minuta answers it. You need one idea from
+[Periods and units](../../../concepts/periods-and-units/): a period is a
+`start`, an `end` and a `unit`.
+
+All examples run in Europe/Zurich, with weeks from Monday to Sunday.
+
+## One step forward, one step back
+
+Start with the month around a date. [`next`](../../../api/minuta/next/) gives
+the month after it, [`previous`](../../../api/minuta/previous/) the month
+before:
+
+```ts
+import { next, period, previous } from "minuta";
+
+const march = period(new Date(2026, 2, 18), "month");
+// → Sun Mar 1 00:00:00.000 – Tue Mar 31 23:59:59.999, unit "month"
+
+next(march);
+// → Wed Apr 1 00:00:00.000 – Thu Apr 30 23:59:59.999, unit "month"
+
+previous(march);
+// → Sun Feb 1 00:00:00.000 – Sat Feb 28 23:59:59.999, unit "month"
+```
+
+You get back a whole new month, with its own length. April has 30 days,
+February 28. You never count days yourself.
+
+<Timeline
+  caption="March and its two neighbours. Each is a whole month that starts right after the one before it ends."
+  marks={[{ date: new Date(2026, 2, 18), label: "Mar 18" }]}
+  tracks={[
+    { label: "previous(march)", periods: [previous(march)], tone: "accent" },
+    { label: "march", periods: [march], tone: "ink" },
+    { label: "next(march)", periods: [next(march)], tone: "accent" },
+  ]}
+/>
+
+The period you pass is not changed. `march` is still March afterwards.
+
+## Every unit steps by itself
+
+`next` and `previous` take no unit. They step by the unit the period already
+has: a day moves by a day, a week by a week, a year by a year.
+
+```ts
+const day = period(new Date(2026, 2, 18), "day");
+next(day); //     → Thu Mar 19 00:00:00.000 – 23:59:59.999, unit "day"
+previous(day); // → Tue Mar 17 00:00:00.000 – 23:59:59.999, unit "day"
+
+const week = period(new Date(2026, 2, 18), "week");
+// → Mon Mar 16 – Sun Mar 22
+next(week);
+// → Mon Mar 23 00:00:00.000 – Sun Mar 29 23:59:59.999, unit "week"
+
+next(period(new Date(2026, 2, 18), "quarter"));
+// → Wed Apr 1 00:00:00.000 – Tue Jun 30 23:59:59.999, unit "quarter"
+
+previous(period(new Date(2026, 2, 18), "year"));
+// → Wed Jan 1 2025 00:00:00.000 – Wed Dec 31 2025 23:59:59.999, unit "year"
+```
+
+The same code works for every unit. A planner that can switch between day,
+week and month view does not need three ways to step.
+
+## Build the ‹ › buttons
+
+A calendar keeps the period it shows in its state. The buttons replace it with
+its neighbour:
+
+```ts
+import { next, period, previous } from "minuta";
+
+let shown = period(new Date(2026, 2, 18), "month"); // → March 2026
+
+shown = next(shown); //     → April 2026
+shown = next(shown); //     → May 2026
+shown = previous(shown); // → April 2026
+```
+
+A "Today" button just asks for the period around the current date again:
+
+```ts
+shown = period(new Date(), "month");
+```
+
+In React or Vue, `shown` is a piece of state, and each button calls a setter
+with `next(shown)` or `previous(shown)`. Periods are plain objects, so they
+work as state as they are.
+
+:::tip
+To show the label of the month ("April 2026"), pass `shown` to `formatPeriod`.
+See [Formatting labels](../formatting/).
+:::
+
+## Jump several steps with shift
+
+To move more than one step, use [`shift`](../../../api/minuta/shift/). A
+positive number moves forward, a negative number moves back:
+
+```ts
+import { period, shift } from "minuta";
+
+const march = period(new Date(2026, 2, 18), "month");
+
+shift(march, 3);
+// → Mon Jun 1 00:00:00.000 – Tue Jun 30 23:59:59.999, unit "month"
+
+shift(march, -14);
+// → Wed Jan 1 2025 00:00:00.000 – Fri Jan 31 2025 23:59:59.999, unit "month"
+
+shift(period(new Date(2026, 2, 18), "week"), -2);
+// → Mon Mar 2 00:00:00.000 – Sun Mar 8 23:59:59.999, unit "week"
+```
+
+<Timeline
+  caption="shift(march, -14) and shift(march, 3) land on whole months, 14 back and 3 ahead."
+  tracks={[
+    {
+      label: "shift(march, -14)",
+      periods: [shift(march, -14)],
+      tone: "accent",
+    },
+    { label: "march", periods: [march], tone: "ink" },
+    { label: "shift(march, 3)", periods: [shift(march, 3)], tone: "accent" },
+  ]}
+/>
+
+`next(p)` is the same as `shift(p, 1)`, and `previous(p)` the same as
+`shift(p, -1)`. `shift(p, 0)` gives back `p` itself.
+
+"The same month last year" is `shift(month, -12)`. "Four weeks from now" is
+`shift(week, 4)`.
+
+:::caution
+Pass whole numbers to `shift`. Fractions are not checked, and they give
+different results for different units, so do not rely on them.
+:::
+
+## Month ends and leap years are safe
+
+Stepping months with a plain `Date` is a classic bug. Jan 31 plus one month
+is not in February at all:
+
+```ts
+const date = new Date(2026, 0, 31);
+date.setMonth(date.getMonth() + 1);
+// → Tue Mar 3 2026 (there is no Feb 31, so it overflows)
+```
+
+minuta steps whole periods, so there is no day of the month that can overflow:
+
+```ts
+next(period(new Date(2026, 0, 31), "month"));
+// → Sun Feb 1 00:00:00.000 – Sat Feb 28 23:59:59.999, unit "month"
+```
+
+<Timeline
+  caption="Starting from Jan 31 (the pin), next steps the whole month, so it lands on all of February, not on Mar 3."
+  marks={[{ date: new Date(2026, 0, 31), label: "Jan 31" }]}
+  tracks={[
+    { label: 'period(Jan 31, "month")', periods: [january], tone: "ink" },
+    { label: "next(…)", periods: [next(january)], tone: "accent" },
+  ]}
+/>
+
+Leap years work the same way. The day after Feb 28 2028 is Feb 29, and the
+February one year later has 28 days again:
+
+```ts
+next(period(new Date(2028, 1, 28), "day"));
+// → Tue Feb 29 2028 00:00:00.000 – 23:59:59.999, unit "day"
+
+shift(period(new Date(2028, 1, 10), "month"), 12);
+// → Thu Feb 1 2029 00:00:00.000 – Wed Feb 28 2029 23:59:59.999, unit "month"
+```
+
+## Clock changes are safe too
+
+The next period is found on the calendar, not by adding a fixed number of
+hours. In Europe/Zurich the clocks go forward on Mar 29 2026, so that day has
+only 23 hours. The next day still starts at midnight, and the hour after 1:00
+is 3:00:
+
+```ts
+next(period(new Date(2026, 2, 28), "day"));
+// → Sun Mar 29 00:00:00.000 – Sun Mar 29 23:59:59.999 (23 hours long)
+
+next(period(new Date(2026, 2, 29, 1), "hour"));
+// → Sun Mar 29 03:00:00.000 – 03:59:59.999 (2:00 does not exist that night)
+```
+
+## Change the unit first, then step
+
+`shift` always steps by the period's own unit. To move a day by months,
+first get the month it falls in, then step:
+
+```ts
+const day = period(new Date(2026, 2, 18), "day");
+
+shift(period(day.start, "month"), 2);
+// → Fri May 1 00:00:00.000 – Sun May 31 23:59:59.999, unit "month"
+```
+
+The same trick moves between views: `period(day.start, "week")` is the week
+of that day, `period(week.start, "month")` the month the week starts in.
+
+## Custom periods move by their length
+
+A period made with [`range`](../../../api/minuta/range/) has the unit
+`"custom"`. It is not one whole unit, so there is no unit to step by.
+Instead it moves by its own length:
+
+```ts
+import { next, previous, range, shift } from "minuta";
+
+const slot = range(
+  new Date(2026, 2, 2, 9),
+  new Date(2026, 2, 2, 9, 59, 59, 999)
+);
+// → Mon Mar 2 9:00:00.000 – 9:59:59.999, unit "custom"
+
+next(slot); //     → 10:00:00.000 – 10:59:59.999, unit "custom"
+previous(slot); // → 8:00:00.000 – 8:59:59.999, unit "custom"
+shift(slot, 2); // → 11:00:00.000 – 11:59:59.999, unit "custom"
+```
+
+This is useful for things that have no calendar unit: a three-day trip, a
+two-hour shift, a billing cycle. A trip from Friday to Sunday moves to Monday
+to Wednesday:
+
+```ts
+const trip = range(
+  new Date(2026, 2, 13),
+  new Date(2026, 2, 15, 23, 59, 59, 999)
+);
+// → Fri Mar 13 00:00:00.000 – Sun Mar 15 23:59:59.999
+
+next(trip);
+// → Mon Mar 16 00:00:00.000 – Wed Mar 18 23:59:59.999, unit "custom"
+```
+
+<Timeline
+  caption="A three-day custom trip and its next: the same three days long, starting right after it ends. Hatched, because neither is one whole unit."
+  tracks={[
+    { label: "trip", periods: [trip], tone: "ink" },
+    { label: "next(trip)", periods: [next(trip)], tone: "accent" },
+  ]}
+/>
+
+:::caution
+A range includes its end. A range from 9:00 to 10:00 is one hour **and one
+millisecond** long, so each step drifts by a millisecond:
+
+```ts
+next(range(new Date(2026, 2, 2, 9), new Date(2026, 2, 2, 10)));
+// → Mon Mar 2 10:00:00.001 – 11:00:00.001
+```
+
+End a slot at 9:59:59.999 (or make slots with
+[`divide`](../dividing-time/)) to step cleanly.
+:::
+
+Custom periods move by elapsed time, not on the calendar. A custom week that
+is moved over a clock change ends up an hour off:
+
+```ts
+next(range(new Date(2026, 2, 23), new Date(2026, 2, 29, 23, 59, 59, 999)));
+// → Mon Mar 30 00:00:00.000 – Sun Apr 5 22:59:59.999
+```
+
+The pieces at the edges of a [`divide`](../dividing-time/) are often custom
+too. The first piece of March split into weeks is just Sun Mar 1, so its
+`next` is Mon Mar 2, not the next week. To step by whole weeks, use a period
+from `period`.
+
+## Next
+
+- [Dividing time](../dividing-time/) — split a period into days, weeks and
+  slots.
+- Reference: [`next`](../../../api/minuta/next/),
+  [`previous`](../../../api/minuta/previous/),
+  [`shift`](../../../api/minuta/shift/),
+  [`period`](../../../api/minuta/period/),
+  [`range`](../../../api/minuta/range/).

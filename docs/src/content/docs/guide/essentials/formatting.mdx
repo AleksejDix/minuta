@@ -1,0 +1,303 @@
+---
+title: Formatting labels
+description: Turn periods into text with formatPeriod and formatRange — calendar titles, day labels, ranges like "Mar 2 – 8, 2026", in any locale and time zone.
+sidebar:
+  order: 5
+---
+
+import { period } from "minuta";
+import { formatPeriod } from "minuta/format";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const moment = new Date(2026, 2, 18, 14, 30);
+export const labelled = (units) =>
+  units.map((unit) => ({
+    label: `${unit}: ${formatPeriod(period(moment, unit), "en-US")}`,
+    periods: [period(moment, unit)],
+    tone: "accent",
+  }));
+export const weeks = [
+  period(new Date(2025, 11, 31), "week"),
+  period(new Date(2026, 2, 2), "week"),
+  period(new Date(2026, 2, 31), "week"),
+];
+
+A period is data. Sooner or later you show it to a person: "March 2026" above
+a calendar, "Wednesday, March 18" on a day view, "Mar 2 – 8, 2026" on a week.
+`minuta/format` writes these labels for you, in any language.
+
+```ts
+import { formatPeriod, formatRange } from "minuta/format";
+```
+
+Both functions use the `Intl.DateTimeFormat` built into browsers and Node, so
+minuta ships no language data. They only read `start`, `end` and `unit`, so
+they work with periods from any date engine.
+
+All examples run in Europe/Zurich.
+
+## A title for the calendar header
+
+Pass the period and a locale to
+[`formatPeriod`](../../../api/minuta-format/format-period/):
+
+```ts
+import { next, period } from "minuta";
+import { formatPeriod } from "minuta/format";
+
+const shown = period(new Date(2026, 2, 18), "month");
+
+formatPeriod(shown, "en-US"); //       → "March 2026"
+formatPeriod(next(shown), "en-US"); // → "April 2026"
+```
+
+Together with the ‹ › buttons from [Navigating time](../navigating-time/),
+that is a working calendar header: step `shown`, then format it again.
+
+## The unit picks the format
+
+You don't choose a pattern. `formatPeriod` looks at the period's unit and
+shows what makes sense for it. For Wed Mar 18 2026, 14:30, in `"en-US"`:
+
+| Unit      | Label             |
+| --------- | ----------------- |
+| `year`    | 2026              |
+| `quarter` | Jan 2026          |
+| `month`   | March 2026        |
+| `week`    | Mar 16 – 22, 2026 |
+| `day`     | March 18, 2026    |
+| `hour`    | Mar 18, 2:00 PM   |
+| `minute`  | Mar 18, 2:30 PM   |
+
+So the same line of code labels a day view, a week view and a month view.
+
+Here are the periods of that moment, each with its label. First the large
+ones:
+
+<Timeline
+  caption="The year, the quarter and the month that contain Mar 18 2026, labelled by formatPeriod. The quarter is named by its first month."
+  tracks={labelled(["year", "quarter", "month"])}
+/>
+
+Then the small ones, on the scale of one week:
+
+<Timeline
+  caption="The week, the day and the hour that contain Mar 18 2026, 14:30. The week shows start and end; the day and the hour only their start."
+  tracks={labelled(["week", "day", "hour"])}
+/>
+
+:::caution
+A quarter is labelled by its **first month**: Q2 2026 shows as "Apr 2026",
+not as a quarter. To show all three months, use `formatRange`:
+
+```ts
+const q2 = period(new Date(2026, 4, 1), "quarter");
+
+formatPeriod(q2, "en-US"); // → "Apr 2026"
+formatRange(q2, "en-US"); //  → "Apr – Jun 2026"
+```
+
+:::
+
+## Day labels
+
+A day period shows the full date. Add or remove fields with `Intl` options.
+What you pass is merged over the defaults, so you only name what changes:
+
+```ts
+const day = period(new Date(2026, 2, 18), "day");
+
+formatPeriod(day, "en-US"); // → "March 18, 2026"
+formatPeriod(day, "en-US", { weekday: "long" }); // → "Wednesday, March 18, 2026"
+formatPeriod(day, "en-US", { weekday: "long", year: undefined });
+// → "Wednesday, March 18"
+```
+
+Setting a field to `undefined` removes it from the defaults. That is how you
+get the short labels of a calendar grid, still in the reader's language:
+
+```ts
+const cell = { month: undefined, year: undefined };
+
+formatPeriod(day, "en-US", cell); // → "18"
+formatPeriod(day, "ja-JP", cell); // → "18日"
+```
+
+The same works for the weekday names above the grid:
+
+```ts
+const weekday = {
+  day: undefined,
+  month: undefined,
+  year: undefined,
+  weekday: "short",
+} as const;
+
+formatPeriod(day, "en-US", weekday); // → "Wed"
+formatPeriod(day, "de-CH", weekday); // → "Mi"
+```
+
+## Weeks and other ranges
+
+A week is shown as a range. Shared parts, such as the month and year, are
+written only once:
+
+```ts
+const week = period(new Date(2026, 2, 2), "week");
+
+formatPeriod(week, "en-US"); // → "Mar 2 – 8, 2026"
+formatPeriod(period(new Date(2026, 2, 31), "week"), "en-US");
+// → "Mar 30 – Apr 5, 2026"
+formatPeriod(period(new Date(2025, 11, 31), "week"), "en-US");
+// → "Dec 29, 2025 – Jan 4, 2026"
+```
+
+The three weeks on one axis. The more the start and the end have in common,
+the shorter the label:
+
+<Timeline
+  caption="A week across two years, a week inside one month and a week across two months, each labelled with formatPeriod in en-US."
+  tracks={weeks.map((week) => ({
+    label: formatPeriod(week, "en-US"),
+    periods: [week],
+    tone: "accent",
+  }))}
+/>
+
+Custom periods from `range` are shown as a range too:
+
+```ts
+import { range } from "minuta";
+
+formatPeriod(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "en-US");
+// → "Mar 30 – Apr 5, 2026"
+```
+
+[`formatRange`](../../../api/minuta-format/format-range/) always shows a
+period as "start – end", whatever its unit. When start and end look the same
+in the shown fields, it collapses to one:
+
+```ts
+import { formatRange } from "minuta/format";
+
+formatRange(period(new Date(2026, 2, 18, 14), "hour"), "en-US");
+// → "Mar 18, 2:00 – 2:59 PM"
+
+formatRange(period(new Date(2026, 2, 18), "day"), "en-US");
+// → "March 18, 2026"
+```
+
+The hour ends at 2:59, because a period ends at its last millisecond.
+
+## Times in a range
+
+A custom range shows only dates by default, so the times of a meeting are not
+shown. Add the time fields you want:
+
+```ts
+const meeting = range(
+  new Date(2026, 2, 18, 9),
+  new Date(2026, 2, 18, 10, 29, 59, 999)
+);
+
+formatRange(meeting, "en-US"); // → "Mar 18, 2026"
+formatRange(meeting, "en-US", { hour: "numeric", minute: "2-digit" });
+// → "Mar 18, 2026, 9:00 – 10:29 AM"
+formatRange(meeting, "de-CH", { hour: "numeric", minute: "2-digit" });
+// → "18. März 2026, 09:00–10:29 Uhr"
+```
+
+## Locales
+
+The locale is a BCP 47 tag. The order of the parts, the month names and the
+punctuation all follow it:
+
+```ts
+const march = period(new Date(2026, 2, 18), "month");
+
+formatPeriod(march, "en-US"); // → "March 2026"
+formatPeriod(march, "de-CH"); // → "März 2026"
+formatPeriod(march, "fr-FR"); // → "mars 2026"
+formatPeriod(march, "ja-JP"); // → "2026年3月"
+
+formatPeriod(week, "de-CH"); // → "2.–8. März 2026"
+formatPeriod(week, "en-GB"); // → "2 – 8 Mar 2026"
+```
+
+The locale can also ask for another calendar system with `-u-ca-`. Only the
+label changes; the period is still the same month:
+
+```ts
+formatPeriod(march, "en-US-u-ca-buddhist"); // → "March 2569 BE"
+```
+
+## Intl options
+
+Any [`Intl.DateTimeFormat` option](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options)
+works. A few that come up often:
+
+```ts
+formatPeriod(march, "en-US", { month: "short" }); // → "Mar 2026"
+formatPeriod(day, "en-US", { month: "2-digit", day: "2-digit" }); // → "03/18/2026"
+formatPeriod(period(new Date(2026, 2, 18, 14), "hour"), "en-US", {
+  hourCycle: "h23",
+});
+// → "Mar 18, 14:00"
+```
+
+:::caution
+`dateStyle` and `timeStyle` cannot be mixed with single fields such as
+`month` or `day`, and the defaults always contain those. So this throws:
+
+```ts
+formatPeriod(day, "en-US", { dateStyle: "full" });
+// TypeError (from Intl.DateTimeFormat)
+```
+
+Use the single fields instead, such as `{ weekday: "long" }`.
+:::
+
+An invalid locale tag throws a `RangeError`, also from `Intl.DateTimeFormat`.
+
+## Time zones
+
+Labels are written in the computer's time zone, unless you pass `timeZone`.
+That is right for periods from `minuta`, which also use the computer's zone.
+
+Periods made with zone-aware units, such as `dateFnsTzUnits`, belong to their
+zone. Format them in it, by passing the units' `timeZone`:
+
+```ts
+import { periodWith } from "minuta/core";
+import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { formatPeriod } from "minuta/format";
+
+const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
+const tokyoDay = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
+
+formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone }); // → "March 21, 2026"
+formatPeriod(tokyoDay, "en-US"); // → "March 20, 2026" (wrong: Zurich time)
+```
+
+It is 21 March in Tokyo but still 20 March in Zurich. Without `timeZone`, the
+label shows the wrong day.
+
+You can also show any period in another zone, for example the same hour for a
+colleague in New York:
+
+```ts
+formatPeriod(period(new Date(2026, 2, 18, 14), "hour"), "en-US", {
+  timeZone: "America/New_York",
+});
+// → "Mar 18, 9:00 AM"
+```
+
+See [Time zones](../../../concepts/time-zones/) for the full picture.
+
+## Next
+
+- [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start,
+  weekends and calendar grids.
+- Reference: [`formatPeriod`](../../../api/minuta-format/format-period/),
+  [`formatRange`](../../../api/minuta-format/format-range/),
+  [`minuta/format`](../../../api/minuta-format/overview/).
