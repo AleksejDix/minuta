@@ -105,7 +105,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tz: [UTC, Europe/Zurich, America/New_York, Asia/Tokyo]
+        tz:
+          [
+            UTC,
+            Europe/Zurich,
+            America/New_York,
+            Asia/Tokyo,
+            America/Santiago,
+            Pacific/Apia,
+            Australia/Lord_Howe,
+            Asia/Kathmandu,
+          ]
     steps:
       - uses: actions/checkout@v4
 
