@@ -1,4 +1,4 @@
-import type { Period, Units } from "#src/types";
+import type { Period, Unit, Units } from "#src/types";
 import { move } from "./move";
 import { periodWith } from "./period";
 import { specFor } from "#src/units";
@@ -7,9 +7,64 @@ const NO_STEPS = 0;
 const ONE = 1;
 const INCLUSIVE_END_MS = 1;
 
+// Units of a fixed length: a step is plain arithmetic and never lands on a gap
+const FIXED_LENGTH: ReadonlySet<string> = new Set(["hour", "minute", "second"]);
+
 /**
- * Move a period by `steps` of its own unit. A custom period moves by its own
- * length.
+ * The period right before or after `period`, found across its own boundary:
+ * the first moment after its end, or the last moment before its start. Never
+ * asks the engine for a local time, so a day the zone skipped (Samoa, Dec 30
+ * 2011) or a missing hour cannot make the step stall or jump back.
+ *
+ * @param units - Available unit specs
+ * @param step - A whole period, its calendar unit and the direction
+ * @returns The neighbouring period
+ */
+function neighbour(
+  units: Units,
+  step: Readonly<{ forward: boolean; period: Period; unit: Unit }>
+): Period {
+  const { forward, period, unit } = step;
+  if (forward) {
+    return periodWith(
+      units,
+      new Date(period.end.getTime() + INCLUSIVE_END_MS),
+      unit
+    );
+  }
+  return periodWith(
+    units,
+    new Date(period.start.getTime() - INCLUSIVE_END_MS),
+    unit
+  );
+}
+
+/**
+ * Step a period of a calendar unit one neighbour at a time, across each
+ * boundary.
+ *
+ * @param units - Available unit specs
+ * @param walk - The period, its calendar unit and how many steps
+ * @returns The period that many places away
+ */
+function stepped(
+  units: Units,
+  walk: Readonly<{ period: Period; steps: number; unit: Unit }>
+): Period {
+  const { steps, unit } = walk;
+  const forward = steps > NO_STEPS;
+  // Start from the whole period, so a period built by hand steps the same way
+  let moved = periodWith(units, walk.period.start, unit);
+  for (let step = NO_STEPS; step < Math.abs(steps); step += ONE) {
+    moved = neighbour(units, { forward, period: moved, unit });
+  }
+  return moved;
+}
+
+/**
+ * Move a period by `steps` of its own unit: the period that many places
+ * after (or before) it, so shifting by n is n times `next`. A custom period
+ * moves by its own length.
  *
  * @example
  * shiftWith(units, march, 2)  // May
@@ -29,8 +84,11 @@ function shiftWith(units: Units, period: Period, steps: number): Period {
       period.end.getTime() - period.start.getTime() + INCLUSIVE_END_MS;
     return move(period, new Date(period.start.getTime() + length * steps));
   }
-  const spec = specFor(units, period.unit);
-  return periodWith(units, spec.add(period.start, steps), period.unit);
+  if (FIXED_LENGTH.has(period.unit)) {
+    const spec = specFor(units, period.unit);
+    return periodWith(units, spec.add(period.start, steps), period.unit);
+  }
+  return stepped(units, { period, steps, unit: period.unit });
 }
 
 /**

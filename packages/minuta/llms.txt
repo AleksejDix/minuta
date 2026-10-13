@@ -359,8 +359,9 @@ sameWith(units, mondayPeriod, fridayPeriod, "week") // true
 shiftWith(units: Units, period: Period, steps: number): Period
 ```
 
-Move a period by `steps` of its own unit. A custom period moves by its own
-length.
+Move a period by `steps` of its own unit: the period that many places
+after (or before) it, so shifting by n is n times `next`. A custom period
+moves by its own length.
 
 ```ts
 shiftWith(units, march, 2)  // May
