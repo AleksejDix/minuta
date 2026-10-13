@@ -6,7 +6,7 @@ import {
 } from "#src/adapters/elapsed-units";
 import type { UnitSpec } from "#src/types";
 import dayjs from "dayjs";
-import quarterOfYear from "dayjs/plugin/quarterOfYear";
+import quarterOfYear from "dayjs/plugin/quarterOfYear.js";
 
 dayjs.extend(quarterOfYear);
 
