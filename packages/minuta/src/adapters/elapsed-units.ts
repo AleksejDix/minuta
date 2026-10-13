@@ -58,4 +58,4 @@ const elapsedHour: UnitSpec = elapsedSpec(
     date.getMilliseconds()
 );
 
-export { elapsedHour, elapsedMinute, elapsedSecond };
+export { elapsedHour, elapsedMinute, elapsedSecond, elapsedSpec };
