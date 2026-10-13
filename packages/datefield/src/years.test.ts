@@ -18,10 +18,14 @@ const LEAP_DAY = 29;
 const YEAR_50 = 50;
 const JANUARY = 0;
 const FIRST_DAY = 1;
+const EPOCH = 0;
+const MIDNIGHT = 0;
 
+// Never via the 1900s, whose offset `new Date(50, 0, 1)` would keep (Apia)
 function dateIn(year: number, monthIndex: number, day: number): Date {
-  const date = new Date(year, monthIndex, day);
+  const date = new Date(EPOCH);
   date.setFullYear(year, monthIndex, day);
+  date.setHours(MIDNIGHT, MIDNIGHT, MIDNIGHT, MIDNIGHT);
   return date;
 }
 
