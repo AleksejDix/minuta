@@ -61,7 +61,8 @@ jobs:
   package-lint:
     name: Package Lint
     runs-on: ubuntu-latest
-    # publint checks the packed packages: exports, types, files
+    # publint checks the packed packages: exports, types, files; then every
+    # entry point is imported in plain Node, as server-side users would
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -81,6 +82,9 @@ jobs:
 
       - name: Run publint
         run: npm run lint:packages
+
+      - name: Import every entry point in plain Node
+        run: npm run check:node-esm
 
   format:
     name: Format

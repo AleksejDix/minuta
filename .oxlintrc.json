@@ -169,7 +169,7 @@
       }
     },
     {
-      "files": ["docs/scripts/**/*.ts"],
+      "files": ["docs/scripts/**/*.ts", "scripts/**/*.ts"],
       "rules": {
         "import/no-nodejs-modules": "off",
         "node/no-sync": "off"
@@ -201,6 +201,12 @@
       "files": ["packages/*/examples/**"],
       "rules": {
         "react/forbid-component-props": "off"
+      }
+    },
+    {
+      "files": ["scripts/**/*.ts"],
+      "rules": {
+        "node/no-top-level-await": "off"
       }
     }
   ],
