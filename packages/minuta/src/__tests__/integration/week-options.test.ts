@@ -1,4 +1,4 @@
-import type { AllUnits, WeekOptions } from "#src/core";
+import type { AllUnits, Units, WeekOptions } from "#src/core";
 import { describe, expect, it } from "vitest";
 import { isWeekdayWith, isWeekendWith } from "#src/calendar";
 import { periodWith, range } from "#src/core";
@@ -103,3 +103,30 @@ describe("isWeekendWith() over several days", () => {
     expect(isWeekdayWith(units, week)).toBe(false);
   });
 });
+
+describe.each(FACTORIES)(
+  "isWeekendWith() with only some specs of %s",
+  (_name, createUnits) => {
+    const full = createUnits({ weekStartsOn: "sunday" });
+    const partial: Units = { day: full.day, week: full.week };
+
+    it(
+      "reads the weekday from the date, not the week start",
+      { timeout: 5000 },
+      () => {
+        expect.hasAssertions();
+        for (const date of [SATURDAY_NOON, SUNDAY_NOON]) {
+          expect(isWeekendWith(partial, periodWith(full, date, "day"))).toBe(
+            true
+          );
+        }
+        expect(
+          isWeekendWith(partial, periodWith(full, FRIDAY_NOON, "day"))
+        ).toBe(false);
+        expect(
+          isWeekdayWith(partial, periodWith(full, FRIDAY_NOON, "day"))
+        ).toBe(true);
+      }
+    );
+  }
+);
