@@ -1,4 +1,4 @@
-import type { Period, Unit, Units } from "#src/types";
+import type { Period, Unit, UnitSpec, Units } from "#src/types";
 import { move } from "./move";
 import { periodWith } from "./period";
 import { specFor } from "#src/units";
@@ -7,15 +7,28 @@ const NO_STEPS = 0;
 const ONE = 1;
 const INCLUSIVE_END_MS = 1;
 
-// Units of a fixed length: a step is plain arithmetic and never lands on a gap
-const FIXED_LENGTH: ReadonlySet<string> = new Set(["hour", "minute", "second"]);
+/*
+ * Units of a fixed length: a step is plain arithmetic and never lands on a
+ * gap. Not hours: Lord Howe moves its clocks by 30 minutes.
+ */
+const FIXED_LENGTH: ReadonlySet<string> = new Set(["minute", "second"]);
+
+// The period starting right after `period`, or ending right before it
+function neighbour(spec: UnitSpec, period: Period, forward: boolean): Period {
+  if (forward) {
+    const after = new Date(period.end.getTime() + INCLUSIVE_END_MS);
+    return { end: spec.endOf(after), start: after, unit: period.unit };
+  }
+  const before = new Date(period.start.getTime() - INCLUSIVE_END_MS);
+  return { end: before, start: spec.startOf(before), unit: period.unit };
+}
 
 /**
  * Step a period of a calendar unit one neighbour at a time: to the period
- * holding the first moment after its end, or the last moment before its
- * start. Never asks the engine for a local time, so a day the zone skipped
- * (Samoa, Dec 30 2011) or a missing hour cannot make a step stall or jump
- * back.
+ * starting right after its end, or ending right before its start. Never asks
+ * the engine for a local time, so a day the zone skipped (Samoa, Dec 30
+ * 2011) or a missing hour cannot make a step stall or jump back, and an
+ * engine that starts a repeated hour twice cannot make two steps overlap.
  *
  * @param units - Available unit specs
  * @param walk - The period, its calendar unit and how many steps
@@ -26,13 +39,10 @@ function stepped(
   walk: Readonly<{ period: Period; steps: number; unit: Unit }>
 ): Period {
   const { steps, unit } = walk;
+  const spec = specFor(units, unit);
   let moved = periodWith(units, walk.period.start, unit);
   for (let step = NO_STEPS; step < Math.abs(steps); step += ONE) {
-    let edge = moved.start.getTime() - INCLUSIVE_END_MS;
-    if (steps > NO_STEPS) {
-      edge = moved.end.getTime() + INCLUSIVE_END_MS;
-    }
-    moved = periodWith(units, new Date(edge), unit);
+    moved = neighbour(spec, moved, steps > NO_STEPS);
   }
   return moved;
 }

@@ -4,7 +4,6 @@ import type { Period, Unit, UnitSpec, Units } from "#src/types";
 const DEFAULT_MAX_PERIODS = 100_000;
 const DEFAULT_STEP = 1;
 const ONE_MS = 1;
-const STALL_STEP_FACTOR = 2;
 
 /**
  * Options for `divide` / `divideWith`.
@@ -23,13 +22,6 @@ type DivideContext = Readonly<{
   unit: Unit;
 }>;
 
-function laterOf(left: Readonly<Date>, right: Readonly<Date>): Date {
-  if (left < right) {
-    return right;
-  }
-  return left;
-}
-
 function earlierOf(left: Readonly<Date>, right: Readonly<Date>): Date {
   if (left > right) {
     return right;
@@ -37,52 +29,37 @@ function earlierOf(left: Readonly<Date>, right: Readonly<Date>): Date {
   return left;
 }
 
-// A chunk is one whole unit only with a step of 1 and when clipping kept it whole
-function chunkUnit(ctx: DivideContext, isWhole: boolean): Period["unit"] {
-  if (ctx.step === DEFAULT_STEP && isWhole) {
-    return ctx.unit;
+// The end of the `step`-th unit from `start`, walking unit ends
+function stepEnd(ctx: DivideContext, start: Readonly<Date>): Date {
+  const { spec, step } = ctx;
+  let end = spec.endOf(start);
+  for (let unit = DEFAULT_STEP; unit < step; unit += DEFAULT_STEP) {
+    end = spec.endOf(new Date(end.getTime() + ONE_MS));
   }
-  return "custom";
+  return end;
 }
 
 /**
- * Build the chunk starting at `start`, clipped to the parent period.
+ * Build the chunk starting at `start`, the moment after the previous chunk,
+ * clipped to the parent period. Starting where the last chunk ended keeps
+ * chunks touching even when an engine starts a repeated hour twice.
  *
  * @param ctx - The division context
- * @param start - Start of the unit-aligned chunk
- * @returns The clipped chunk, or undefined when it does not overlap the parent
+ * @param start - First moment of the chunk
+ * @returns The chunk
  */
-function buildChunk(
-  ctx: DivideContext,
-  start: Readonly<Date>
-): Period | undefined {
+function buildChunk(ctx: DivideContext, start: Readonly<Date>): Period {
   const { period, spec, step } = ctx;
-  // Up to where the next chunk starts, even when a day starts at 01:00
-  const end = new Date(spec.startOf(spec.add(start, step)).getTime() - ONE_MS);
-
-  // Only include periods that overlap with the parent period
-  if (end < period.start || start > period.end) {
-    return undefined;
+  const end = stepEnd(ctx, start);
+  const isWhole =
+    step === DEFAULT_STEP &&
+    spec.startOf(start).getTime() === start.getTime() &&
+    end <= period.end;
+  let unit: Period["unit"] = "custom";
+  if (isWhole) {
+    ({ unit } = ctx);
   }
-  return {
-    end: earlierOf(end, period.end),
-    start: laterOf(start, period.start),
-    unit: chunkUnit(ctx, start >= period.start && end <= period.end),
-  };
-}
-
-function nextCursor(
-  ctx: DivideContext,
-  start: Readonly<Date>,
-  current: Readonly<Date>
-): Date {
-  const { spec, step } = ctx;
-  const nextDate = spec.add(start, step);
-
-  if (nextDate.getTime() <= current.getTime()) {
-    return spec.add(start, step * STALL_STEP_FACTOR);
-  }
-  return nextDate;
+  return { end: earlierOf(end, period.end), start: new Date(start), unit };
 }
 
 function assertWithinLimit(generated: number, maxPeriods: number): void {
@@ -99,15 +76,9 @@ function collectChunks(ctx: DivideContext, maxPeriods: number): Period[] {
   let current = new Date(ctx.period.start);
 
   while (current <= ctx.period.end) {
-    const start = ctx.spec.startOf(current);
-    const chunk = buildChunk(ctx, start);
-    if (chunk !== undefined) {
-      periods.push(chunk);
-    }
-
-    // Move to next chunk
-    current = nextCursor(ctx, start, current);
-
+    const chunk = buildChunk(ctx, current);
+    periods.push(chunk);
+    current = new Date(chunk.end.getTime() + ONE_MS);
     assertWithinLimit(periods.length, maxPeriods);
   }
 
