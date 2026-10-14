@@ -65,6 +65,25 @@ const docs: AstroIntegration = starlight({
     },
     themes: ["vitesse-dark", "vitesse-light"],
   },
+  head: [
+    // The browser bar matches the header in light and dark
+    {
+      attrs: {
+        content: "#f1ebdf",
+        media: "(prefers-color-scheme: light)",
+        name: "theme-color",
+      },
+      tag: "meta",
+    },
+    {
+      attrs: {
+        content: "#161512",
+        media: "(prefers-color-scheme: dark)",
+        name: "theme-color",
+      },
+      tag: "meta",
+    },
+  ],
   plugins: [
     // Guide and API, each with its own sidebar, like Vue's docs
     starlightSidebarTopics([
@@ -119,6 +138,7 @@ const docs: AstroIntegration = starlight({
       },
     ]),
   ],
+  routeMiddleware: "./src/route-data.ts",
   social: [
     {
       href: "https://github.com/AleksejDix/minuta",
