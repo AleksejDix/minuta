@@ -8,6 +8,11 @@ import { typeDate } from "./type-date";
 const DE = deriveFormat("de-CH");
 const US = deriveFormat("en-US");
 const JA = deriveFormat("ja-JP");
+const DE_SHORT = deriveFormat("de-CH", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "2-digit",
+});
 const MONTH_START = 3;
 
 type TypeCase = Readonly<{
@@ -24,6 +29,8 @@ const CASES: readonly TypeCase[] = [
   { expected: "03/01/2026", format: US, text: "3/1/2026" },
   { expected: "2026/03/01", format: JA, text: "2026/3/1" },
   { expected: "01.03.2026", format: DE, text: "1.x3.2026" },
+  { expected: "01.03.05", format: DE_SHORT, text: "1.3.5" },
+  { expected: "01.03.26", format: DE_SHORT, text: "1.3.26." },
 ];
 
 function typed(format: Readonly<DateFormat>, text: string): string {

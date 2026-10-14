@@ -11,11 +11,12 @@ import type { AllUnits } from "#src/types";
 import type { WeekOptions } from "#src/weekday";
 import { adapterUnits } from "#src/adapters/adapter-units";
 import { createWeekHandler } from "./units/week";
+import { tz } from "@date-fns/tz";
 
 const DEFAULT_TIMEZONE = "UTC";
 
 /**
- * Unit specs for every unit, computed with date-fns-tz in one IANA time zone (requires `date-fns` and `date-fns-tz`). Pass the result to
+ * Unit specs for every unit, computed with date-fns in one IANA time zone (requires `date-fns` and `@date-fns/tz`). Pass the result to
  * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
  * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
  * (`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
@@ -35,17 +36,18 @@ function dateFnsTzUnits(
   options: WeekOptions & Readonly<{ timeZone?: string }> = {}
 ): AllUnits {
   const { timeZone: timezone = DEFAULT_TIMEZONE } = options;
+  const zone = { in: tz(timezone), name: timezone };
   return adapterUnits(
     options,
     (weekStartsOn) => ({
-      day: createDayHandler(timezone),
-      hour: createHourHandler(timezone),
-      minute: createMinuteHandler(timezone),
-      month: createMonthHandler(timezone),
-      quarter: createQuarterHandler(timezone),
-      second: createSecondHandler(timezone),
-      week: createWeekHandler(timezone, weekStartsOn),
-      year: createYearHandler(timezone),
+      day: createDayHandler(zone),
+      hour: createHourHandler(zone),
+      minute: createMinuteHandler(zone),
+      month: createMonthHandler(zone),
+      quarter: createQuarterHandler(zone),
+      second: createSecondHandler(zone),
+      week: createWeekHandler(zone, weekStartsOn),
+      year: createYearHandler(zone),
     }),
     timezone
   );
