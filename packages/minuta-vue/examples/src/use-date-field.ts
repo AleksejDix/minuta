@@ -130,7 +130,12 @@ function attachField(element: HTMLInputElement, field: AttachedField): InputCont
       typeDate(format, state, text, {
         parse: (pasted) => pastedDate(pasted, locale, format),
       }),
-    normalize: (next) => withSegments(next, clampDay(parseSegments(format, next.buffer.text))),
+    // With the cursor: no clamping while a date part is still being typed
+    normalize: (next) =>
+      withSegments(
+        next,
+        clampDay(parseSegments(format, next.buffer.text), next.buffer.selection.head),
+      ),
     onChange,
     onKeyDown: (event, next) => rotated(format, next, event.key),
   })
