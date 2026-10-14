@@ -2,6 +2,7 @@ import type { AllUnits, Period } from "#src/types";
 import { describe, expect, it } from "vitest";
 import type { WeekStartsOn } from "#src/adapters/native/units/week";
 import { dateFnsUnits } from "#src/adapters/date-fns/index";
+import { firstOf } from "./grid-test-helpers";
 import { luxonUnits } from "#src/adapters/luxon/index";
 import { nativeUnits } from "#src/adapters/native/index";
 import { yearGridWith } from "./year-grid";
@@ -121,3 +122,18 @@ describe.each(ADAPTERS)(
     );
   }
 );
+
+describe("yearGridWith() with hand-built units", () => {
+  it(
+    "reports the week spec's start without a weekStartsOn setting",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const sunday = nativeUnits({ weekStartsOn: "sunday" });
+      const units = { day: sunday.day, week: sunday.week, year: sunday.year };
+      const grid = yearGridWith(units, new Date("2026-06-01T12:00:00"));
+      expect(grid.weekStartsOn).toBe(SUNDAY);
+      expect(firstOf(grid.periods).start.getDay()).toBe(SUNDAY);
+    }
+  );
+});

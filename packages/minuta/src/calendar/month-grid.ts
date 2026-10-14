@@ -1,7 +1,7 @@
 import type { Period, Units } from "#src/types";
 import { assertValidDate, specFor } from "#src/units";
-import { DEFAULT_WEEK_START } from "#src/weekday";
 import { divideWith } from "#src/operations/divide";
+import { weekdayWith } from "#src/operations/utils/days-touched";
 
 /**
  * A 42-day month grid (`periods`), the month's first day and the week start
@@ -41,7 +41,11 @@ function monthGridWith(units: Units, date: Readonly<Date>): MonthGrid {
   return {
     monthStart,
     periods,
-    weekStartsOn: units.weekStartsOn ?? DEFAULT_WEEK_START,
+    /*
+     * The weekday the grid starts on, so it matches the periods even when
+     * hand-built units have a week spec but no `weekStartsOn` setting
+     */
+    weekStartsOn: weekdayWith(units, gridStart),
   };
 }
 

@@ -137,3 +137,18 @@ describe.each(adapters)(
     });
   }
 );
+
+describe("monthGridWith() with hand-built units", () => {
+  it(
+    "reports the week spec's start without a weekStartsOn setting",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const sunday = nativeUnits({ weekStartsOn: "sunday" });
+      const units = { day: sunday.day, month: sunday.month, week: sunday.week };
+      const grid = monthGridWith(units, new Date("2026-03-15T12:00:00"));
+      expect(grid.weekStartsOn).toBe(SUNDAY);
+      expect(firstOf(grid.periods).start.getDay()).toBe(SUNDAY);
+    }
+  );
+});
