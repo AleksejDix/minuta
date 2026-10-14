@@ -3,16 +3,15 @@
  * `2026-03-31T10:00`, `2026-03-31 10:00:00.250+02:00`, `20260331T100000Z`.
  */
 
+import { clockProblem, offsetMinutes, problemOf } from "./date";
 import { failure, success } from "./choose";
 import type { ParseResult } from "./choose";
 import type { Reading } from "./candidates";
 import { groupsOf } from "./regex";
-import { problemOf } from "./date";
 
 const ISO =
   /^(?<year>[+-]?\d{4,6})-?(?<month>\d{2})-?(?<day>\d{2})(?:[t\s](?<hour>\d{2}):?(?<minute>\d{2})(?::?(?<second>\d{2})(?:[.,](?<fraction>\d{1,9}))?)?\s*(?<offset>z|[+-]\d{2}(?::?\d{2})?)?)?$/giu;
 const OFFSET = /^(?<sign>[+-])(?<hours>\d{2}):?(?<minutes>\d{2})?$/gu;
-const MINUTES_PER_HOUR = 60;
 const MS_DIGITS = 3;
 const NONE = 0;
 const NEGATIVE = -1;
@@ -46,10 +45,11 @@ function offsetMinutesOf(offset: string | undefined): number | undefined {
     // Z
     return NONE;
   }
-  const minutes =
-    Number(groups["hours"]) * MINUTES_PER_HOUR +
-    Number(groups["minutes"] ?? NONE);
-  return signOf(groups["sign"]) * minutes;
+  return offsetMinutes(
+    signOf(groups["sign"]),
+    Number(groups["hours"]),
+    Number(groups["minutes"] ?? NONE)
+  );
 }
 
 /**
@@ -78,6 +78,22 @@ function isoFields(text: string): IsoFields | undefined {
 }
 
 /**
+ * A real ISO 8601 day at its time, unless the time or offset is out of
+ * range: unlike free text, ISO 8601 has no other reading to fall back to.
+ *
+ * @param reading - The day
+ * @param fields - The fields as written
+ * @returns The result
+ */
+function checked(reading: Reading, fields: IsoFields): ParseResult {
+  const problem = clockProblem(fields);
+  if (problem === undefined) {
+    return success(reading, fields);
+  }
+  return failure([problem]);
+}
+
+/**
  * ISO 8601 read exactly. Eight digits without dashes may be a day-first
  * date, so an impossible compact ISO date is read as numbers instead.
  *
@@ -97,7 +113,7 @@ function parseIso(text: string): ParseResult | undefined {
   };
   const problem = problemOf(reading);
   if (problem === undefined) {
-    return success(reading, fields);
+    return checked(reading, fields);
   }
   if (text.includes("-")) {
     return failure([problem]);

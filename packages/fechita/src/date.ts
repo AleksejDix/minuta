@@ -12,6 +12,11 @@ const MONTHS = 12;
 const FIRST = 1;
 const NONE = 0;
 const MS_PER_MINUTE = 60_000;
+const MINUTES_PER_HOUR = 60;
+const MAX_HOUR = 23;
+const MAX_MINUTE = 59;
+// 60 is a leap second (RFC 3339)
+const MAX_SECOND = 60;
 
 /** The time of day a reading is combined with. */
 type Clock = Readonly<{
@@ -57,6 +62,43 @@ function problemOf(reading: Reading): ParseErrorCode | undefined {
 }
 
 /**
+ * A UTC offset in minutes from its written parts, or NaN when a part is out
+ * of range: at most ±23:59, as RFC 3339 writes it.
+ *
+ * @param sign - 1 or -1
+ * @param hours - The written hours
+ * @param minutes - The written minutes
+ * @returns The offset in minutes, or NaN
+ */
+function offsetMinutes(sign: number, hours: number, minutes: number): number {
+  if (hours > MAX_HOUR || minutes > MAX_MINUTE) {
+    return Number.NaN;
+  }
+  return sign * (hours * MINUTES_PER_HOUR + minutes);
+}
+
+/**
+ * Why a time of day is not one, if it is not. ISO 8601-1:2019 no longer
+ * allows 24:00, so hours are 0–23.
+ *
+ * @param clock - The time as written
+ * @returns `INVALID_TIME`, `INVALID_OFFSET`, or undefined for a real time
+ */
+function clockProblem(clock: Clock): ParseErrorCode | undefined {
+  if (
+    clock.hour > MAX_HOUR ||
+    clock.minute > MAX_MINUTE ||
+    clock.second > MAX_SECOND
+  ) {
+    return ParseError.InvalidTime;
+  }
+  if (Number.isNaN(clock.offsetMinutes)) {
+    return ParseError.InvalidOffset;
+  }
+  return undefined;
+}
+
+/**
  * The fields of a reading at a time of day.
  *
  * @param reading - Day, month and year
@@ -95,5 +137,5 @@ function dateOf(parts: DateParts): Date {
   return new Date(date.getTime() - parts.offsetMinutes * MS_PER_MINUTE);
 }
 
-export { MIDNIGHT, dateOf, partsOf, problemOf };
+export { MIDNIGHT, clockProblem, dateOf, offsetMinutes, partsOf, problemOf };
 export type { Clock };

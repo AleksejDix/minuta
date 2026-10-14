@@ -4,8 +4,9 @@
  * `+02:00`, `+0200`, `GMT+1`, `UTC`.
  */
 
+import { MIDNIGHT, clockProblem, offsetMinutes } from "./date";
 import { rangeOf, wordRuns } from "./words";
-import { MIDNIGHT } from "./date";
+import type { ParseErrorCode } from "./errors";
 import type { Tables } from "./match";
 import type { WordTable } from "./words";
 import { groupsOf } from "./regex";
@@ -23,11 +24,7 @@ const WORDS_BEFORE =
   /(?<words>(?:[\p{L}\p{M}.]|‌|‍)+(?:\s+(?:[\p{L}\p{M}.]|‌|‍)+)?)\s*$/gu;
 const DIGIT_RUNS = /\d+/gu;
 
-const MINUTES_PER_HOUR = 60;
 const HOURS_PER_HALF_DAY = 12;
-const MAX_HOUR = 23;
-const MAX_MINUTE = 59;
-const MAX_SECOND = 60;
 const MS_DIGITS = 3;
 const DATE_GROUPS = 3;
 const NONE = 0;
@@ -42,7 +39,8 @@ type TimeOfDay = Readonly<{
   offsetMinutes: number | undefined;
   rest: string;
   second: number;
-  valid: boolean;
+  /** Why the time is not one (25:00, +25:00), or undefined */
+  problem: ParseErrorCode | undefined;
 }>;
 
 type Groups = Readonly<Record<string, string | undefined>>;
@@ -70,10 +68,11 @@ function offsetOf(text: string | undefined): number | undefined {
     // Z, GMT or UTC alone
     return NONE;
   }
-  const minutes =
-    Number(groups["hours"]) * MINUTES_PER_HOUR +
-    Number(groups["minutes"] ?? NONE);
-  return signOf(groups["sign"]) * minutes;
+  return offsetMinutes(
+    signOf(groups["sign"]),
+    Number(groups["hours"]),
+    Number(groups["minutes"] ?? NONE)
+  );
 }
 
 function periodIn(
@@ -246,17 +245,17 @@ function timeIn(text: string, periods: Tables): TimeOfDay | undefined {
   const { groups } = found;
   const written = Number(groups["hour"]);
   const hour = periodHour(written, periodNear(found, periods)) ?? written;
-  const minute = Number(groups["minute"]);
-  const second = Number(groups["second"] ?? NONE);
-  return {
+  const clock = {
     hour,
     millisecond: fractionOf(groups),
-    minute,
+    minute: Number(groups["minute"]),
     offsetMinutes: offsetOf(groups["offset"]),
-    rest: `${found.before} ${found.after}`,
-    second,
-    valid: hour <= MAX_HOUR && minute <= MAX_MINUTE && second <= MAX_SECOND,
+    second: Number(groups["second"] ?? NONE),
   };
+  return Object.assign(clock, {
+    problem: clockProblem(clock),
+    rest: `${found.before} ${found.after}`,
+  });
 }
 
 /**
@@ -271,9 +270,9 @@ function untimed(text: string): TimeOfDay {
     millisecond: MIDNIGHT.millisecond,
     minute: MIDNIGHT.minute,
     offsetMinutes: MIDNIGHT.offsetMinutes,
+    problem: undefined,
     rest: text,
     second: MIDNIGHT.second,
-    valid: true,
   };
 }
 

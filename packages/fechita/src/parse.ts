@@ -162,8 +162,8 @@ function datesIn(
  */
 function parseFree(text: string, context: Context): ParseResult {
   const time = timeIn(text, tablesOf(context, "periods")) ?? untimed(text);
-  if (!time.valid) {
-    return failure(["INVALID_TIME"]);
+  if (time.problem !== undefined) {
+    return failure([time.problem]);
   }
   const { month, readings } = datesIn(time.rest, context);
   if (typeof readings === "string") {
