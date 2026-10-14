@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Period } from "#src/types";
 import { contains } from "#src/operations/contains";
 import { divideWith } from "#src/operations/divide";
 import { nativeUnits } from "#src/adapters/native/index";
@@ -10,10 +11,31 @@ const DAYS_IN_LEAP_YEAR = 366;
 const MIN_WEEKS_IN_YEAR = 52;
 const MAX_WEEKS_IN_YEAR = 54;
 const MONTHS_PER_YEAR = 12;
-const HOURS_PER_DAY = 24;
-const SHORT_DAY_HOURS = 23;
+const ONE_MS = 1;
+const FIRST = 0;
+const LAST = -1;
+const SHORTEST_DAY_HOURS = 22;
+const LONGEST_DAY_HOURS = 25;
 
 const units = nativeUnits({ weekStartsOn: 1 });
+
+/*
+ * True of every day in every zone: 22 hours (Troll's +2 h jump) to 25
+ * (Casablanca's Ramadan fall back), and its hours cover it end to start.
+ */
+function expectRealDay(day: Period): void {
+  const hours = divideWith(units, day, "hour");
+  expect(hours.length).toBeGreaterThanOrEqual(SHORTEST_DAY_HOURS);
+  expect(hours.length).toBeLessThanOrEqual(LONGEST_DAY_HOURS);
+  // Each hour starts where the one before ended, from the day's start
+  const starts = hours.map((hour) => hour.start.getTime());
+  const nextStarts = hours.map((hour) => hour.end.getTime() + ONE_MS);
+  expect(starts).toStrictEqual([
+    day.start.getTime(),
+    ...nextStarts.slice(FIRST, LAST),
+  ]);
+  expect(nextStarts.at(LAST)).toBe(day.end.getTime() + ONE_MS);
+}
 
 describe("century leap year", () => {
   /*
@@ -106,14 +128,11 @@ describe("dst spring forward", () => {
   });
 
   it(
-    "us DST day (Mar 10) divides into 23 or 24 hours",
+    "us DST day (Mar 10) divides into its real hours",
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const usDst = periodWith(units, new Date("2024-03-10T00:00:00"), "day");
-      const hours = divideWith(units, usDst, "hour");
-      expect(hours.length).toBeGreaterThanOrEqual(SHORT_DAY_HOURS);
-      expect(hours.length).toBeLessThanOrEqual(HOURS_PER_DAY);
+      expectRealDay(periodWith(units, new Date("2024-03-10T12:00:00"), "day"));
     }
   );
 });
@@ -122,14 +141,11 @@ describe("dst spring forward in europe", () => {
   // March 31, 2024 in Europe/Zurich: 2am → 3am (23-hour day)
 
   it(
-    "eu DST day (Mar 31) divides into 23 or 24 hours",
+    "eu DST day (Mar 31) divides into its real hours",
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const euDst = periodWith(units, new Date("2024-03-31T00:00:00"), "day");
-      const hours = divideWith(units, euDst, "hour");
-      expect(hours.length).toBeGreaterThanOrEqual(SHORT_DAY_HOURS);
-      expect(hours.length).toBeLessThanOrEqual(HOURS_PER_DAY);
+      expectRealDay(periodWith(units, new Date("2024-03-31T12:00:00"), "day"));
     }
   );
 });

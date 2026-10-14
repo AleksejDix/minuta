@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
 import { periodWith as period } from "./period";
 
+const ONE_MS = 1;
+const LEAP_DAY = 29;
+
 const adapters = getUnitsTestCases();
 
 describe.each(adapters)(
@@ -23,8 +26,11 @@ describe.each(adapters)(
 
       expect(month.unit).toBe("month");
       expect(month.start).toStrictEqual(new Date("2024-02-01T00:00:00"));
-      // 2024 is a leap year
-      expect(month.end).toStrictEqual(new Date("2024-02-29T23:59:59.999"));
+      // 2024 is a leap year. The moment before March: in Almaty Feb 29
+      // 23:00-23:59 happens twice, and February ends after the second
+      const march = new Date("2024-03-01T00:00:00");
+      expect(month.end).toStrictEqual(new Date(march.getTime() - ONE_MS));
+      expect(month.end.getDate()).toBe(LEAP_DAY);
     });
 
     it("should create week periods correctly", { timeout: 5000 }, () => {
