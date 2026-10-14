@@ -10,8 +10,9 @@ const DEFAULT_UNITS: Units = nativeUnits();
 const DEFAULT_UNIT = "month";
 
 /**
- * Exposes the operations of the current units: each operation reads the
- * memoised `withUnits(units)` result, so a change of units is picked up.
+ * Exposes the operations of the current units: each operation is a stable
+ * function that calls the memoised `withUnits(units)` result, so a change of
+ * units is picked up even by an operation that was destructured.
  *
  * @param operations - The operations bound to the current units
  * @returns An object with the same members that always follow `operations`
@@ -19,18 +20,18 @@ const DEFAULT_UNIT = "month";
 function followOperations(
   operations: ComputedRef<Minuta>
 ): Omit<Minuta, "units"> {
-  const followed = {};
   // `units` is exposed as a ref instead
   const names = Object.keys(operations.value).filter(
-    (name) => name !== "units"
+    (name): name is keyof Omit<Minuta, "units"> => name !== "units"
   );
-  for (const name of names) {
-    Object.defineProperty(followed, name, {
-      enumerable: true,
-      get: (): unknown => Reflect.get(operations.value, name),
-    });
-  }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The getters above define every operation of withUnits()
+  const followed = Object.fromEntries(
+    names.map((name) => [
+      name,
+      (...args: readonly unknown[]): unknown =>
+        Reflect.apply(operations.value[name], undefined, args),
+    ])
+  );
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The functions above forward every operation of withUnits()
   return followed as Omit<Minuta, "units">;
 }
 

@@ -221,3 +221,18 @@ describe("useMinuta() reactive units and unit", () => {
     );
   });
 });
+
+describe("useMinuta() destructured operations", () => {
+  it("follow a change of units", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const date = new Date("2024-01-03T12:00:00");
+    const units = shallowRef(nativeUnits({ weekStartsOn: MONDAY }));
+    const minuta = useMinuta(() => ({ units: units.value }));
+    const { period } = minuta;
+
+    units.value = nativeUnits({ weekStartsOn: SUNDAY });
+
+    expect(period(date, "week").start.getDay()).toBe(SUNDAY);
+    expect(minuta.period).toBe(period);
+  });
+});
