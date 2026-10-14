@@ -38,9 +38,10 @@
     "lint:workspaces": "npm run lint --workspaces --if-present",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "type-check": "npm run type-check --workspaces --if-present",
+    "type-check": "npm run type-check --workspaces --if-present && tsc -p scripts",
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
     "release": "npm run build && changeset publish",
+    "check:node-esm": "node scripts/check-node-esm.ts",
     "lint:packages": "for p in minuta minuta-react minuta-vue text-buffer input-state datefield input-dom fechita; do publint packages/$p || exit 1; done"
   },
   "devDependencies": {
@@ -54,6 +55,7 @@
     "oxlint": "^1.85.0",
     "oxlint-tsgolint": "^7.0.2002",
     "publint": "^0.3.12",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.13"
   },
   "engines": {
