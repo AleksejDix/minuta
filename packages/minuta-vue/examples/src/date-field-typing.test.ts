@@ -79,6 +79,17 @@ describe('<DateFieldRoot> typed dates', () => {
   })
 })
 
+describe('<DateFieldRoot> autofill', () => {
+  it('reads a value set without typing', { timeout: 5000 }, async () => {
+    expect.hasAssertions()
+    const field = await renderField('de-CH')
+    field.input.value = '2026-10-28'
+    field.input.dispatchEvent(new Event('input', { bubbles: true }))
+    expect(field.input.value).toBe('28.10.2026')
+    expect(field.date()).toStrictEqual(localDay('2026-10-28'))
+  })
+})
+
 describe('<DateFieldRoot> fixing typos', () => {
   afterEach(cleanup)
 
