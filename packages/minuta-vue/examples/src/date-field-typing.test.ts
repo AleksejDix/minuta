@@ -101,6 +101,15 @@ describe('<DateFieldRoot> fixing typos', () => {
     expect(input.value).toBe('28.11.2026')
   })
 
+  it('keeps the day while the month is retyped over', { timeout: 5000 }, async () => {
+    expect.hasAssertions()
+    const { input } = await renderField('de-CH')
+    typeText(input, '31122026')
+    select(input, MONTH_START)
+    typeText(input, '03')
+    expect(input.value).toBe('31.03.2026')
+  })
+
   it('overwrites the day from the start', { timeout: 5000 }, async () => {
     expect.hasAssertions()
     const { input } = await renderField('de-CH')
