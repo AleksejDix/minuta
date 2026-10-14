@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import type { UnitSpec } from "#src/types";
+import { firstOccurrence } from "#src/adapters/luxon/first-occurrence";
 
 const DAYS_PER_WEEK = 7;
 const LAST_DAY_OF_WEEK_OFFSET = 6;
@@ -44,9 +45,9 @@ function daysSinceWeekStart(
 // Count back from the date's own weekday, so a Sunday is the start of its own week
 function startOfWeekStartingOn(date: Readonly<Date>, isoWeekday: number): Date {
   const day = DateTime.fromJSDate(date).startOf("day");
-  return day
-    .minus({ days: daysSinceWeekStart(day.weekday, isoWeekday) })
-    .toJSDate();
+  return firstOccurrence(
+    day.minus({ days: daysSinceWeekStart(day.weekday, isoWeekday) }).toJSDate()
+  );
 }
 
 function endOfWeekStartingOn(date: Readonly<Date>, isoWeekday: number): Date {

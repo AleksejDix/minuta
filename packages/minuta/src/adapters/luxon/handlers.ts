@@ -5,6 +5,7 @@ import {
 } from "#src/adapters/elapsed-units";
 import { DateTime } from "luxon";
 import type { UnitSpec } from "#src/types";
+import { firstOccurrence } from "./first-occurrence";
 
 type LuxonUnit = "years" | "quarters" | "months" | "days";
 type LuxonStartOf = "year" | "quarter" | "month" | "day";
@@ -27,7 +28,7 @@ function handler(
     endOf: (date: Readonly<Date>): Date =>
       DateTime.fromJSDate(date).endOf(unit).toJSDate(),
     startOf: (date: Readonly<Date>): Date =>
-      DateTime.fromJSDate(date).startOf(unit).toJSDate(),
+      firstOccurrence(DateTime.fromJSDate(date).startOf(unit).toJSDate()),
   };
 }
 
