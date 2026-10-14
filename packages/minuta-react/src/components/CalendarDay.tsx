@@ -1,9 +1,4 @@
-import type {
-  JSX,
-  KeyboardEvent,
-  KeyboardEventHandler,
-  RefObject,
-} from "react";
+import type { JSX, KeyboardEvent, KeyboardEventHandler, Ref } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { Period } from "minuta/core";
 import { dayForKey } from "./day-navigation";
@@ -125,7 +120,7 @@ function useDayState(day: Period): DayState {
 function useKeyboardFocus(
   day: Period,
   isActive: boolean
-): RefObject<HTMLButtonElement> {
+): Ref<HTMLButtonElement> {
   const { takeFocus } = useCalendarContext();
   const button = useRef<HTMLButtonElement>(null);
   useEffect(() => {
