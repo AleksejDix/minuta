@@ -8,6 +8,7 @@
     "build": "astro build",
     "check:api": "node scripts/check-api-pages.ts",
     "check:links": "node scripts/check-links.ts",
+    "check:seo": "node scripts/check-seo.ts",
     "check:visuals": "node scripts/check-visuals.ts",
     "preview": "astro preview",
     "sync": "astro sync",
