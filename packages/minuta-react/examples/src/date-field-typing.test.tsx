@@ -7,7 +7,7 @@ import {
   select,
   typeText,
 } from "./date-field-test-utils";
-import { cleanup } from "@testing-library/react";
+import { cleanup, fireEvent } from "@testing-library/react";
 
 const EMPTY = "__.__.____";
 const OCT_28 = "28.10.2026";
@@ -76,6 +76,18 @@ describe("<DateFieldRoot> typed dates", () => {
     const { input } = renderField("de-CH");
     typeText(input, "29.02.2028");
     expect(input.value).toBe("29.02.2028");
+  });
+});
+
+describe("<DateFieldRoot> autofill", () => {
+  afterEach(cleanup);
+
+  it("reads a value set without typing", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const field = renderField("de-CH");
+    fireEvent.change(field.input, { target: { value: "2026-10-28" } });
+    expect(field.input.value).toBe("28.10.2026");
+    expect(field.date()).toStrictEqual(localDay("2026-10-28"));
   });
 });
 

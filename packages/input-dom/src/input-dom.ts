@@ -18,6 +18,7 @@ import {
   toggleMode,
 } from "input-state";
 import type { InputState } from "input-state";
+import { listenForText } from "./element-text";
 import { moveCursor } from "./cursor-keys";
 import { shownText } from "./shown-text";
 
@@ -216,6 +217,7 @@ function listen(
     },
     { signal }
   );
+  listenForText(element, session, signal);
   for (const type of ["select", "selectionchange"]) {
     element.addEventListener(
       type,
