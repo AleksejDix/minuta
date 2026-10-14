@@ -11,7 +11,8 @@ const MONTHS_PER_YEAR = 12;
 const DAYS_IN_LEAP_FEBRUARY = 29;
 const DAYS_PER_WEEK = 7;
 const HOURS_PER_DAY = 24;
-const DST_SHORT_DAY_HOURS = 23;
+const SHORTEST_DAY_HOURS = 22;
+const LONGEST_DAY_HOURS = 25;
 const LAST_HOUR = 23;
 const MINUTES_PER_HOUR = 60;
 const SECONDS_PER_MINUTE = 60;
@@ -20,6 +21,8 @@ const LAST_SECOND = 59;
 const FIRST_DAY = 1;
 const MIDNIGHT = 0;
 const ZERO = 0;
+const ONE_MS = 1;
+const LAST = -1;
 const DAY_15 = 15;
 const HOUR_14 = 14;
 const MINUTE_30 = 30;
@@ -237,19 +240,19 @@ describe.each(unitsCases)(
       () => {
         expect.hasAssertions();
         // Test spring forward (in US, typically March)
-        const marchDay = periodWith(units, new Date("2024-03-10T00:00"), "day");
+        const marchDay = periodWith(units, new Date("2024-03-10T12:00"), "day");
         const hours = divideWith(units, marchDay, "hour");
 
-        // DST spring-forward days have 23 hours in affected timezones, 24 otherwise
-        expect(hours.length).toBeGreaterThanOrEqual(DST_SHORT_DAY_HOURS);
-        expect(hours.length).toBeLessThanOrEqual(HOURS_PER_DAY);
+        // 22 (Troll) to 25 hours (Casablanca, back for Ramadan) in any zone
+        expect(hours.length).toBeGreaterThanOrEqual(SHORTEST_DAY_HOURS);
+        expect(hours.length).toBeLessThanOrEqual(LONGEST_DAY_HOURS);
 
-        // Hours should be continuous regardless of DST
+        // The hours cover the day exactly, each starting where the last ended
+        expect(required(hours[ZERO]).start).toStrictEqual(marchDay.start);
         for (const [previous, current] of adjacentPairs(hours)) {
-          expect(current.start.getTime()).toBeGreaterThan(
-            previous.start.getTime()
-          );
+          expect(current.start.getTime()).toBe(previous.end.getTime() + ONE_MS);
         }
+        expect(required(hours.at(LAST)).end).toStrictEqual(marchDay.end);
       }
     );
 
