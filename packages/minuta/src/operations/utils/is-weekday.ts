@@ -10,7 +10,7 @@ import { daysTouched } from "./days-touched";
  * isWeekdayWith(nativeUnits(), period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
  * isWeekdayWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 22), "day")); // true (a Sunday)
  *
- * @param units - Units whose `weekend` to use, with `day` and `week` specs
+ * @param units - Units whose `weekend` to use, with a `day` spec
  * @param period - The period to check
  * @returns True when the period touches no weekend day
  */
