@@ -34,12 +34,24 @@ function weekdayIn(date: Readonly<Date>, timeZone: string): number {
  * @param period - The period to walk
  * @returns The `Date#getDay()` number of each day touched
  */
+/**
+ * The weekday a date falls on in the units' time zone (the computer's when
+ * the units have none), as `Date#getDay()` numbers it.
+ *
+ * @param units - Units with an optional `timeZone`
+ * @param date - Any moment
+ * @returns 0 (Sunday) to 6 (Saturday)
+ */
+function weekdayWith(units: Units, date: Readonly<Date>): WeekdayNumber {
+  const timeZone =
+    units.timeZone ?? new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return toWeekdayNumber(weekdayIn(date, timeZone));
+}
+
 function daysTouched(units: Units, period: Period): WeekdayNumber[] {
   const day = specFor(units, "day");
   const firstDay = day.startOf(period.start);
-  const timeZone =
-    units.timeZone ?? new Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const first = weekdayIn(firstDay, timeZone);
+  const first = weekdayWith(units, firstDay);
   const count = Math.min(
     day.diff(firstDay, period.end) + ONE_DAY,
     DAYS_PER_WEEK
@@ -49,4 +61,4 @@ function daysTouched(units: Units, period: Period): WeekdayNumber[] {
   );
 }
 
-export { daysTouched };
+export { daysTouched, weekdayWith };

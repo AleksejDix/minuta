@@ -84,5 +84,5 @@ function weekendOf(options: WeekOptions): readonly WeekdayNumber[] {
   return options.weekend.map((day) => weekdayNumber(day));
 }
 
-export { DEFAULT_WEEK_START, DEFAULT_WEEKEND, weekStartOf, weekendOf };
+export { DEFAULT_WEEKEND, weekStartOf, weekendOf };
 export type { WeekOptions, Weekday, WeekdayNumber };
