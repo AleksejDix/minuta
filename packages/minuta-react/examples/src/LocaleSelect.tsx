@@ -1,9 +1,6 @@
-import type { JSX } from "react";
+import type { ChangeEvent, JSX } from "react";
+import { useCallback, useId } from "react";
 import { Label } from "@/components/ui/label";
-import { LocaleOptions } from "./LocaleOptions";
-import { LocaleTrigger } from "./LocaleTrigger";
-import { Select } from "@/components/ui/select";
-import { useId } from "react";
 
 type LocaleSelectProps = Readonly<{
   locale: string;
@@ -19,13 +16,28 @@ function LocaleSelect({
   onChange,
 }: LocaleSelectProps): JSX.Element {
   const id = useId();
+  const handleChange = useCallback(
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- React's synthetic events are mutable by design
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      onChange(event.target.value);
+    },
+    [onChange]
+  );
   return (
     <div className="grid gap-2">
       <Label htmlFor={id}>{LABEL}</Label>
-      <Select value={locale} onValueChange={onChange}>
-        <LocaleTrigger id={id} />
-        <LocaleOptions locales={locales} />
-      </Select>
+      <select
+        id={id}
+        value={locale}
+        onChange={handleChange}
+        className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30"
+      >
+        {locales.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
