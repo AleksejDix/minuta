@@ -107,7 +107,8 @@ Returns `{ valid: true, date, parts }` or
 | `AMBIGUOUS_MONTH`     | A word names different months in the loaded locales; pass `locale` |
 | `INVALID_DAY`         | The day does not exist in that month                               |
 | `INVALID_MONTH`       | The month is not 1–12                                              |
-| `INVALID_TIME`        | The time is out of range                                           |
+| `INVALID_OFFSET`      | The UTC offset is out of range (beyond ±23:59)                     |
+| `INVALID_TIME`        | The time is out of range (hours 0–23, minutes 0–59, seconds 0–60)  |
 | `NO_DATE`             | No day, month and year in the text                                 |
 | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date             |
 
