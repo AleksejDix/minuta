@@ -104,18 +104,6 @@ describe("<DateFieldRoot> fixing typos", () => {
     expect(field.date()).toStrictEqual(localDay("2027-10-28"));
   });
 
-  it(
-    "types into an empty field clicked past its end",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      const { input } = renderField("de-CH");
-      select(input, FIELD_END);
-      typeText(input, "28102026");
-      expect(input.value).toBe("28.10.2026");
-    }
-  );
-
   it("retypes a selected month", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { input } = renderField("de-CH");
@@ -142,6 +130,22 @@ describe("<DateFieldRoot> fixing typos", () => {
     typeText(input, "27");
     expect(input.value).toBe("27.10.2026");
   });
+});
+
+describe("<DateFieldRoot> an empty field", () => {
+  afterEach(cleanup);
+
+  it(
+    "types from the start when clicked past its end",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const { input } = renderField("de-CH");
+      select(input, FIELD_END);
+      typeText(input, "28102026");
+      expect(input.value).toBe("28.10.2026");
+    }
+  );
 });
 
 describe("<DateFieldRoot> deleting", () => {
