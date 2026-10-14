@@ -1,4 +1,4 @@
-import type { Context, RefObject } from "react";
+import type { Context, Ref } from "react";
 import { createContext, useContext } from "react";
 import type { InputState } from "input-state";
 
@@ -6,7 +6,7 @@ type DateFieldContextValue = Readonly<{
   /** The field's date, `undefined` while incomplete or invalid */
   date: Readonly<Date> | undefined;
   /** Ref for the `<input>` the controller attaches to */
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: Ref<HTMLInputElement>;
   /** The field state, mirrored from input-dom */
   state: InputState;
 }>;

@@ -189,6 +189,40 @@ jobs:
         env:
           TZ: ${{ matrix.tz }}
 
+  # minuta-react supports React 18 and 19; the jobs above run on 18
+  test-react-19:
+    name: Test (React 19)
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install React 19
+        run: >-
+          npm install --no-save -w minuta-react
+          react@19 react-dom@19 @types/react@19 @types/react-dom@19
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dist
+          path: packages/
+
+      - name: Type check
+        run: npm run type-check -w minuta-react
+
+      - name: Run tests
+        run: npx vitest run --project minuta-react
+        env:
+          TZ: Europe/Zurich
+
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
