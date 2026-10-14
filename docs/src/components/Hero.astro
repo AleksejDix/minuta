@@ -76,6 +76,14 @@ const tagline = heroTagline();
     padding-block: clamp(2rem, 6vw, 5rem) clamp(2rem, 5vw, 4rem);
   }
 
+  /*
+   * The glow reaches past the hero's edge; clip it at the full-width panel,
+   * i.e. the screen's edge, so the page never scrolls sideways
+   */
+  .content-panel:has(.almanac-hero) {
+    overflow-x: clip;
+  }
+
   .almanac-hero::before {
     content: "";
     position: absolute;
