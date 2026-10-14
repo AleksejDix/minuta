@@ -111,11 +111,36 @@ function typeFree(state: InputState, char: string): InputState {
  * @param char - Typed character
  * @returns The new state, or the same state when the character is rejected
  */
+/**
+ * The buffer with the cursor on the first slot when no slot is filled, so a
+ * typed character lands there wherever the cursor is: a click to the right
+ * of an empty field must not swallow every key.
+ *
+ * @param buffer - The field's buffer
+ * @param mask - The field's mask
+ * @returns The buffer, its cursor moved when the mask is empty
+ */
+function startOfEmpty(buffer: TextBuffer, mask: Mask): TextBuffer {
+  const isEmpty = slotPositions(mask).every(
+    (slot) => buffer.text[slot] === mask.placeholder
+  );
+  if (!isEmpty || !isCollapsed(buffer)) {
+    return buffer;
+  }
+  const first = firstEmptySlot(mask, buffer.text);
+  return select(buffer, first, first);
+}
+
 function typeChar(state: InputState, char: string): InputState {
   if (state.mask === undefined) {
     return typeFree(state, char);
   }
-  return withBuffer(state, typeIntoMask(state.buffer, state.mask, char));
+  const buffer = startOfEmpty(state.buffer, state.mask);
+  const typed = typeIntoMask(buffer, state.mask, char);
+  if (typed === buffer) {
+    return state;
+  }
+  return withBuffer(state, typed);
 }
 
 /**
