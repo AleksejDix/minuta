@@ -158,8 +158,16 @@ drag-and-drop alike.
 state's selection follows the element. This does not run `normalize` or call
 `onChange`.
 
-After every change from typing or a key, `normalize` runs, then the element is
-updated and `onChange` is called. When nothing changed (a rejected letter in a
+**Text set from outside.** Browser and password-manager autofill, WebDriver
+and Testing Library's `fireEvent.change` set the element's text without a
+`beforeinput`. On `input` and `change`, and on `blur` as a safety net, the
+element's text is compared with the state's. When they differ, it goes
+through `insert` into an empty state with the same mask, so an autofilled
+`2026-10-28` becomes `28.10.2026` with `typeDate`. Since every handled
+`beforeinput` is cancelled, these events change nothing while the user types.
+
+After every change from typing, a key or text set from outside, `normalize`
+runs, then the element is updated and `onChange` is called. When nothing changed (a rejected letter in a
 digit slot, say), `onChange` is not called.
 
 ## The block cursor
