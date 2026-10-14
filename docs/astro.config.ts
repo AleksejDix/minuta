@@ -53,7 +53,10 @@ const demoAlias: VitePlugin = {
 };
 
 const docs: AstroIntegration = starlight({
-  components: { Hero: "./src/components/Hero.astro" },
+  components: {
+    Header: "./src/components/Header.astro",
+    Hero: "./src/components/Hero.astro",
+  },
   customCss: ["./src/styles/global.css"],
   expressiveCode: {
     styleOverrides: {
