@@ -75,16 +75,16 @@ dependency.
 If your app already uses a date library, minuta can run on it. Import the
 adapter for that library:
 
-| Engine                   | Library                    | Import the adapter from |
-| ------------------------ | -------------------------- | ----------------------- |
-| date-fns                 | `date-fns`                 | `minuta/date-fns`       |
-| date-fns with time zones | `date-fns` + `date-fns-tz` | `minuta/date-fns-tz`    |
-| Luxon                    | `luxon`                    | `minuta/luxon`          |
-| Day.js                   | `dayjs`                    | `minuta/dayjs`          |
-| Moment                   | `moment`                   | `minuta/moment`         |
-| Temporal                 | `@js-temporal/polyfill`    | `minuta/temporal`       |
+| Engine                   | Library                     | Import the adapter from |
+| ------------------------ | --------------------------- | ----------------------- |
+| date-fns                 | `date-fns`                  | `minuta/date-fns`       |
+| date-fns with time zones | `date-fns` + `@date-fns/tz` | `minuta/date-fns-tz`    |
+| Luxon                    | `luxon`                     | `minuta/luxon`          |
+| Day.js                   | `dayjs`                     | `minuta/dayjs`          |
+| Moment                   | `moment`                    | `minuta/moment`         |
+| Temporal                 | `@js-temporal/polyfill`     | `minuta/temporal`       |
 
-date-fns, date-fns-tz, Luxon and the Temporal polyfill are optional
+date-fns, @date-fns/tz, Luxon and the Temporal polyfill are optional
 dependencies of minuta: npm installs them with minuta unless you pass
 `--omit=optional`. Day.js and Moment are not, so install them yourself:
 

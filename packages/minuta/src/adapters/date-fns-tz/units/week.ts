@@ -1,34 +1,19 @@
 import { add, differenceInWeeks, endOfWeek, startOfWeek } from "date-fns";
-import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import type { Day } from "date-fns";
 import type { UnitSpec } from "#src/types";
-import { fromZonedForward } from "#src/adapters/date-fns-tz/zoned-forward";
+import type { Zone } from "#src/adapters/date-fns-tz/handlers";
+import { instant } from "#src/adapters/date-fns-tz/handlers";
 
-function createWeekHandler(timezone: string, weekStartsOn: Day): UnitSpec {
+function createWeekHandler(zone: Zone, weekStartsOn: Day): UnitSpec {
+  const options = { in: zone.in, weekStartsOn };
   return {
-    add(date: Readonly<Date>, amount: number): Date {
-      const zonedDate = toZonedTime(date, timezone);
-      const resultInZone = add(zonedDate, { weeks: amount });
-      return fromZonedForward(resultInZone, timezone);
-    },
-
-    diff(from: Readonly<Date>, to: Readonly<Date>): number {
-      const fromZoned = toZonedTime(from, timezone);
-      const toZoned = toZonedTime(to, timezone);
-      return differenceInWeeks(toZoned, fromZoned);
-    },
-
-    endOf(date: Readonly<Date>): Date {
-      const zonedDate = toZonedTime(date, timezone);
-      const endInZone = endOfWeek(zonedDate, { weekStartsOn });
-      return fromZonedTime(endInZone, timezone);
-    },
-
-    startOf(date: Readonly<Date>): Date {
-      const zonedDate = toZonedTime(date, timezone);
-      const startInZone = startOfWeek(zonedDate, { weekStartsOn });
-      return fromZonedForward(startInZone, timezone);
-    },
+    add: (date: Readonly<Date>, amount: number): Date =>
+      instant(add(date, { weeks: amount }, zone)),
+    diff: (from: Readonly<Date>, to: Readonly<Date>): number =>
+      differenceInWeeks(to, from, zone),
+    endOf: (date: Readonly<Date>): Date => instant(endOfWeek(date, options)),
+    startOf: (date: Readonly<Date>): Date =>
+      instant(startOfWeek(date, options)),
   };
 }
 
