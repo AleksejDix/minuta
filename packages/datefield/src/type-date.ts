@@ -40,7 +40,7 @@ const DATE_PARTS: ReadonlySet<string> = new Set([
  */
 function finishedValue(seg: Segment, typed: string): string {
   const width = seg.end - seg.start;
-  if (seg.type === "year" && typed.length <= TWO_DIGITS) {
+  if (seg.type === "year" && width > TWO_DIGITS && typed.length <= TWO_DIGITS) {
     return String(fullYear(Number(typed), TWO_DIGITS)).padStart(
       width,
       ZERO_PAD
