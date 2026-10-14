@@ -9,17 +9,11 @@ import {
   yearHandler,
 } from "./units/index";
 import type { AllUnits } from "#src/types";
-import { Temporal } from "@js-temporal/polyfill";
 import type { WeekOptions } from "#src/weekday";
 import { adapterUnits } from "#src/adapters/adapter-units";
-import { hasTemporal } from "./temporal-api";
-
-if (!hasTemporal(globalThis)) {
-  Object.assign(globalThis, { Temporal });
-}
 
 /**
- * Unit specs for every unit, computed with the TC39 Temporal API (installs `@js-temporal/polyfill` when the runtime has no Temporal). Pass the result to
+ * Unit specs for every unit, computed with the TC39 Temporal API (falls back to `@js-temporal/polyfill` when the runtime has no Temporal, leaving `globalThis` alone). Pass the result to
  * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
  * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
  * (`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
@@ -36,10 +30,6 @@ if (!hasTemporal(globalThis)) {
  * @returns A spec for every unit
  */
 function temporalUnits(options: WeekOptions = {}): AllUnits {
-  if (!hasTemporal(globalThis)) {
-    throw new Error("Temporal API is not available in this environment.");
-  }
-
   return adapterUnits(options, (weekStartsOn) => ({
     day: dayHandler,
     hour: hourHandler,

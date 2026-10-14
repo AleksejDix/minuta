@@ -1,4 +1,5 @@
 import type { Temporal } from "@js-temporal/polyfill";
+import { Temporal as polyfill } from "@js-temporal/polyfill";
 
 type TemporalApi = typeof Temporal;
 
@@ -9,22 +10,21 @@ const MONTH_INDEX_OFFSET = 1;
  * @param scope - The object to inspect (usually `globalThis`)
  * @returns True when `scope.Temporal` is defined
  */
-function hasTemporal(
-  scope: Readonly<object>
-): scope is { Temporal: TemporalApi } {
+function hasTemporal(scope: object): scope is { Temporal: TemporalApi } {
   return "Temporal" in scope && scope.Temporal !== undefined;
 }
 
 /**
- * Read the Temporal implementation registered on `globalThis`.
- * @returns The global Temporal namespace
+ * Read the runtime's Temporal, falling back to `@js-temporal/polyfill`
+ * without touching `globalThis`.
+ * @returns The Temporal namespace
  */
 function getTemporal(): TemporalApi {
   const scope: object = globalThis;
-  if (!hasTemporal(scope)) {
-    throw new Error("Temporal API is not available in this environment.");
+  if (hasTemporal(scope)) {
+    return scope.Temporal;
   }
-  return scope.Temporal;
+  return polyfill;
 }
 
 /**
@@ -40,4 +40,4 @@ function toPlainDate(date: Readonly<Date>): Temporal.PlainDate {
   });
 }
 
-export { getTemporal, hasTemporal, toPlainDate };
+export { getTemporal, toPlainDate };

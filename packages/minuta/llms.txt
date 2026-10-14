@@ -1075,7 +1075,7 @@ time.period(new Date(), "week");
 temporalUnits(options: WeekOptions = {}): AllUnits
 ```
 
-Unit specs for every unit, computed with the TC39 Temporal API (installs `@js-temporal/polyfill` when the runtime has no Temporal). Pass the result to
+Unit specs for every unit, computed with the TC39 Temporal API (falls back to `@js-temporal/polyfill` when the runtime has no Temporal, leaving `globalThis` alone). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
 (`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
