@@ -42,17 +42,17 @@ time zone, or the date library your app already uses.
 
 ## The engines
 
-| Function                                  | Entry                | Library to install        | Time zone                                  | Pick it when                                   |
-| ----------------------------------------- | -------------------- | ------------------------- | ------------------------------------------ | ---------------------------------------------- |
-| [`nativeUnits`](../native-units/)         | `minuta/native`      | none                      | the computer's                             | you want no dependencies — the default choice. |
-| [`dateFnsUnits`](../date-fns-units/)      | `minuta/date-fns`    | `date-fns`                | the computer's                             | your app uses date-fns.                        |
-| [`dateFnsTzUnits`](../date-fns-tz-units/) | `minuta/date-fns-tz` | `date-fns`, `date-fns-tz` | **any IANA zone you choose** (default UTC) | you need one fixed zone, e.g. on a server.     |
-| [`luxonUnits`](../luxon-units/)           | `minuta/luxon`       | `luxon`                   | Luxon's default (the computer's)           | your app uses Luxon.                           |
-| [`dayjsUnits`](../dayjs-units/)           | `minuta/dayjs`       | `dayjs`                   | the computer's                             | your app uses Day.js.                          |
-| [`momentUnits`](../moment-units/)         | `minuta/moment`      | `moment`                  | the computer's                             | an existing app uses Moment.                   |
-| [`temporalUnits`](../temporal-units/)     | `minuta/temporal`    | `@js-temporal/polyfill`   | the computer's                             | you are moving to Temporal.                    |
+| Function                                  | Entry                | Library to install         | Time zone                                  | Pick it when                                   |
+| ----------------------------------------- | -------------------- | -------------------------- | ------------------------------------------ | ---------------------------------------------- |
+| [`nativeUnits`](../native-units/)         | `minuta/native`      | none                       | the computer's                             | you want no dependencies — the default choice. |
+| [`dateFnsUnits`](../date-fns-units/)      | `minuta/date-fns`    | `date-fns`                 | the computer's                             | your app uses date-fns.                        |
+| [`dateFnsTzUnits`](../date-fns-tz-units/) | `minuta/date-fns-tz` | `date-fns`, `@date-fns/tz` | **any IANA zone you choose** (default UTC) | you need one fixed zone, e.g. on a server.     |
+| [`luxonUnits`](../luxon-units/)           | `minuta/luxon`       | `luxon`                    | Luxon's default (the computer's)           | your app uses Luxon.                           |
+| [`dayjsUnits`](../dayjs-units/)           | `minuta/dayjs`       | `dayjs`                    | the computer's                             | your app uses Day.js.                          |
+| [`momentUnits`](../moment-units/)         | `minuta/moment`      | `moment`                   | the computer's                             | an existing app uses Moment.                   |
+| [`temporalUnits`](../temporal-units/)     | `minuta/temporal`    | `@js-temporal/polyfill`    | the computer's                             | you are moving to Temporal.                    |
 
-`date-fns`, `date-fns-tz`, `luxon` and `@js-temporal/polyfill` are optional
+`date-fns`, `@date-fns/tz`, `luxon` and `@js-temporal/polyfill` are optional
 dependencies of minuta. `dayjs` and `moment` are not; install them yourself.
 
 ## Same options everywhere

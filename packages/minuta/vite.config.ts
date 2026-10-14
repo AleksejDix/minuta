@@ -30,7 +30,7 @@ export default defineConfig({
         "dayjs",
         "dayjs/plugin/quarterOfYear",
         "date-fns",
-        "date-fns-tz",
+        "@date-fns/tz",
         "luxon",
         "moment",
         "@js-temporal/polyfill",
