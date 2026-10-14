@@ -22,6 +22,13 @@ pre-commit:
       run: node scripts/npmjs-lockfile.ts
       stage_fixed: true
 
+# Conventional Commits, as .commitlintrc.json defines them; CI checks every
+# commit of a pull request again
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: npx commitlint --edit {1}
+
 pre-push:
   parallel: true
   jobs:

@@ -7,6 +7,29 @@ on:
     branches: [master]
 
 jobs:
+  commits:
+    name: Commit messages
+    # Every commit a pull request adds; local hooks can be skipped
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check Conventional Commits
+        run: >-
+          npx commitlint --verbose
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+
   build:
     name: Build
     runs-on: ubuntu-latest

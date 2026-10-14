@@ -1,0 +1,23 @@
+{
+  "extends": ["@commitlint/config-conventional"],
+  "rules": {
+    "scope-enum": [
+      2,
+      "always",
+      [
+        "datefield",
+        "deps",
+        "docs",
+        "fechita",
+        "input-dom",
+        "input-state",
+        "minuta",
+        "minuta-react",
+        "minuta-vue",
+        "text-buffer",
+        "tsconfig"
+      ]
+    ],
+    "trailer-exists": [2, "never", "Co-authored-by:"]
+  }
+}
