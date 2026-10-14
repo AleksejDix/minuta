@@ -1,0 +1,15 @@
+---
+/*
+ * Starlight's header, plus a menu on pages without a sidebar (the home
+ * page). Starlight puts its mobile menu in the sidebar, so a splash page
+ * otherwise has no way to the guide, the API, GitHub or the theme on a
+ * phone.
+ */
+import Default from "@astrojs/starlight/components/Header.astro";
+import SiteMenu from "./SiteMenu.astro";
+
+const { hasSidebar } = Astro.locals.starlightRoute;
+---
+
+<Default><slot /></Default>
+{!hasSidebar && <SiteMenu />}
