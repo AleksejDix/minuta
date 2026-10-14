@@ -41,6 +41,9 @@ jobs:
       - name: Check that every internal link resolves
         run: npm run check:links -w minuta-docs
 
+      - name: Check titles, descriptions and structured data
+        run: npm run check:seo -w minuta-docs
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/dist
