@@ -1,5 +1,10 @@
 import type { Unit, UnitSpec, Units } from "#src/types";
-import { assertPositiveInteger, assertValidDate, specFor } from "#src/units";
+import {
+  assertPositiveInteger,
+  assertValidDate,
+  endFrom,
+  specFor,
+} from "#src/units";
 
 const DEFAULT_STEP = 1;
 const ONE = 1;
@@ -42,9 +47,14 @@ type StepContext = Readonly<{
 /** Where steps are counted from, and where the last one ends at the latest. */
 type Grid = Readonly<{ anchor: Readonly<Date>; limit?: Readonly<Date> }>;
 
+/*
+ * The next unit starts the moment after this one ends: one unit after a
+ * day that starts at 01:00 (Azores, Mar 29 2026) is 01:00, an hour into a
+ * day that starts at midnight.
+ */
 function unitBounds(spec: UnitSpec, date: Readonly<Date>): Bounds {
   const floor = spec.startOf(date);
-  return { floor, next: spec.add(floor, ONE) };
+  return { floor, next: new Date(endFrom(spec, floor).getTime() + ONE) };
 }
 
 function gridOf(ctx: StepContext): Grid {

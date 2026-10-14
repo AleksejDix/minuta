@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SnapMode } from "./snap";
 import type { Unit } from "#src/types";
+import { dateFnsTzUnits } from "#src/date-fns-tz";
 import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
 import { snapWith } from "./snap";
 
@@ -8,7 +9,17 @@ const QUARTER_HOUR = 15;
 const TWO = 2;
 const SEVEN = 7;
 const TEN = 10;
-const MIDNIGHT = 0;
+const ONE_MS = 1;
+
+// The date of the moment right before `date`
+function dayBefore(date: Readonly<Date>): number {
+  return new Date(date.getTime() - ONE_MS).getDate();
+}
+
+// Whether `date` is the first moment of its day on the computer's clock
+function isDayStart(date: Readonly<Date>): boolean {
+  return dayBefore(date) !== date.getDate();
+}
 
 type SnapCase = Readonly<{
   date: string;
@@ -207,12 +218,58 @@ describe.each(unitsCases)(
         const date = new Date(iso);
         const start = snapWith(units, date, "day", { mode: "floor" });
         const end = snapWith(units, date, "day", { mode: "ceil" });
-        expect([
-          start.getHours(),
-          start.getDate(),
-          end.getHours(),
-        ]).toStrictEqual([MIDNIGHT, date.getDate(), MIDNIGHT]);
+        // Day starts, not midnights: in Beirut and the Azores these days start at 01:00
+        expect([start.getDate(), isDayStart(start)]).toStrictEqual([
+          date.getDate(),
+          true,
+        ]);
+        expect([dayBefore(end), isDayStart(end)]).toStrictEqual([
+          date.getDate(),
+          true,
+        ]);
       }
+    });
+  }
+);
+
+// Days that start at 01:00 because the clocks jump at midnight
+const NO_MIDNIGHT: readonly Readonly<{
+  next: string;
+  noon: string;
+  start: string;
+  timeZone: string;
+}>[] = [
+  {
+    next: "2026-03-30T00:00:00Z",
+    noon: "2026-03-29T12:00:00Z",
+    start: "2026-03-29T01:00:00Z",
+    timeZone: "Atlantic/Azores",
+  },
+  {
+    next: "2024-03-31T21:00:00Z",
+    noon: "2024-03-31T09:00:00Z",
+    start: "2024-03-30T22:00:00Z",
+    timeZone: "Asia/Beirut",
+  },
+];
+
+describe.each(NO_MIDNIGHT)(
+  "snapWith() on a day without a midnight in $timeZone",
+  ({ next, noon, start, timeZone }) => {
+    const units = dateFnsTzUnits({ timeZone });
+
+    it("floors to the day's first moment", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      expect(
+        snapWith(units, new Date(noon), "day", { mode: "floor" })
+      ).toStrictEqual(new Date(start));
+    });
+
+    it("ceils to the next day's start", { timeout: 5000 }, () => {
+      expect.hasAssertions();
+      expect(
+        snapWith(units, new Date(noon), "day", { mode: "ceil" })
+      ).toStrictEqual(new Date(next));
     });
   }
 );
