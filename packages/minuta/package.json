@@ -148,7 +148,7 @@
       "import": "{ dateFnsTzUnits }",
       "ignore": [
         "date-fns",
-        "date-fns-tz"
+        "@date-fns/tz"
       ],
       "limit": "5 kB"
     },
@@ -207,9 +207,9 @@
     "vitest": "^4.0.13"
   },
   "optionalDependencies": {
+    "@date-fns/tz": "^1.5.0",
     "@js-temporal/polyfill": "^0.5.1",
     "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.0.0",
     "luxon": "^3.5.0"
   },
   "keywords": [
