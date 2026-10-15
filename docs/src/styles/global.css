@@ -346,7 +346,8 @@ h1#_top {
 
 @media (max-width: 50rem) {
   .almanac-strip {
-    grid-template-columns: 1fr;
+    /* minmax(0, …) lets the code block scroll instead of widening the page */
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .almanac-ideas article {
