@@ -16,14 +16,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { DateFormat } from "datefield";
 import type { InputController } from "input-dom";
 import type { InputState } from "input-state";
-import type { RefObject } from "react";
+import type { Ref } from "react";
 import { attachInput } from "input-dom";
 import { createInputState } from "input-state";
 import { parseDate } from "fechita";
 
 type DateField = Readonly<{
   date: Readonly<Date> | undefined;
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: Ref<HTMLInputElement>;
   setDate: (date: Readonly<Date>) => void;
   state: InputState;
 }>;
@@ -134,7 +134,7 @@ function useDateField(
   initialDate: Readonly<Date> | undefined
 ): DateField {
   const inputRef = useRef<HTMLInputElement>(null);
-  const controller = useRef<InputController>();
+  const controller = useRef<InputController | null>(null);
   const lastDate = useRef<Readonly<Date> | undefined>(initialDate);
   const format = useMemo(() => deriveFormat(locale), [locale]);
   const [state, setState] = useState(() =>
@@ -170,7 +170,7 @@ function useDateField(
   function setDate(date: Readonly<Date>): void {
     const next = fieldFor(format, date, locale);
     lastDate.current = date;
-    if (controller.current !== undefined) {
+    if (controller.current !== null) {
       controller.current.setState(next);
     }
     setState(next);
