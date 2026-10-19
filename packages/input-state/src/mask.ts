@@ -2,7 +2,9 @@
  * Masks: a fixed sequence of literal characters and typed slots.
  *
  * Pattern syntax: `9` digit, `A` letter, `*` letter or digit, `\x` literal x,
- * anything else is a literal. Masks are plain data and survive JSON.
+ * anything else is a literal. A choice (such as AM/PM) holds one of a few
+ * fixed texts; build its tokens with `choiceTokens`. Masks are plain data and
+ * survive JSON.
  */
 
 const DEFAULT_PLACEHOLDER = "_";
@@ -12,7 +14,9 @@ type CharClass = "alphanumeric" | "digit" | "letter";
 
 type MaskToken =
   | Readonly<{ char: string; kind: "literal" }>
-  | Readonly<{ accepts: CharClass; kind: "slot" }>;
+  | Readonly<{ accepts: CharClass; kind: "slot" }>
+  /** One position of a choice; `offset` counts from the choice's first */
+  | Readonly<{ kind: "choice"; offset: number; options: readonly string[] }>;
 
 type Mask = Readonly<{
   placeholder: string;
@@ -63,6 +67,43 @@ function parseMask(
   return { placeholder, tokens };
 }
 
+// Fills a shorter option to the choice's width
+const CHOICE_PAD = "\u00A0";
+
+/**
+ * The tokens of a choice between fixed texts, one per character of the
+ * longest: `["AM", "PM"]` takes two positions. Shorter options are padded
+ * with a no-break space. Typing a character picks the option it starts, or
+ * the one whose first differing character it is.
+ *
+ * @example
+ * const time = parseMask("99:99 ");
+ * const mask = { ...time, tokens: [...time.tokens, ...choiceTokens(["AM", "PM"])] };
+ *
+ * @param options - The texts to choose from, in order
+ * @returns One token per position
+ */
+function choiceTokens(options: readonly string[]): MaskToken[] {
+  const width = Math.max(...options.map((option) => option.length));
+  return Array.from({ length: width }, (_unused, offset) => ({
+    kind: "choice",
+    offset,
+    options,
+  }));
+}
+
+/**
+ * An option as the choice shows it: padded to the width of the longest.
+ *
+ * @param options - The choice's options
+ * @param option - One of them
+ * @returns The option's text, as wide as the choice
+ */
+function paddedOption(options: readonly string[], option: string): string {
+  const width = Math.max(...options.map((each) => each.length));
+  return option.padEnd(width, CHOICE_PAD);
+}
+
 /**
  * Text of a mask with every slot empty, e.g. `__.__.____`.
  *
@@ -81,7 +122,7 @@ function emptyText(mask: Mask): string {
 }
 
 /**
- * Text positions of all slots, in order.
+ * Text positions of all slots, choices included, in order.
  *
  * @param mask - Mask to inspect
  * @returns Slot positions
@@ -89,7 +130,7 @@ function emptyText(mask: Mask): string {
 function slotPositions(mask: Mask): number[] {
   const positions: number[] = [];
   for (const [position, token] of mask.tokens.entries()) {
-    if (token.kind === "slot") {
+    if (token.kind !== "literal") {
       positions.push(position);
     }
   }
@@ -154,5 +195,13 @@ function slotChar(charClass: CharClass, char: string): string | undefined {
   return char;
 }
 
-export { accepts, emptyText, parseMask, slotChar, slotPositions };
+export {
+  accepts,
+  choiceTokens,
+  emptyText,
+  paddedOption,
+  parseMask,
+  slotChar,
+  slotPositions,
+};
 export type { CharClass, Mask, MaskToken };
