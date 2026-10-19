@@ -17,7 +17,7 @@ function preventReport(event: Event): void {
 
 function suppressErrorOutput(run: () => void): void {
   const consoleError = vi.spyOn(console, "error").mockImplementation(silence);
-  // An unhandled window error event is printed to stderr by jsdom
+  // React reports the error as a window error event; it is expected here
   globalThis.addEventListener("error", preventReport);
   try {
     run();
