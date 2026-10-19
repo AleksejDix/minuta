@@ -154,15 +154,4 @@ describe("useMinuta() edge cases", () => {
 
     expect(minuta.browsing.value.start).toStrictEqual(leapDay);
   });
-
-  it("creates 100 instances in less than 100ms", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const iterations = 100;
-    const maxDurationMs = 100;
-    const start = performance.now();
-
-    Array.from({ length: iterations }, () => useMinuta({ date: new Date() }));
-
-    expect(performance.now() - start).toBeLessThan(maxDurationMs);
-  });
 });

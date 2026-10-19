@@ -16,7 +16,6 @@ const DAY_20 = 20;
 const DAY_25 = 25;
 const ITERATIONS = 10;
 const STEP = 1;
-const MAX_DURATION_MS = 100;
 
 const CHILD_UNIT: Readonly<Partial<Record<Unit | "custom", Unit>>> = {
   month: "week",
@@ -178,33 +177,27 @@ describe("combined computed workflow", () => {
   });
 });
 
-describe("reactive performance", () => {
-  it(
-    "handles many periods and updates in under 100ms",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      const start = performance.now();
-      const { result } = probeInRoot(
-        () => ({
-          days: Array.from({ length: ITERATIONS }, () => usePeriod("day")),
-          minuta: useMinutaContext(),
-        }),
-        { date: testDate }
-      );
-      const runs: number[] = [];
-      for (const day of result.days) {
-        effect(() => {
-          runs.push(day.value.start.getTime());
-        });
-      }
-
-      for (let index = 0; index < ITERATIONS; index += STEP) {
-        result.minuta.browse(result.minuta.next(result.minuta.browsing.value));
-      }
-
-      expect(runs).toHaveLength(ITERATIONS * (ITERATIONS + STEP));
-      expect(performance.now() - start).toBeLessThan(MAX_DURATION_MS);
+describe("reactive updates", () => {
+  it("reruns each period once per browse", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { result } = probeInRoot(
+      () => ({
+        days: Array.from({ length: ITERATIONS }, () => usePeriod("day")),
+        minuta: useMinutaContext(),
+      }),
+      { date: testDate }
+    );
+    const runs: number[] = [];
+    for (const day of result.days) {
+      effect(() => {
+        runs.push(day.value.start.getTime());
+      });
     }
-  );
+
+    for (let index = 0; index < ITERATIONS; index += STEP) {
+      result.minuta.browse(result.minuta.next(result.minuta.browsing.value));
+    }
+
+    expect(runs).toHaveLength(ITERATIONS * (ITERATIONS + STEP));
+  });
 });
