@@ -74,7 +74,12 @@ function offsetMinutes(sign: number, hours: number, minutes: number): number {
   if (hours > MAX_HOUR || minutes > MAX_MINUTE) {
     return Number.NaN;
   }
-  return sign * (hours * MINUTES_PER_HOUR + minutes);
+  const total = hours * MINUTES_PER_HOUR + minutes;
+  // -00:00 is UTC too; a sign times zero would give -0
+  if (total === NONE) {
+    return NONE;
+  }
+  return sign * total;
 }
 
 /**

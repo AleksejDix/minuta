@@ -44,16 +44,16 @@ if (!result.valid && result.errorCodes.includes(ParseError.AmbiguousDayMonth)) {
 A plain object. Each name maps to the code string that appears in
 `errorCodes`.
 
-| Name                | Code                  | When                                                                                     |
-| ------------------- | --------------------- | ---------------------------------------------------------------------------------------- |
-| `AmbiguousDayMonth` | `AMBIGUOUS_DAY_MONTH` | The numbers make more than one real date (`04/05/2026`). Pass `order` or `locale`.       |
-| `AmbiguousMonth`    | `AMBIGUOUS_MONTH`     | A month word means different months in the loaded languages (`listopad`). Pass `locale`. |
-| `InvalidDay`        | `INVALID_DAY`         | The day does not exist in that month: 31 April, 29 February 2026.                        |
-| `InvalidMonth`      | `INVALID_MONTH`       | The month is not 1–12.                                                                   |
-| `InvalidOffset`     | `INVALID_OFFSET`      | The UTC offset is out of range: `+25:00`, `+10:75`. At most ±23:59.                      |
-| `InvalidTime`       | `INVALID_TIME`        | The time is out of range: `25:00`, `24:00`, `10:61`.                                     |
-| `NoDate`            | `NO_DATE`             | No day, month and year were found in the text.                                           |
-| `WeekdayMismatch`   | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                                  |
+| Name                | Code                  | When                                                                                                    |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `AmbiguousDayMonth` | `AMBIGUOUS_DAY_MONTH` | The numbers make more than one real date (`04/05/2026`). Pass `order` or `locale`.                      |
+| `AmbiguousMonth`    | `AMBIGUOUS_MONTH`     | A month word means different months in the loaded languages (`listopad`). Pass `locale`.                |
+| `InvalidDay`        | `INVALID_DAY`         | The day does not exist in that month: 31 April, 29 February 2026.                                       |
+| `InvalidMonth`      | `INVALID_MONTH`       | The month is not 1–12.                                                                                  |
+| `InvalidOffset`     | `INVALID_OFFSET`      | The UTC offset is out of range: `+25:00`, `+10:75`. At most ±23:59.                                     |
+| `InvalidTime`       | `INVALID_TIME`        | The time is out of range (`25:00`, `24:00`, `10:61`), or an ISO 8601 time is malformed (`T10:04:05.Z`). |
+| `NoDate`            | `NO_DATE`             | No day, month and year were found in the text.                                                          |
+| `WeekdayMismatch`   | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                                                 |
 
 Each constant with a text that makes `parseDate` report it. The codes on the
 right are what `parseDate` returned for that text:
