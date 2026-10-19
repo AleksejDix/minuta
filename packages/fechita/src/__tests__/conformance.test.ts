@@ -118,6 +118,20 @@ const ISO_8601: readonly Read[] = [
     parts: at(DAY, { hour: 10, offsetMinutes: PLUS_TWO }),
     text: "2026-10-13T10+02",
   },
+  // Ordinal dates: the day of the year
+  { parts: DAY, text: "2026-286" },
+  { parts: DAY, text: "2026286" },
+  { parts: { day: 1, month: 1, year: 2026 }, text: "2026-001" },
+  { parts: { day: 31, month: 12, year: 2028 }, text: "2028-366" },
+  {
+    parts: at(TEN_FOUR_FIVE, { offsetMinutes: UTC }),
+    text: "2026-286T10:04:05Z",
+  },
+  {
+    parts: at(TEN_FOUR, { offsetMinutes: PLUS_TWO }),
+    text: "2026286T1004+0200",
+  },
+  { parts: DAY, text: "+002026-286" },
   // Expanded years, astronomical numbering: -0044 is 45 BC
   { parts: DAY, text: "+002026-10-13" },
   { parts: { day: 15, month: 3, year: -44 }, text: "-000044-03-15" },
@@ -138,6 +152,12 @@ const REJECTED: readonly Rejected[] = [
   { code: ParseError.InvalidTime, text: "2026-10-13T24:00:00" },
   // Malformed: a decimal sign without digits
   { code: ParseError.InvalidTime, text: "2026-10-13T10:04:05.Z" },
+  // Ordinal dates: 2026 has 365 days
+  { code: ParseError.InvalidDay, text: "2026-366" },
+  { code: ParseError.InvalidDay, text: "2026-000" },
+  { code: ParseError.InvalidDay, text: "2026366" },
+  { code: ParseError.InvalidTime, text: "2026-286T25:00" },
+  { code: ParseError.InvalidTime, text: "2026-286T10:04:05.Z" },
   // A time alone: fechita reads dates
   { code: ParseError.NoDate, text: "10:04" },
   { code: ParseError.NoDate, text: "10:04:05Z" },
@@ -148,8 +168,6 @@ const REJECTED: readonly Rejected[] = [
 const PLANNED: readonly (Read & Readonly<{ issue: string }>)[] = [
   { issue: "#141", parts: DAY, text: "2026-W42-2" },
   { issue: "#141", parts: DAY, text: "2026W422" },
-  { issue: "#141", parts: DAY, text: "2026-286" },
-  { issue: "#141", parts: DAY, text: "2026286" },
 ];
 
 describe.each([
