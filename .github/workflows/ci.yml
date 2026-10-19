@@ -141,7 +141,7 @@ jobs:
 
       - run: npm ci
 
-      # input-dom runs its tests in real browsers
+      # input-dom and minuta-react run their tests in real browsers
       - name: Install browsers
         run: npx playwright install --with-deps chromium firefox webkit
 
@@ -204,8 +204,11 @@ jobs:
       - name: Type check
         run: npm run type-check -w minuta-react
 
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
       - name: Run tests
-        run: npx vitest run --project minuta-react
+        run: npx vitest run --project "minuta-react (*)"
         env:
           TZ: Europe/Zurich
 
