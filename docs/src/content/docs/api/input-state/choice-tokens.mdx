@@ -1,0 +1,104 @@
+---
+title: choiceTokens
+description: Mask tokens for a choice between a few fixed texts, such as AM and PM — typing one letter writes the whole text.
+---
+
+import {
+  choiceTokens,
+  createInputState,
+  parseMask,
+  typeChar,
+} from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const time = parseMask("99:99 ");
+export const mask = {
+  placeholder: time.placeholder,
+  tokens: [...time.tokens, ...choiceTokens(["AM", "PM"])],
+};
+export const typed = (keys) =>
+  [...keys].reduce(
+    (state, key) => typeChar(state, key),
+    createInputState({ mask })
+  );
+export const empty = createInputState({ mask });
+export const pm = typed("1030p");
+
+Build the mask tokens of a choice between a few fixed texts, such as `AM` and
+`PM`. The choice takes one position per character, like other slots, but is
+always written and cleared whole: typing `p` writes `PM`.
+
+```ts
+import { choiceTokens } from "input-state";
+```
+
+```ts
+choiceTokens(options);
+```
+
+## Example
+
+```ts
+import {
+  choiceTokens,
+  createInputState,
+  parseMask,
+  typeChar,
+} from "input-state";
+
+const time = parseMask("99:99 ");
+const mask = {
+  placeholder: time.placeholder,
+  tokens: [...time.tokens, ...choiceTokens(["AM", "PM"])],
+};
+
+let field = createInputState({ mask });
+for (const key of "1030p") field = typeChar(field, key);
+field.buffer.text; // → "10:30 PM"
+```
+
+<FieldDiagram
+  {...empty.buffer.selection}
+  text={empty.buffer.text}
+  mode={empty.mode}
+  caption="Empty: the choice shows a placeholder in each of its two positions."
+/>
+
+<FieldDiagram
+  {...pm.buffer.selection}
+  text={pm.buffer.text}
+  mode={pm.mode}
+  caption="After typing 1030p: the p wrote all of PM, and the cursor moved past it."
+/>
+
+## Parameters
+
+| Name      | What it is                          |
+| --------- | ----------------------------------- |
+| `options` | The texts to choose from, in order. |
+
+## Returns
+
+One token per character of the longest option. A shorter option is padded with
+a no-break space, so `["PG", "PTG"]` takes three positions and writes `PG` as
+`PG` plus a no-break space.
+
+## Which character picks which option
+
+1. The only option the character starts, ignoring case: `p` → `PM`.
+2. Otherwise the only option whose first differing character it is. `午前` and
+   `午後` both start with `午`, so `後` picks `午後` and `午` picks neither.
+3. Otherwise, with two options, `a` picks the first and `p` the second.
+
+A character that picks nothing is ignored, like a letter in a digit slot.
+
+## Editing
+
+Backspace, Delete and a selection that touches the choice clear all of it.
+[`paste`](../paste/) and a starting `value` fill it the same way typing does:
+`"10:30 pm"` and `"1030pm"` both give `10:30 PM`.
+
+## Related
+
+- [`parseMask`](../parse-mask/) — the digit and letter slots around it.
+- [`emptyText`](../empty-text/) — the text with every slot empty.
