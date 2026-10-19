@@ -1,0 +1,98 @@
+---
+title: checkDate
+description: Report why a date field's date is not allowed — before min, after max or unavailable — without blocking what the user types.
+---
+
+import { DateProblem, checkDate, deriveFormat, parseSegments } from "datefield";
+
+export const format = deriveFormat("de-CH");
+export const rules = {
+  max: new Date("2026-12-31T00:00"),
+  min: new Date("2026-01-01T00:00"),
+};
+export const early = checkDate(parseSegments(format, "31.12.2025"), rules);
+export const fine = checkDate(parseSegments(format, "15.06.2026"), rules);
+
+Report why the date in a field is not allowed: before `min`, after `max`, or a
+day your `isUnavailable` rejects. The field never blocks what the user types or
+steps to with the arrow keys; it tells you, so you can mark it invalid and show a
+message.
+
+```ts
+import { checkDate } from "datefield";
+```
+
+```ts
+checkDate(segments, { min, max, isUnavailable });
+```
+
+## Example
+
+```ts
+import { DateProblem, checkDate, deriveFormat, parseSegments } from "datefield";
+
+const format = deriveFormat("de-CH");
+const rules = {
+  max: new Date("2026-12-31T00:00"),
+  min: new Date("2026-01-01T00:00"),
+};
+
+checkDate(parseSegments(format, "31.12.2025"), rules); // → "BEFORE_MIN"
+checkDate(parseSegments(format, "15.06.2026"), rules); // → undefined
+```
+
+Here: `"31.12.2025"` → `{String(early)}`, `"15.06.2026"` → `{String(fine)}`.
+
+## Parameters
+
+| Name       | What it is                                                        |
+| ---------- | ----------------------------------------------------------------- |
+| `segments` | The field's segments, from [`parseSegments`](../parse-segments/). |
+| `rules`    | The allowed dates, below. Every rule is optional.                 |
+
+| Rule            | What it is                                                       |
+| --------------- | ---------------------------------------------------------------- |
+| `min`           | The earliest allowed date, inclusive.                            |
+| `max`           | The latest allowed date, inclusive.                              |
+| `isUnavailable` | A function that returns `true` for a date that cannot be picked. |
+
+## Returns
+
+One of the codes below, or `undefined` when the date is allowed. An unfinished
+or impossible date (`15.06.19__`, `31.02.2026`) also returns `undefined`: there is
+no date to check yet, and [`toDate`](../to-date/) tells you that part.
+
+| Constant                  | Code          | When                             |
+| ------------------------- | ------------- | -------------------------------- |
+| `DateProblem.BeforeMin`   | `BEFORE_MIN`  | The date is before `min`.        |
+| `DateProblem.AfterMax`    | `AFTER_MAX`   | The date is after `max`.         |
+| `DateProblem.Unavailable` | `UNAVAILABLE` | `isUnavailable` returned `true`. |
+
+The limits are checked first, so a Saturday before `min` reports
+`BEFORE_MIN`.
+
+## Days or moments
+
+A field without a time compares whole days: `min` and `max` allow their whole
+day, so `min: new Date()` means "from today", whatever the time now. A field with
+an hour, minute or second compares exact moments.
+
+```ts
+// Weekdays from today on
+const rules = {
+  isUnavailable: (date) => date.getDay() === 0 || date.getDay() === 6,
+  min: new Date(),
+};
+```
+
+## Mark the field invalid
+
+```ts
+const problem = checkDate(parseSegments(format, element.value), rules);
+element.setAttribute("aria-invalid", String(problem !== undefined));
+```
+
+## Related
+
+- [`toDate`](../to-date/) — read the date the rules are checked against.
+- [`parseSegments`](../parse-segments/) — get the segments of the field's text.
