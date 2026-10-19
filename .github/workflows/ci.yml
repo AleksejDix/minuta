@@ -6,8 +6,8 @@ on:
   push:
     branches: [master]
 
-# Lint and tests read the packages' sources through the @minuta/source
-# export condition, so only the jobs that check builds wait for the build
+# Tests read the packages' sources through the @minuta/source export
+# condition, so they do not wait for the build
 jobs:
   commits:
     name: Commit messages
@@ -58,6 +58,9 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    # Type-aware lint checks test files outside any tsconfig, so their imports
+    # of other packages resolve to the built types
+    needs: [build]
     steps:
       - uses: actions/checkout@v4
 
@@ -67,6 +70,12 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dist
+          path: packages/
 
       # Type-aware lint rules read astro:content's types, which Astro generates
       - name: Generate Astro types
