@@ -5,19 +5,27 @@
 
 import { clockProblem, offsetMinutes, problemOf } from "./date";
 import { failure, success } from "./choose";
+import { ParseError } from "./errors";
 import type { ParseResult } from "./choose";
 import type { Reading } from "./candidates";
 import { groupsOf } from "./regex";
 
-// A decimal fraction may end the time on the hour, the minute or the second
+/*
+ * A decimal fraction may end the time on the hour, the minute or the
+ * second, with any number of digits; the hour alone is reduced precision
+ */
 const ISO =
-  /^(?<year>[+-]?\d{4,6})-?(?<month>\d{2})-?(?<day>\d{2})(?:[t\s](?<hour>\d{2})(?:[.,](?<hourFraction>\d{1,9})|:?(?<minute>\d{2})(?:[.,](?<minuteFraction>\d{1,9})|:?(?<second>\d{2})(?:[.,](?<fraction>\d{1,9}))?)?)\s*(?<offset>z|[+-]\d{2}(?::?\d{2})?)?)?$/giu;
+  /^(?<year>[+-]?\d{4,6})-?(?<month>\d{2})-?(?<day>\d{2})(?:[t\s](?<hour>\d{2})(?:[.,](?<hourFraction>\d+)|:?(?<minute>\d{2})(?:[.,](?<minuteFraction>\d+)|:?(?<second>\d{2})(?:[.,](?<fraction>\d+))?)?)?\s*(?<offset>z|[+-]\d{2}(?::?\d{2})?)?)?$/giu;
+// A date and a T: the text is an ISO 8601 date-time, or a broken one
+const ISO_DATE_TIME = /^[+-]?\d{4,6}-?\d{2}-?\d{2}t/iu;
 const OFFSET = /^(?<sign>[+-])(?<hours>\d{2}):?(?<minutes>\d{2})?$/gu;
 const MS_DIGITS = 3;
 const MS_PER_SECOND = 1000;
 const MS_PER_MINUTE = 60_000;
 const MS_PER_HOUR = 3_600_000;
 const DECIMAL = 10;
+// Nanoseconds: more digits cannot change the milliseconds
+const FRACTION_DIGITS = 9;
 const NONE = 0;
 const NEGATIVE = -1;
 const POSITIVE = 1;
@@ -69,8 +77,9 @@ function fractionMs(digits: string | undefined, unitMs: number): number {
   if (digits === undefined) {
     return NONE;
   }
-  const scaled = Number(digits) * unitMs;
-  const divisor = DECIMAL ** digits.length;
+  const kept = digits.slice(NONE, FRACTION_DIGITS);
+  const scaled = Number(kept) * unitMs;
+  const divisor = DECIMAL ** kept.length;
   return (scaled - (scaled % divisor)) / divisor;
 }
 
@@ -138,6 +147,21 @@ function checked(reading: Reading, fields: IsoFields): ParseResult {
 }
 
 /**
+ * A text with a date and a T that is not valid ISO 8601, such as
+ * `2026-10-13T10:04:05.Z`: reading only its date as free text would drop
+ * the time.
+ *
+ * @param text - Normalised text that is not ISO 8601
+ * @returns `INVALID_TIME` for a broken ISO date-time, otherwise undefined
+ */
+function brokenIso(text: string): ParseResult | undefined {
+  if (ISO_DATE_TIME.test(text)) {
+    return failure([ParseError.InvalidTime]);
+  }
+  return undefined;
+}
+
+/**
  * ISO 8601 read exactly. Eight digits without dashes may be a day-first
  * date, so an impossible compact ISO date is read as numbers instead.
  *
@@ -147,7 +171,7 @@ function checked(reading: Reading, fields: IsoFields): ParseResult {
 function parseIso(text: string): ParseResult | undefined {
   const fields = isoFields(text);
   if (fields === undefined) {
-    return undefined;
+    return brokenIso(text);
   }
   const reading: Reading = {
     day: fields.day,

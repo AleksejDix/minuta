@@ -12,7 +12,7 @@ const ParseError = {
   InvalidMonth: "INVALID_MONTH",
   /** The UTC offset is out of range (+25:00, +10:75); at most ±23:59 */
   InvalidOffset: "INVALID_OFFSET",
-  /** The time is out of range (25:00, 24:00, 10:61) */
+  /** The time is out of range (25:00, 24:00, 10:61), or an ISO 8601 time is malformed */
   InvalidTime: "INVALID_TIME",
   /** No day, month and year could be found in the text */
   NoDate: "NO_DATE",
