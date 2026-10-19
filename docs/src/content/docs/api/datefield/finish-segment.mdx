@@ -135,6 +135,9 @@ element.addEventListener("blur", () => {
 returns. `setState` does not call `onChange`, so update anything that mirrors
 the field yourself.
 
+To also keep the day within its month on blur, call
+[`finishField`](../finish-field/) instead.
+
 :::caution
 In a field with a two-digit year segment (`year: "2-digit"`), finishing a
 one-digit year writes four digits (`5` → `2005`) and makes the text longer
@@ -144,5 +147,6 @@ than the field. Avoid finishing the year in such fields until this is fixed.
 ## Related
 
 - [`typeDate`](../type-date/) — typing that calls this on every separator.
+- [`finishField`](../finish-field/) — finish the whole field on blur.
 - [`clampDay`](../clamp-day/) — keep the day valid; also useful on blur.
 - [`setSelection`](../../input-state/set-selection/) (input-state) — move the cursor yourself.

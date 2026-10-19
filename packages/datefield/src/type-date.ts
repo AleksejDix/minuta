@@ -7,6 +7,7 @@
 import type { DateFormat, Segment } from "./types";
 import { setSelection, slotChar, typeChar } from "input-state";
 import type { InputState } from "input-state";
+import { clampDay } from "./rotate";
 import { fromDate } from "./convert";
 import { fullYear } from "./year";
 import { nextSegment } from "./navigate";
@@ -206,5 +207,27 @@ function typeDate(
   return next;
 }
 
-export { finishSegment, typeDate };
+/**
+ * Finish the whole field, as on blur: pad the segment being typed and keep
+ * the day within its month (31.02.2026 → 28.02.2026), whatever the cursor.
+ * Returns the same field when nothing changes.
+ *
+ * @param format - The field's format
+ * @param state - The field
+ * @returns The finished field
+ */
+function finishField(
+  format: Readonly<DateFormat>,
+  state: InputState
+): InputState {
+  const finished = finishSegment(format, state);
+  const segments = parseSegments(format, finished.buffer.text);
+  const clamped = clampDay(segments);
+  if (clamped === segments) {
+    return finished;
+  }
+  return withSegments(finished, clamped);
+}
+
+export { finishField, finishSegment, typeDate };
 export type { TypeOptions };

@@ -1,0 +1,90 @@
+---
+title: finishField
+description: Finish the whole date field when it loses focus — pad the segment being typed and keep the day within its month.
+---
+
+import { dateMask, deriveFormat, finishField, typeDate } from "datefield";
+import { createInputState } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const format = deriveFormat("de-CH");
+export const typed = (keys) =>
+  [...keys].reduce(
+    (state, key) => typeDate(format, state, key),
+    createInputState({ mask: dateMask(format) })
+  );
+export const before = typed("31.02.26");
+export const after = finishField(format, before);
+
+Finish the whole field, as on blur: pad the segment being typed with
+[`finishSegment`](../finish-segment/) and keep the day within its month with
+[`clampDay`](../clamp-day/), wherever the cursor is.
+
+```ts
+import { finishField } from "datefield";
+```
+
+```ts
+finishField(format, state);
+```
+
+## Example
+
+```ts
+import { dateMask, deriveFormat, finishField, typeDate } from "datefield";
+import { createInputState } from "input-state";
+
+const format = deriveFormat("de-CH");
+let field = createInputState({ mask: dateMask(format) });
+
+for (const key of "31.02.26") field = typeDate(format, field, key);
+field.buffer.text; // → "31.02.26__"
+
+field = finishField(format, field);
+field.buffer.text; // → "28.02.2026"
+```
+
+<FieldDiagram
+  text={before.buffer.text}
+  head={before.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="Before: the year holds only 26 and the day is 31 in February."
+/>
+
+<FieldDiagram
+  text={after.buffer.text}
+  head={after.buffer.selection.head}
+  mode="overwrite"
+  locale="de-CH"
+  caption="After finishField: the year is 2026 and the day is cut to 28."
+/>
+
+## Parameters
+
+| Name     | What it is                                                    |
+| -------- | ------------------------------------------------------------- |
+| `format` | The field's format, from [`deriveFormat`](../derive-format/). |
+| `state`  | The field.                                                    |
+
+## Returns
+
+A new field with the segment at the cursor finished and the day clamped. When
+there is nothing to change, the same field comes back.
+
+## Call it on blur
+
+```ts
+element.addEventListener("blur", () => {
+  controller.setState(finishField(format, controller.getState()));
+});
+```
+
+`controller` here is the one [`attachInput`](../../input-dom/attach-input/)
+returns. `setState` does not call `onChange`, so update anything that mirrors
+the field yourself.
+
+## Related
+
+- [`finishSegment`](../finish-segment/) — only pad the segment at the cursor.
+- [`clampDay`](../clamp-day/) — only keep the day valid.
