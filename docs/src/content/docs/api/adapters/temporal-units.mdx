@@ -13,7 +13,7 @@ export const weeksOfMarch = (units) =>
 
 Units computed with [Temporal](https://tc39.es/proposal-temporal/docs/), the
 new date API for JavaScript. Where the runtime has no Temporal yet, minuta
-installs the `@js-temporal/polyfill`. Dates are read in the time zone of the
+uses the `@js-temporal/polyfill`. Dates are read in the time zone of the
 computer the code runs on.
 
 ```ts
@@ -100,16 +100,18 @@ The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
 
 ## The polyfill and `globalThis.Temporal`
 
-Importing `minuta/temporal` checks for `globalThis.Temporal`:
+Each call checks for `globalThis.Temporal`:
 
-- If the runtime has Temporal, it is used and left alone.
-- If not, minuta puts the polyfill on `globalThis.Temporal`. From then on,
-  the rest of your app sees a global `Temporal` too.
+- If the runtime has Temporal, it is used.
+- If not, minuta uses the polyfill it imports itself.
+
+`globalThis` is never changed, so importing `minuta/temporal` has no side
+effect on the rest of your app:
 
 ```ts
 typeof Temporal; // → "undefined" (Node 24 without flags)
 await import("minuta/temporal");
-typeof Temporal; // → "object"
+typeof Temporal; // → "undefined"
 ```
 
 The polyfill is part of the import in both cases, so it is in your bundle
