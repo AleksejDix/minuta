@@ -1,0 +1,66 @@
+---
+title: DateProblem
+description: The codes checkDate and checkDay return, as named constants.
+---
+
+import { DateProblem } from "datefield";
+import Anatomy from "../../../../components/diagrams/Anatomy.astro";
+
+export const when = {
+  AfterMax: "the date is after max",
+  BeforeMin: "the date is before min",
+  Unavailable: "isUnavailable returned true",
+};
+
+The codes [`checkDate`](../check-date/) and [`checkDay`](../check-day/) return,
+as named constants. Use them instead of typing the strings yourself.
+
+```ts
+import { DateProblem } from "datefield";
+```
+
+## Example
+
+```ts
+import { DateProblem, checkDate } from "datefield";
+
+const messages = {
+  [DateProblem.BeforeMin]: "Pick a date from today on.",
+  [DateProblem.AfterMax]: "Pick a date before the end of the year.",
+  [DateProblem.Unavailable]: "We are closed on that day.",
+};
+
+const problem = checkDate(segments, rules);
+const message = problem === undefined ? "" : messages[problem];
+```
+
+## What it is
+
+A plain object. Each name maps to the code string.
+
+| Name          | Code                                   | When                             |
+| ------------- | -------------------------------------- | -------------------------------- |
+| `BeforeMin`   | <code>{DateProblem.BeforeMin}</code>   | The date is before `min`.        |
+| `AfterMax`    | <code>{DateProblem.AfterMax}</code>    | The date is after `max`.         |
+| `Unavailable` | <code>{DateProblem.Unavailable}</code> | `isUnavailable` returned `true`. |
+
+The type of the codes is `DateProblemCode`.
+
+<div class="anatomy-figure not-content">
+  <Anatomy
+    parts={[
+      {
+        name: "DateProblem",
+        children: Object.entries(DateProblem).map(([name, code]) => ({
+          name: `${name} = "${code}"`,
+          note: when[name],
+        })),
+      },
+    ]}
+  />
+</div>
+
+## Related
+
+- [`checkDate`](../check-date/) — check the field's date.
+- [`checkDay`](../check-day/) — check one calendar day.

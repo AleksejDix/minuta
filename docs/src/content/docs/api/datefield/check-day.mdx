@@ -1,0 +1,93 @@
+---
+title: checkDay
+description: Check one calendar day against a date field's min, max and unavailable rules, so the calendar disables exactly the days the field reports.
+---
+
+import { DateProblem, checkDay } from "datefield";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+
+export const rules = {
+  isUnavailable: (date) => date.getDay() === 0 || date.getDay() === 6,
+  min: new Date("2026-06-15T18:30"),
+};
+export const monday = checkDay(new Date("2026-06-15T00:00"), rules);
+export const sunday = checkDay(new Date("2026-06-14T12:00"), rules);
+export const saturday = checkDay(new Date("2026-06-20T12:00"), rules);
+export const june = Array.from(
+  { length: 30 },
+  (_, index) => `2026-06-${String(index + 1).padStart(2, "0")}`
+);
+export const unavailable = june.filter(
+  (day) => checkDay(new Date(`${day}T00:00`), rules) === DateProblem.Unavailable
+);
+
+Check the day holding a date against the same rules as
+[`checkDate`](../check-date/), comparing whole days. Give it to a calendar's
+`isDisabled`, and the calendar disables exactly the days the field reports.
+
+```ts
+import { checkDay } from "datefield";
+```
+
+```ts
+checkDay(date, { min, max, isUnavailable });
+```
+
+## Example
+
+```ts
+import { checkDay } from "datefield";
+
+const rules = {
+  isUnavailable: (date) => date.getDay() === 0 || date.getDay() === 6,
+  min: new Date("2026-06-15T18:30"),
+};
+
+checkDay(new Date("2026-06-15T00:00"), rules); // → undefined
+checkDay(new Date("2026-06-14T12:00"), rules); // → "BEFORE_MIN"
+checkDay(new Date("2026-06-20T12:00"), rules); // → "UNAVAILABLE"
+```
+
+Here: Monday 15 June → <code>{String(monday)}</code>, Sunday 14 June → <code>{String(sunday)}</code>,
+Saturday 20 June → <code>{String(saturday)}</code>. The `min` at 18:30 still allows all of
+15 June.
+
+<MonthGrid
+  month="2026-06"
+  from="2026-06-15"
+  to="2026-06-30"
+  marks={unavailable}
+/>
+
+June 2026 with these rules: the days from `min` on are highlighted, and the
+weekends among them, which `checkDay` reports as `UNAVAILABLE`, have a dot. A
+calendar given `isDisabled` disables the days before 15 June and the dotted ones.
+
+## Parameters
+
+| Name    | What it is                                                              |
+| ------- | ----------------------------------------------------------------------- |
+| `date`  | Any moment of the day to check, such as a calendar day's `start`.       |
+| `rules` | `min`, `max` and `isUnavailable`, as for [`checkDate`](../check-date/). |
+
+## Returns
+
+A [`DateProblem`](../date-problem/) code, or `undefined` when the day is allowed.
+
+## With the calendar
+
+```tsx
+import { checkDay } from "datefield";
+
+<CalendarRoot isDisabled={(day) => checkDay(day.start, rules) !== undefined}>
+  …
+</CalendarRoot>;
+```
+
+The Vue `<CalendarRoot>` takes the same `isDisabled` prop.
+
+## Related
+
+- [`checkDate`](../check-date/) — the same rules for the field's date.
+- [`DateProblem`](../date-problem/) — the codes it returns.
+- [`CalendarRoot`](../../minuta-react/calendar-root/) — the calendar that takes `isDisabled`.

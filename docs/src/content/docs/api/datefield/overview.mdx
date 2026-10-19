@@ -172,15 +172,16 @@ The same steps as a sequence, each with the value it produces:
 
 ### Converting
 
-| Function                                                       | What it does                                                           |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`parseSegments`](../parse-segments/)                          | Cut field text into segments.                                          |
-| [`segmentsToString`](../segments-to-string/)                   | Join segments back into text.                                          |
-| [`toDate`](../to-date/)                                        | Read a `Date` from segments, or `undefined`.                           |
-| [`checkDate`](../check-date/)                                  | Why the date is not allowed: before `min`, after `max` or unavailable. |
-| [`checkDay`](../check-date/#share-the-rules-with-the-calendar) | The same rules for one calendar day; give it to `isDisabled`.          |
-| [`fromDate`](../from-date/)                                    | Write a `Date` as segments.                                            |
-| [`withSegments`](../with-segments/)                            | Put segments back into the field, cursor kept.                         |
+| Function                                     | What it does                                                           |
+| -------------------------------------------- | ---------------------------------------------------------------------- |
+| [`parseSegments`](../parse-segments/)        | Cut field text into segments.                                          |
+| [`segmentsToString`](../segments-to-string/) | Join segments back into text.                                          |
+| [`toDate`](../to-date/)                      | Read a `Date` from segments, or `undefined`.                           |
+| [`checkDate`](../check-date/)                | Why the date is not allowed: before `min`, after `max` or unavailable. |
+| [`checkDay`](../check-day/)                  | The same rules for one calendar day; give it to `isDisabled`.          |
+| [`DateProblem`](../date-problem/)            | The codes `checkDate` and `checkDay` return.                           |
+| [`fromDate`](../from-date/)                  | Write a `Date` as segments.                                            |
+| [`withSegments`](../with-segments/)          | Put segments back into the field, cursor kept.                         |
 
 ### Typing
 
