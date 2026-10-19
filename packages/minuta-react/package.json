@@ -64,7 +64,6 @@
   "devDependencies": {
     "@minuta/tsconfig": "^2.0.0-alpha.1",
     "@tailwindcss/vite": "^4.3.3",
-    "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^22.12.1",
     "@types/react": "^18.0.0",
