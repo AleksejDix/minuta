@@ -1,10 +1,16 @@
 /**
  * ISO 8601 and RFC 3339 dates and date-times, read exactly: `2026-03-31`,
  * `2026-03-31T10:00`, `2026-03-31 10:00:00.250+02:00`, `20260331T100000Z`,
- * and ordinal dates: `2026-090`.
+ * week dates: `2026-W14-2`, and ordinal dates: `2026-090`.
  */
 
-import { clockProblem, offsetMinutes, ordinalReading, problemOf } from "./date";
+import {
+  clockProblem,
+  offsetMinutes,
+  ordinalReading,
+  problemOf,
+  weekReading,
+} from "./date";
 import { failure, success } from "./choose";
 import type { Clock } from "./date";
 import { ParseError } from "./errors";
@@ -33,13 +39,16 @@ function isoPattern(date: string): RegExp {
 const CALENDAR = isoPattern(
   String.raw`(?<year>[+-]?\d{4,6})-?(?<month>\d{2})-?(?<day>\d{2})`
 );
+const WEEK = isoPattern(
+  String.raw`(?<year>[+-]\d{4,6}|\d{4})-?w(?<week>\d{2})-?(?<weekday>\d)`
+);
 // An unsigned year has four digits: eight digits are a compact calendar date
 const ORDINAL = isoPattern(
   String.raw`(?<year>[+-]\d{4,6}|\d{4})-?(?<ordinal>\d{3})`
 );
 // A date and a T: the text is an ISO 8601 date-time, or a broken one
 const ISO_DATE_TIME =
-  /^(?:[+-]?\d{4,6}-?\d{2}-?\d{2}|(?:[+-]\d{4,6}|\d{4})-?\d{3})t/iu;
+  /^(?:[+-]?\d{4,6}-?\d{2}-?\d{2}|(?:[+-]\d{4,6}|\d{4})-?(?:w\d{2}-?\d|\d{3}))t/iu;
 const OFFSET = /^(?<sign>[+-])(?<hours>\d{2}):?(?<minutes>\d{2})?$/gu;
 const MS_DIGITS = 3;
 const MS_PER_SECOND = 1000;
@@ -218,6 +227,17 @@ function parseIso(text: string): ParseResult | undefined {
   const calendar = groupsOf(text, CALENDAR);
   if (calendar !== undefined) {
     return dated(calendarDay(calendar, text), calendar);
+  }
+  const week = groupsOf(text, WEEK);
+  if (week !== undefined) {
+    return dated(
+      weekReading(
+        Number(week["year"]),
+        Number(week["week"]),
+        Number(week["weekday"])
+      ),
+      week
+    );
   }
   const ordinal = groupsOf(text, ORDINAL);
   if (ordinal !== undefined) {

@@ -118,6 +118,20 @@ const ISO_8601: readonly Read[] = [
     parts: at(DAY, { hour: 10, offsetMinutes: PLUS_TWO }),
     text: "2026-10-13T10+02",
   },
+  // Week dates: week 1 holds January 4, weeks start on Monday
+  { parts: DAY, text: "2026-W42-2" },
+  { parts: DAY, text: "2026W422" },
+  { parts: DAY, text: "2026-w42-2" },
+  { parts: { day: 29, month: 12, year: 2025 }, text: "2026-W01-1" },
+  { parts: { day: 30, month: 12, year: 2024 }, text: "2025-W01-1" },
+  // 2026 starts on a Thursday and 2020 is a leap year starting on a Wednesday: 53 weeks
+  { parts: { day: 28, month: 12, year: 2026 }, text: "2026-W53-1" },
+  { parts: { day: 3, month: 1, year: 2021 }, text: "2020-W53-7" },
+  {
+    parts: at(TEN_FOUR_FIVE, { offsetMinutes: UTC }),
+    text: "2026-W42-2T10:04:05Z",
+  },
+  { parts: TEN_FOUR, text: "2026W422T1004" },
   // Ordinal dates: the day of the year
   { parts: DAY, text: "2026-286" },
   { parts: DAY, text: "2026286" },
@@ -152,6 +166,14 @@ const REJECTED: readonly Rejected[] = [
   { code: ParseError.InvalidTime, text: "2026-10-13T24:00:00" },
   // Malformed: a decimal sign without digits
   { code: ParseError.InvalidTime, text: "2026-10-13T10:04:05.Z" },
+  // Week dates: 2025 has 52 weeks; weekdays are 1–7
+  { code: ParseError.InvalidWeek, text: "2025-W53-1" },
+  { code: ParseError.InvalidWeek, text: "2026-W00-1" },
+  { code: ParseError.InvalidWeek, text: "2026-W54-1" },
+  { code: ParseError.InvalidDay, text: "2026-W42-0" },
+  { code: ParseError.InvalidDay, text: "2026-W42-8" },
+  { code: ParseError.InvalidTime, text: "2026-W42-2T25:00" },
+  { code: ParseError.InvalidTime, text: "2026-W42-2T10:04:05.Z" },
   // Ordinal dates: 2026 has 365 days
   { code: ParseError.InvalidDay, text: "2026-366" },
   { code: ParseError.InvalidDay, text: "2026-000" },
@@ -162,12 +184,6 @@ const REJECTED: readonly Rejected[] = [
   { code: ParseError.NoDate, text: "10:04" },
   { code: ParseError.NoDate, text: "10:04:05Z" },
   { code: ParseError.NoDate, text: "T10:04" },
-];
-
-// Not read yet; each test reports as soon as its issue is done
-const PLANNED: readonly (Read & Readonly<{ issue: string }>)[] = [
-  { issue: "#141", parts: DAY, text: "2026-W42-2" },
-  { issue: "#141", parts: DAY, text: "2026W422" },
 ];
 
 describe.each([
@@ -187,15 +203,4 @@ describe("rejected", () => {
     expect.hasAssertions();
     expect(partsOf(text)).toStrictEqual([code]);
   });
-});
-
-describe("planned", () => {
-  it.fails.each(PLANNED)(
-    "$text ($issue)",
-    { timeout: 5000 },
-    ({ parts, text }) => {
-      expect.hasAssertions();
-      expect(partsOf(text)).toMatchObject(parts);
-    }
-  );
 });
