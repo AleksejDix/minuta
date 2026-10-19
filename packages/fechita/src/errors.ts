@@ -14,6 +14,8 @@ const ParseError = {
   InvalidOffset: "INVALID_OFFSET",
   /** The time is out of range (25:00, 24:00, 10:61), or an ISO 8601 time is malformed */
   InvalidTime: "INVALID_TIME",
+  /** The ISO 8601 week does not exist in that year (2025-W53: 2025 has 52 weeks) */
+  InvalidWeek: "INVALID_WEEK",
   /** No day, month and year could be found in the text */
   NoDate: "NO_DATE",
   /** The weekday in the text is not the weekday of the date */

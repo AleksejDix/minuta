@@ -10,7 +10,15 @@ import type { Reading } from "./candidates";
 
 const MONTHS = 12;
 const JANUARY = 0;
+const DECEMBER = 11;
 const FIRST = 1;
+const LAST_OF_DECEMBER = 31;
+// ISO 8601 week 1 is the week with January 4, and weeks start on Monday
+const WEEK_ONE_DAY = 4;
+const DAYS_PER_WEEK = 7;
+const THURSDAY = 4;
+const WEEKS = 52;
+const LONG_YEAR_WEEKS = 53;
 const NONE = 0;
 const MS_PER_MINUTE = 60_000;
 const MINUTES_PER_HOUR = 60;
@@ -78,6 +86,61 @@ function ordinalReading(
     return ParseError.InvalidDay;
   }
   return readingAt(date);
+}
+
+/**
+ * The ISO 8601 weeks of a year: 53 when it starts or ends on a Thursday,
+ * otherwise 52.
+ *
+ * @param year - The ISO week-numbering year
+ * @returns 52 or 53
+ */
+function weeksIn(year: number): number {
+  const ends = [
+    utcDay(year, JANUARY, FIRST).getUTCDay(),
+    utcDay(year, DECEMBER, LAST_OF_DECEMBER).getUTCDay(),
+  ];
+  if (ends.includes(THURSDAY)) {
+    return LONG_YEAR_WEEKS;
+  }
+  return WEEKS;
+}
+
+/**
+ * The day of an ISO 8601 week date: `2026-W42-2` is Tuesday, October 13.
+ * Week 1 may start in the year before: `2025-W01-1` is December 30, 2024.
+ *
+ * @param year - The ISO week-numbering year
+ * @param week - The week, 1–52 or 53
+ * @param weekday - The weekday, 1 (Monday) to 7 (Sunday)
+ * @returns The day, or `INVALID_DAY` / `INVALID_WEEK`
+ */
+function weekReading(
+  year: number,
+  week: number,
+  weekday: number
+): Reading | ParseErrorCode {
+  if (weekday < FIRST || weekday > DAYS_PER_WEEK) {
+    return ParseError.InvalidDay;
+  }
+  if (week < FIRST || week > weeksIn(year)) {
+    return ParseError.InvalidWeek;
+  }
+  // Days since Monday: Sunday, day 0 of getUTCDay, is the seventh
+  const sinceMonday =
+    (utcDay(year, JANUARY, WEEK_ONE_DAY).getUTCDay() + DAYS_PER_WEEK - FIRST) %
+    DAYS_PER_WEEK;
+  return readingAt(
+    utcDay(
+      year,
+      JANUARY,
+      WEEK_ONE_DAY -
+        sinceMonday +
+        (week - FIRST) * DAYS_PER_WEEK +
+        weekday -
+        FIRST
+    )
+  );
 }
 
 function daysIn(year: number, month: number): number {
@@ -194,5 +257,6 @@ export {
   ordinalReading,
   partsOf,
   problemOf,
+  weekReading,
 };
 export type { Clock };
