@@ -79,7 +79,9 @@ written `"\\9"`.
 A mask: `{ placeholder, tokens }`, where each token is either
 `{ kind: "slot", accepts }` (with `accepts` being `"digit"`, `"letter"` or
 `"alphanumeric"`) or `{ kind: "literal", char }`. There is one token per
-character of the field's text.
+character of the field's text. A third kind, `{ kind: "choice", … }`, holds
+one of a few fixed texts such as AM/PM; a pattern cannot express it, so build
+it with [`choiceTokens`](../choice-tokens/).
 
 A mask is plain data. It survives `JSON.stringify` and `JSON.parse`, so you
 can store it or send it over the network and still use it.
