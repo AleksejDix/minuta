@@ -33,7 +33,7 @@ export { inputDigit, clearSegment } from "./input";
 export { rotateSegment, clampDay } from "./rotate";
 
 // Typing: digits fill slots, separators finish a segment
-export { finishSegment, typeDate } from "./type-date";
+export { finishField, finishSegment, typeDate } from "./type-date";
 export type { TypeOptions } from "./type-date";
 export type { DateOrder } from "./parse";
 

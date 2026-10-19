@@ -1,9 +1,9 @@
 import { createInputState, setSelection } from "input-state";
 import { describe, expect, it } from "vitest";
+import { finishField, typeDate } from "./type-date";
 import type { DateFormat } from "./types";
 import { dateMask } from "./field";
 import { deriveFormat } from "./parse";
-import { typeDate } from "./type-date";
 
 const DE = deriveFormat("de-CH");
 const US = deriveFormat("en-US");
@@ -55,5 +55,42 @@ describe("typeDate()", () => {
       MONTH_START
     );
     expect(typeDate(DE, field, "3.").buffer.text).toBe("31.03.2026");
+  });
+});
+
+describe("finishField()", () => {
+  it("pads the segment being typed", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const field = typeDate(
+      DE,
+      createInputState({ mask: dateMask(DE) }),
+      "1.3.5"
+    );
+    expect(finishField(DE, field).buffer.text).toBe("01.03.2005");
+  });
+
+  it("clamps the day to the month", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const field = typeDate(
+      DE,
+      createInputState({ mask: dateMask(DE) }),
+      "31.02.2026"
+    );
+    expect(finishField(DE, field).buffer.text).toBe("28.02.2026");
+  });
+
+  it("clamps a day typed while the month was open", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const field = setSelection(
+      createInputState({ mask: dateMask(DE), value: "31.02.2026" }),
+      MONTH_START
+    );
+    expect(finishField(DE, field).buffer.text).toBe("28.02.2026");
+  });
+
+  it("returns an empty field unchanged", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const field = createInputState({ mask: dateMask(DE) });
+    expect(finishField(DE, field)).toBe(field);
   });
 });
