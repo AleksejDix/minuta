@@ -56,7 +56,16 @@ function endingBeforeNext(spec: UnitSpec): UnitSpec {
         return end;
       }
       const next = spec.startOf(spec.add(spec.startOf(date), ONE));
-      return new Date(next.getTime() - ONE);
+      const beforeNext = new Date(next.getTime() - ONE);
+      /*
+       * An engine whose `add` does not move (V8's offset cache, Recife 2000)
+       * puts the next start no later than this one; keep the engine's end
+       * then, so the period never ends before `date`
+       */
+      if (beforeNext < date) {
+        return end;
+      }
+      return beforeNext;
     },
     startOf: spec.startOf,
   };
