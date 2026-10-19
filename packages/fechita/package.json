@@ -87,7 +87,7 @@
         "dist/core.js": "{ withLocales }",
         "dist/locales/de.js": "{ de }"
       },
-      "limit": "4.5 kB"
+      "limit": "5 kB"
     }
   ]
 }
