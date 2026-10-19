@@ -20,10 +20,12 @@
   ],
   "exports": {
     ".": {
+      "@minuta/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./components": {
+      "@minuta/source": "./src/components/index.ts",
       "types": "./dist/components/index.d.ts",
       "import": "./dist/components/index.js"
     },

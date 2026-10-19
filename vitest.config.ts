@@ -1,4 +1,36 @@
+import { defaultClientConditions, defaultServerConditions } from "vite";
+import type { TestProjectInlineConfiguration } from "vitest/config";
 import { defineConfig } from "vitest/config";
+
+/*
+ * Tests import the other workspace packages from their sources, through the
+ * `@minuta/source` export condition, so they never run against a stale or
+ * missing dist build. Builds and published packages keep using dist.
+ */
+const SOURCE = "@minuta/source";
+
+// Each package and the config its tests use
+const PACKAGES: readonly (readonly [string, string])[] = [
+  ["minuta", "vite.config.ts"],
+  ["minuta-vue", "vitest.config.ts"],
+  ["minuta-react", "vitest.config.ts"],
+  ["datefield", "vite.config.ts"],
+  ["text-buffer", "vite.config.ts"],
+  ["input-state", "vite.config.ts"],
+  ["input-dom", "vitest.config.ts"],
+  ["fechita", "vite.config.ts"],
+];
+
+// A package's own config, plus the condition
+function project(name: string, config: string): TestProjectInlineConfiguration {
+  const dir = `./packages/${name}`;
+  return {
+    extends: `${dir}/${config}`,
+    resolve: { conditions: [SOURCE, ...defaultClientConditions] },
+    ssr: { resolve: { conditions: [SOURCE, ...defaultServerConditions] } },
+    test: { name, root: dir },
+  };
+}
 
 // React logs these when a test expects a render to throw
 const EXPECTED_REACT_ERRORS = [
@@ -36,16 +68,7 @@ export default defineConfig({
         singleFork: true,
       },
     },
-    projects: [
-      "packages/minuta",
-      "packages/minuta-vue",
-      "packages/minuta-react",
-      "packages/datefield",
-      "packages/text-buffer",
-      "packages/input-state",
-      "packages/input-dom",
-      "packages/fechita",
-    ],
+    projects: PACKAGES.map(([name, config]) => project(name, config)),
     setupFiles: ["./vitest.setup.ts"],
   },
 });

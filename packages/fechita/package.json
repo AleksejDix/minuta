@@ -17,14 +17,17 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "@minuta/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./core": {
+      "@minuta/source": "./src/core.ts",
       "types": "./dist/core.d.ts",
       "import": "./dist/core.js"
     },
     "./locales/*": {
+      "@minuta/source": "./src/locales/*.ts",
       "types": "./dist/locales/*.d.ts",
       "import": "./dist/locales/*.js"
     }

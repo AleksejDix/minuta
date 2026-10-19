@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "moduleDetection": "force",
-    "customConditions": ["source"],
+    "customConditions": ["source", "@minuta/source"],
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
