@@ -1,5 +1,8 @@
 {
   "extends": "astro/tsconfigs/strictest",
+  "compilerOptions": {
+    "customConditions": ["@minuta/source"]
+  },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist"]
 }
