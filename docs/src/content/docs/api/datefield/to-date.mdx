@@ -121,6 +121,11 @@ const dateTime = deriveFormat("de-CH", {
 toDate(parseSegments(dateTime, "01.03.2026, 09:05")); // → Sun Mar 01 2026 09:05
 ```
 
+On a 12-hour clock the hour is read with its day period: `10:30 PM` is
+22:30, `12:15 AM` is 00:15 and `12:15 PM` is 12:15. An hour the clock cannot
+show, such as `13` or `00` on a 1–12 clock, and an empty day period give
+`undefined`.
+
 Weekday, era and other display-only segments are ignored.
 
 ## Years

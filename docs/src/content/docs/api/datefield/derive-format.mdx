@@ -84,8 +84,9 @@ deriveFormat("de-CH");
 
 A format is the recipe for one kind of date text. Each entry is either:
 
-- a **segment** — a part you type digits into: `day`, `month`, `year`,
-  `hour`, `minute` or `second`, with how many characters it takes;
+- a **segment** — a part you type into: `day`, `month`, `year`, `hour`,
+  `minute` or `second` (digits), or `dayPeriod` (AM/PM), with how many
+  characters it takes;
 - a **literal** — the fixed separator between them, such as `.`, `/`, `-`
   or `. `.
 
@@ -135,20 +136,39 @@ Some locales put invisible characters in their separators. `ar-EG` gives
 `__‏/__‏/____`: each `/` has a right-to-left mark in front of it, so the text is
 12 characters long, not 10.
 
-## Display-only parts
+## 12-hour clocks
 
-You can ask for a weekday, era, AM/PM, fractional seconds or time zone name.
-They come back as parts too, but nobody can type them. They work with
-[`fromDate`](../from-date/) for display, and [`dateMask`](../date-mask/)
-refuses them.
+Where the locale counts hours on a 12-hour clock, the format has a
+`dayPeriod` segment, and the hour knows its clock:
 
 ```ts
-deriveFormat("en-US", { hour: "2-digit", minute: "2-digit" });
-// → hour, ":", minute, " ", dayPeriod   (the AM/PM part)
+deriveFormat("en-US", { hour: "numeric", minute: "2-digit" });
+// → hour (1–12), ":", minute, " ", dayPeriod   → "__:__ __", e.g. "10:30 PM"
+
+deriveFormat("ja-JP", { hour: "numeric", minute: "2-digit", hour12: true });
+// → dayPeriod, hour (0–11), ":", minute       → "午後10:30"
 
 deriveFormat("en-US", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
-// → hour, ":", minute   (no AM/PM, so it can be typed)
+// → hour (0–23), ":", minute                   → "22:30"
 ```
+
+- The hour segment carries the clock's `hourCycle`: `h12` (1–12) and `h11`
+  (0–11) with a day period, `h23` (0–23) or `h24` (1–24). Choose it with the
+  `hourCycle` or `hour12` option; without one, the locale's clock is used.
+- The day period segment carries its two texts in `options`, AM first, in the
+  locale's language: `AM`/`PM`, `午前`/`午後`, `ص`/`م`.
+- A field types the short day periods. A `dayPeriod` option ("in the
+  morning") is left out.
+
+[`dateMask`](../date-mask/) turns the day period into a choice, and
+[`toDate`](../to-date/) reads the hour with it.
+
+## Display-only parts
+
+You can ask for a weekday, era, fractional seconds or time zone name. They
+come back as parts too, but nobody can type them. They work with
+[`fromDate`](../from-date/) for display, and [`dateMask`](../date-mask/)
+refuses them.
 
 :::caution
 Do not ask for a month by name (`month: "long"` or `"short"`). The month
