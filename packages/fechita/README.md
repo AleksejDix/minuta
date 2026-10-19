@@ -123,6 +123,11 @@ Returns `{ parseDate, locales }` bound to the given locale data.
 `cldr-dates-full` and `cldr-core` (CLDR 48, the version `Intl` in Node 24
 uses).
 
+## Requirements
+
+An ES2022 runtime with `Object.hasOwn` and `Array.prototype.at`: Chrome and Edge 93, Safari 15.4, Firefox 92, Node 16.9 or newer. To compile the
+TypeScript source yourself, set `lib` to `ES2022` or later.
+
 ## License
 
 Apache-2.0

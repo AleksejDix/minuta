@@ -97,6 +97,11 @@ attachInput(element, createInputState({ mask: dateMask(format) }), {
 });
 ```
 
+## Requirements
+
+An ES2022 runtime with `Intl.Segmenter`: Chrome and Edge 87, Safari 14.1, Firefox 125, Node 16 or newer. To compile the
+TypeScript source yourself, set `lib` to `ES2022` or later.
+
 ## License
 
 Apache-2.0

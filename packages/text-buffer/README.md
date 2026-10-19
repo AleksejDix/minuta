@@ -59,6 +59,11 @@ accents go in one keystroke.
 3. [datefield](../datefield) – date segments on top of a mask
 4. [input-dom](../input-dom) – binds a state to an `<input>` element
 
+## Requirements
+
+An ES2022 runtime with `Intl.Segmenter`: Chrome and Edge 87, Safari 14.1, Firefox 125, Node 16 or newer. To compile the
+TypeScript source yourself, set `lib` to `ES2022` or later.
+
 ## License
 
 Apache-2.0

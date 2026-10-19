@@ -87,6 +87,11 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
 See [docs/zero-cost-parsing.md](docs/zero-cost-parsing.md) for the design and
 [docs/date-formats.md](docs/date-formats.md) for formats by country.
 
+## Requirements
+
+An ES2022 runtime with `Intl.Segmenter` and `Object.hasOwn`: Chrome and Edge 93, Safari 15.4, Firefox 125, Node 16.9 or newer. To compile the
+TypeScript source yourself, set `lib` to `ES2022` or later.
+
 ## License
 
 Apache-2.0

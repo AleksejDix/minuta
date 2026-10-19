@@ -132,6 +132,10 @@ dates. `input-state` and `text-buffer` come along as dependencies.
 npm install datefield input-dom fechita
 ```
 
+Needs an ES2022 runtime with `Intl.Segmenter` and `Object.hasOwn`: Chrome and
+Edge 93, Safari 15.4, Firefox 125, Node 16.9 or newer. To compile the
+TypeScript source yourself, set `lib` to `ES2022` or later.
+
 See [The input stack](../concepts/the-input-stack/) for how they fit together.
 
 ## Only the parser
@@ -142,3 +146,6 @@ npm install fechita
 
 `fechita` has no dependencies. It parses dates in every CLDR locale; import
 `fechita/core` and single locales to ship only the languages you need.
+
+Needs an ES2022 runtime with `Object.hasOwn` and `Array.prototype.at`: Chrome
+and Edge 93, Safari 15.4, Firefox 92, Node 16.9 or newer.
