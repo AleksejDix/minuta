@@ -56,6 +56,8 @@ parseDate("04/05/2026", { locale: "en-US" }); // valid: 5 April
 | Form                     | Examples                                                                     |
 | ------------------------ | ---------------------------------------------------------------------------- |
 | ISO 8601 / RFC 3339      | `2026-03-31`, `20260331`, `2026-03-31T10:00:00.250+02:00`, `2026-03-31T10.5` |
+| ISO 8601 week dates      | `2026-W14-2`, `2026W142` (Tuesday of ISO week 14)                            |
+| ISO 8601 ordinal dates   | `2026-090`, `2026090` (day 90 of the year)                                   |
 | RFC 2822 (email headers) | `Tue, 31 Mar 2026 10:00:00 +0200`                                            |
 | Month names              | `31. März 2026`, `March 31, 2026`, `31 de marzo de 2026`                     |
 | Numbers in any order     | `31.03.2026`, `3/31/2026`, `2026/3/31`, `31032026`, `31.03.26`               |
@@ -109,7 +111,9 @@ Returns `{ valid: true, date, parts }` or
 | `INVALID_MONTH`       | The month is not 1–12                                                                               |
 | `INVALID_OFFSET`      | The UTC offset is out of range (beyond ±23:59)                                                      |
 | `INVALID_TIME`        | The time is out of range (hours 0–23, minutes 0–59, seconds 0–60), or an ISO 8601 time is malformed |
+| `INVALID_WEEK`        | The ISO 8601 week does not exist in that year (`2025-W53`: 2025 has 52 weeks)                       |
 | `NO_DATE`             | No day, month and year in the text                                                                  |
+| `NO_YEAR`             | A month and day without a year: the HTML yearless date `--10-13`                                    |
 | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date                                              |
 
 ### `withLocales(locales)` (`fechita/core`)
