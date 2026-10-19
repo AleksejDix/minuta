@@ -20,6 +20,7 @@ const THREE = 3;
 const FOUR = 4;
 const SIX = 6;
 const EIGHT = 8;
+const FIELD_END = 10;
 
 function typeAll(state: InputState, text: string): InputState {
   let next = state;
@@ -92,6 +93,40 @@ describe("typeChar() with a mask", () => {
       const state = typeChar(setSelection(filled, TWO), "1");
       expect(state.buffer.text).toBe("31.13.2026");
       expect(state.buffer.selection.head).toBe(FOUR);
+    }
+  );
+});
+
+describe("typeChar() into an empty mask", () => {
+  it(
+    "types into the first slot with the cursor past the last",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const empty = setSelection(createInputState({ mask: DATE }), FIELD_END);
+      const state = typeChar(empty, "1");
+      expect(state.buffer.text).toBe("1_.__.____");
+      expect(state.buffer.selection.head).toBe(ONE);
+    }
+  );
+
+  it(
+    "types into the first slot with the cursor in a later part",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const empty = setSelection(createInputState({ mask: DATE }), SIX);
+      expect(typeChar(empty, "3").buffer.text).toBe("3_.__.____");
+    }
+  );
+
+  it(
+    "pastes from the first slot with the cursor at the end",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const empty = setSelection(createInputState({ mask: DATE }), FIELD_END);
+      expect(paste(empty, "31032026").buffer.text).toBe("31.03.2026");
     }
   );
 });

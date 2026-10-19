@@ -132,6 +132,22 @@ describe("<DateFieldRoot> fixing typos", () => {
   });
 });
 
+describe("<DateFieldRoot> an empty field", () => {
+  afterEach(cleanup);
+
+  it(
+    "types from the start when clicked past its end",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const { input } = renderField("de-CH");
+      select(input, FIELD_END);
+      typeText(input, "28102026");
+      expect(input.value).toBe("28.10.2026");
+    }
+  );
+});
+
 describe("<DateFieldRoot> deleting", () => {
   afterEach(cleanup);
 

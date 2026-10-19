@@ -1,0 +1,132 @@
+---
+/*
+ * The phone menu of a page without a sidebar, built like Starlight's own:
+ * a round button that opens a popover, so it opens, closes on Escape or a
+ * tap outside, and keeps the tab order without any script.
+ */
+import { Icon } from "@astrojs/starlight/components";
+import SocialIcons from "@astrojs/starlight/components/SocialIcons.astro";
+import ThemeSelect from "@astrojs/starlight/components/ThemeSelect.astro";
+import { siteHref } from "./site-href";
+
+const LINKS: readonly Readonly<{ label: string; to: string }>[] = [
+  { label: "Guide", to: "introduction/" },
+  { label: "API", to: "api/" },
+  { label: "Try it", to: "demo/" },
+];
+---
+
+<button
+  class="site-menu-button print:hidden"
+  popovertarget="site-menu"
+  aria-label="Menu"
+>
+  <Icon name="bars" class="open-menu" />
+  <Icon name="close" class="close-menu" />
+</button>
+<nav id="site-menu" class="site-menu" popover aria-label="Site">
+  <ul>
+    {
+      LINKS.map(({ label, to }) => (
+        <li>
+          <a href={siteHref(to)}>{label}</a>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="site-menu-footer">
+    <div class="site-menu-social"><SocialIcons /></div>
+    <ThemeSelect />
+  </div>
+</nav>
+
+<style>
+  .site-menu-button {
+    position: fixed;
+    top: calc((var(--sl-nav-height) - var(--sl-menu-button-size)) / 2);
+    inset-inline-end: var(--sl-nav-pad-x);
+    z-index: var(--sl-z-index-navbar);
+    display: flex;
+    border: 0;
+    border-radius: 50%;
+    width: var(--sl-menu-button-size);
+    height: var(--sl-menu-button-size);
+    padding: 0.5rem;
+    background-color: var(--sl-color-white);
+    color: var(--sl-color-black);
+    box-shadow: var(--sl-shadow-md);
+    cursor: pointer;
+  }
+
+  :global([data-theme="light"]) .site-menu-button {
+    background-color: var(--sl-color-black);
+    color: var(--sl-color-white);
+  }
+
+  .site-menu-button:has(~ :popover-open) .open-menu,
+  .site-menu-button:not(:has(~ :popover-open)) .close-menu {
+    display: none;
+  }
+
+  .site-menu {
+    position: fixed;
+    inset: var(--sl-nav-height) 0 0;
+    z-index: var(--sl-z-index-menu);
+    width: 100%;
+    height: auto;
+    margin: 0;
+    border: 0;
+    padding: 1rem var(--sl-nav-pad-x) 2rem;
+    background-color: var(--sl-color-black);
+    color: var(--sl-color-white);
+    overflow-y: auto;
+  }
+
+  .site-menu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-menu a {
+    display: block;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--sl-color-hairline-light);
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-lg);
+    text-decoration: none;
+  }
+
+  .site-menu-footer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+  }
+
+  .site-menu-social {
+    display: flex;
+    gap: 1rem;
+  }
+
+  @media (min-width: 50rem) {
+    .site-menu-button,
+    .site-menu {
+      display: none;
+    }
+  }
+
+  @media (max-width: 49.99rem) {
+    /* Room for the fixed button, as Starlight makes on pages with a sidebar */
+    :global(:root:not([data-has-sidebar]) .header) {
+      padding-inline-end: calc(
+        var(--sl-nav-gap) + var(--sl-nav-pad-x) + var(--sl-menu-button-size)
+      );
+    }
+
+    :global(body:has(#site-menu:popover-open)) {
+      overflow: hidden;
+    }
+  }
+</style>
