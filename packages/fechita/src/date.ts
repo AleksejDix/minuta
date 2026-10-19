@@ -9,6 +9,7 @@ import type { ParseErrorCode } from "./errors";
 import type { Reading } from "./candidates";
 
 const MONTHS = 12;
+const JANUARY = 0;
 const FIRST = 1;
 const NONE = 0;
 const MS_PER_MINUTE = 60_000;
@@ -35,6 +36,49 @@ const MIDNIGHT: Clock = {
   offsetMinutes: undefined,
   second: NONE,
 };
+
+/**
+ * The UTC midnight of a day, counted from the first of a month: day 0 is
+ * the day before, day 32 of January is February 1. Years below 100 are
+ * taken literally.
+ *
+ * @param year - The year
+ * @param month - Month 0–11
+ * @param day - The day of the month, any number
+ * @returns The UTC midnight
+ */
+function utcDay(year: number, month: number, day: number): Date {
+  const date = new Date(NONE);
+  date.setUTCFullYear(year, month, day);
+  return date;
+}
+
+function readingAt(date: Readonly<Date>): Reading {
+  return {
+    day: date.getUTCDate(),
+    month: date.getUTCMonth() + FIRST,
+    order: "YMD",
+    year: date.getUTCFullYear(),
+  };
+}
+
+/**
+ * The day of an ISO 8601 ordinal date: `2026-286` is October 13.
+ *
+ * @param year - The year
+ * @param ordinal - The day of the year, 1–365 or 366 in leap years
+ * @returns The day, or `INVALID_DAY` when the year has no such day
+ */
+function ordinalReading(
+  year: number,
+  ordinal: number
+): Reading | ParseErrorCode {
+  const date = utcDay(year, JANUARY, ordinal);
+  if (ordinal < FIRST || date.getUTCFullYear() !== year) {
+    return ParseError.InvalidDay;
+  }
+  return readingAt(date);
+}
 
 function daysIn(year: number, month: number): number {
   const date = new Date(NONE);
@@ -142,5 +186,13 @@ function dateOf(parts: DateParts): Date {
   return new Date(date.getTime() - parts.offsetMinutes * MS_PER_MINUTE);
 }
 
-export { MIDNIGHT, clockProblem, dateOf, offsetMinutes, partsOf, problemOf };
+export {
+  MIDNIGHT,
+  clockProblem,
+  dateOf,
+  offsetMinutes,
+  ordinalReading,
+  partsOf,
+  problemOf,
+};
 export type { Clock };
