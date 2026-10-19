@@ -1,5 +1,6 @@
 import type { Segment, SegmentType } from "./types";
 import { nextSegment } from "./navigate";
+import { valued } from "./segment";
 
 const PLACEHOLDER = "_";
 
@@ -39,7 +40,7 @@ function withValueAt(
 ): Segment[] {
   return segments.map((seg, idx) => {
     if (idx === index) {
-      return { end: seg.end, start: seg.start, type: seg.type, value };
+      return valued(seg, value);
     }
     return seg;
   });

@@ -3,7 +3,6 @@
 const DEFAULT_LOCALE = "en-US";
 const NARROW_MAX_LENGTH = 2;
 const SHORT_MAX_LENGTH = 3;
-const DAY_PERIOD_SHORT_MAX_LENGTH = 4;
 const TIME_ZONE_SHORT_MAX_LENGTH = 4;
 const ONE_DIGIT = 1;
 const TWO_DIGITS = 2;
@@ -53,17 +52,6 @@ function derivedOptions(
     }
     case "weekday": {
       return { weekday: widthFor(length, NARROW_MAX_LENGTH, SHORT_MAX_LENGTH) };
-    }
-    case "dayPeriod": {
-      return {
-        dayPeriod: widthFor(
-          length,
-          NARROW_MAX_LENGTH,
-          DAY_PERIOD_SHORT_MAX_LENGTH
-        ),
-        hour: "numeric",
-        hour12: true,
-      };
     }
     case "fractionalSecond": {
       return fractionalSecondOptions(length);

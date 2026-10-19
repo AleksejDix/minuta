@@ -49,7 +49,9 @@ export type { InputResult } from "./input";
 
 // Types
 export type {
+  HourCycle,
   Segment,
+  SegmentMeta,
   SegmentType,
   EditableSegmentType,
   DerivedSegmentType,

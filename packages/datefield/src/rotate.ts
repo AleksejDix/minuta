@@ -1,5 +1,7 @@
 import type { Segment, SegmentType } from "./types";
 import { dateOf, fullYear, shownYear } from "./year";
+import { hourRange, isDayPeriod, switchedPeriod } from "./day-period";
+import { valued } from "./segment";
 
 const UP = 1;
 const DOWN = -1;
@@ -11,7 +13,6 @@ const MAX_DAYS_IN_MONTH = 31;
 const FIRST_YEAR = 1;
 /** 10^n - 1 is the largest n-digit number */
 const LARGEST_DIGITS_OFFSET = 1;
-const LAST_HOUR = 23;
 const LAST_MINUTE = 59;
 const LAST_SECOND = 59;
 const MIDNIGHT = 0;
@@ -26,7 +27,6 @@ type Range = { readonly min: number; readonly max: number };
 type Direction = typeof UP | typeof DOWN;
 
 const FIXED_RANGES: Readonly<Partial<Record<SegmentType, Range>>> = {
-  hour: { max: LAST_HOUR, min: MIDNIGHT },
   minute: { max: LAST_MINUTE, min: MIDNIGHT },
   month: { max: LAST_MONTH, min: FIRST_MONTH },
   second: { max: LAST_SECOND, min: MIDNIGHT },
@@ -86,6 +86,9 @@ function rangeOf(
       min: FIRST_YEAR,
     };
   }
+  if (seg.type === "hour") {
+    return hourRange(seg.hourCycle);
+  }
   return FIXED_RANGES[seg.type];
 }
 
@@ -98,12 +101,7 @@ function withValue(
     if (idx !== index) {
       return seg;
     }
-    return {
-      end: seg.end,
-      start: seg.start,
-      type: seg.type,
-      value: String(num).padStart(seg.end - seg.start, ZERO_PAD),
-    };
+    return valued(seg, String(num).padStart(seg.end - seg.start, ZERO_PAD));
   });
 }
 
@@ -195,6 +193,41 @@ function nextValue(input: RotateInput): number {
   return wrap(current + direction, range);
 }
 
+type RotateAt = Readonly<{
+  direction: Direction;
+  index: number;
+  today: Readonly<Date>;
+}>;
+
+/**
+ * A number segment stepped within its range, the day then kept valid.
+ *
+ * @param segments - Current segments
+ * @param at - Which segment, which way, and today for an empty year
+ * @returns The rotated segments, or the same array when the segment has no range
+ */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Returned by identity when unchanged
+function rotatedNumber(segments: Segment[], at: RotateAt): Segment[] {
+  const seg = segments[at.index];
+  const range = rangeOf(segments, seg);
+  if (seg === undefined || range === undefined) {
+    return segments;
+  }
+  const next = nextValue({
+    current: numberOf(seg),
+    direction: at.direction,
+    range,
+    today: at.today,
+    type: seg.type,
+    width: seg.end - seg.start,
+  });
+  const rotated = withValue(segments, at.index, next);
+  if (seg.type === "day") {
+    return rotated;
+  }
+  return clampDay(rotated);
+}
+
 /**
  * Rotate one segment up or down, wrapping within its own range.
  *
@@ -220,25 +253,10 @@ function rotateSegment(
   direction: Direction,
   today: Readonly<Date> = new Date()
 ): Segment[] {
-  const seg = segments[index];
-  const range = rangeOf(segments, seg);
-  if (seg === undefined || range === undefined) {
-    return segments;
+  if (isDayPeriod(segments[index])) {
+    return switchedPeriod(segments, index, direction);
   }
-
-  const next = nextValue({
-    current: numberOf(seg),
-    direction,
-    range,
-    today,
-    type: seg.type,
-    width: seg.end - seg.start,
-  });
-  const rotated = withValue(segments, index, next);
-  if (seg.type === "day") {
-    return rotated;
-  }
-  return clampDay(rotated);
+  return rotatedNumber(segments, { direction, index, today });
 }
 
 export { clampDay, rotateSegment };

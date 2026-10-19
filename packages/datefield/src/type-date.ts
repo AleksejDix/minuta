@@ -12,6 +12,7 @@ import { fromDate } from "./convert";
 import { fullYear } from "./year";
 import { nextSegment } from "./navigate";
 import { parseSegments } from "./parse";
+import { valued } from "./segment";
 import { withSegments } from "./field";
 
 const ZERO_PAD = "0";
@@ -21,6 +22,7 @@ const TWO_DIGITS = 2;
 const DIGITS = /^\d+$/u;
 // Separators people type between date parts: punctuation, spaces, symbols
 const SEPARATOR = /^[\p{P}\p{S}\p{Zs}]$/u;
+const LETTER = /^\p{L}$/u;
 
 const DATE_PARTS: ReadonlySet<string> = new Set([
   "day",
@@ -59,7 +61,7 @@ function finishedSegments(
     if (position !== index) {
       return seg;
     }
-    return { end: seg.end, start: seg.start, type: seg.type, value };
+    return valued(seg, value);
   });
 }
 
@@ -109,7 +111,22 @@ function finishSegment(
   return setSelection(finished, Math.max(next.start, seg.end));
 }
 
-// Digits fill slots, separators finish the segment, anything else is ignored
+// A letter picks a day period: it ends the number being typed, like a separator
+function typedLetter(
+  format: Readonly<DateFormat>,
+  state: InputState,
+  char: string
+): InputState {
+  if (!format.some((token) => token.type === "dayPeriod")) {
+    return state;
+  }
+  return typeChar(finishSegment(format, state), char);
+}
+
+/*
+ * Digits fill slots, separators finish the segment, letters pick a day
+ * period; anything else is ignored
+ */
 function typedChars(
   format: Readonly<DateFormat>,
   state: InputState,
@@ -121,6 +138,8 @@ function typedChars(
       next = typeChar(next, char);
     } else if (SEPARATOR.test(char)) {
       next = finishSegment(format, next);
+    } else if (LETTER.test(char)) {
+      next = typedLetter(format, next, char);
     }
   }
   return next;

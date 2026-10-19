@@ -78,15 +78,23 @@ The mask, a plain object you pass to
 ## Errors
 
 `dateMask` throws a `RangeError` when the format contains a part nobody can
-type: a weekday, era, AM/PM, fractional seconds or time zone name.
+type: a weekday, era, fractional seconds or time zone name.
 
 ```ts
-dateMask(deriveFormat("en-US", { hour: "2-digit", minute: "2-digit" }));
-// RangeError: Display-only part "dayPeriod" cannot be typed into a date mask
+dateMask(
+  deriveFormat("en-US", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+);
+// RangeError: Display-only part "weekday" cannot be typed into a date mask
 ```
 
-For a 12-hour locale, pass `hourCycle: "h23"` to `deriveFormat` to get a time
-without AM/PM.
+The AM/PM of a 12-hour time can be typed: it becomes a
+[choice](../../input-state/choice-tokens/), so `p` writes `PM`. See
+[12-hour clocks](../derive-format/#12-hour-clocks).
 
 :::caution
 A different `placeholder` changes the mask, but some datefield helpers always

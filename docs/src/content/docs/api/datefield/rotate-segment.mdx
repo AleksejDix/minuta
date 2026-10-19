@@ -100,17 +100,18 @@ back unchanged.
 
 ## Ranges and wrapping
 
-| Segment | Range                         | Past the end            |
-| ------- | ----------------------------- | ----------------------- |
-| day     | 1 to the month's real length  | wraps: 31 ↑ 01, 01 ↓ 31 |
-| month   | 1 to 12                       | wraps: 12 ↑ 01, 01 ↓ 12 |
-| year    | 1 to 9999 (99 for two digits) | stops: does not wrap    |
-| hour    | 0 to 23                       | wraps: 23 ↑ 00          |
-| minute  | 0 to 59                       | wraps: 59 ↑ 00          |
-| second  | 0 to 59                       | wraps: 59 ↑ 00          |
+| Segment | Range                                          | Past the end               |
+| ------- | ---------------------------------------------- | -------------------------- |
+| day     | 1 to the month's real length                   | wraps: 31 ↑ 01, 01 ↓ 31    |
+| month   | 1 to 12                                        | wraps: 12 ↑ 01, 01 ↓ 12    |
+| year    | 1 to 9999 (99 for two digits)                  | stops: does not wrap       |
+| hour    | 0 to 23; 1 to 12 or 0 to 11 on a 12-hour clock | wraps: 23 ↑ 00, 12 ↑ 01    |
+| minute  | 0 to 59                                        | wraps: 59 ↑ 00             |
+| second  | 0 to 59                                        | wraps: 59 ↑ 00             |
+| AM/PM   | the two day periods                            | switches: PM ↑ AM, AM ↑ PM |
 
-Nothing carries over. Day 31 up is day 01 of the _same_ month, and minute 59
-up does not change the hour. This is how native date inputs behave, and it
+Nothing carries over. Day 31 up is day 01 of the _same_ month, minute 59 up
+does not change the hour, and hour 12 up is 01 with the same AM or PM. This is how native date inputs behave, and it
 means one key changes one segment.
 
 ```ts
