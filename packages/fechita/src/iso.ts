@@ -46,6 +46,10 @@ const WEEK = isoPattern(
 const ORDINAL = isoPattern(
   String.raw`(?<year>[+-]\d{4,6}|\d{4})-?(?<ordinal>\d{3})`
 );
+// The HTML yearless date, and the ISO 8601:2004 one without dashes
+const YEARLESS = /^--(?<month>\d{2})-?(?<day>\d{2})$/gu;
+// February 29 exists in some year
+const LEAP_YEAR = 2000;
 // A date and a T: the text is an ISO 8601 date-time, or a broken one
 const ISO_DATE_TIME =
   /^(?:[+-]?\d{4,6}-?\d{2}-?\d{2}|(?:[+-]\d{4,6}|\d{4})-?(?:w\d{2}-?\d|\d{3}))t/iu;
@@ -203,6 +207,27 @@ function calendarDay(
 }
 
 /**
+ * A month and day without a year, such as `--10-13`: there is no date to
+ * return, but the text is not mistaken for another date.
+ *
+ * @param text - Normalised text
+ * @returns `NO_YEAR`, why the day does not exist, or undefined
+ */
+function yearless(text: string): ParseResult | undefined {
+  const groups = groupsOf(text, YEARLESS);
+  if (groups === undefined) {
+    return undefined;
+  }
+  const problem = problemOf({
+    day: Number(groups["day"]),
+    month: Number(groups["month"]),
+    order: "YMD",
+    year: LEAP_YEAR,
+  });
+  return failure([problem ?? ParseError.NoYear]);
+}
+
+/**
  * A text with a date and a T that is not valid ISO 8601, such as
  * `2026-10-13T10:04:05.Z`: reading only its date as free text would drop
  * the time.
@@ -246,7 +271,7 @@ function parseIso(text: string): ParseResult | undefined {
       ordinal
     );
   }
-  return brokenIso(text);
+  return yearless(text) ?? brokenIso(text);
 }
 
 export { parseIso };
