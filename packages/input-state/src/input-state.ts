@@ -121,10 +121,10 @@ function typeFree(state: InputState, char: string): InputState {
  * @returns The buffer, its cursor moved when the mask is empty
  */
 function startOfEmpty(buffer: TextBuffer, mask: Mask): TextBuffer {
-  const isEmpty = slotPositions(mask).every(
+  const noneFilled = slotPositions(mask).every(
     (slot) => buffer.text[slot] === mask.placeholder
   );
-  if (!isEmpty || !isCollapsed(buffer)) {
+  if (!noneFilled || !isCollapsed(buffer)) {
     return buffer;
   }
   const first = firstEmptySlot(mask, buffer.text);
@@ -222,11 +222,29 @@ function isComplete(state: InputState): boolean {
   );
 }
 
+/**
+ * Whether no slot of a masked input is filled; without a mask, whether the
+ * text is empty.
+ *
+ * @param state - State to inspect
+ * @returns Whether the input is empty
+ */
+function isEmpty(state: InputState): boolean {
+  const { mask } = state;
+  if (mask === undefined) {
+    return state.buffer.text === "";
+  }
+  return slotPositions(mask).every(
+    (slot) => state.buffer.text[slot] === mask.placeholder
+  );
+}
+
 export {
   backspace,
   createInputState,
   deleteForward,
   isComplete,
+  isEmpty,
   paste,
   setSelection,
   toggleMode,

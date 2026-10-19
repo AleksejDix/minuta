@@ -8,6 +8,7 @@ export {
   createInputState,
   deleteForward,
   isComplete,
+  isEmpty,
   paste,
   setSelection,
   toggleMode,
