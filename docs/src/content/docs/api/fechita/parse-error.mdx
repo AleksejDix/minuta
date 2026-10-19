@@ -14,7 +14,9 @@ export const triggers = {
   InvalidMonth: "13/13/2026",
   InvalidOffset: "31.03.2026 10:00 +25:00",
   InvalidTime: "31.03.2026 10:61",
+  InvalidWeek: "2025-W53-1",
   NoDate: "hello",
+  NoYear: "--10-13",
   WeekdayMismatch: "Monday 31 March 2026",
 };
 
@@ -52,7 +54,9 @@ A plain object. Each name maps to the code string that appears in
 | `InvalidMonth`      | `INVALID_MONTH`       | The month is not 1–12.                                                                                  |
 | `InvalidOffset`     | `INVALID_OFFSET`      | The UTC offset is out of range: `+25:00`, `+10:75`. At most ±23:59.                                     |
 | `InvalidTime`       | `INVALID_TIME`        | The time is out of range (`25:00`, `24:00`, `10:61`), or an ISO 8601 time is malformed (`T10:04:05.Z`). |
+| `InvalidWeek`       | `INVALID_WEEK`        | The ISO 8601 week does not exist in that year: `2025-W53-1` (2025 has 52 weeks), `2026-W00-1`.          |
 | `NoDate`            | `NO_DATE`             | No day, month and year were found in the text.                                                          |
+| `NoYear`            | `NO_YEAR`             | The text has a month and day but no year: the HTML yearless date `--10-13`.                             |
 | `WeekdayMismatch`   | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                                                 |
 
 Each constant with a text that makes `parseDate` report it. The codes on the

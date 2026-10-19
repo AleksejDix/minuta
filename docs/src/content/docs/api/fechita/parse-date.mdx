@@ -254,6 +254,16 @@ parseDate("2026-03-31T10.5");
 
 parseDate("Tue, 31 Mar 2026 10:00:00 +0200");
 // → the moment 2026-03-31T08:00:00Z (an email date, RFC 2822)
+
+parseDate("2026-W14-2");
+// → 31 March 2026: Tuesday of ISO week 14. Week 1 holds 4 January,
+//   so 2025-W01-1 is 30 December 2024
+
+parseDate("2026-090");
+// → 31 March 2026: day 90 of the year (an ordinal date)
+
+parseDate("--03-31");
+// → invalid: NO_YEAR. A month and day alone are not a date
 ```
 
 The ISO form of the text that was ambiguous above has only one reading:
@@ -314,7 +324,9 @@ constants.
 | `INVALID_DAY`         | The day does not exist in that month: 31 April, 29 February 2026.          |
 | `INVALID_MONTH`       | The month is not 1–12.                                                     |
 | `INVALID_TIME`        | The time is out of range: `25:00`, `10:61`.                                |
+| `INVALID_WEEK`        | The ISO week does not exist in that year: `2025-W53-1`.                    |
 | `NO_DATE`             | No day, month and year were found: `hello`, `""`, `March 2026`.            |
+| `NO_YEAR`             | A month and day without a year: `--10-13`.                                 |
 | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                    |
 
 ## Related
