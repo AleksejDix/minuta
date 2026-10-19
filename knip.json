@@ -1,6 +1,14 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignore": [".claude/**", "packages/*/examples/src/components/ui/**"],
+  "vitest": {
+    "entry": [
+      "packages/*/src/**/*.test.{ts,tsx}",
+      "packages/*/examples/src/**/*.test.{ts,tsx}",
+      "vitest.setup.ts",
+      "packages/*/vitest.setup.ts"
+    ]
+  },
   "workspaces": {
     "docs": {
       "entry": ["src/route-data.ts"]
