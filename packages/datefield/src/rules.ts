@@ -91,6 +91,30 @@ function limitProblem(
 }
 
 /**
+ * Why `date` is not allowed, if it is not. The limits are checked first,
+ * then `isUnavailable`.
+ *
+ * @param date - The date to check
+ * @param rules - The allowed dates
+ * @param byDay - Whether to compare days instead of moments
+ * @returns The problem, or undefined when the date is allowed
+ */
+function problemOf(
+  date: Readonly<Date>,
+  rules: DateRules,
+  byDay: boolean
+): DateProblemCode | undefined {
+  const limit = limitProblem(date, rules, byDay);
+  if (limit !== undefined) {
+    return limit;
+  }
+  if (rules.isUnavailable !== undefined && rules.isUnavailable(date)) {
+    return DateProblem.Unavailable;
+  }
+  return undefined;
+}
+
+/**
  * Why the field's date is not allowed, if it is not. The limits are checked
  * first, then `isUnavailable`. An unfinished or impossible date reports
  * nothing: there is no date to check yet.
@@ -111,15 +135,27 @@ function checkDate(
   if (date === undefined) {
     return undefined;
   }
-  const limit = limitProblem(date, rules, !hasTime(segments));
-  if (limit !== undefined) {
-    return limit;
-  }
-  if (rules.isUnavailable !== undefined && rules.isUnavailable(date)) {
-    return DateProblem.Unavailable;
-  }
-  return undefined;
+  return problemOf(date, rules, !hasTime(segments));
 }
 
-export { DateProblem, checkDate };
+/**
+ * Why the day holding `date` is not allowed, if it is not: the same rules
+ * as {@link checkDate}, comparing whole days. Give it to a calendar so it
+ * disables exactly the days the field reports.
+ *
+ * @example
+ * <CalendarRoot isDisabled={(day) => checkDay(day.start, rules) !== undefined} />
+ *
+ * @param date - Any moment of the day
+ * @param rules - The allowed dates
+ * @returns The problem, or undefined when the day is allowed
+ */
+function checkDay(
+  date: Readonly<Date>,
+  rules: DateRules
+): DateProblemCode | undefined {
+  return problemOf(date, rules, true);
+}
+
+export { DateProblem, checkDate, checkDay };
 export type { DateProblemCode, DateRules };
