@@ -150,6 +150,21 @@ Functions that work on milliseconds keep milliseconds. `move` keeps a
 24-hour day 24 hours long, so moved onto Mar 29 it ends at 00:59:59.999 on
 Mar 30. Use `shift` to move by calendar units.
 
+### Clock changes days apart
+
+V8, the JavaScript engine in Node and Chrome, caches zone offsets and
+assumes two clock changes are never close together. When they are, `Date`
+can give wrong offsets, and the answer depends on which moment was asked
+about first. In America/Recife daylight saving time lasted one week in
+October 2000; with the computer in Recife, the year 2000 can come out with
+more than 366 days.
+
+Every engine that computes through `Date` can be affected, including
+`temporalUnits` and `dateFnsTzUnits`. minuta never stalls on such
+answers: periods still touch and `next` still moves on, but their
+boundaries are only as right as the engine's. The Temporal API itself reads offsets
+from the zone data and is not affected.
+
 ## Zones with unusual offsets
 
 Zones that are offset by 30 or 45 minutes from UTC, such as Asia/Kolkata or
