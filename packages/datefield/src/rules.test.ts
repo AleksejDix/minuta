@@ -1,4 +1,4 @@
-import { DateProblem, checkDate } from "./rules";
+import { DateProblem, checkDate, checkDay } from "./rules";
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
 
@@ -84,5 +84,22 @@ describe("checkDate() availability", () => {
       min: new Date("2026-06-15T00:00"),
     };
     expect(checkDate(dateOf("13.06.2026"), rules)).toBe(DateProblem.BeforeMin);
+  });
+});
+
+describe("checkDay()", () => {
+  it("checks a calendar day by its whole day", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const rules = {
+      isUnavailable: isWeekend,
+      min: new Date("2026-06-15T18:30"),
+    };
+    expect(checkDay(new Date("2026-06-15T00:00"), rules)).toBeUndefined();
+    expect(checkDay(new Date("2026-06-14T23:59"), rules)).toBe(
+      DateProblem.BeforeMin
+    );
+    expect(checkDay(new Date("2026-06-20T12:00"), rules)).toBe(
+      DateProblem.Unavailable
+    );
   });
 });

@@ -34,7 +34,7 @@ export { rotateSegment, clampDay } from "./rotate";
 
 // Typing: digits fill slots, separators finish a segment
 export { finishField, finishSegment, typeDate } from "./type-date";
-export { DateProblem, checkDate } from "./rules";
+export { DateProblem, checkDate, checkDay } from "./rules";
 export type { DateProblemCode, DateRules } from "./rules";
 export type { TypeOptions } from "./type-date";
 export type { DateOrder } from "./parse";
