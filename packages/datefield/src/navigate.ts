@@ -9,6 +9,7 @@ const EDITABLE_TYPES: ReadonlySet<SegmentType> = new Set<SegmentType>([
   "hour",
   "minute",
   "second",
+  "dayPeriod",
 ]);
 
 function isEditable(seg: Segment | undefined): boolean {

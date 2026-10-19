@@ -6,6 +6,7 @@
 
 import type { DateFormat, FormatToken, Segment } from "./types";
 import type { InputState, Mask, MaskToken } from "input-state";
+import { choiceTokens } from "input-state";
 import { createTextBuffer } from "text-buffer";
 import { segmentsToString } from "./convert";
 
@@ -26,6 +27,9 @@ function tokenToMask(token: Readonly<FormatToken>): MaskToken[] {
   if (token.type === "literal") {
     return Array.from(token.char, (char) => ({ char, kind: "literal" }));
   }
+  if (token.type === "dayPeriod" && token.options !== undefined) {
+    return choiceTokens(token.options);
+  }
   if (!EDITABLE_TYPES.has(token.type)) {
     throw new RangeError(
       `Display-only part "${token.type}" cannot be typed into a date mask`
@@ -36,7 +40,7 @@ function tokenToMask(token: Readonly<FormatToken>): MaskToken[] {
 
 /**
  * Turn a date format into an input mask: editable parts become digit slots,
- * separators become literals (`de-CH` → `__.__.____`).
+ * a day period (AM/PM) a choice, separators literals (`de-CH` → `__.__.____`).
  *
  * @param format - Format from `deriveFormat`; display-only parts are rejected
  * @param placeholder - Character shown in empty slots

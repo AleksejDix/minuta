@@ -1,14 +1,9 @@
 import type { DateFormat, FormatToken, Segment, SegmentType } from "./types";
+import { REFERENCE_DATE, clockOf, clockToken, withShortPeriods } from "./clock";
+import type { ClockInfo } from "./clock";
+import { withMeta } from "./segment";
 
 const PLACEHOLDER = "_";
-const REFERENCE_YEAR = 2026;
-/** Zero-based: 10 is November */
-const REFERENCE_MONTH_INDEX = 10;
-const REFERENCE_DAY = 13;
-const REFERENCE_HOUR = 14;
-const REFERENCE_MINUTE = 35;
-const REFERENCE_SECOND = 47;
-const REFERENCE_MILLISECOND = 123;
 
 /**
  * Intl part types mapped to our SegmentType.
@@ -28,20 +23,6 @@ const INTL_TYPE_MAP: Readonly<Partial<Record<string, SegmentType>>> = {
   year: "year",
 };
 
-/**
- * A reference date that produces unambiguous parts:
- * day=13, month=11, year=2026, hour=14, minute=35, second=47 — no single-digit ambiguity.
- */
-const REFERENCE_DATE = new Date(
-  REFERENCE_YEAR,
-  REFERENCE_MONTH_INDEX,
-  REFERENCE_DAY,
-  REFERENCE_HOUR,
-  REFERENCE_MINUTE,
-  REFERENCE_SECOND,
-  REFERENCE_MILLISECOND
-);
-
 const DEFAULT_OPTIONS: Readonly<Intl.DateTimeFormatOptions> = {
   day: "2-digit",
   month: "2-digit",
@@ -49,7 +30,8 @@ const DEFAULT_OPTIONS: Readonly<Intl.DateTimeFormatOptions> = {
 };
 
 function partToToken(
-  part: Readonly<Intl.DateTimeFormatPart>
+  part: Readonly<Intl.DateTimeFormatPart>,
+  clock: ClockInfo
 ): FormatToken | undefined {
   const type = INTL_TYPE_MAP[part.type];
   if (type === undefined) {
@@ -57,6 +39,12 @@ function partToToken(
   }
   if (type === "literal") {
     return { char: part.value, type: "literal" };
+  }
+  if (
+    type === "dayPeriod" ||
+    (type === "hour" && clock.hourCycle !== undefined)
+  ) {
+    return clockToken(type, part.value.length, clock);
   }
   return { length: part.value.length, type };
 }
@@ -97,18 +85,32 @@ function deriveFormat(
 
   const fmt = new Intl.DateTimeFormat(
     intlLocale.toString(),
-    options ?? DEFAULT_OPTIONS
+    withShortPeriods(options ?? DEFAULT_OPTIONS)
   );
+  const clock = clockOf(fmt);
   const tokens: DateFormat = [];
 
   for (const part of fmt.formatToParts(REFERENCE_DATE)) {
-    const token = partToToken(part);
+    const token = partToToken(part, clock);
     if (token !== undefined) {
       tokens.push(token);
     }
   }
 
   return tokens;
+}
+
+// The segment `token` describes, at `pos`, holding `value`
+function segmentOf(
+  token: Readonly<FormatToken>,
+  pos: number,
+  value: string
+): Segment {
+  const end = pos + value.length;
+  if (token.type === "literal") {
+    return { end, start: pos, type: "literal", value };
+  }
+  return withMeta(token, { end, start: pos, type: token.type, value });
 }
 
 /**
@@ -134,12 +136,7 @@ function parseSegments(format: Readonly<DateFormat>, text: string): Segment[] {
 
   for (const token of format) {
     const length = tokenLength(token);
-    segments.push({
-      end: pos + length,
-      start: pos,
-      type: token.type,
-      value: text.slice(pos, pos + length),
-    });
+    segments.push(segmentOf(token, pos, text.slice(pos, pos + length)));
     pos += length;
   }
 

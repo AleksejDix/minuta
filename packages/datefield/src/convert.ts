@@ -5,20 +5,35 @@ import type {
   Segment,
 } from "./types";
 import { dateOf, fullYear, shownYear } from "./year";
+import { hoursOf, periodIndex, periodText, shownHour } from "./day-period";
 import { extractDerivedPart } from "./derived-part";
+import { withMeta } from "./segment";
 
 const DEFAULT_TIME_PART = 0;
 const MONTH_OFFSET = 1;
 const ZERO_PAD = "0";
 const DIGITS = /^\d+$/u;
+const NOON = 12;
+const AM = 0;
+const PM = 1;
+const NOT_FOUND = -1;
 
 type DateParts = Partial<Record<EditableSegmentType, number>>;
 
 type DatePartGetter = (date: Readonly<Date>) => number;
 
+function periodOfHours(hours: number): number {
+  if (hours < NOON) {
+    return AM;
+  }
+  return PM;
+}
+
 const EDITABLE_GETTERS: Readonly<Record<EditableSegmentType, DatePartGetter>> =
   {
     day: (date) => date.getDate(),
+    // 0 for the first day period (AM), 1 for the second
+    dayPeriod: (date) => periodOfHours(date.getHours()),
     hour: (date) => date.getHours(),
     minute: (date) => date.getMinutes(),
     month: (date) => date.getMonth() + MONTH_OFFSET,
@@ -29,7 +44,6 @@ const EDITABLE_GETTERS: Readonly<Record<EditableSegmentType, DatePartGetter>> =
 const DERIVED_TYPES: ReadonlySet<string> = new Set<string>([
   "era",
   "weekday",
-  "dayPeriod",
   "fractionalSecond",
   "timeZoneName",
 ]);
@@ -48,7 +62,53 @@ function partValue(seg: Segment): number {
 }
 
 /**
- * Collect the numeric value of every editable segment.
+ * The hours of the day 0–23 the hour segment and day period stand for.
+ *
+ * @param segments - Segments to read
+ * @param hour - The hour as shown, if there is an hour segment
+ * @returns Hours of the day, or undefined when the clock cannot show them
+ */
+function hoursOfDay(
+  segments: readonly Segment[],
+  hour: number
+): number | undefined {
+  const hourSeg = segments.find((seg) => seg.type === "hour");
+  const periodSeg = segments.find((seg) => seg.type === "dayPeriod");
+  let period = NOT_FOUND;
+  if (periodSeg !== undefined) {
+    period = periodIndex(periodSeg);
+  }
+  if (hourSeg === undefined) {
+    return hoursOf(hour, undefined, period);
+  }
+  return hoursOf(hour, hourSeg.hourCycle, period);
+}
+
+/**
+ * The parts with the hour as hours of the day.
+ *
+ * @param segments - Segments to read
+ * @param parts - The parts as shown
+ * @returns The parts, or undefined when the clock cannot show the hour
+ */
+function withHoursOfDay(
+  segments: readonly Segment[],
+  parts: DateParts
+): DateParts | undefined {
+  if (parts.hour === undefined) {
+    return parts;
+  }
+  const hours = hoursOfDay(segments, parts.hour);
+  if (hours === undefined) {
+    return undefined;
+  }
+  parts.hour = hours;
+  return parts;
+}
+
+/**
+ * Collect the numeric value of every editable segment; the hour as hours of
+ * the day, read with the day period on a 12-hour clock.
  *
  * @param segments - Segments to read
  * @returns The parts, or undefined if an editable segment is not all digits
@@ -56,14 +116,14 @@ function partValue(seg: Segment): number {
 function collectParts(segments: readonly Segment[]): DateParts | undefined {
   const parts: DateParts = {};
   for (const seg of segments) {
-    if (isEditableType(seg.type)) {
+    if (isEditableType(seg.type) && seg.type !== "dayPeriod") {
       if (!DIGITS.test(seg.value)) {
         return undefined;
       }
       parts[seg.type] = partValue(seg);
     }
   }
-  return parts;
+  return withHoursOfDay(segments, parts);
 }
 
 /**
@@ -114,8 +174,9 @@ function buildDate(parts: Readonly<DateParts>): Date | undefined {
  * Convert segments to a Date.
  * Returns undefined if the segments don't form a valid date.
  *
- * Editable segments (day, month, year, hour, minute, second) are parsed.
- * Derived segments (era, weekday, dayPeriod, etc.) are ignored — they're computed from the date.
+ * Editable segments (day, month, year, hour, minute, second, dayPeriod) are
+ * parsed; on a 12-hour clock the hour is read with the day period. Derived
+ * segments (era, weekday, etc.) are ignored — they're computed from the date.
  *
  * @param segments - Segments to convert
  * @returns The date, or undefined if the segments are incomplete or invalid
@@ -128,15 +189,22 @@ function toDate(segments: readonly Segment[]): Date | undefined {
   return buildDate(parts);
 }
 
-// A part of `date` as a segment of `length` slots shows it
+// A part of `date` as a segment of the token's length shows it
 function editableValue(
+  token: Readonly<Extract<FormatToken, { length: number }>>,
   type: EditableSegmentType,
-  length: number,
   date: Readonly<Date>
 ): string {
+  const { length } = token;
+  if (type === "dayPeriod") {
+    return periodText(token, date.getHours(), length);
+  }
   const part = EDITABLE_GETTERS[type](date);
   if (type === "year") {
     return String(shownYear(part, length)).padStart(length, ZERO_PAD);
+  }
+  if (type === "hour") {
+    return String(shownHour(part, token.hourCycle)).padStart(length, ZERO_PAD);
   }
   return String(part).padStart(length, ZERO_PAD);
 }
@@ -159,8 +227,13 @@ function tokenToSegment(input: TokenInput): Segment | undefined {
     };
   }
   if (isEditableType(token.type)) {
-    const value = editableValue(token.type, token.length, date);
-    return { end: pos + token.length, start: pos, type: token.type, value };
+    const value = editableValue(token, token.type, date);
+    return withMeta(token, {
+      end: pos + token.length,
+      start: pos,
+      type: token.type,
+      value,
+    });
   }
   if (DERIVED_TYPES.has(token.type)) {
     const value = extractDerivedPart({
@@ -177,8 +250,9 @@ function tokenToSegment(input: TokenInput): Segment | undefined {
 /**
  * Convert a Date to segments matching a format.
  *
- * Handles editable segments (day, month, year, hour, minute, second)
- * and derived segments (era, weekday, dayPeriod, fractionalSecond, timeZoneName).
+ * Handles editable segments (day, month, year, hour, minute, second,
+ * dayPeriod) and derived segments (era, weekday, fractionalSecond,
+ * timeZoneName).
  *
  * @param date - Date to convert
  * @param format - Format of the segments

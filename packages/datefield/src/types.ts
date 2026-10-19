@@ -8,7 +8,8 @@ type EditableSegmentType =
   | "year"
   | "hour"
   | "minute"
-  | "second";
+  | "second"
+  | "dayPeriod";
 
 /**
  * Derived segment types from Intl.DateTimeFormat.
@@ -17,9 +18,23 @@ type EditableSegmentType =
 type DerivedSegmentType =
   | "era"
   | "weekday"
-  | "dayPeriod"
   | "fractionalSecond"
   | "timeZoneName";
+
+/**
+ * How a clock counts hours: `h12` 1–12 and `h11` 0–11 with a day period,
+ * `h23` 0–23, `h24` 1–24.
+ */
+type HourCycle = "h11" | "h12" | "h23" | "h24";
+
+/**
+ * What an hour or day period segment needs to be read: the clock's hour
+ * cycle, and the texts of the day period (AM first, then PM).
+ */
+type SegmentMeta = Readonly<{
+  hourCycle?: HourCycle | undefined;
+  options?: readonly string[] | undefined;
+}>;
 
 /**
  * All segment types: editable, derived, or literal separators.
@@ -33,7 +48,7 @@ type SegmentType = EditableSegmentType | DerivedSegmentType | "literal";
  * // The "31" in "31.03.2026"
  * { type: "day", value: "31", start: 0, end: 2 }
  */
-type Segment = {
+type Segment = SegmentMeta & {
   readonly type: SegmentType;
   readonly value: string;
   /** Character index where this segment starts in the full string */
@@ -52,10 +67,10 @@ type Segment = {
  * { type: "literal", char: "." }
  */
 type FormatToken =
-  | {
+  | (SegmentMeta & {
       readonly type: EditableSegmentType | DerivedSegmentType;
       readonly length: number;
-    }
+    })
   | { readonly type: "literal"; readonly char: string };
 
 /**
@@ -73,6 +88,8 @@ type SegmentedDate = {
 
 export type {
   DateFormat,
+  HourCycle,
+  SegmentMeta,
   DerivedSegmentType,
   EditableSegmentType,
   FormatToken,
