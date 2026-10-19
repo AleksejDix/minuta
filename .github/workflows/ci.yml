@@ -6,6 +6,8 @@ on:
   push:
     branches: [master]
 
+# Lint and tests read the packages' sources through the @minuta/source
+# export condition, so only the jobs that check builds wait for the build
 jobs:
   commits:
     name: Commit messages
@@ -56,8 +58,6 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    # Type-aware lint rules read the packages' types from their dist builds
-    needs: [build]
     steps:
       - uses: actions/checkout@v4
 
@@ -67,12 +67,6 @@ jobs:
           cache: npm
 
       - run: npm ci
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-dist
-          path: packages/
 
       # Type-aware lint rules read astro:content's types, which Astro generates
       - name: Generate Astro types
@@ -128,7 +122,6 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    needs: [build]
     steps:
       - uses: actions/checkout@v4
 
@@ -139,12 +132,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-dist
-          path: packages/
-
       - name: Run tests
         run: npm test
         env:
@@ -154,7 +141,6 @@ jobs:
   test-time-zones:
     name: Test (${{ matrix.tz }})
     runs-on: ubuntu-latest
-    needs: [build]
     strategy:
       fail-fast: false
       matrix:
@@ -178,12 +164,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-dist
-          path: packages/
-
       - name: Run date tests
         run: npx vitest run --project minuta --project datefield
         env:
@@ -193,7 +173,6 @@ jobs:
   test-react-19:
     name: Test (React 19)
     runs-on: ubuntu-latest
-    needs: [build]
     steps:
       - uses: actions/checkout@v4
 
@@ -208,12 +187,6 @@ jobs:
         run: >-
           npm install --no-save -w minuta-react
           react@19 react-dom@19 @types/react@19 @types/react-dom@19
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-dist
-          path: packages/
 
       - name: Type check
         run: npm run type-check -w minuta-react
