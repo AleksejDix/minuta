@@ -1,0 +1,69 @@
+---
+title: isEmpty
+description: Whether no slot of a masked input field is filled yet.
+---
+
+import { createInputState, isEmpty, parseMask, typeChar } from "input-state";
+import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
+
+export const mask = parseMask("99.99.9999");
+export const empty = createInputState({ mask });
+export const started = typeChar(empty, "3");
+
+Check whether the user has filled any slot of a masked field yet.
+
+```ts
+import { isEmpty } from "input-state";
+```
+
+```ts
+isEmpty(state);
+```
+
+## Example
+
+```ts
+import { createInputState, isEmpty, parseMask, typeChar } from "input-state";
+
+const mask = parseMask("99.99.9999");
+const field = createInputState({ mask });
+
+isEmpty(field); // → true
+isEmpty(typeChar(field, "3")); // → false
+```
+
+<FieldDiagram
+  {...empty.buffer.selection}
+  text={empty.buffer.text}
+  mode={empty.mode}
+  caption={`Every slot holds "_", so isEmpty → ${String(isEmpty(empty))}.`}
+/>
+
+<FieldDiagram
+  {...started.buffer.selection}
+  text={started.buffer.text}
+  mode={started.mode}
+  caption={`One slot holds 3, so isEmpty → ${String(isEmpty(started))}.`}
+/>
+
+## Parameters
+
+| Name    | What it is            |
+| ------- | --------------------- |
+| `state` | The field to look at. |
+
+## Returns
+
+`true` when every slot holds the placeholder, `false` otherwise. A free-text
+field has no slots; it is empty when its text is `""`.
+
+:::caution
+A slot counts as empty when it holds the placeholder character. If your
+placeholder is a character the slot can also take, such as `0` in a digit
+mask, a typed `0` counts as empty.
+:::
+
+## Related
+
+- [`isComplete`](../is-complete/) — whether every slot is filled.
+- [`emptyText`](../empty-text/) — the text with every slot empty.
