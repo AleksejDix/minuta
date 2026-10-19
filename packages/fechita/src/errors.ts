@@ -18,6 +18,8 @@ const ParseError = {
   InvalidWeek: "INVALID_WEEK",
   /** No day, month and year could be found in the text */
   NoDate: "NO_DATE",
+  /** The text has a month and day but no year (--10-13, the HTML yearless date) */
+  NoYear: "NO_YEAR",
   /** The weekday in the text is not the weekday of the date */
   WeekdayMismatch: "WEEKDAY_MISMATCH",
 } as const;

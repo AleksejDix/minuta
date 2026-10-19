@@ -180,6 +180,12 @@ const REJECTED: readonly Rejected[] = [
   { code: ParseError.InvalidDay, text: "2026366" },
   { code: ParseError.InvalidTime, text: "2026-286T25:00" },
   { code: ParseError.InvalidTime, text: "2026-286T10:04:05.Z" },
+  // Yearless dates: a month and day are not a date
+  { code: ParseError.NoYear, text: "--10-13" },
+  { code: ParseError.NoYear, text: "--1013" },
+  { code: ParseError.NoYear, text: "--02-29" },
+  { code: ParseError.InvalidMonth, text: "--13-01" },
+  { code: ParseError.InvalidDay, text: "--04-31" },
   // A time alone: fechita reads dates
   { code: ParseError.NoDate, text: "10:04" },
   { code: ParseError.NoDate, text: "10:04:05Z" },
