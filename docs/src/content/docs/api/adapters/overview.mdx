@@ -125,8 +125,8 @@ way, see [Date engines](../../../concepts/date-engines/).
 - **luxonUnits** follows Luxon's `Settings.defaultZone`. Do not change it,
   or the units' `timeZone` setting no longer matches.
 - **dayjsUnits** calls `dayjs.extend(quarterOfYear)` on your Day.js.
-- **temporalUnits** puts the polyfill on `globalThis.Temporal` when the
-  runtime has none. It does not use Temporal's time zones.
+- **temporalUnits** uses the runtime's `Temporal`, or the polyfill when there
+  is none, without setting a global. It does not use Temporal's time zones.
 
 ## Learn more
 

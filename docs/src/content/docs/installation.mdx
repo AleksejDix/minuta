@@ -99,9 +99,8 @@ example `minuta/dayjs` without `dayjs`.
 :::
 
 :::note
-`minuta/temporal` always uses the polyfill, even where the runtime has
-Temporal built in. On import it sets a global `Temporal` from the polyfill if
-the runtime has none.
+`minuta/temporal` uses the runtime's `Temporal` where there is one and
+`@js-temporal/polyfill` otherwise. It never sets a global `Temporal`.
 :::
 
 How to choose: see [Date engines](../concepts/date-engines/).
