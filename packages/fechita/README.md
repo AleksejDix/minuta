@@ -53,15 +53,15 @@ parseDate("04/05/2026", { locale: "en-US" }); // valid: 5 April
 
 ## What it reads
 
-| Form                     | Examples                                                       |
-| ------------------------ | -------------------------------------------------------------- |
-| ISO 8601 / RFC 3339      | `2026-03-31`, `20260331`, `2026-03-31T10:00:00.250+02:00`      |
-| RFC 2822 (email headers) | `Tue, 31 Mar 2026 10:00:00 +0200`                              |
-| Month names              | `31. März 2026`, `March 31, 2026`, `31 de marzo de 2026`       |
-| Numbers in any order     | `31.03.2026`, `3/31/2026`, `2026/3/31`, `31032026`, `31.03.26` |
-| Times                    | `14:05`, `2:05 PM`, `오후 2:05`, `晚上11:59`, `14.05` (Danish) |
-| Offsets                  | `Z`, `+02:00`, `+0200`, `GMT+1`, `UTC`                         |
-| Eras                     | `44 v. Chr.`, `500 BC`                                         |
+| Form                     | Examples                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| ISO 8601 / RFC 3339      | `2026-03-31`, `20260331`, `2026-03-31T10:00:00.250+02:00`, `2026-03-31T10.5` |
+| RFC 2822 (email headers) | `Tue, 31 Mar 2026 10:00:00 +0200`                                            |
+| Month names              | `31. März 2026`, `March 31, 2026`, `31 de marzo de 2026`                     |
+| Numbers in any order     | `31.03.2026`, `3/31/2026`, `2026/3/31`, `31032026`, `31.03.26`               |
+| Times                    | `14:05`, `2:05 PM`, `오후 2:05`, `晚上11:59`, `14.05` (Danish)               |
+| Offsets                  | `Z`, `+02:00`, `+0200`, `GMT+1`, `UTC`                                       |
+| Eras                     | `44 v. Chr.`, `500 BC`                                                       |
 
 Dates are Gregorian. Two-digit years fall in the 100 years from 80 years
 before `referenceDate` (default: now). Years with an era are taken as written

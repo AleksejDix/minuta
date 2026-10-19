@@ -9,10 +9,15 @@ import type { ParseResult } from "./choose";
 import type { Reading } from "./candidates";
 import { groupsOf } from "./regex";
 
+// A decimal fraction may end the time on the hour, the minute or the second
 const ISO =
-  /^(?<year>[+-]?\d{4,6})-?(?<month>\d{2})-?(?<day>\d{2})(?:[t\s](?<hour>\d{2}):?(?<minute>\d{2})(?::?(?<second>\d{2})(?:[.,](?<fraction>\d{1,9}))?)?\s*(?<offset>z|[+-]\d{2}(?::?\d{2})?)?)?$/giu;
+  /^(?<year>[+-]?\d{4,6})-?(?<month>\d{2})-?(?<day>\d{2})(?:[t\s](?<hour>\d{2})(?:[.,](?<hourFraction>\d{1,9})|:?(?<minute>\d{2})(?:[.,](?<minuteFraction>\d{1,9})|:?(?<second>\d{2})(?:[.,](?<fraction>\d{1,9}))?)?)\s*(?<offset>z|[+-]\d{2}(?::?\d{2})?)?)?$/giu;
 const OFFSET = /^(?<sign>[+-])(?<hours>\d{2}):?(?<minutes>\d{2})?$/gu;
 const MS_DIGITS = 3;
+const MS_PER_SECOND = 1000;
+const MS_PER_MINUTE = 60_000;
+const MS_PER_HOUR = 3_600_000;
+const DECIMAL = 10;
 const NONE = 0;
 const NEGATIVE = -1;
 const POSITIVE = 1;
@@ -53,6 +58,39 @@ function offsetMinutesOf(offset: string | undefined): number | undefined {
 }
 
 /**
+ * The milliseconds a decimal fraction of a unit stands for, cut to whole
+ * milliseconds like a fraction of a second: `5` of an hour is 1 800 000.
+ *
+ * @param digits - The digits after the decimal sign, if written
+ * @param unitMs - The milliseconds in the unit the fraction belongs to
+ * @returns The milliseconds, 0 when no fraction is written
+ */
+function fractionMs(digits: string | undefined, unitMs: number): number {
+  if (digits === undefined) {
+    return NONE;
+  }
+  const scaled = Number(digits) * unitMs;
+  const divisor = DECIMAL ** digits.length;
+  return (scaled - (scaled % divisor)) / divisor;
+}
+
+/**
+ * Milliseconds below one hour split into minutes, seconds and milliseconds.
+ *
+ * @param ms - Milliseconds, less than an hour
+ * @returns The parts
+ */
+function spreadFraction(
+  ms: number
+): Readonly<{ millisecond: number; minute: number; second: number }> {
+  return {
+    millisecond: ms % MS_PER_SECOND,
+    minute: Math.floor(ms / MS_PER_MINUTE),
+    second: Math.floor((ms % MS_PER_MINUTE) / MS_PER_SECOND),
+  };
+}
+
+/**
  * The fields of an ISO 8601 / RFC 3339 date or date-time, basic or extended.
  *
  * @param text - Normalised text
@@ -63,16 +101,22 @@ function isoFields(text: string): IsoFields | undefined {
   if (groups === undefined) {
     return undefined;
   }
+  const spread = spreadFraction(
+    fractionMs(groups["hourFraction"], MS_PER_HOUR) +
+      fractionMs(groups["minuteFraction"], MS_PER_MINUTE)
+  );
   return {
     day: Number(groups["day"]),
     hour: Number(groups["hour"] ?? NONE),
-    millisecond: Number(
-      (groups["fraction"] ?? "").padEnd(MS_DIGITS, "0").slice(NONE, MS_DIGITS)
-    ),
-    minute: Number(groups["minute"] ?? NONE),
+    millisecond:
+      spread.millisecond +
+      Number(
+        (groups["fraction"] ?? "").padEnd(MS_DIGITS, "0").slice(NONE, MS_DIGITS)
+      ),
+    minute: Number(groups["minute"] ?? NONE) + spread.minute,
     month: Number(groups["month"]),
     offsetMinutes: offsetMinutesOf(groups["offset"]),
-    second: Number(groups["second"] ?? NONE),
+    second: Number(groups["second"] ?? NONE) + spread.second,
     year: Number(groups["year"]),
   };
 }

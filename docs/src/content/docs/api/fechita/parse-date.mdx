@@ -248,6 +248,10 @@ parseDate("2026-03-31T10:00:00.250+02:00");
 // → the moment 2026-03-31T08:00:00.250Z,
 //   parts.offsetMinutes: 120, parts.millisecond: 250
 
+parseDate("2026-03-31T10.5");
+// → 31 March 2026 10:30 local time: a decimal fraction on the hour or
+//   minute (with . or ,) sets the smaller parts
+
 parseDate("Tue, 31 Mar 2026 10:00:00 +0200");
 // → the moment 2026-03-31T08:00:00Z (an email date, RFC 2822)
 ```
