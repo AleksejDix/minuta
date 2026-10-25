@@ -51,7 +51,7 @@
     "calendar"
   ],
   "scripts": {
-    "pretest": "npm run build --workspace=minuta",
+    "pretest": "npm run build --workspace=packages/minuta",
     "build": "vite build",
     "dev": "vite --mode demo",
     "demo:build": "vite build --mode demo",
