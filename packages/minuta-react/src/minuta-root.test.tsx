@@ -1,10 +1,10 @@
 import type { JSX, ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { MinutaRoot } from "./minuta-root";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { renderHook } from "@testing-library/react";
 import { useMinutaContext } from "./minuta-context";
-import { withUnits } from "minuta/core";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 type WrapperProps = Readonly<{ children: ReactNode }>;
 

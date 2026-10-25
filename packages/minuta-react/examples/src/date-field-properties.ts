@@ -14,7 +14,7 @@ import {
   typeText,
 } from "./date-field-test-utils";
 import { cleanup } from "@testing-library/react";
-import { deriveFormat } from "datefield";
+import { deriveFormat } from "@aleksejdix/datefield";
 
 const DAY_STEPS = 40;
 const ONE = 1;

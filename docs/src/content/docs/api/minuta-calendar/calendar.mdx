@@ -11,7 +11,7 @@ functions bound to your units, so you no longer pass the units on every
 call.
 
 ```ts
-import { calendar } from "minuta/calendar";
+import { calendar } from "@aleksejdix/minuta/calendar";
 ```
 
 ```ts
@@ -21,9 +21,9 @@ withUnits(units, { plugins: [calendar] });
 ## Example
 
 ```ts
-import { calendar } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
-import { withUnits } from "minuta/core";
+import { calendar } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(
   nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
@@ -82,11 +82,11 @@ argument:
 
 ## Only the plugin, without the operations
 
-`bind` from `minuta/core` binds a plugin on its own. You get only the five
+`bind` from `@aleksejdix/minuta/core` binds a plugin on its own. You get only the five
 calendar functions:
 
 ```ts
-import { bind } from "minuta/core";
+import { bind } from "@aleksejdix/minuta/core";
 
 const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
 
@@ -105,7 +105,7 @@ each other or with the operations; TypeScript reports a clash as an error.
 `calendar` and [`intervals`](../../minuta-intervals/intervals/) fit together:
 
 ```ts
-import { intervals } from "minuta/intervals";
+import { intervals } from "@aleksejdix/minuta/intervals";
 
 const time = withUnits(nativeUnits(), { plugins: [calendar, intervals] });
 time.monthGrid(new Date());
@@ -116,4 +116,4 @@ time.snap(new Date(), "minute", { step: 15 });
 
 - [`withUnits`](../../minuta-core/with-units/) — bind the operations and plugins to units.
 - [`bind`](../../minuta-core/bind/) — bind one plugin.
-- [Overview](../overview/) — everything in `minuta/calendar`.
+- [Overview](../overview/) — everything in `@aleksejdix/minuta/calendar`.

@@ -3,9 +3,14 @@ title: typeDate
 description: Type or paste text into a date field the way people write dates, so 1.3.2026 becomes 01.03.2026.
 ---
 
-import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
-import { parseDate } from "fechita";
-import { createInputState, paste } from "input-state";
+import {
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { parseDate } from "@aleksejdix/fechita";
+import { createInputState, paste } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const format = deriveFormat("de-CH");
@@ -26,7 +31,7 @@ and a separator finishes the part being typed, so `1.3.2026` becomes
 fills the field.
 
 ```ts
-import { typeDate } from "datefield";
+import { typeDate } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -36,8 +41,8 @@ typeDate(format, state, text, options?)
 ## Example
 
 ```ts
-import { dateMask, deriveFormat, typeDate } from "datefield";
-import { createInputState } from "input-state";
+import { dateMask, deriveFormat, typeDate } from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 const field = createInputState({ mask: dateMask(format) });
@@ -184,8 +189,8 @@ datefield has no date parser of its own. Use
 the field shows:
 
 ```ts
-import { dateOrder } from "datefield";
-import { parseDate } from "fechita";
+import { dateOrder } from "@aleksejdix/datefield";
+import { parseDate } from "@aleksejdix/fechita";
 
 const parse = (text) => {
   const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });

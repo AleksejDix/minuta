@@ -15,7 +15,7 @@ languages, taken from the Unicode CLDR data. When a text can mean more than
 one date, it tells you so and lists the dates instead of picking one.
 
 ```sh
-npm install fechita
+npm install @aleksejdix/fechita
 ```
 
 ## Where it sits
@@ -33,7 +33,7 @@ dates are hard to read.
 ## Example
 
 ```ts
-import { parseDate } from "fechita";
+import { parseDate } from "@aleksejdix/fechita";
 
 parseDate("31. März 2026");
 // → { valid: true, date: 31 March 2026 00:00 local time,
@@ -59,16 +59,16 @@ numbers, which has two readings until a locale picks one:
 ## Two entry points
 
 - **`fechita`** knows all 104 locales. Easiest to use.
-- **`fechita/core`** knows none. You pass in only the locales you need, from
+- **`@aleksejdix/fechita/core`** knows none. You pass in only the locales you need, from
   `fechita/locales/<locale>`, which makes your bundle much smaller. See
   [Locales](../locales/).
 
 ## Exports
 
-| Export                                 | Entry point         | What it does                                               |
-| -------------------------------------- | ------------------- | ---------------------------------------------------------- |
-| [`parseDate`](../parse-date/)          | `fechita`           | Read the date in a text, with all locales.                 |
-| [`ParseError`](../parse-error/)        | both                | The error codes `parseDate` reports, by name.              |
-| [`withLocales`](../with-locales/)      | `fechita/core`      | Get a `parseDate` that knows only the locales you pass in. |
-| [`parseDateWith`](../parse-date-with/) | `fechita/core`      | Read a date with the locales you pass in, in one call.     |
-| [Locales](../locales/)                 | `fechita/locales/*` | The data of one locale each, to pass to `withLocales`.     |
+| Export                                 | Entry point                | What it does                                               |
+| -------------------------------------- | -------------------------- | ---------------------------------------------------------- |
+| [`parseDate`](../parse-date/)          | `fechita`                  | Read the date in a text, with all locales.                 |
+| [`ParseError`](../parse-error/)        | both                       | The error codes `parseDate` reports, by name.              |
+| [`withLocales`](../with-locales/)      | `@aleksejdix/fechita/core` | Get a `parseDate` that knows only the locales you pass in. |
+| [`parseDateWith`](../parse-date-with/) | `@aleksejdix/fechita/core` | Read a date with the locales you pass in, in one call.     |
+| [Locales](../locales/)                 | `fechita/locales/*`        | The data of one locale each, to pass to `withLocales`.     |

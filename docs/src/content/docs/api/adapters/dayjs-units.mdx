@@ -3,9 +3,9 @@ title: dayjsUnits
 description: Units computed with Day.js — for apps that already use Day.js, in the computer's time zone.
 ---
 
-import { divideWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
-import { dayjsUnits } from "minuta/dayjs";
+import { divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { dayjsUnits } from "@aleksejdix/minuta/dayjs";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) =>
@@ -16,7 +16,7 @@ with a Moment-like API. Dates are read in the time zone of the computer the
 code runs on.
 
 ```ts
-import { dayjsUnits } from "minuta/dayjs";
+import { dayjsUnits } from "@aleksejdix/minuta/dayjs";
 ```
 
 ```ts
@@ -26,8 +26,8 @@ dayjsUnits(options?)
 ## Example
 
 ```ts
-import { dayjsUnits } from "minuta/dayjs";
-import { withUnits } from "minuta/core";
+import { dayjsUnits } from "@aleksejdix/minuta/dayjs";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(dayjsUnits({ weekStartsOn: "sunday" }));
 
@@ -66,7 +66,7 @@ The weeks of March 2026, computed once by Day.js and once by the built-in
 ## Install
 
 ```sh
-npm install minuta dayjs
+npm install @aleksejdix/minuta dayjs
 ```
 
 Day.js is not a dependency of minuta; install it yourself. minuta is tested
@@ -96,7 +96,7 @@ The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
 
 ## Things to know
 
-- **It extends your Day.js.** Importing `minuta/dayjs` calls
+- **It extends your Day.js.** Importing `@aleksejdix/minuta/dayjs` calls
   `dayjs.extend(quarterOfYear)` on the shared `dayjs` instance, so the
   quarter plugin is active in the rest of your app too.
 

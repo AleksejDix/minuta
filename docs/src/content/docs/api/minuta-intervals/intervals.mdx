@@ -3,9 +3,9 @@ title: intervals
 description: The intervals plugin — pass it to withUnits to get clamp, gap, merge, move, resize, snap and split on the bound object.
 ---
 
-import { withUnits } from "minuta/core";
-import { intervals } from "minuta/intervals";
-import { nativeUnits } from "minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { intervals } from "@aleksejdix/minuta/intervals";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -19,7 +19,7 @@ The intervals plugin. Pass it to `withUnits` and the interval functions
 join the operations on the bound object.
 
 ```ts
-import { intervals } from "minuta/intervals";
+import { intervals } from "@aleksejdix/minuta/intervals";
 ```
 
 ```ts
@@ -29,9 +29,9 @@ withUnits(units, { plugins: [intervals] });
 ## Example
 
 ```ts
-import { intervals } from "minuta/intervals";
-import { nativeUnits } from "minuta/native";
-import { withUnits } from "minuta/core";
+import { intervals } from "@aleksejdix/minuta/intervals";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(nativeUnits(), { plugins: [intervals] });
 
@@ -104,11 +104,11 @@ object.
 
 ## Only the plugin
 
-`bind` from `minuta/core` binds the plugin on its own, without the
+`bind` from `@aleksejdix/minuta/core` binds the plugin on its own, without the
 operations:
 
 ```ts
-import { bind } from "minuta/core";
+import { bind } from "@aleksejdix/minuta/core";
 
 const tools = bind(nativeUnits(), intervals);
 tools.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
@@ -118,4 +118,4 @@ tools.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
 
 - [`withUnits`](../../minuta-core/with-units/) — bind the operations and plugins to units.
 - [`calendar`](../../minuta-calendar/calendar/) — the other plugin; the two can be combined.
-- [Overview](../overview/) — everything in `minuta/intervals`.
+- [Overview](../overview/) — everything in `@aleksejdix/minuta/intervals`.

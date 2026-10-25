@@ -3,9 +3,9 @@ title: withLocales
 description: Get a parseDate that knows only the locales you load, for a smaller bundle.
 ---
 
-import { withLocales } from "fechita/core";
-import { de } from "fechita/locales/de";
-import { en } from "fechita/locales/en";
+import { withLocales } from "@aleksejdix/fechita/core";
+import { de } from "@aleksejdix/fechita/locales/de";
+import { en } from "@aleksejdix/fechita/locales/en";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import ParseDiagram from "../../../../components/diagrams/ParseDiagram.astro";
 
@@ -27,7 +27,7 @@ Get a `parseDate` function that knows only the languages you pass in. Your
 bundle then contains only their data, not all 104 locales.
 
 ```ts
-import { withLocales } from "fechita/core";
+import { withLocales } from "@aleksejdix/fechita/core";
 ```
 
 ```ts
@@ -37,9 +37,9 @@ withLocales(locales);
 ## Example
 
 ```ts
-import { withLocales } from "fechita/core";
-import { de } from "fechita/locales/de";
-import { en } from "fechita/locales/en";
+import { withLocales } from "@aleksejdix/fechita/core";
+import { de } from "@aleksejdix/fechita/locales/de";
+import { en } from "@aleksejdix/fechita/locales/en";
 
 const { parseDate } = withLocales({ de, en });
 
@@ -75,7 +75,7 @@ by one with no locales at all:
   />
 </div>
 
-The default `parseDate` from `fechita` has all 104 locales, so it reads the
+The default `parseDate` from `@aleksejdix/fechita` has all 104 locales, so it reads the
 Russian text that the `de` and `en` version cannot:
 
 <ParseDiagram text="31 марта 2026" />
@@ -90,10 +90,10 @@ Russian text that the `de` and `en` version cannot:
 
 An object with two fields:
 
-| Field       | What it is                                                                                                                                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `parseDate` | Works exactly like [`parseDate`](../parse-date/) from `fechita`, with the same options and results, but reads only the words of `locales`. |
-| `locales`   | The `locales` object you passed in.                                                                                                        |
+| Field       | What it is                                                                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `parseDate` | Works exactly like [`parseDate`](../parse-date/) from `@aleksejdix/fechita`, with the same options and results, but reads only the words of `locales`. |
+| `locales`   | The `locales` object you passed in.                                                                                                                    |
 
 ## What the locales are needed for
 

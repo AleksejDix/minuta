@@ -1,10 +1,10 @@
 import type { MinutaOptions, MinutaState } from "./types";
 import { describe, expect, it } from "vitest";
 import type { RenderHookResult } from "@testing-library/react";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { renderHook } from "@testing-library/react";
 import { useMinuta } from "./use-minuta";
-import { withUnits } from "minuta/core";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const MONDAY = 1;
 const SUNDAY = 0;

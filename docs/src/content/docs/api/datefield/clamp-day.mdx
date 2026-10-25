@@ -8,7 +8,7 @@ import {
   deriveFormat,
   parseSegments,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const format = deriveFormat("de-CH");
@@ -19,7 +19,7 @@ Keep the day within the month's real length, so `31.02.2026` becomes
 part they are in.
 
 ```ts
-import { clampDay } from "datefield";
+import { clampDay } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -34,7 +34,7 @@ import {
   deriveFormat,
   parseSegments,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 const s = (text) => parseSegments(format, text);

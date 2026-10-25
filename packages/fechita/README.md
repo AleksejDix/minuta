@@ -7,11 +7,11 @@ times, and numbers in any order. Locale data generated from Unicode CLDR,
 ambiguity reported instead of guessed, zero dependencies.
 
 ```bash
-npm install fechita
+npm install @aleksejdix/fechita
 ```
 
 ```ts
-import { parseDate } from "fechita";
+import { parseDate } from "@aleksejdix/fechita";
 
 parseDate("2026-03-31"); // { valid: true, date: 31 March 2026, … }
 parseDate("31. März 2026"); // valid
@@ -75,9 +75,9 @@ The default entry knows all 104 locales. For a smaller bundle, bind the rules
 to the locales you need:
 
 ```ts
-import { withLocales } from "fechita/core";
-import { de } from "fechita/locales/de";
-import { en } from "fechita/locales/en";
+import { withLocales } from "@aleksejdix/fechita/core";
+import { de } from "@aleksejdix/fechita/locales/de";
+import { en } from "@aleksejdix/fechita/locales/en";
 
 const { parseDate } = withLocales({ de, en });
 parseDate("31. März 2026"); // valid
@@ -116,7 +116,7 @@ Returns `{ valid: true, date, parts }` or
 | `NO_YEAR`             | A month and day without a year: the HTML yearless date `--10-13`                                    |
 | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date                                              |
 
-### `withLocales(locales)` (`fechita/core`)
+### `withLocales(locales)` (`@aleksejdix/fechita/core`)
 
 Returns `{ parseDate, locales }` bound to the given locale data.
 `parseDateWith(locales, text, options)` is the unbound function.

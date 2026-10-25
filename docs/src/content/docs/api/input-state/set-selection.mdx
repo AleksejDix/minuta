@@ -8,7 +8,7 @@ import {
   parseMask,
   setSelection,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const field = createInputState({ mask: parseMask("99.99.9999") });
@@ -18,7 +18,7 @@ Move the cursor, or select part of the text. Use it when the user clicks into
 the field or selects with the mouse or Shift and the arrow keys.
 
 ```ts
-import { setSelection } from "input-state";
+import { setSelection } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -28,7 +28,11 @@ setSelection(state, anchor, head?)
 ## Example
 
 ```ts
-import { createInputState, parseMask, setSelection } from "input-state";
+import {
+  createInputState,
+  parseMask,
+  setSelection,
+} from "@aleksejdix/input-state";
 
 const field = createInputState({ mask: parseMask("99.99.9999") });
 

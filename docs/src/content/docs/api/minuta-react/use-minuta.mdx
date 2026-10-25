@@ -3,7 +3,7 @@ title: useMinuta
 description: A React hook that binds every minuta function to your units and keeps the browsed period in state.
 ---
 
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 import Flow from "../../../../components/diagrams/Flow.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -15,7 +15,7 @@ _browsed period_ — the month (or week, day, …) the user is looking at — ke
 in React state.
 
 ```js
-import { useMinuta } from "minuta-react";
+import { useMinuta } from "@aleksejdix/minuta-react";
 ```
 
 ```js
@@ -27,7 +27,7 @@ useMinuta({ date, now, unit, units });
 A button that shows the browsed month and moves to the next month on click.
 
 ```jsx
-import { useMinuta } from "minuta-react";
+import { useMinuta } from "@aleksejdix/minuta-react";
 
 function MonthPager() {
   const minuta = useMinuta({ unit: "month" });
@@ -82,7 +82,7 @@ All options are optional. You can call `useMinuta()` with nothing.
 | `units` | The units every function uses. The week start lives here.                 | `nativeUnits()`, Monday weeks |
 
 ```js
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 

@@ -3,7 +3,11 @@ title: fromDate
 description: Write a Date as segments in a format, ready to show in a date field.
 ---
 
-import { deriveFormat, fromDate, segmentsToString } from "datefield";
+import {
+  deriveFormat,
+  fromDate,
+  segmentsToString,
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
@@ -16,7 +20,7 @@ Write a `Date` in a format, so `new Date(2026, 2, 1)` becomes `01.03.2026` for
 `de-CH` and `03/01/2026` for `en-US`.
 
 ```ts
-import { fromDate } from "datefield";
+import { fromDate } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -26,7 +30,11 @@ fromDate(date, format, locale?)
 ## Example
 
 ```ts
-import { deriveFormat, fromDate, segmentsToString } from "datefield";
+import {
+  deriveFormat,
+  fromDate,
+  segmentsToString,
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 
@@ -106,8 +114,8 @@ segmentsToString(fromDate(new Date(2026, 2, 1), short)); // → "01.03.26"
 ## Start a field with a date
 
 ```ts
-import { dateMask, segmentsToString } from "datefield";
-import { createInputState } from "input-state";
+import { dateMask, segmentsToString } from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 
 let field = createInputState({
   mask: dateMask(format),

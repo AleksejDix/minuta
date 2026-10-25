@@ -16,7 +16,7 @@ ships calendar components you can put together like building blocks.
 ## Install
 
 ```sh
-npm install minuta minuta-react
+npm install @aleksejdix/minuta @aleksejdix/minuta-react
 ```
 
 `minuta-react` needs React 18 or 19 (`react` is a peer dependency).
@@ -81,7 +81,7 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-react/components";
+} from "@aleksejdix/minuta-react/components";
 
 export function DatePicker() {
   const [picked, setPicked] = useState();
@@ -144,7 +144,7 @@ From `minuta-react`:
 | [`usePeriod`](../use-period/)                | Hook: the year, week, day, … that contains the browsed period's start.    |
 | [`CalendarExample`](../calendar-example/)    | Component: a ready-made month calendar with a week start toggle.          |
 
-From `minuta-react/components`:
+From `@aleksejdix/minuta-react/components`:
 
 | Export                                      | What it is                                                         |
 | ------------------------------------------- | ------------------------------------------------------------------ |
@@ -155,7 +155,7 @@ From `minuta-react/components`:
 | [`CalendarDay`](../calendar-day/)           | One day button.                                                    |
 | [`CalendarExample`](../calendar-example/)   | The same ready-made calendar as above.                             |
 
-`minuta-react/types` exports the TypeScript types only.
+`@aleksejdix/minuta-react/types` exports the TypeScript types only.
 
 ## Related
 

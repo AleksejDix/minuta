@@ -3,14 +3,14 @@ title: emptyText
 description: The text of a mask with every slot empty, such as __.__.____.
 ---
 
-import { emptyText, parseMask } from "input-state";
+import { emptyText, parseMask } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 Get the text a masked field shows before anything is typed: literals in
 place, the placeholder in every slot.
 
 ```ts
-import { emptyText } from "input-state";
+import { emptyText } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -20,7 +20,7 @@ emptyText(mask);
 ## Example
 
 ```ts
-import { emptyText, parseMask } from "input-state";
+import { emptyText, parseMask } from "@aleksejdix/input-state";
 
 emptyText(parseMask("99.99.9999")); // → "__.__.____"
 emptyText(parseMask("99/99", "·")); // → "··/··"

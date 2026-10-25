@@ -9,7 +9,7 @@ Build the days of a month view for a calendar: always 6 weeks of 7 days,
 starting on the first day of your week.
 
 ```ts
-import { monthGridWith } from "minuta/calendar";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
 ```
 
 ```ts
@@ -19,8 +19,8 @@ monthGridWith(units, date);
 ## Example
 
 ```ts
-import { monthGridWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const grid = monthGridWith(nativeUnits(), new Date(2026, 2, 15));
 
@@ -94,7 +94,7 @@ the 42 days are not in March: the grey numbers in the
 To find them, check each day against the month with `contains`:
 
 ```ts
-import { contains, periodWith } from "minuta/core";
+import { contains, periodWith } from "@aleksejdix/minuta/core";
 
 const units = nativeUnits();
 const grid = monthGridWith(units, new Date(2026, 2, 15));

@@ -3,7 +3,7 @@ title: DateProblem
 description: The codes checkDate and checkDay return, as named constants.
 ---
 
-import { DateProblem } from "datefield";
+import { DateProblem } from "@aleksejdix/datefield";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 
 export const when = {
@@ -16,13 +16,13 @@ The codes [`checkDate`](../check-date/) and [`checkDay`](../check-day/) return,
 as named constants. Use them instead of typing the strings yourself.
 
 ```ts
-import { DateProblem } from "datefield";
+import { DateProblem } from "@aleksejdix/datefield";
 ```
 
 ## Example
 
 ```ts
-import { DateProblem, checkDate } from "datefield";
+import { DateProblem, checkDate } from "@aleksejdix/datefield";
 
 const messages = {
   [DateProblem.BeforeMin]: "Pick a date from today on.",

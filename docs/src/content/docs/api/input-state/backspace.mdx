@@ -8,7 +8,7 @@ import {
   createInputState,
   parseMask,
   setSelection,
-} from "input-state";
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const full = createInputState({
@@ -23,7 +23,7 @@ becomes empty again and nothing moves; in a free-text field the character
 before the cursor is removed.
 
 ```ts
-import { backspace } from "input-state";
+import { backspace } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -38,7 +38,7 @@ import {
   createInputState,
   parseMask,
   setSelection,
-} from "input-state";
+} from "@aleksejdix/input-state";
 
 let field = createInputState({
   mask: parseMask("99.99.9999"),

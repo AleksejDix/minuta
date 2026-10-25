@@ -9,7 +9,7 @@ import {
   setSelection,
   toggleMode,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const empty = createInputState({ mask: parseMask("99.99.9999") });
@@ -30,7 +30,7 @@ Type one character at the cursor. In a masked field it fills the next slot; in
 a free-text field it is inserted or overwrites, depending on the mode.
 
 ```ts
-import { typeChar } from "input-state";
+import { typeChar } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -46,7 +46,7 @@ import {
   setSelection,
   toggleMode,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 
 let field = createInputState({ mask: parseMask("99.99.9999") });
 

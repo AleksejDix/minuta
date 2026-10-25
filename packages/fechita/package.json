@@ -1,5 +1,5 @@
 {
-  "name": "fechita",
+  "name": "@aleksejdix/fechita",
   "version": "0.1.0",
   "type": "module",
   "description": "Parse dates the way people write them, in every modern locale: ISO 8601, RFC 2822, month names, numbers in any order. Locale data from Unicode CLDR, ambiguity reported, zero dependencies.",
@@ -89,5 +89,8 @@
       },
       "limit": "5 kB"
     }
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
 }

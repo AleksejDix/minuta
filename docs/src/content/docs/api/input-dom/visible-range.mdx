@@ -3,8 +3,12 @@ title: visibleRange
 description: The part of the text an <input> should select to show a state — its selection, or a one-character block cursor in overwrite mode.
 ---
 
-import { visibleRange } from "input-dom";
-import { createInputState, parseMask, setSelection } from "input-state";
+import { visibleRange } from "@aleksejdix/input-dom";
+import {
+  createInputState,
+  parseMask,
+  setSelection,
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const empty = createInputState({ mask: parseMask("99.99.9999") });
@@ -23,7 +27,7 @@ is, or, in overwrite mode, a one-character block over the slot the next key
 will fill.
 
 ```ts
-import { visibleRange } from "input-dom";
+import { visibleRange } from "@aleksejdix/input-dom";
 ```
 
 ```ts
@@ -33,8 +37,12 @@ visibleRange(state);
 ## Example
 
 ```ts
-import { createInputState, parseMask, setSelection } from "input-state";
-import { visibleRange } from "input-dom";
+import {
+  createInputState,
+  parseMask,
+  setSelection,
+} from "@aleksejdix/input-state";
+import { visibleRange } from "@aleksejdix/input-dom";
 
 const empty = createInputState({ mask: parseMask("99.99.9999") });
 visibleRange(empty);

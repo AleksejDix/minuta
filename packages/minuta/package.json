@@ -1,5 +1,5 @@
 {
-  "name": "minuta",
+  "name": "@aleksejdix/minuta",
   "version": "1.0.0-beta.1",
   "type": "module",
   "description": "Divide time into pieces. Pure functional calendar library with a 4-method adapter contract.",
@@ -233,5 +233,8 @@
     "stableMonth",
     "pure-functions",
     "framework-agnostic"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
 }

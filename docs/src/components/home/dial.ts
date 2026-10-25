@@ -3,8 +3,8 @@
  * hours as rings, made with minuta's own `period`, `divide` and `contains`,
  * with a second hand sweeping over them.
  */
-import { contains, divide, period } from "minuta";
-import type { Period } from "minuta";
+import { contains, divide, period } from "@aleksejdix/minuta";
+import type { Period } from "@aleksejdix/minuta";
 
 type Ring = Readonly<{
   /** Degrees left empty between two pieces */

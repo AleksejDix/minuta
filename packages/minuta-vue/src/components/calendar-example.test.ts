@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { h, nextTick } from "vue";
 import { itemAt, mountRender } from "#src/test/mount";
 import { CalendarExample } from "#src/components/index";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 
 const DAYS_IN_GRID = 42;
 const FIRST = 0;

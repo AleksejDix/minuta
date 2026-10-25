@@ -3,7 +3,7 @@ import { render, renderHook } from "@testing-library/react";
 import { CalendarDay } from "./components/CalendarDay";
 import { CalendarHeader } from "./components/CalendarHeader";
 import { MinutaRoot } from "./minuta-root";
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 import { useMinutaContext } from "./minuta-context";
 import { usePeriod } from "./use-period";
 

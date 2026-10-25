@@ -20,8 +20,8 @@ import { adapterUnits } from "#src/adapters/adapter-units";
  * the days `isWeekend` counts (Saturday and Sunday unless set).
  *
  * @example
- * import { dayjsUnits } from "minuta/dayjs";
- * import { withUnits } from "minuta/core";
+ * import { dayjsUnits } from "@aleksejdix/minuta/dayjs";
+ * import { withUnits } from "@aleksejdix/minuta/core";
  *
  * const time = withUnits(dayjsUnits({ weekStartsOn: "monday" }));
  * time.period(new Date(), "week");

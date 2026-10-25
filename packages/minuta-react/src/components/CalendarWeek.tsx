@@ -1,5 +1,5 @@
 import type { JSX, ReactNode } from "react";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 

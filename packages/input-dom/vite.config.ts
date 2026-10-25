@@ -16,7 +16,7 @@ export default defineConfig(({ command, mode }: Readonly<ConfigEnv>) => {
         formats: ["es"],
       },
       rollupOptions: {
-        external: ["input-state"],
+        external: ["@aleksejdix/input-state"],
       },
     },
     plugins: [

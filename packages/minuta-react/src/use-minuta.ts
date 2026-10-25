@@ -1,9 +1,9 @@
 import type { MinutaOptions, MinutaState } from "./types";
-import type { Period, Units } from "minuta/core";
+import type { Period, Units } from "@aleksejdix/minuta/core";
 import { useCallback, useMemo, useState } from "react";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { useClock } from "./use-clock";
-import { withUnits } from "minuta/core";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const DEFAULT_UNITS: Units = nativeUnits();
 

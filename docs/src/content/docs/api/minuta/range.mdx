@@ -3,7 +3,7 @@ title: range
 description: Make a period between any two dates, such as a meeting, a trip or a billing cycle.
 ---
 
-import { period, range } from "minuta";
+import { period, range } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const trip = range(new Date(2026, 2, 18), new Date(2026, 2, 25));
@@ -16,7 +16,7 @@ Make a period between any two dates: a meeting from 9:00 to 10:00, a trip
 from Jan 1 to Mar 31, a billing cycle.
 
 ```ts
-import { range } from "minuta";
+import { range } from "@aleksejdix/minuta";
 ```
 
 ```ts
@@ -26,7 +26,7 @@ range(start, end);
 ## Example
 
 ```ts
-import { range } from "minuta";
+import { range } from "@aleksejdix/minuta";
 
 range(new Date(2026, 0, 1), new Date(2026, 2, 31));
 // → { start: Thu Jan 1 2026 00:00:00.000,
@@ -56,7 +56,7 @@ midnight at the _start_ of Mar 31, so the range above stops there and does not
 include the rest of that day:
 
 ```ts
-import { contains, duration, range } from "minuta";
+import { contains, duration, range } from "@aleksejdix/minuta";
 
 const q1 = range(new Date(2026, 0, 1), new Date(2026, 2, 31));
 
@@ -68,7 +68,7 @@ To include the whole last day, end the range at the day's last millisecond.
 The `end` of a day [`period`](../period/) is exactly that:
 
 ```ts
-import { duration, period, range } from "minuta";
+import { duration, period, range } from "@aleksejdix/minuta";
 
 const q1 = range(
   period(new Date(2026, 0, 1), "day").start,

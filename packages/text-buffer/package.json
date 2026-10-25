@@ -1,5 +1,5 @@
 {
-  "name": "text-buffer",
+  "name": "@aleksejdix/text-buffer",
   "version": "0.1.0",
   "type": "module",
   "description": "Immutable text + selection model with pure editing operations. No modes, no masks, no DOM.",
@@ -55,5 +55,8 @@
     "editor",
     "headless",
     "immutable"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
 }

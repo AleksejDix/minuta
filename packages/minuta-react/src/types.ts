@@ -1,4 +1,4 @@
-import type { Minuta, Period, Unit, Units } from "minuta/core";
+import type { Minuta, Period, Unit, Units } from "@aleksejdix/minuta/core";
 
 /**
  * Options of `useMinuta()` and the props of `MinutaRoot`.
@@ -29,4 +29,4 @@ type MinutaState = Minuta &
   }>;
 
 export type { MinutaOptions, MinutaState };
-export type { Minuta, Period, Unit, Units } from "minuta/core";
+export type { Minuta, Period, Unit, Units } from "@aleksejdix/minuta/core";

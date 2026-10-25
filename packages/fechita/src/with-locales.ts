@@ -18,8 +18,8 @@ type Fechita = Readonly<{
  * Bind fechita to the locales you need.
  *
  * @example
- * import { withLocales } from "fechita/core";
- * import { de } from "fechita/locales/de";
+ * import { withLocales } from "@aleksejdix/fechita/core";
+ * import { de } from "@aleksejdix/fechita/locales/de";
  *
  * const { parseDate } = withLocales({ de });
  * parseDate("31. März 2026").valid; // true

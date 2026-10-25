@@ -7,9 +7,9 @@ import {
   tabbable,
 } from "#src/test/calendar";
 import { describe, expect, it } from "vitest";
-import type { Period } from "minuta/core";
-import { isWeekendWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import type { Period } from "@aleksejdix/minuta/core";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { nextTick } from "vue";
 
 const JANUARY_17 = "Wednesday, January 17, 2024";

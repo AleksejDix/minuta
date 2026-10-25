@@ -8,7 +8,7 @@ import {
   createInputState,
   parseMask,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const time = parseMask("99:99 ");
@@ -29,7 +29,7 @@ Build the mask tokens of a choice between a few fixed texts, such as `AM` and
 always written and cleared whole: typing `p` writes `PM`.
 
 ```ts
-import { choiceTokens } from "input-state";
+import { choiceTokens } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -44,7 +44,7 @@ import {
   createInputState,
   parseMask,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 
 const time = parseMask("99:99 ");
 const mask = {

@@ -8,7 +8,7 @@ import {
   firstEditableIndex,
   fromDate,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const segments = fromDate(
@@ -26,7 +26,7 @@ Find the first segment you can type into: the day in `de-CH`, the month in
 `en-US`, the year in `ja-JP`.
 
 ```ts
-import { firstEditableIndex } from "datefield";
+import { firstEditableIndex } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -36,7 +36,11 @@ firstEditableIndex(segments);
 ## Example
 
 ```ts
-import { deriveFormat, firstEditableIndex, fromDate } from "datefield";
+import {
+  deriveFormat,
+  firstEditableIndex,
+  fromDate,
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat("en-US", {
   weekday: "short",

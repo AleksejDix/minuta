@@ -3,7 +3,7 @@ title: MinutaRoot
 description: A Vue component that runs useMinuta once and provides the result to every component inside it.
 ---
 
-import { next, period } from "minuta";
+import { next, period } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -14,7 +14,7 @@ A component that runs [`useMinuta`](../use-minuta/) once and provides the
 result to every component inside it, so they all see the same browsed period.
 
 ```js
-import { MinutaRoot } from "minuta-vue";
+import { MinutaRoot } from "@aleksejdix/minuta-vue";
 ```
 
 ```vue
@@ -29,7 +29,7 @@ and the heading shows the year of the browsed month.
 ```vue
 <!-- Year.vue -->
 <script setup>
-import { usePeriod } from "minuta-vue";
+import { usePeriod } from "@aleksejdix/minuta-vue";
 
 const year = usePeriod("year");
 </script>
@@ -42,7 +42,7 @@ const year = usePeriod("year");
 ```vue
 <!-- NextMonth.vue -->
 <script setup>
-import { useMinutaContext } from "minuta-vue";
+import { useMinutaContext } from "@aleksejdix/minuta-vue";
 
 const minuta = useMinutaContext();
 </script>
@@ -57,7 +57,7 @@ const minuta = useMinutaContext();
 ```vue
 <!-- App.vue -->
 <script setup>
-import { MinutaRoot } from "minuta-vue";
+import { MinutaRoot } from "@aleksejdix/minuta-vue";
 import NextMonth from "./NextMonth.vue";
 import Year from "./Year.vue";
 </script>

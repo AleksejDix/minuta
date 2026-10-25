@@ -1,7 +1,7 @@
 // Text that reached the element without a beforeinput
 
-import { createInputState, paste } from "input-state";
-import type { InputState } from "input-state";
+import { createInputState, paste } from "@aleksejdix/input-state";
+import type { InputState } from "@aleksejdix/input-state";
 import { shownText } from "./shown-text";
 
 type Insert = (state: InputState, text: string) => InputState;

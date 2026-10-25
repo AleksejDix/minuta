@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { isRef } from "vue";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { useMinuta } from "./use-minuta";
-import { withUnits } from "minuta/core";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const MONDAY = 1;
 const DAYS_PER_WEEK = 7;

@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-import { divide, period, range } from "minuta";
+import { divide, period, range } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(new Date(2026, 2, 18), "month");
@@ -29,7 +29,7 @@ All examples run in Europe/Zurich, with weeks from Monday to Sunday.
 Get the month, then divide it into days:
 
 ```ts
-import { divide, period } from "minuta";
+import { divide, period } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 18), "month");
 const days = divide(march, "day");
@@ -102,7 +102,7 @@ You often want slots for part of a day, such as 9:00 to 17:00. Make that part
 with [`range`](../../../api/minuta/range/), then divide it:
 
 ```ts
-import { divide, range } from "minuta";
+import { divide, range } from "@aleksejdix/minuta";
 
 const open = range(
   new Date(2026, 2, 18, 9),
@@ -204,7 +204,7 @@ Monday before the 1st to the Sunday after the 31st. Make that span from the
 week of the first day and the week of the last day, then divide it:
 
 ```ts
-import { divide, period, range } from "minuta";
+import { divide, period, range } from "@aleksejdix/minuta";
 
 const weeks = divide(
   range(period(march.start, "week").start, period(march.end, "week").end),
@@ -279,12 +279,12 @@ divide(period(new Date(2026, 0, 1), "year"), "minute", { maxPeriods: 1000 });
 A month view in a calendar is a grid: always six rows of seven days, starting
 on the first day of the week, with the days of the months around it filled
 in. You could build it with `divide`, but
-[`minuta/calendar`](../../../api/minuta-calendar/overview/) does it for you,
+[`@aleksejdix/minuta/calendar`](../../../api/minuta-calendar/overview/) does it for you,
 and follows your week start:
 
 ```ts
-import { monthGridWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const grid = monthGridWith(nativeUnits(), new Date(2026, 2, 18));
 

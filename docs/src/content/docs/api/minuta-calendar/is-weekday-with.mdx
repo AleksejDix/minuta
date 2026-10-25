@@ -3,9 +3,9 @@ title: isWeekdayWith
 description: Check whether a period lies completely on working days — no Saturday, no Sunday, or no day of the weekend you set.
 ---
 
-import { divide, period, range } from "minuta";
-import { isWeekdayWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { divide, period, range } from "@aleksejdix/minuta";
+import { isWeekdayWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -24,7 +24,7 @@ are not part of the weekend. The weekend is Saturday and Sunday unless you
 set other days in the units.
 
 ```ts
-import { isWeekdayWith } from "minuta/calendar";
+import { isWeekdayWith } from "@aleksejdix/minuta/calendar";
 ```
 
 ```ts
@@ -34,9 +34,9 @@ isWeekdayWith(units, period);
 ## Example
 
 ```ts
-import { isWeekdayWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
-import { divide, period } from "minuta";
+import { isWeekdayWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { divide, period } from "@aleksejdix/minuta";
 
 const units = nativeUnits();
 
@@ -111,7 +111,7 @@ working day for `isWeekdayWith`.
 Every day the period touches counts, even partly:
 
 ```ts
-import { range } from "minuta";
+import { range } from "@aleksejdix/minuta";
 
 const units = nativeUnits();
 

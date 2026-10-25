@@ -14,8 +14,8 @@ import {
   toDate,
   typeDate,
   withSegments,
-} from "datefield";
-import { createInputState } from "input-state";
+} from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
@@ -38,7 +38,7 @@ when a day like 31 February must become 28. It has no DOM and no framework:
 every function takes data and returns new data.
 
 ```bash
-npm install datefield input-state
+npm install @aleksejdix/datefield @aleksejdix/input-state
 ```
 
 ## Where it sits
@@ -67,9 +67,9 @@ import {
   toDate,
   typeDate,
   withSegments,
-} from "datefield";
-import { createInputState } from "input-state";
-import { parseDate } from "fechita";
+} from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
+import { parseDate } from "@aleksejdix/fechita";
 
 // 1. How does this locale write a date?
 const format = deriveFormat("de-CH");

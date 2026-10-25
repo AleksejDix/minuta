@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { CalendarGrid, CalendarHeader, CalendarRoot } from 'minuta-vue/components'
+import { CalendarGrid, CalendarHeader, CalendarRoot } from '@aleksejdix/minuta-vue/components'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import DateFieldInput from './DateFieldInput.vue'
 import DateFieldOutput from './DateFieldOutput.vue'
 import DateFieldRoot from './DateFieldRoot.vue'
 import LocaleSelect from './LocaleSelect.vue'
-import type { Period } from 'minuta-vue'
+import type { Period } from '@aleksejdix/minuta-vue'
 import { shallowRef } from 'vue'
 
 const LOCALES = ['de-CH', 'en-US', 'en-GB', 'ja-JP', 'ko-KR', 'fr-FR']

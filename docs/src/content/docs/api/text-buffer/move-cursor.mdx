@@ -3,7 +3,7 @@ title: moveCursor
 description: Move the cursor left or right, like the arrow keys in a text field.
 ---
 
-import { createTextBuffer, moveCursor } from "text-buffer";
+import { createTextBuffer, moveCursor } from "@aleksejdix/text-buffer";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const buffer = createTextBuffer("hello", { anchor: 2, head: 2 });
@@ -13,7 +13,7 @@ Move the cursor a number of positions to the left or right, the way the arrow
 keys do.
 
 ```ts
-import { moveCursor } from "text-buffer";
+import { moveCursor } from "@aleksejdix/text-buffer";
 ```
 
 ```ts
@@ -23,7 +23,7 @@ moveCursor(buffer, offset);
 ## Example
 
 ```ts
-import { createTextBuffer, moveCursor } from "text-buffer";
+import { createTextBuffer, moveCursor } from "@aleksejdix/text-buffer";
 
 const buffer = createTextBuffer("hello", { anchor: 2, head: 2 });
 

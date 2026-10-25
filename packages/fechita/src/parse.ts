@@ -186,9 +186,9 @@ function parseFree(text: string, context: Context): ParseResult {
  * reading exists, or `order` / `locale` picks one.
  *
  * @example
- * import { withLocales } from "fechita/core";
- * import { de } from "fechita/locales/de";
- * import { en } from "fechita/locales/en";
+ * import { withLocales } from "@aleksejdix/fechita/core";
+ * import { de } from "@aleksejdix/fechita/locales/de";
+ * import { en } from "@aleksejdix/fechita/locales/en";
  *
  * parseDateWith({ de, en }, "31. März 2026").valid; // true
  * parseDateWith({ de, en }, "04/05/2026").valid; // false: AMBIGUOUS_DAY_MONTH

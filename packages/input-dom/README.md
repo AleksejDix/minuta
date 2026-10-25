@@ -6,12 +6,12 @@ of the input stack, framework-free; React or Vue wrap `attachInput` in a few
 lines.
 
 ```bash
-npm install input-dom input-state text-buffer
+npm install @aleksejdix/input-dom @aleksejdix/input-state @aleksejdix/text-buffer
 ```
 
 ```ts
-import { createInputState, parseMask } from "input-state";
-import { attachInput } from "input-dom";
+import { createInputState, parseMask } from "@aleksejdix/input-state";
+import { attachInput } from "@aleksejdix/input-dom";
 
 const element = document.querySelector("input");
 if (element !== null) {
@@ -56,7 +56,7 @@ other bindings.
 ## With datefield and fechita
 
 ```ts
-import { attachInput } from "input-dom";
+import { attachInput } from "@aleksejdix/input-dom";
 import {
   clampDay,
   dateMask,
@@ -66,11 +66,11 @@ import {
   parseSegments,
   typeDate,
   withSegments,
-} from "datefield";
-import { ar } from "fechita/locales/ar";
-import { createInputState } from "input-state";
-import { en } from "fechita/locales/en";
-import { withLocales } from "fechita/core";
+} from "@aleksejdix/datefield";
+import { ar } from "@aleksejdix/fechita/locales/ar";
+import { createInputState } from "@aleksejdix/input-state";
+import { en } from "@aleksejdix/fechita/locales/en";
+import { withLocales } from "@aleksejdix/fechita/core";
 
 const locale = "ar-EG";
 const format = deriveFormat(locale);

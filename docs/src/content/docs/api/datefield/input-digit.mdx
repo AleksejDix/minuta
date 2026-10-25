@@ -8,7 +8,7 @@ import {
   inputDigit,
   parseSegments,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const empty = parseSegments(deriveFormat("de-CH"), "__.__.____");
@@ -21,7 +21,7 @@ right and the others move left, so `3` then `1` gives `_3`, then `31`. When the
 segment is full, the next segment becomes active.
 
 ```ts
-import { inputDigit } from "datefield";
+import { inputDigit } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -43,7 +43,7 @@ import {
   inputDigit,
   parseSegments,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 
 const empty = parseSegments(deriveFormat("de-CH"), "__.__.____");
 

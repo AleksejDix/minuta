@@ -1,4 +1,4 @@
-import type { Period, Unit } from "minuta/core";
+import type { Period, Unit } from "@aleksejdix/minuta/core";
 import { computed, toValue } from "vue";
 import type { ComputedRef } from "vue";
 import type { Source } from "#src/types";

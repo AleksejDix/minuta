@@ -3,7 +3,11 @@ title: segmentsToString
 description: Join segments back into the date text, such as 31.03.2026.
 ---
 
-import { deriveFormat, fromDate, segmentsToString } from "datefield";
+import {
+  deriveFormat,
+  fromDate,
+  segmentsToString,
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const written = (locale) =>
@@ -13,7 +17,7 @@ Join segments back into text: the values of all parts, one after another, so
 the segments of `31.03.2026` give `"31.03.2026"` again.
 
 ```ts
-import { segmentsToString } from "datefield";
+import { segmentsToString } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -23,7 +27,11 @@ segmentsToString(segments);
 ## Example
 
 ```ts
-import { deriveFormat, fromDate, segmentsToString } from "datefield";
+import {
+  deriveFormat,
+  fromDate,
+  segmentsToString,
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 
@@ -63,8 +71,13 @@ values are simply joined.
 Use it with `fromDate` to start a field with a value:
 
 ```ts
-import { dateMask, deriveFormat, fromDate, segmentsToString } from "datefield";
-import { createInputState } from "input-state";
+import {
+  dateMask,
+  deriveFormat,
+  fromDate,
+  segmentsToString,
+} from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 const field = createInputState({

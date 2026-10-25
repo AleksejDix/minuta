@@ -1,6 +1,6 @@
 import type { JSX, KeyboardEvent, KeyboardEventHandler, Ref } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import { dayForKey } from "./day-navigation";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";

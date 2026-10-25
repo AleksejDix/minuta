@@ -3,7 +3,7 @@ title: selectionStart
 description: The left edge of a buffer's selection, whichever way it was made.
 ---
 
-import { createTextBuffer, selectionStart } from "text-buffer";
+import { createTextBuffer, selectionStart } from "@aleksejdix/text-buffer";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const forward = createTextBuffer("hello", { anchor: 1, head: 4 });
@@ -12,7 +12,7 @@ export const backward = createTextBuffer("hello", { anchor: 4, head: 1 });
 Get the left edge of the selection: the smaller of `anchor` and `head`.
 
 ```ts
-import { selectionStart } from "text-buffer";
+import { selectionStart } from "@aleksejdix/text-buffer";
 ```
 
 ```ts
@@ -22,7 +22,7 @@ selectionStart(buffer);
 ## Example
 
 ```ts
-import { createTextBuffer, selectionStart } from "text-buffer";
+import { createTextBuffer, selectionStart } from "@aleksejdix/text-buffer";
 
 selectionStart(createTextBuffer("hello", { anchor: 1, head: 4 })); // → 1
 selectionStart(createTextBuffer("hello", { anchor: 4, head: 1 })); // → 1

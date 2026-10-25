@@ -9,7 +9,7 @@ A component that renders the row of weekday names ("Mon", "Tue", …) above the
 calendar grid, in the week order of the units.
 
 ```js
-import { CalendarWeekdays } from "minuta-vue/components";
+import { CalendarWeekdays } from "@aleksejdix/minuta-vue/components";
 ```
 
 ```vue
@@ -23,8 +23,8 @@ includes it and passes its own `locale`.
 
 ```vue
 <script setup>
-import { CalendarGrid, CalendarRoot } from "minuta-vue/components";
-import { nativeUnits } from "minuta/native";
+import { CalendarGrid, CalendarRoot } from "@aleksejdix/minuta-vue/components";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 </script>

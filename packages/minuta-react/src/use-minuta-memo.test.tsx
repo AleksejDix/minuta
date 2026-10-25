@@ -1,6 +1,6 @@
-import type { Unit, Units } from "minuta/core";
+import type { Unit, Units } from "@aleksejdix/minuta/core";
 import { describe, expect, it } from "vitest";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { renderHook } from "@testing-library/react";
 import { useMinuta } from "./use-minuta";
 

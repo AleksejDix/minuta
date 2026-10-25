@@ -3,8 +3,8 @@
  * days and in other zones; units in a zone get the real day.
  */
 import { demoRoots, part } from "./dom";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { withUnits } from "minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const HOUR_MS = 3_600_000;
 const HOURS_A_DAY = 24;

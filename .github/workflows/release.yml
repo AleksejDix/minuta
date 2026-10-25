@@ -1,5 +1,7 @@
 name: Release
 
+# A version tag publishes every package to GitHub Packages, under the
+# @aleksejdix scope, with the repository's own token: no secret to keep.
 on:
   push:
     tags:
@@ -10,13 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
+          registry-url: https://npm.pkg.github.com
+          scope: "@aleksejdix"
 
       - run: npm ci
 
@@ -26,40 +30,14 @@ jobs:
 
       - run: npm run build --workspaces --if-present
 
-      - name: Publish minuta
-        run: npm publish -w minuta --access public
+      # In dependency order: each package's own packages are published first.
+      - name: Publish
+        run: |
+          for package in text-buffer input-state datefield input-dom fechita minuta minuta-vue minuta-react; do
+            npm publish -w "@aleksejdix/$package"
+          done
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish minuta-vue
-        run: npm publish -w minuta-vue --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish minuta-react
-        run: npm publish -w minuta-react --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish text-buffer
-        run: npm publish -w text-buffer --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish input-state
-        run: npm publish -w input-state --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish input-dom
-        run: npm publish -w input-dom --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish datefield
-        run: npm publish -w datefield --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

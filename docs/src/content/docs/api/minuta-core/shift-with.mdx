@@ -3,8 +3,8 @@ title: shiftWith
 description: Move a period forward or back by a number of its own unit, with the units you pass.
 ---
 
-import { periodWith, range, shiftWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { periodWith, range, shiftWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const units = nativeUnits({ weekStartsOn: "sunday" });
@@ -18,7 +18,7 @@ Move a period forward or back by a number of its own unit (two weeks ahead,
 three months back), computed with the units you pass.
 
 ```ts
-import { shiftWith } from "minuta/core";
+import { shiftWith } from "@aleksejdix/minuta/core";
 ```
 
 ```ts
@@ -28,8 +28,8 @@ shiftWith(units, period, steps);
 ## Example
 
 ```ts
-import { periodWith, shiftWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { periodWith, shiftWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = nativeUnits({ weekStartsOn: "sunday" });
 const week = periodWith(units, new Date(2026, 2, 18), "week");
@@ -75,7 +75,7 @@ A period with the unit `"custom"` moves by its length in milliseconds, so
 gives the same result:
 
 ```ts
-import { range, shiftWith } from "minuta/core";
+import { range, shiftWith } from "@aleksejdix/minuta/core";
 
 const slot = range(
   new Date(2026, 2, 2, 9),

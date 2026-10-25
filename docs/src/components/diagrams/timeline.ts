@@ -2,8 +2,8 @@
  * The geometry of a timeline: where a period sits on the axis, and which
  * ticks the axis gets. Used at build time by `Timeline.astro`.
  */
-import type { Period, Unit } from "minuta";
-import { divide, range } from "minuta";
+import type { Period, Unit } from "@aleksejdix/minuta";
+import { divide, range } from "@aleksejdix/minuta";
 
 type Bar = Readonly<{
   custom: boolean;

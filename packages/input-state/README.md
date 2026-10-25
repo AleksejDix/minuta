@@ -5,7 +5,7 @@ insert/overwrite mode and an optional mask, with pure keyboard operations.
 Layer 2 of the input stack: no DOM.
 
 ```bash
-npm install input-state text-buffer
+npm install @aleksejdix/input-state @aleksejdix/text-buffer
 ```
 
 ```ts
@@ -16,7 +16,7 @@ import {
   paste,
   parseMask,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 
 let field = createInputState({ mask: parseMask("99.99.9999") });
 field.buffer.text; // "__.__.____"

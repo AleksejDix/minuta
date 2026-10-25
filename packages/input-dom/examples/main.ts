@@ -9,12 +9,16 @@ import {
   toDate,
   typeDate,
   withSegments,
-} from "datefield";
-import { createInputState, isComplete, parseMask } from "input-state";
-import type { DateFormat } from "datefield";
-import type { InputState } from "input-state";
-import { attachInput } from "input-dom";
-import { parseDate } from "fechita";
+} from "@aleksejdix/datefield";
+import {
+  createInputState,
+  isComplete,
+  parseMask,
+} from "@aleksejdix/input-state";
+import type { DateFormat } from "@aleksejdix/datefield";
+import type { InputState } from "@aleksejdix/input-state";
+import { attachInput } from "@aleksejdix/input-dom";
+import { parseDate } from "@aleksejdix/fechita";
 
 const UP = 1;
 const DOWN = -1;

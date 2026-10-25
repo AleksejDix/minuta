@@ -12,7 +12,7 @@ import {
   insertText,
   moveCursor,
   select,
-} from "text-buffer";
+} from "@aleksejdix/text-buffer";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const step1 = insertText(createTextBuffer("hello"), " world");
@@ -25,7 +25,7 @@ a plain function: you pass in a buffer and get a new buffer back. Nothing is
 changed in place, and there is no DOM.
 
 ```sh
-npm install text-buffer
+npm install @aleksejdix/text-buffer
 ```
 
 ## Where it sits
@@ -83,7 +83,7 @@ import {
   insertText,
   moveCursor,
   select,
-} from "text-buffer";
+} from "@aleksejdix/text-buffer";
 
 let buffer = createTextBuffer("hello"); // cursor at the end, position 5
 buffer = insertText(buffer, " world"); // "hello world"

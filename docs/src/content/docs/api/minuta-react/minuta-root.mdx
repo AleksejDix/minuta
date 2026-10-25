@@ -3,7 +3,7 @@ title: MinutaRoot
 description: A React component that runs useMinuta once and shares the result with every component inside it.
 ---
 
-import { next, period } from "minuta";
+import { next, period } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -15,7 +15,7 @@ result with every component inside it, so they all see the same browsed
 period.
 
 ```js
-import { MinutaRoot } from "minuta-react";
+import { MinutaRoot } from "@aleksejdix/minuta-react";
 ```
 
 ```jsx
@@ -28,7 +28,11 @@ Two separate components share one state: the button moves to the next month,
 and the heading shows the year of the browsed month.
 
 ```jsx
-import { MinutaRoot, useMinutaContext, usePeriod } from "minuta-react";
+import {
+  MinutaRoot,
+  useMinutaContext,
+  usePeriod,
+} from "@aleksejdix/minuta-react";
 
 function Year() {
   const year = usePeriod("year");

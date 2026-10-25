@@ -3,7 +3,7 @@ title: next
 description: Get the period right after a period — the next day, the next week, the next month.
 ---
 
-import { divide, next, period, range } from "minuta";
+import { divide, next, period, range } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(new Date(2026, 2, 15), "month");
@@ -17,7 +17,7 @@ Get the period right after a period: the day after a day, the week after a
 week, the month after a month.
 
 ```ts
-import { next } from "minuta";
+import { next } from "@aleksejdix/minuta";
 ```
 
 ```ts
@@ -27,7 +27,7 @@ next(period);
 ## Example
 
 ```ts
-import { next, period } from "minuta";
+import { next, period } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 15), "month");
 
@@ -82,7 +82,7 @@ exactly its own length in milliseconds, so the new period starts one
 millisecond after the old one ends.
 
 ```ts
-import { next, range } from "minuta";
+import { next, range } from "@aleksejdix/minuta";
 
 const slot = range(
   new Date(2026, 2, 2, 9),
@@ -160,4 +160,4 @@ Thu Apr 2, not the next week. To step by whole units, use a period from
 - [`previous`](../previous/) — the period before.
 - [`shift`](../shift/) — move by any number of periods.
 - [`same`](../same/) — check whether two periods are in the same unit.
-- [`nextWith`](../../minuta-core/next-with/) (`minuta/core`) — the same, with your own units and week start.
+- [`nextWith`](../../minuta-core/next-with/) (`@aleksejdix/minuta/core`) — the same, with your own units and week start.

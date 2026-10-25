@@ -2,7 +2,7 @@
  * Periods and units: month math on a Date skips months, `next` on a period
  * does not; then explore any period, step it and split it.
  */
-import type { Period, Unit } from "minuta";
+import type { Period, Unit } from "@aleksejdix/minuta";
 import {
   dayLabel,
   demoRoots,
@@ -16,7 +16,7 @@ import {
   next as nextPeriod,
   period,
   previous as previousPeriod,
-} from "minuta";
+} from "@aleksejdix/minuta";
 
 const DAYS_BY_HAND = 30;
 const MONTHS = 12;

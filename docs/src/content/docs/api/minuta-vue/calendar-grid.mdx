@@ -11,7 +11,7 @@ then 6 weeks of 7 days. It follows the WAI-ARIA date picker grid, so the
 keyboard works the way screen reader users expect.
 
 ```js
-import { CalendarGrid } from "minuta-vue/components";
+import { CalendarGrid } from "@aleksejdix/minuta-vue/components";
 ```
 
 ```vue
@@ -30,7 +30,7 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-vue/components";
+} from "@aleksejdix/minuta-vue/components";
 
 const { busyDays } = defineProps(["busyDays"]);
 </script>
@@ -185,4 +185,4 @@ Outside a [`CalendarRoot`](../calendar-root/) — even inside a plain
 - [`CalendarDay`](../calendar-day/) — the default day in each cell.
 - [`CalendarWeekdays`](../calendar-weekdays/) — the weekday row.
 - [`CalendarRoot`](../calendar-root/) — holds the browsed month and the selection.
-- `monthGridWith` (`minuta/calendar`) — the 42 days, without Vue.
+- `monthGridWith` (`@aleksejdix/minuta/calendar`) — the 42 days, without Vue.

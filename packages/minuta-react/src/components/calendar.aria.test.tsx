@@ -3,10 +3,10 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import type { RenderResult } from "@testing-library/react";
-import { isWeekendWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 type Setup = Readonly<{
   date?: Readonly<Date>;

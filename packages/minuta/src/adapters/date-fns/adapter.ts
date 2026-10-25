@@ -20,8 +20,8 @@ import { createWeekHandler } from "./units/week";
  * the days `isWeekend` counts (Saturday and Sunday unless set).
  *
  * @example
- * import { dateFnsUnits } from "minuta/date-fns";
- * import { withUnits } from "minuta/core";
+ * import { dateFnsUnits } from "@aleksejdix/minuta/date-fns";
+ * import { withUnits } from "@aleksejdix/minuta/core";
  *
  * const time = withUnits(dateFnsUnits({ weekStartsOn: "monday" }));
  * time.period(new Date(), "week");

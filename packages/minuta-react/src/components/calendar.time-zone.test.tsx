@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 
 const MARCH_DAYS = 31;
 const FIRST_DAY = 1;

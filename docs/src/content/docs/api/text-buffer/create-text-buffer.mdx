@@ -3,7 +3,7 @@ title: createTextBuffer
 description: Create a text buffer from some text and an optional selection.
 ---
 
-import { createTextBuffer } from "text-buffer";
+import { createTextBuffer } from "@aleksejdix/text-buffer";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const atEnd = createTextBuffer("hello");
@@ -13,7 +13,7 @@ export const clamped = createTextBuffer("hello", { anchor: 1, head: 99 });
 Create a buffer that holds some text and a cursor or selection.
 
 ```ts
-import { createTextBuffer } from "text-buffer";
+import { createTextBuffer } from "@aleksejdix/text-buffer";
 ```
 
 ```ts
@@ -23,7 +23,7 @@ createTextBuffer(text?, selection?)
 ## Example
 
 ```ts
-import { createTextBuffer } from "text-buffer";
+import { createTextBuffer } from "@aleksejdix/text-buffer";
 
 createTextBuffer("hello");
 // → { text: "hello", selection: { anchor: 5, head: 5 } }  (cursor at the end)

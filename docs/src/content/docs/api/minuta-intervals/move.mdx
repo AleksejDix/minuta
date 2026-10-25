@@ -3,8 +3,8 @@ title: move
 description: Move a period to a new start and keep its length — e.g. drag an appointment to another day.
 ---
 
-import { period, shift } from "minuta";
-import { move } from "minuta/intervals";
+import { period, shift } from "@aleksejdix/minuta";
+import { move } from "@aleksejdix/minuta/intervals";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const february = period(new Date(2026, 1, 1), "month");
@@ -13,7 +13,7 @@ Move a period so it starts at a new date, and keep its length. Use it to
 drag an appointment to another time.
 
 ```ts
-import { move } from "minuta/intervals";
+import { move } from "@aleksejdix/minuta/intervals";
 ```
 
 ```ts
@@ -23,8 +23,8 @@ move(period, targetDate);
 ## Example
 
 ```ts
-import { move } from "minuta/intervals";
-import { range } from "minuta";
+import { move } from "@aleksejdix/minuta/intervals";
+import { range } from "@aleksejdix/minuta";
 
 const appointment = range(
   new Date(2026, 2, 29, 9, 0),
@@ -56,7 +56,7 @@ difference for months and for days when the clocks change.
 February 2026 has 28 days. Moved to March 1, it still lasts 28 days:
 
 ```ts
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 
 move(period(new Date(2026, 1, 1), "month"), new Date(2026, 2, 1));
 // → Mar 1 00:00 – Mar 28 23:59:59.999, unit "custom" (not all of March)

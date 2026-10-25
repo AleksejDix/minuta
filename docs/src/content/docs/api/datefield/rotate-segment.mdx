@@ -10,8 +10,8 @@ import {
   rotateSegment,
   segmentAtPosition,
   withSegments,
-} from "datefield";
-import { createInputState, setSelection } from "input-state";
+} from "@aleksejdix/datefield";
+import { createInputState, setSelection } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const format = deriveFormat("de-CH");
@@ -35,7 +35,7 @@ segment wraps in its own range and never changes its neighbours: day `31` goes
 up to `01` and the month stays the same.
 
 ```ts
-import { rotateSegment } from "datefield";
+import { rotateSegment } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -50,7 +50,7 @@ import {
   parseSegments,
   rotateSegment,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 const segments = parseSegments(format, "31.03.2026");

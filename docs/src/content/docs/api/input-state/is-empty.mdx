@@ -3,7 +3,12 @@ title: isEmpty
 description: Whether no slot of a masked input field is filled yet.
 ---
 
-import { createInputState, isEmpty, parseMask, typeChar } from "input-state";
+import {
+  createInputState,
+  isEmpty,
+  parseMask,
+  typeChar,
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const mask = parseMask("99.99.9999");
@@ -13,7 +18,7 @@ export const started = typeChar(empty, "3");
 Check whether the user has filled any slot of a masked field yet.
 
 ```ts
-import { isEmpty } from "input-state";
+import { isEmpty } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -23,7 +28,12 @@ isEmpty(state);
 ## Example
 
 ```ts
-import { createInputState, isEmpty, parseMask, typeChar } from "input-state";
+import {
+  createInputState,
+  isEmpty,
+  parseMask,
+  typeChar,
+} from "@aleksejdix/input-state";
 
 const mask = parseMask("99.99.9999");
 const field = createInputState({ mask });

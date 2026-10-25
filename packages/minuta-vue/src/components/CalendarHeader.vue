@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CalendarHeaderProps } from "./types";
 import { computed } from "vue";
-import { formatPeriod } from "minuta/format";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 

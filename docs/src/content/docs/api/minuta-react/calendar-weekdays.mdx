@@ -9,7 +9,7 @@ A component that renders the row of weekday names ("Mon", "Tue", …) above the
 calendar grid, in the week order of the units.
 
 ```js
-import { CalendarWeekdays } from "minuta-react/components";
+import { CalendarWeekdays } from "@aleksejdix/minuta-react/components";
 ```
 
 ```jsx
@@ -22,8 +22,11 @@ You rarely render it yourself: [`CalendarGrid`](../calendar-grid/) already
 includes it and passes its own `locale`.
 
 ```jsx
-import { CalendarGrid, CalendarRoot } from "minuta-react/components";
-import { nativeUnits } from "minuta/native";
+import {
+  CalendarGrid,
+  CalendarRoot,
+} from "@aleksejdix/minuta-react/components";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 

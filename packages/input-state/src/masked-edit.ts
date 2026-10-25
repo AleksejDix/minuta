@@ -7,11 +7,11 @@ import {
   select,
   selectionEnd,
   selectionStart,
-} from "text-buffer";
+} from "@aleksejdix/text-buffer";
 import { emptyText, slotChar, slotPositions } from "./mask";
 import type { ChoiceSpan } from "./choice";
 import type { Mask } from "./mask";
-import type { TextBuffer } from "text-buffer";
+import type { TextBuffer } from "@aleksejdix/text-buffer";
 
 const NOT_FOUND = -1;
 const START = 0;

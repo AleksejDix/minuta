@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import { useMinutaContext } from "#src/minuta-context";
 
 type RovingFocus = Readonly<{

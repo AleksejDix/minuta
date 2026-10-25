@@ -3,8 +3,8 @@ title: clamp
 description: Cut a period down to the part that lies inside some bounds — e.g. a selection limited to the allowed dates.
 ---
 
-import { period, range } from "minuta";
-import { clamp } from "minuta/intervals";
+import { period, range } from "@aleksejdix/minuta";
+import { clamp } from "@aleksejdix/minuta/intervals";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const selection = range(new Date(2026, 0, 5), new Date(2026, 0, 25));
@@ -15,7 +15,7 @@ Cut a period down to the part that lies inside some bounds. Use it to keep a
 selection within the allowed dates, or to find the overlap of two periods.
 
 ```ts
-import { clamp } from "minuta/intervals";
+import { clamp } from "@aleksejdix/minuta/intervals";
 ```
 
 ```ts
@@ -25,8 +25,8 @@ clamp(period, bounds);
 ## Example
 
 ```ts
-import { clamp } from "minuta/intervals";
-import { range } from "minuta";
+import { clamp } from "@aleksejdix/minuta/intervals";
+import { range } from "@aleksejdix/minuta";
 
 const selection = range(new Date(2026, 0, 5), new Date(2026, 0, 25));
 const allowed = range(new Date(2026, 0, 10), new Date(2026, 0, 20));
@@ -66,7 +66,7 @@ two starts and ends at the earlier of the two ends. Its unit is always
 ## No overlap gives undefined
 
 ```ts
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 1), "month");
 

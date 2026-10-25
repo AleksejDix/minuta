@@ -3,7 +3,7 @@ title: CalendarHeader
 description: A React component that shows the browsed month between "previous month" and "next month" buttons.
 ---
 
-import { next, period, previous } from "minuta";
+import { next, period, previous } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const january = period(new Date(2024, 0, 15), "month");
@@ -12,7 +12,7 @@ A component that shows the name of the browsed month between a "previous
 month" and a "next month" button.
 
 ```js
-import { CalendarHeader } from "minuta-react/components";
+import { CalendarHeader } from "@aleksejdix/minuta-react/components";
 ```
 
 ```jsx
@@ -26,7 +26,7 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-react/components";
+} from "@aleksejdix/minuta-react/components";
 
 export function Calendar() {
   return (

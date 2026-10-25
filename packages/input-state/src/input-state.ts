@@ -24,9 +24,9 @@ import {
   insertText,
   isCollapsed,
   select,
-} from "text-buffer";
+} from "@aleksejdix/text-buffer";
 import type { Mask } from "./mask";
-import type { TextBuffer } from "text-buffer";
+import type { TextBuffer } from "@aleksejdix/text-buffer";
 import { slotPositions } from "./mask";
 
 type Mode = "insert" | "overwrite";

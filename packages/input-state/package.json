@@ -1,5 +1,5 @@
 {
-  "name": "input-state",
+  "name": "@aleksejdix/input-state",
   "version": "0.1.0",
   "type": "module",
   "description": "Input field state: text buffer + mask + insert/overwrite mode, with pure keyboard operations. No DOM.",
@@ -56,6 +56,9 @@
     "headless"
   ],
   "dependencies": {
-    "text-buffer": "^0.1.0"
+    "@aleksejdix/text-buffer": "^0.1.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

@@ -81,7 +81,7 @@ fechita returns no date in that case. It tells you why and what the options
 are:
 
 ```ts
-import { parseDate } from "fechita";
+import { parseDate } from "@aleksejdix/fechita";
 
 parseDate("04/05/2026");
 // → { valid: false, errorCodes: ["AMBIGUOUS_DAY_MONTH"],
@@ -122,9 +122,14 @@ hands the text to `parse`. If it returns a date, the whole field is filled
 with that date, written in the field's own format:
 
 ```ts
-import { createInputState } from "input-state";
-import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
-import { parseDate } from "fechita";
+import { createInputState } from "@aleksejdix/input-state";
+import {
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { parseDate } from "@aleksejdix/fechita";
 
 const format = deriveFormat("de-CH");
 const field = createInputState({ mask: dateMask(format) });

@@ -16,8 +16,8 @@ import {
   paste,
   setSelection,
   toggleMode,
-} from "input-state";
-import type { InputState } from "input-state";
+} from "@aleksejdix/input-state";
+import type { InputState } from "@aleksejdix/input-state";
 import { listenForText } from "./element-text";
 import { moveCursor } from "./cursor-keys";
 import { shownText } from "./shown-text";

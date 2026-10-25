@@ -12,7 +12,7 @@ import {
   parseMask,
   paste,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const empty = createInputState({ mask: parseMask("99.99.9999") });
@@ -26,7 +26,7 @@ export const free = createInputState({ value: "hello" });
 function that returns a new state. There is no DOM.
 
 ```sh
-npm install input-state text-buffer
+npm install @aleksejdix/input-state @aleksejdix/text-buffer
 ```
 
 ## Where it sits
@@ -80,7 +80,7 @@ import {
   parseMask,
   paste,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 
 let field = createInputState({ mask: parseMask("99.99.9999") });
 field.buffer.text; // → "__.__.____"

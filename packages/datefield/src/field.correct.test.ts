@@ -1,8 +1,13 @@
-import { createInputState, paste, setSelection, typeChar } from "input-state";
+import {
+  createInputState,
+  paste,
+  setSelection,
+  typeChar,
+} from "@aleksejdix/input-state";
 import { dateMask, withSegments } from "./field";
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
-import type { InputState } from "input-state";
+import type { InputState } from "@aleksejdix/input-state";
 import { clampDay } from "./rotate";
 import { localeDigits } from "./digits";
 import { toDate } from "./convert";

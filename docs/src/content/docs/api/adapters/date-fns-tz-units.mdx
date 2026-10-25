@@ -3,9 +3,9 @@ title: dateFnsTzUnits
 description: Units computed with date-fns in one fixed time zone — Tokyo days on a computer in Zurich.
 ---
 
-import { divideWith, periodWith } from "minuta/core";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { formatPeriod } from "minuta/format";
+import { divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const moment = new Date("2026-03-20T20:00:00Z");
@@ -25,7 +25,7 @@ you choose. A day is a day in that zone, wherever the code runs (see
 [Known limits](#known-limits) for one exception).
 
 ```ts
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 ```
 
 ```ts
@@ -35,8 +35,8 @@ dateFnsTzUnits(options?)
 ## Example
 
 ```ts
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { withUnits } from "minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const tokyo = withUnits(dateFnsTzUnits({ timeZone: "Asia/Tokyo" }));
 
@@ -75,7 +75,7 @@ computer's time zone.
 ## Install
 
 ```sh
-npm install minuta date-fns @date-fns/tz
+npm install @aleksejdix/minuta date-fns @date-fns/tz
 ```
 
 minuta is tested with date-fns 4 and @date-fns/tz 1.5. Both are listed as
@@ -118,7 +118,7 @@ The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
 Periods, grids, weekend checks and clock changes are those of the zone:
 
 ```ts
-import { calendar } from "minuta/calendar";
+import { calendar } from "@aleksejdix/minuta/calendar";
 
 const newYork = withUnits(dateFnsTzUnits({ timeZone: "America/New_York" }), {
   plugins: [calendar],
@@ -139,7 +139,7 @@ The periods are correct moments, but `Date` methods such as `getDate()` and
 zone:
 
 ```ts
-import { formatPeriod } from "minuta/format";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 
 formatPeriod(day, "en-US", { timeZone: tokyo.units.timeZone }); // → "March 21, 2026"
 ```

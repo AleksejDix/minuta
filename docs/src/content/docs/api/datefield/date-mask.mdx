@@ -3,8 +3,8 @@ title: dateMask
 description: Turn a date format into an input mask, so the field starts as __.__.____ and only takes digits in the slots.
 ---
 
-import { dateMask, deriveFormat } from "datefield";
-import { createInputState } from "input-state";
+import { dateMask, deriveFormat } from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const field = createInputState({
@@ -15,7 +15,7 @@ Turn a date format into an input mask: every digit of the date becomes an
 empty slot, every separator stays fixed, so `de-CH` becomes `__.__.____`.
 
 ```ts
-import { dateMask } from "datefield";
+import { dateMask } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -25,8 +25,8 @@ dateMask(format, placeholder?)
 ## Example
 
 ```ts
-import { dateMask, deriveFormat } from "datefield";
-import { createInputState } from "input-state";
+import { dateMask, deriveFormat } from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 const field = createInputState({ mask: dateMask(format) });

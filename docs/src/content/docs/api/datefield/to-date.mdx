@@ -3,7 +3,7 @@ title: toDate
 description: Read the date out of a field's segments, or get undefined while it is incomplete or impossible.
 ---
 
-import { deriveFormat, parseSegments, toDate } from "datefield";
+import { deriveFormat, parseSegments, toDate } from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
@@ -16,7 +16,7 @@ Read the date the user typed: the segments of `31.03.2026` give
 you get `undefined`.
 
 ```ts
-import { toDate } from "datefield";
+import { toDate } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -26,7 +26,7 @@ toDate(segments);
 ## Example
 
 ```ts
-import { deriveFormat, parseSegments, toDate } from "datefield";
+import { deriveFormat, parseSegments, toDate } from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 

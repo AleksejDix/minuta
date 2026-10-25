@@ -3,7 +3,7 @@ title: createInputState
 description: Create the state of an input field — free text or masked — with an optional start value.
 ---
 
-import { createInputState, parseMask } from "input-state";
+import { createInputState, parseMask } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const mask = parseMask("99.99.9999");
@@ -17,7 +17,7 @@ Create the state of an input field. Give it a mask for a field like
 `__.__.____`, or leave the mask out for free text.
 
 ```ts
-import { createInputState } from "input-state";
+import { createInputState } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -27,7 +27,7 @@ createInputState(options?)
 ## Example
 
 ```ts
-import { createInputState, parseMask } from "input-state";
+import { createInputState, parseMask } from "@aleksejdix/input-state";
 
 const date = createInputState({ mask: parseMask("99.99.9999") });
 date.buffer.text; // → "__.__.____"

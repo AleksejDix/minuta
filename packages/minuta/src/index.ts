@@ -3,7 +3,7 @@
  * Date units with weeks starting on Monday (ISO 8601).
  *
  * For other week starts, other date libraries or a smaller bundle, use
- * `withUnits` from `minuta/core`.
+ * `withUnits` from `@aleksejdix/minuta/core`.
  *
  * @module minuta
  */

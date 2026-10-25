@@ -5,7 +5,7 @@ import path from "node:path";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-const EXTERNAL = [/^minuta/u, /^react(?:\/.*)?$/u];
+const EXTERNAL = [/^@aleksejdix\/minuta/u, /^react(?:\/.*)?$/u];
 
 function fromRoot(file: string): string {
   return path.resolve(import.meta.dirname, file);
@@ -22,7 +22,10 @@ const demoConfig: UserConfig = {
   build: { outDir: "dist" },
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: { "@": fromRoot("examples/src"), "minuta-react": fromRoot("src") },
+    alias: {
+      "@": fromRoot("examples/src"),
+      "@aleksejdix/minuta-react": fromRoot("src"),
+    },
   },
   root: fromRoot("examples"),
 };

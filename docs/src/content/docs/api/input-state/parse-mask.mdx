@@ -3,14 +3,14 @@ title: parseMask
 description: Turn a pattern such as 99.99.9999 into a mask of slots and literals.
 ---
 
-import { emptyText, parseMask } from "input-state";
+import { emptyText, parseMask } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 Turn a pattern such as `99.99.9999` into a mask: a fixed list of slots, which
 the user fills, and literals, which are always there.
 
 ```ts
-import { parseMask } from "input-state";
+import { parseMask } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -20,7 +20,11 @@ parseMask(pattern, placeholder?)
 ## Example
 
 ```ts
-import { createInputState, emptyText, parseMask } from "input-state";
+import {
+  createInputState,
+  emptyText,
+  parseMask,
+} from "@aleksejdix/input-state";
 
 const mask = parseMask("99.99.9999");
 

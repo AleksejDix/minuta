@@ -5,7 +5,7 @@ import {
 } from "#src/components/index";
 import { describe, expect, it } from "vitest";
 import type { VNode } from "vue";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 import { h } from "vue";
 import { mountRender } from "#src/test/mount";
 

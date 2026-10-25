@@ -5,8 +5,8 @@ sidebar:
   order: 5
 ---
 
-import { period } from "minuta";
-import { formatPeriod } from "minuta/format";
+import { period } from "@aleksejdix/minuta";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const moment = new Date(2026, 2, 18, 14, 30);
@@ -24,10 +24,10 @@ export const weeks = [
 
 A period is data. Sooner or later you show it to a person: "March 2026" above
 a calendar, "Wednesday, March 18" on a day view, "Mar 2 – 8, 2026" on a week.
-`minuta/format` writes these labels for you, in any language.
+`@aleksejdix/minuta/format` writes these labels for you, in any language.
 
 ```ts
-import { formatPeriod, formatRange } from "minuta/format";
+import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
 ```
 
 Both functions use the `Intl.DateTimeFormat` built into browsers and Node, so
@@ -42,8 +42,8 @@ Pass the period and a locale to
 [`formatPeriod`](../../../api/minuta-format/format-period/):
 
 ```ts
-import { next, period } from "minuta";
-import { formatPeriod } from "minuta/format";
+import { next, period } from "@aleksejdix/minuta";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 
 const shown = period(new Date(2026, 2, 18), "month");
 
@@ -167,7 +167,7 @@ the shorter the label:
 Custom periods from `range` are shown as a range too:
 
 ```ts
-import { range } from "minuta";
+import { range } from "@aleksejdix/minuta";
 
 formatPeriod(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "en-US");
 // → "Mar 30 – Apr 5, 2026"
@@ -178,7 +178,7 @@ period as "start – end", whatever its unit. When start and end look the same
 in the shown fields, it collapses to one:
 
 ```ts
-import { formatRange } from "minuta/format";
+import { formatRange } from "@aleksejdix/minuta/format";
 
 formatRange(period(new Date(2026, 2, 18, 14), "hour"), "en-US");
 // → "Mar 18, 2:00 – 2:59 PM"
@@ -262,15 +262,15 @@ An invalid locale tag throws a `RangeError`, also from `Intl.DateTimeFormat`.
 ## Time zones
 
 Labels are written in the computer's time zone, unless you pass `timeZone`.
-That is right for periods from `minuta`, which also use the computer's zone.
+That is right for periods from `@aleksejdix/minuta`, which also use the computer's zone.
 
 Periods made with zone-aware units, such as `dateFnsTzUnits`, belong to their
 zone. Format them in it, by passing the units' `timeZone`:
 
 ```ts
-import { periodWith } from "minuta/core";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { formatPeriod } from "minuta/format";
+import { periodWith } from "@aleksejdix/minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 
 const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
 const tokyoDay = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
@@ -300,4 +300,4 @@ See [Time zones](../../../concepts/time-zones/) for the full picture.
   weekends and calendar grids.
 - Reference: [`formatPeriod`](../../../api/minuta-format/format-period/),
   [`formatRange`](../../../api/minuta-format/format-range/),
-  [`minuta/format`](../../../api/minuta-format/overview/).
+  [`@aleksejdix/minuta/format`](../../../api/minuta-format/overview/).

@@ -9,8 +9,8 @@ import {
   deriveFormat,
   parseSegments,
   withSegments,
-} from "datefield";
-import { createInputState, setSelection } from "input-state";
+} from "@aleksejdix/datefield";
+import { createInputState, setSelection } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const format = deriveFormat("de-CH");
@@ -28,7 +28,7 @@ clamp or an arrow-key step, the field shows the new date and the cursor has
 not moved.
 
 ```ts
-import { withSegments } from "datefield";
+import { withSegments } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -44,8 +44,8 @@ import {
   deriveFormat,
   parseSegments,
   withSegments,
-} from "datefield";
-import { createInputState, setSelection } from "input-state";
+} from "@aleksejdix/datefield";
+import { createInputState, setSelection } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 let field = createInputState({ mask: dateMask(format), value: "31.02.2026" });

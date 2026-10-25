@@ -23,7 +23,7 @@ Every parser before us tried to replicate what the browser already knows. We jus
 ### One function. One line. Every locale.
 
 ```typescript
-import { deriveFormat } from "datefield";
+import { deriveFormat } from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 // → [day, ".", month, ".", year]
@@ -70,7 +70,7 @@ fmt.formatToParts(referenceDate);
 Once we know the structure, parsing is just slicing strings by known lengths:
 
 ```typescript
-import { deriveFormat, parseSegments, toDate } from "datefield";
+import { deriveFormat, parseSegments, toDate } from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH"); // Know the structure
 const segments = parseSegments(format, "31.03.2026"); // Slice by lengths
@@ -143,7 +143,7 @@ import {
   inputDigit,
   rotateSegment,
   toDate,
-} from "datefield";
+} from "@aleksejdix/datefield";
 
 // Derive format from user's locale
 const format = deriveFormat(navigator.language);
@@ -232,11 +232,11 @@ The most reliable parser is the one you delegate to the platform.
 ## Get Started
 
 ```bash
-npm install datefield
+npm install @aleksejdix/datefield
 ```
 
 ```typescript
-import { deriveFormat, parseSegments, toDate } from "datefield";
+import { deriveFormat, parseSegments, toDate } from "@aleksejdix/datefield";
 
 const format = deriveFormat(navigator.language);
 

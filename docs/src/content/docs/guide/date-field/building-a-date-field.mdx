@@ -19,10 +19,10 @@ import {
   toDate,
   typeDate,
   withSegments,
-} from "datefield";
-import { parseDate } from "fechita";
-import { applyInputEvent } from "input-dom";
-import { createInputState, setSelection } from "input-state";
+} from "@aleksejdix/datefield";
+import { parseDate } from "@aleksejdix/fechita";
+import { applyInputEvent } from "@aleksejdix/input-dom";
+import { createInputState, setSelection } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
@@ -98,7 +98,7 @@ keys do, and how you get a `Date` out. The last step wraps it all into one
 function and uses it from React and Vue.
 
 ```sh
-npm install datefield input-state input-dom text-buffer fechita
+npm install @aleksejdix/datefield @aleksejdix/input-state @aleksejdix/input-dom @aleksejdix/text-buffer @aleksejdix/fechita
 ```
 
 The packages are layers that build on each other. How they fit together is
@@ -116,8 +116,8 @@ for every digit, and fixed separators in between.
 field from it.
 
 ```ts
-import { dateMask, deriveFormat } from "datefield";
-import { createInputState } from "input-state";
+import { dateMask, deriveFormat } from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 const field = createInputState({ mask: dateMask(format) });
@@ -171,9 +171,9 @@ shows the result.
 ```
 
 ```ts
-import { dateMask, deriveFormat } from "datefield";
-import { attachInput } from "input-dom";
-import { createInputState } from "input-state";
+import { dateMask, deriveFormat } from "@aleksejdix/datefield";
+import { attachInput } from "@aleksejdix/input-dom";
+import { createInputState } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 const element = document.querySelector("#date");
@@ -208,9 +208,9 @@ dates: a separator finishes the part being typed. Pass it as `insert`, the
 option that applies typed and pasted text:
 
 ```ts
-import { dateMask, deriveFormat, typeDate } from "datefield";
-import { attachInput } from "input-dom";
-import { createInputState } from "input-state";
+import { dateMask, deriveFormat, typeDate } from "@aleksejdix/datefield";
+import { attachInput } from "@aleksejdix/input-dom";
+import { createInputState } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 const element = document.querySelector("#date");
@@ -267,10 +267,15 @@ fechita reads dates in 104 languages. Pass it
 date like `04/05/2026` is read in the order the field shows:
 
 ```ts
-import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
-import { attachInput } from "input-dom";
-import { createInputState } from "input-state";
-import { parseDate } from "fechita";
+import {
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { attachInput } from "@aleksejdix/input-dom";
+import { createInputState } from "@aleksejdix/input-state";
+import { parseDate } from "@aleksejdix/fechita";
 
 const locale = "de-CH";
 const format = deriveFormat(locale);
@@ -312,7 +317,7 @@ the text is typed as before.
 
 :::tip
 `fechita` knows all 104 languages. To ship only the ones you need, use
-[`withLocales`](../../../api/fechita/with-locales/) from `fechita/core`. Why
+[`withLocales`](../../../api/fechita/with-locales/) from `@aleksejdix/fechita/core`. Why
 dates are hard to read, and how fechita decides, is in
 [Parsing dates](../../../concepts/parsing-dates/).
 :::
@@ -334,10 +339,10 @@ import {
   parseSegments,
   typeDate,
   withSegments,
-} from "datefield";
-import { attachInput } from "input-dom";
-import { createInputState } from "input-state";
-import { parseDate } from "fechita";
+} from "@aleksejdix/datefield";
+import { attachInput } from "@aleksejdix/input-dom";
+import { createInputState } from "@aleksejdix/input-state";
+import { parseDate } from "@aleksejdix/fechita";
 
 const locale = "de-CH";
 const format = deriveFormat(locale);
@@ -438,7 +443,7 @@ field loses focus, with [`finishSegment`](../../../api/datefield/finish-segment/
 and `clampDay` without the cursor:
 
 ```ts
-import { finishSegment } from "datefield";
+import { finishSegment } from "@aleksejdix/datefield";
 
 element.addEventListener("blur", () => {
   const finished = finishSegment(format, controller.getState());
@@ -469,7 +474,7 @@ import {
   rotateSegment,
   segmentAtPosition,
   withSegments,
-} from "datefield";
+} from "@aleksejdix/datefield";
 
 // ArrowUp / ArrowDown step the part under the cursor
 function rotated(state, key) {
@@ -521,7 +526,7 @@ date out of it, and gives `undefined` while the date is not complete or does
 not exist:
 
 ```ts
-import { parseSegments, toDate } from "datefield";
+import { parseSegments, toDate } from "@aleksejdix/datefield";
 
 toDate(parseSegments(format, "31.03.2026")); // → Tue Mar 31 2026, local midnight
 toDate(parseSegments(format, "31.03.____")); // → undefined (not finished)
@@ -567,8 +572,8 @@ To show a date in the field, write it with
 [`fromDate`](../../../api/datefield/from-date/) and replace the state:
 
 ```ts
-import { dateMask, fromDate, segmentsToString } from "datefield";
-import { createInputState } from "input-state";
+import { dateMask, fromDate, segmentsToString } from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 
 const value = segmentsToString(fromDate(new Date(2026, 11, 24), format));
 controller.setState(createInputState({ mask: dateMask(format), value }));
@@ -609,10 +614,10 @@ import {
   toDate,
   typeDate,
   withSegments,
-} from "datefield";
-import { attachInput } from "input-dom";
-import { createInputState } from "input-state";
-import { parseDate } from "fechita";
+} from "@aleksejdix/datefield";
+import { attachInput } from "@aleksejdix/input-dom";
+import { createInputState } from "@aleksejdix/input-state";
+import { parseDate } from "@aleksejdix/fechita";
 
 export function attachDateField(element, { locale, date, onChange }) {
   const format = deriveFormat(locale);

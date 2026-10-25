@@ -3,7 +3,7 @@ title: previous
 description: Get the period right before a period — the day before, the week before, the month before.
 ---
 
-import { divide, period, previous } from "minuta";
+import { divide, period, previous } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(new Date(2026, 2, 15), "month");
@@ -16,7 +16,7 @@ Get the period right before a period: the day before a day, the week before
 a week, the month before a month.
 
 ```ts
-import { previous } from "minuta";
+import { previous } from "@aleksejdix/minuta";
 ```
 
 ```ts
@@ -26,7 +26,7 @@ previous(period);
 ## Example
 
 ```ts
-import { period, previous } from "minuta";
+import { period, previous } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 15), "month");
 
@@ -77,7 +77,7 @@ milliseconds. The clipped one-day week at the start of March 2026 moves back
 one day, not one week:
 
 ```ts
-import { divide, period, previous } from "minuta";
+import { divide, period, previous } from "@aleksejdix/minuta";
 
 const [firstPiece] = divide(period(new Date(2026, 2, 1), "month"), "week");
 // → Sun Mar 1 00:00:00.000 – 23:59:59.999, unit "custom"
@@ -119,4 +119,4 @@ custom periods, including ranges that end on a round time.
 
 - [`next`](../next/) — the period after.
 - [`shift`](../shift/) — move by any number of periods.
-- [`previousWith`](../../minuta-core/previous-with/) (`minuta/core`) — the same, with your own units and week start.
+- [`previousWith`](../../minuta-core/previous-with/) (`@aleksejdix/minuta/core`) — the same, with your own units and week start.

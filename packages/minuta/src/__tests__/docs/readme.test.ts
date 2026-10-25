@@ -9,21 +9,21 @@ import ts from "typescript";
 
 const SOURCE = new URL("../../", import.meta.url).pathname;
 const CODE_BLOCK = /```ts\n(?<code>[\s\S]*?)```/gu;
-const IMPORT_FROM = /from "(?<specifier>minuta(?:\/[a-z-]+)?)"/gu;
+const IMPORT_FROM = /from "(?<specifier>@aleksejdix\/minuta(?:\/[a-z-]+)?)"/gu;
 
 const ENTRY_FILES: Readonly<Record<string, string>> = {
-  minuta: "index",
-  "minuta/calendar": "calendar",
-  "minuta/core": "core",
-  "minuta/date-fns": "date-fns",
-  "minuta/date-fns-tz": "date-fns-tz",
-  "minuta/dayjs": "dayjs",
-  "minuta/format": "format",
-  "minuta/intervals": "intervals",
-  "minuta/luxon": "luxon",
-  "minuta/moment": "moment",
-  "minuta/native": "native",
-  "minuta/temporal": "temporal",
+  "@aleksejdix/minuta": "index",
+  "@aleksejdix/minuta/calendar": "calendar",
+  "@aleksejdix/minuta/core": "core",
+  "@aleksejdix/minuta/date-fns": "date-fns",
+  "@aleksejdix/minuta/date-fns-tz": "date-fns-tz",
+  "@aleksejdix/minuta/dayjs": "dayjs",
+  "@aleksejdix/minuta/format": "format",
+  "@aleksejdix/minuta/intervals": "intervals",
+  "@aleksejdix/minuta/luxon": "luxon",
+  "@aleksejdix/minuta/moment": "moment",
+  "@aleksejdix/minuta/native": "native",
+  "@aleksejdix/minuta/temporal": "temporal",
 };
 
 const COMPILER_OPTIONS: ts.CompilerOptions = {

@@ -33,7 +33,7 @@ packages/minuta-react/examples/
 ## Features demonstrated
 
 - **Calendar parts** – `CalendarRoot` with `CalendarHeader` and the
-  keyboard-navigable `CalendarGrid` from `minuta-react/components`
+  keyboard-navigable `CalendarGrid` from `@aleksejdix/minuta-react/components`
 - **Date field** – `DateFieldRoot` owns the vanilla `input-dom` controller
   (datefield mask, arrow-key rotation, day clamping); `DateFieldInput` and
   `DateFieldOutput` read it through `useDateFieldContext()`

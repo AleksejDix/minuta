@@ -3,7 +3,12 @@ title: accepts
 description: Whether a kind of mask slot — digit, letter or alphanumeric — takes a character.
 ---
 
-import { accepts, createInputState, parseMask, paste } from "input-state";
+import {
+  accepts,
+  createInputState,
+  parseMask,
+  paste,
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const code = paste(
@@ -15,7 +20,7 @@ Check whether a kind of slot takes a character: a digit slot takes digits, a
 letter slot takes letters, an alphanumeric slot takes both.
 
 ```ts
-import { accepts } from "input-state";
+import { accepts } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -25,7 +30,7 @@ accepts(kind, char);
 ## Example
 
 ```ts
-import { accepts } from "input-state";
+import { accepts } from "@aleksejdix/input-state";
 
 accepts("digit", "3"); // → true
 accepts("digit", "a"); // → false

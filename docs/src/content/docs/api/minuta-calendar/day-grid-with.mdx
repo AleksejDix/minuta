@@ -3,10 +3,10 @@ title: dayGridWith
 description: Get the real hours of a day — 24 on most days, 23 or 25 when the clocks change — each labelled with its clock hour.
 ---
 
-import { range } from "minuta";
-import { dayGridWith } from "minuta/calendar";
-import { divideWith } from "minuta/core";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { range } from "@aleksejdix/minuta";
+import { dayGridWith } from "@aleksejdix/minuta/calendar";
+import { divideWith } from "@aleksejdix/minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const newYork = dateFnsTzUnits({ timeZone: "America/New_York" });
@@ -27,7 +27,7 @@ Most days have 24 hours. The day the clocks go forward has 23, and the day
 they go back has 25.
 
 ```ts
-import { dayGridWith } from "minuta/calendar";
+import { dayGridWith } from "@aleksejdix/minuta/calendar";
 ```
 
 ```ts
@@ -37,8 +37,8 @@ dayGridWith(units, date);
 ## Example
 
 ```ts
-import { dayGridWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { dayGridWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 // On a computer in Europe/Zurich
 const grid = dayGridWith(nativeUnits(), new Date(2026, 5, 1));
@@ -153,7 +153,7 @@ units use the computer's time zone. To show a day in another zone, use units
 that have one, such as [`dateFnsTzUnits`](../../adapters/date-fns-tz-units/):
 
 ```ts
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 
 const newYork = dateFnsTzUnits({ timeZone: "America/New_York" });
 const grid = dayGridWith(newYork, new Date("2024-03-10T12:00:00Z"));

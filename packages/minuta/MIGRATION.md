@@ -7,20 +7,20 @@ adapter at all. This guide lists every change that can affect existing code.
 
 ## Imports and entry points
 
-| Before                                                                                                                                                | Now                                                                                                                                                                                                 |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `import { next, divide } from "minuta/operations"` with an adapter argument                                                                           | `import { next, divide } from "minuta"` — bound to the native units, weeks start on Monday                                                                                                          |
-| `minuta/operations`                                                                                                                                   | removed. Context-first functions live in `minuta/core`, bound ones in `minuta`                                                                                                                      |
-| `minuta/helpers` (`isWeekend`, `isWeekday`, `isToday`, `isOverlapping`)                                                                               | removed. `overlaps` is a regular operation in `minuta` and `minuta/core`, `isWeekend` and `isWeekday` are in `minuta/calendar`; for `isToday` use `contains(period, now)`, which works for any unit |
-| `createNativeAdapter({ weekStartsOn })`                                                                                                               | `nativeUnits({ weekStartsOn })`                                                                                                                                                                     |
-| `createDateFnsAdapter`, `createDateFnsTzAdapter`, `createDayjsAdapter`, `createLuxonAdapter`, `createMomentAdapter`, `createMinutaAdapter` (Temporal) | `dateFnsUnits`, `dateFnsTzUnits`, `dayjsUnits`, `luxonUnits`, `momentUnits`, `temporalUnits`                                                                                                        |
-| Prebuilt instances `nativeFunctionalAdapter`, `dateFnsAdapter`, `dateFnsTzAdapter`, `luxonAdapter`, `minutaAdapter`                                   | removed. Call the factory                                                                                                                                                                           |
+| Before                                                                                                                                                | Now                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `import { next, divide } from "@aleksejdix/minuta/operations"` with an adapter argument                                                               | `import { next, divide } from "@aleksejdix/minuta"` — bound to the native units, weeks start on Monday                                                                                                                      |
+| `@aleksejdix/minuta/operations`                                                                                                                       | removed. Context-first functions live in `@aleksejdix/minuta/core`, bound ones in `minuta`                                                                                                                                  |
+| `@aleksejdix/minuta/helpers` (`isWeekend`, `isWeekday`, `isToday`, `isOverlapping`)                                                                   | removed. `overlaps` is a regular operation in `minuta` and `@aleksejdix/minuta/core`, `isWeekend` and `isWeekday` are in `@aleksejdix/minuta/calendar`; for `isToday` use `contains(period, now)`, which works for any unit |
+| `createNativeAdapter({ weekStartsOn })`                                                                                                               | `nativeUnits({ weekStartsOn })`                                                                                                                                                                                             |
+| `createDateFnsAdapter`, `createDateFnsTzAdapter`, `createDayjsAdapter`, `createLuxonAdapter`, `createMomentAdapter`, `createMinutaAdapter` (Temporal) | `dateFnsUnits`, `dateFnsTzUnits`, `dayjsUnits`, `luxonUnits`, `momentUnits`, `temporalUnits`                                                                                                                                |
+| Prebuilt instances `nativeFunctionalAdapter`, `dateFnsAdapter`, `dateFnsTzAdapter`, `luxonAdapter`, `minutaAdapter`                                   | removed. Call the factory                                                                                                                                                                                                   |
 
 Other week starts or other date libraries: bind your units once.
 
 ```ts
-import { withUnits } from "minuta/core";
-import { luxonUnits } from "minuta/luxon";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { luxonUnits } from "@aleksejdix/minuta/luxon";
 
 const time = withUnits(luxonUnits({ weekStartsOn: "sunday" }));
 time.next(time.period(new Date(), "week"));
@@ -28,7 +28,7 @@ time.next(time.period(new Date(), "week"));
 
 ## Renamed functions
 
-| Before                                          | Default entry (`minuta`)                     | Core (`minuta/core`)                                    |
+| Before                                          | Default entry (`minuta`)                     | Core (`@aleksejdix/minuta/core`)                        |
 | ----------------------------------------------- | -------------------------------------------- | ------------------------------------------------------- |
 | `derivePeriod(adapter, date, unit)`             | `period(date, unit)`                         | `periodWith(units, date, unit)`                         |
 | `createPeriod(start, end)`                      | `range(start, end)`                          | `range(start, end)`                                     |
@@ -47,22 +47,22 @@ time.next(time.period(new Date(), "week"));
 ## Interval helpers and weekdays
 
 The core keeps the operations every caller needs. The interval helpers moved
-to `minuta/intervals`, the weekday checks to `minuta/calendar`:
+to `@aleksejdix/minuta/intervals`, the weekday checks to `@aleksejdix/minuta/calendar`:
 
-| Before                                    | Now                                                                                   |
-| ----------------------------------------- | ------------------------------------------------------------------------------------- |
-| `merge(periods, unit)`                    | `mergeWith(units, periods, unit)` from `minuta/intervals`                             |
-| `snap(date, 15 * 60_000, mode)`           | `snapWith(units, date, "minute", { step: 15, mode })` from `minuta/intervals`         |
-| `gap`, `move`, `resize`, `clamp`, `split` | Same names, no units, from `minuta/intervals`                                         |
-| `isWeekday(period)`, `isWeekend(period)`  | `isWeekdayWith(units, period)`, `isWeekendWith(units, period)` from `minuta/calendar` |
+| Before                                    | Now                                                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `merge(periods, unit)`                    | `mergeWith(units, periods, unit)` from `@aleksejdix/minuta/intervals`                             |
+| `snap(date, 15 * 60_000, mode)`           | `snapWith(units, date, "minute", { step: 15, mode })` from `@aleksejdix/minuta/intervals`         |
+| `gap`, `move`, `resize`, `clamp`, `split` | Same names, no units, from `@aleksejdix/minuta/intervals`                                         |
+| `isWeekday(period)`, `isWeekend(period)`  | `isWeekdayWith(units, period)`, `isWeekendWith(units, period)` from `@aleksejdix/minuta/calendar` |
 
 Or bind them as plugins:
 
 ```ts
-import { calendar } from "minuta/calendar";
-import { intervals } from "minuta/intervals";
-import { nativeUnits } from "minuta/native";
-import { withUnits } from "minuta/core";
+import { calendar } from "@aleksejdix/minuta/calendar";
+import { intervals } from "@aleksejdix/minuta/intervals";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(nativeUnits(), { plugins: [calendar, intervals] });
 time.merge([time.period(new Date(), "day")]);
@@ -87,7 +87,7 @@ time.isWeekend(time.period(new Date(), "day"));
 | `dateFnsTzUnits({ timezone })`                           | `timezone` option                                                                                                                                            | `timeZone`, as in `Intl` and `units.timeZone`                                                           | Rename the option                                                                                                                                                        |
 | `divide(period, unit)`                                   | Clipped first and last chunks kept `unit`                                                                                                                    | Only whole chunks keep `unit`; clipped ones are `"custom"`                                              | Check `unit` before `next` or formatting a chunk as a unit                                                                                                               |
 | `formatPeriodWith(period, locale, options)`              | Formatted the start with only `options`                                                                                                                      | Removed                                                                                                 | `formatPeriod(period, locale, options)` merges options over the unit defaults; for only your options use `new Intl.DateTimeFormat(locale, options).format(period.start)` |
-| `Series` type, `minuta/types` entry                      | Exported                                                                                                                                                     | Removed                                                                                                 | Grids have their own types (`MonthGrid`, `YearGrid`, `DayGrid`); import types from `minuta/core`                                                                         |
+| `Series` type, `@aleksejdix/minuta/types` entry          | Exported                                                                                                                                                     | Removed                                                                                                 | Grids have their own types (`MonthGrid`, `YearGrid`, `DayGrid`); import types from `@aleksejdix/minuta/core`                                                             |
 | `merge([])`                                              | Threw                                                                                                                                                        | Returns `undefined`                                                                                     | Check for `undefined`                                                                                                                                                    |
 | `divide` over `maxPeriods`                               | Threw `Error`                                                                                                                                                | Throws `RangeError`                                                                                     | Catch `RangeError`                                                                                                                                                       |
 | Any unit-aware function with a unit missing from `units` | —                                                                                                                                                            | Throws `RangeError` starting with `UNIT_NOT_SUPPORTED`                                                  | Pass the unit, or an adapter's full set                                                                                                                                  |
@@ -116,9 +116,9 @@ comes from the `week` unit, so there is no separate `weekStartsOn` argument.
 Or bind the `calendar` plugin once:
 
 ```ts
-import { bind } from "minuta/core";
-import { calendar } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { bind } from "@aleksejdix/minuta/core";
+import { calendar } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
 grids.monthGrid(new Date()).periods; // 42 day periods
@@ -127,9 +127,9 @@ grids.monthGrid(new Date()).periods; // 42 day periods
 Or bind it together with the operations:
 
 ```ts
-import { calendar } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
-import { withUnits } from "minuta/core";
+import { calendar } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(nativeUnits(), { plugins: [calendar] });
 time.monthGrid(time.next(time.period(new Date(), "month")).start);

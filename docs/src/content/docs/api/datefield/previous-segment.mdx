@@ -3,7 +3,11 @@ title: previousSegment
 description: The index of the previous segment you can type into, skipping separators.
 ---
 
-import { deriveFormat, parseSegments, previousSegment } from "datefield";
+import {
+  deriveFormat,
+  parseSegments,
+  previousSegment,
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
@@ -13,7 +17,7 @@ Find the previous segment you can type into, skipping separators: before the
 year of `31.03.2026` comes the month.
 
 ```ts
-import { previousSegment } from "datefield";
+import { previousSegment } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -23,7 +27,11 @@ previousSegment(segments, current);
 ## Example
 
 ```ts
-import { deriveFormat, parseSegments, previousSegment } from "datefield";
+import {
+  deriveFormat,
+  parseSegments,
+  previousSegment,
+} from "@aleksejdix/datefield";
 
 const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
 // index:   0 = day, 1 = ".", 2 = month, 3 = ".", 4 = year
@@ -69,7 +77,7 @@ the day is the month, and the month itself is first.
 ## Move the cursor back
 
 ```ts
-import { setSelection } from "input-state";
+import { setSelection } from "@aleksejdix/input-state";
 
 const segments = parseSegments(format, field.buffer.text);
 const here = segmentAtPosition(segments, field.buffer.selection.head);

@@ -5,13 +5,13 @@ a hook that binds every operation to your units and keeps the browsed period
 in React state, a context root, and composable calendar parts.
 
 ```bash
-npm install minuta minuta-react
+npm install @aleksejdix/minuta @aleksejdix/minuta-react
 ```
 
 ## `useMinuta(options?)`
 
 ```tsx
-import { useMinuta } from "minuta-react";
+import { useMinuta } from "@aleksejdix/minuta-react";
 
 function MonthPager() {
   const minuta = useMinuta({ unit: "month" });
@@ -49,7 +49,11 @@ with `useMinutaContext()`, which throws outside a `MinutaRoot`.
 start.
 
 ```tsx
-import { MinutaRoot, useMinutaContext, usePeriod } from "minuta-react";
+import {
+  MinutaRoot,
+  useMinutaContext,
+  usePeriod,
+} from "@aleksejdix/minuta-react";
 
 function Year() {
   const year = usePeriod("year");
@@ -67,7 +71,7 @@ function NextMonth() {
 </MinutaRoot>;
 ```
 
-## Calendar parts (`minuta-react/components`)
+## Calendar parts (`@aleksejdix/minuta-react/components`)
 
 Flat, composable parts that read the context of `CalendarRoot`:
 
@@ -77,9 +81,9 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-react/components";
-import { isWeekendWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+} from "@aleksejdix/minuta-react/components";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 

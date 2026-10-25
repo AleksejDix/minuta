@@ -11,7 +11,7 @@ The component that holds the state of a month calendar: the browsed month,
 the selected day and the focused day. Put the other calendar parts inside it.
 
 ```js
-import { CalendarRoot } from "minuta-react/components";
+import { CalendarRoot } from "@aleksejdix/minuta-react/components";
 ```
 
 ```jsx
@@ -30,9 +30,9 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-react/components";
-import { isWeekendWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+} from "@aleksejdix/minuta-react/components";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 

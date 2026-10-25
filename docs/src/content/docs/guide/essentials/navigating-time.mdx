@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-import { next, period, previous, range, shift } from "minuta";
+import { next, period, previous, range, shift } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(new Date(2026, 2, 18), "month");
@@ -32,7 +32,7 @@ the month after it, [`previous`](../../../api/minuta/previous/) the month
 before:
 
 ```ts
-import { next, period, previous } from "minuta";
+import { next, period, previous } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 18), "month");
 // → Sun Mar 1 00:00:00.000 – Tue Mar 31 23:59:59.999, unit "month"
@@ -90,7 +90,7 @@ A calendar keeps the period it shows in its state. The buttons replace it with
 its neighbour:
 
 ```ts
-import { next, period, previous } from "minuta";
+import { next, period, previous } from "@aleksejdix/minuta";
 
 let shown = period(new Date(2026, 2, 18), "month"); // → March 2026
 
@@ -120,7 +120,7 @@ To move more than one step, use [`shift`](../../../api/minuta/shift/). A
 positive number moves forward, a negative number moves back:
 
 ```ts
-import { period, shift } from "minuta";
+import { period, shift } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 18), "month");
 
@@ -233,7 +233,7 @@ A period made with [`range`](../../../api/minuta/range/) has the unit
 Instead it moves by its own length:
 
 ```ts
-import { next, previous, range, shift } from "minuta";
+import { next, previous, range, shift } from "@aleksejdix/minuta";
 
 const slot = range(
   new Date(2026, 2, 2, 9),

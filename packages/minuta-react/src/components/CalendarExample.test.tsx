@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { CalendarExample } from "./CalendarExample";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 
 const ONE = 1;
 const FIRST = 0;
