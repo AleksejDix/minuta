@@ -3,7 +3,12 @@ title: dateOrder
 description: Tell whether a format puts the day, the month or the year first — "DMY", "MDY" or "YMD".
 ---
 
-import { dateOrder, deriveFormat, fromDate, segmentsToString } from "datefield";
+import {
+  dateOrder,
+  deriveFormat,
+  fromDate,
+  segmentsToString,
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const written = (locale) =>
@@ -14,7 +19,7 @@ Tell in which order a format writes day, month and year: `"DMY"` for `de-CH`,
 `"MDY"` for `en-US`, `"YMD"` for `ja-JP`.
 
 ```ts
-import { dateOrder } from "datefield";
+import { dateOrder } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -24,7 +29,7 @@ dateOrder(format);
 ## Example
 
 ```ts
-import { dateOrder, deriveFormat } from "datefield";
+import { dateOrder, deriveFormat } from "@aleksejdix/datefield";
 
 dateOrder(deriveFormat("de-CH")); // → "DMY"
 dateOrder(deriveFormat("en-US")); // → "MDY"
@@ -84,9 +89,14 @@ user is looking at. Pass `dateOrder(format)` to
 the way the field writes it.
 
 ```ts
-import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
-import { createInputState } from "input-state";
-import { parseDate } from "fechita";
+import {
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
+import { parseDate } from "@aleksejdix/fechita";
 
 const format = deriveFormat("en-US");
 const field = createInputState({ mask: dateMask(format) });

@@ -9,7 +9,7 @@ import {
   shown,
   typeText,
 } from './date-field-test-utils'
-import { deriveFormat } from 'datefield'
+import { deriveFormat } from '@aleksejdix/datefield'
 
 const DAY_STEPS = 40
 const ONE = 1

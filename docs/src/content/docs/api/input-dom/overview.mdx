@@ -6,10 +6,15 @@ sidebar:
   label: Overview
 ---
 
-import { dateMask, dateOrder, deriveFormat, typeDate } from "datefield";
-import { parseDate } from "fechita";
-import { applyInputEvent, visibleRange } from "input-dom";
-import { createInputState } from "input-state";
+import {
+  dateMask,
+  dateOrder,
+  deriveFormat,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { parseDate } from "@aleksejdix/fechita";
+import { applyInputEvent, visibleRange } from "@aleksejdix/input-dom";
+import { createInputState } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
@@ -32,7 +37,7 @@ The element never edits itself: every change goes through the state's rules,
 so a mask like `__.__.____` cannot be broken by typing, pasting or autocorrect.
 
 ```bash
-npm install input-dom input-state text-buffer
+npm install @aleksejdix/input-dom @aleksejdix/input-state @aleksejdix/text-buffer
 ```
 
 ## Where it sits
@@ -70,10 +75,10 @@ import {
   toDate,
   typeDate,
   withSegments,
-} from "datefield";
-import { attachInput } from "input-dom";
-import { createInputState } from "input-state";
-import { parseDate } from "fechita";
+} from "@aleksejdix/datefield";
+import { attachInput } from "@aleksejdix/input-dom";
+import { createInputState } from "@aleksejdix/input-state";
+import { parseDate } from "@aleksejdix/fechita";
 
 const locale = "de-CH";
 const format = deriveFormat(locale); // __.__.____

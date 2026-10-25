@@ -25,8 +25,8 @@ The week start decides where every `"week"` period begins. It is a setting
 of the **units**, chosen when you create them:
 
 ```ts
-import { nativeUnits } from "minuta/native";
-import { withUnits } from "minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const monday = withUnits(nativeUnits());
 const sunday = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
@@ -40,9 +40,9 @@ sunday.period(new Date(2026, 2, 18), "week"); // → Sun Mar 15 – Sat Mar 21
   numbers of `Date#getDay()`: 0 = Sunday, 1 = Monday … 6 = Saturday.
 - The units store it as a number: `nativeUnits({ weekStartsOn: "sunday" }).weekStartsOn`
   is `0`.
-- The default `minuta` entry (`import { period } from "minuta"`) always
+- The default `minuta` entry (`import { period } from "@aleksejdix/minuta"`) always
   starts weeks on Monday. For another start, use `withUnits` from
-  `minuta/core`.
+  `@aleksejdix/minuta/core`.
 
 Every engine takes the option the same way. None of them reads the week
 start from a date library's locale.
@@ -59,8 +59,8 @@ functions, [`isWeekendWith`](../../api/minuta-calendar/is-weekend-with/) and
 [`isWeekdayWith`](../../api/minuta-calendar/is-weekday-with/):
 
 ```ts
-import { isWeekendWith } from "minuta/calendar";
-import { period } from "minuta";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { period } from "@aleksejdix/minuta";
 
 const units = nativeUnits({ weekend: ["friday", "saturday"] });
 
@@ -103,7 +103,7 @@ the grid's first week (Mon Dec 28 2020) is ISO week 53 of 2020.
 
 ## Calendar grids
 
-[`minuta/calendar`](../../api/minuta-calendar/overview/) builds the data
+[`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/) builds the data
 for calendar screens. Every cell is an ordinary period.
 
 | Grid                                                          | What it is                                                          |
@@ -117,7 +117,7 @@ rows. A month view built on it keeps the same height for every month, so
 nothing jumps when the user pages through months.
 
 ```ts
-import { monthGridWith } from "minuta/calendar";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
 
 monthGridWith(nativeUnits(), new Date(2026, 2, 15)).periods[0];
 // → Mon Feb 23 (the week of Mar 1 starts on Monday)
@@ -140,7 +140,7 @@ Other calendar systems are available for **labels**, through the locale of
 `formatRange`. Add `-u-ca-` and a calendar name to the locale:
 
 ```ts
-import { formatPeriod } from "minuta/format";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 
 formatPeriod(period(new Date(2026, 2, 15), "month"), "en-US-u-ca-buddhist");
 // → "March 2569 BE"
@@ -155,4 +155,4 @@ although March 21–31 already fall in the next Persian month, Farvardin 1405.
 
 - [Time zones](../time-zones/)
 - [Date engines](../../api/adapters/overview/) — the options every engine takes.
-- [`minuta/calendar`](../../api/minuta-calendar/overview/)
+- [`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)

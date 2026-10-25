@@ -3,7 +3,7 @@ title: ParseError
 description: The error codes parseDate reports, as named constants.
 ---
 
-import { ParseError, parseDate } from "fechita";
+import { ParseError, parseDate } from "@aleksejdix/fechita";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import ParseDiagram from "../../../../components/diagrams/ParseDiagram.astro";
 
@@ -24,14 +24,14 @@ The codes `parseDate` puts in `errorCodes`, as named constants. Use them
 instead of typing the strings yourself.
 
 ```ts
-import { ParseError } from "fechita";
-// or: import { ParseError } from "fechita/core";
+import { ParseError } from "@aleksejdix/fechita";
+// or: import { ParseError } from "@aleksejdix/fechita/core";
 ```
 
 ## Example
 
 ```ts
-import { ParseError, parseDate } from "fechita";
+import { ParseError, parseDate } from "@aleksejdix/fechita";
 
 const result = parseDate("04/05/2026");
 

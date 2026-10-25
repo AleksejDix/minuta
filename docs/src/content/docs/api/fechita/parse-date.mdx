@@ -10,7 +10,7 @@ languages. You get a date only when the text means exactly one date.
 Otherwise you get the reason and the dates it could mean.
 
 ```ts
-import { parseDate } from "fechita";
+import { parseDate } from "@aleksejdix/fechita";
 ```
 
 ```ts
@@ -20,7 +20,7 @@ parseDate(text, options?)
 ## Example
 
 ```ts
-import { parseDate } from "fechita";
+import { parseDate } from "@aleksejdix/fechita";
 
 parseDate("2026-03-31");
 // → { valid: true, date: 31 March 2026 00:00 local time, parts: { … } }

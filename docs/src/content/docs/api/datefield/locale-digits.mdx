@@ -8,7 +8,7 @@ import {
   fromDate,
   localeDigits,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const stored = segmentsToString(
@@ -21,7 +21,7 @@ Get the ten digits a locale writes numbers with: `٠`–`٩` for `ar-EG`, `۰`�
 for `fa-IR`, plain `0`–`9` for `de-CH`.
 
 ```ts
-import { localeDigits } from "datefield";
+import { localeDigits } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -31,7 +31,7 @@ localeDigits(locale);
 ## Example
 
 ```ts
-import { localeDigits } from "datefield";
+import { localeDigits } from "@aleksejdix/datefield";
 
 localeDigits("ar-EG")[3]; // → "٣"
 localeDigits("de-CH")[3]; // → "3"
@@ -60,7 +60,7 @@ type or paste digits of any script; they are stored as `0`–`9`.
 shows the locale's digits while the state keeps `0`–`9`:
 
 ```ts
-import { attachInput } from "input-dom";
+import { attachInput } from "@aleksejdix/input-dom";
 
 attachInput(element, field, { digits: localeDigits("ar-EG") });
 // the element shows   ٣١‏/٠٣‏/٢٠٢٦

@@ -4,15 +4,15 @@ Divide time into pieces. Pure functions over plain, readonly data, with the
 date engine of your choice plugged in as data.
 
 ```bash
-npm install minuta
+npm install @aleksejdix/minuta
 ```
 
-| What you import                                     | minified + brotli |
-| --------------------------------------------------- | ----------------- |
-| `minuta`: `period`, `next`, `divide`                | 2.0 kB            |
-| `minuta/core` with only the `day` and `month` units | 1.6 kB            |
-| Calendar grids through `bind`                       | 2.2 kB            |
-| An adapter (without its date library)               | 0.6–1.4 kB        |
+| What you import                                                 | minified + brotli |
+| --------------------------------------------------------------- | ----------------- |
+| `minuta`: `period`, `next`, `divide`                            | 2.0 kB            |
+| `@aleksejdix/minuta/core` with only the `day` and `month` units | 1.6 kB            |
+| Calendar grids through `bind`                                   | 2.2 kB            |
+| An adapter (without its date library)                           | 0.6–1.4 kB        |
 
 Zero dependencies, ES modules only, `sideEffects: false`. Budgets are
 checked on every CI run.
@@ -23,7 +23,7 @@ Every time range is a **Period**: `{ start, end, unit }`. `divide` splits any
 period into smaller ones. That is the whole model.
 
 ```ts
-import { divide, period } from "minuta";
+import { divide, period } from "@aleksejdix/minuta";
 
 const year = period(new Date(2026, 0, 1), "year");
 const months = divide(year, "month"); // 12 periods
@@ -56,7 +56,7 @@ import {
   previous,
   range,
   shift,
-} from "minuta";
+} from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 15), "month");
 next(march); // April
@@ -80,8 +80,8 @@ Rules and data are separate. Units are plain data produced by an adapter; bind
 them once and you get the same operations:
 
 ```ts
-import { withUnits } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
 time.period(new Date(), "week"); // starts on Sunday
@@ -90,27 +90,27 @@ time.period(new Date(), "week"); // starts on Sunday
 Days are named (`"monday"`); the numbers of `Date#getDay()` (0 = Sunday) work
 too.
 
-| Adapter                           | Import                                     |
-| --------------------------------- | ------------------------------------------ |
-| Native `Date` (zero dependencies) | `nativeUnits` from `minuta/native`         |
-| date-fns                          | `dateFnsUnits` from `minuta/date-fns`      |
-| date-fns-tz (time zones)          | `dateFnsTzUnits` from `minuta/date-fns-tz` |
-| Day.js                            | `dayjsUnits` from `minuta/dayjs`           |
-| Luxon                             | `luxonUnits` from `minuta/luxon`           |
-| Moment                            | `momentUnits` from `minuta/moment`         |
-| Temporal                          | `temporalUnits` from `minuta/temporal`     |
+| Adapter                           | Import                                                 |
+| --------------------------------- | ------------------------------------------------------ |
+| Native `Date` (zero dependencies) | `nativeUnits` from `@aleksejdix/minuta/native`         |
+| date-fns                          | `dateFnsUnits` from `@aleksejdix/minuta/date-fns`      |
+| date-fns-tz (time zones)          | `dateFnsTzUnits` from `@aleksejdix/minuta/date-fns-tz` |
+| Day.js                            | `dayjsUnits` from `@aleksejdix/minuta/dayjs`           |
+| Luxon                             | `luxonUnits` from `@aleksejdix/minuta/luxon`           |
+| Moment                            | `momentUnits` from `@aleksejdix/minuta/moment`         |
+| Temporal                          | `temporalUnits` from `@aleksejdix/minuta/temporal`     |
 
 The bound object's members have exactly the types of the default entry, so
 the two cannot drift apart.
 
 ## The pure core
 
-`minuta/core` has the rules without bound data. Unit-aware functions take the
+`@aleksejdix/minuta/core` has the rules without bound data. Unit-aware functions take the
 units first; unit-free functions take none:
 
 ```ts
-import { nextWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { nextWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const { day, month } = nativeUnits();
 const units = { day, month }; // only what you use ends up in the bundle
@@ -127,16 +127,16 @@ A plugin is an object of context-first functions. Pass it to `withUnits` and
 its functions join the operations, bound to the same units. Two ship with
 minuta:
 
-| Entry              | Plugin      | Functions                                                                                                                                                                           |
-| ------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `minuta/calendar`  | `calendar`  | `monthGrid(date)` · `yearGrid(date)` · `dayGrid(date)` · `isWeekday(period)` · `isWeekend(period)`                                                                                  |
-| `minuta/intervals` | `intervals` | `merge(periods, unit?)` · `split(period, date)` · `gap(a, b)` · `clamp(period, bounds)` · `move(period, start)` · `resize(period, edge, date)` · `snap(date, unit, { step, mode })` |
+| Entry                          | Plugin      | Functions                                                                                                                                                                           |
+| ------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@aleksejdix/minuta/calendar`  | `calendar`  | `monthGrid(date)` · `yearGrid(date)` · `dayGrid(date)` · `isWeekday(period)` · `isWeekend(period)`                                                                                  |
+| `@aleksejdix/minuta/intervals` | `intervals` | `merge(periods, unit?)` · `split(period, date)` · `gap(a, b)` · `clamp(period, bounds)` · `move(period, start)` · `resize(period, edge, date)` · `snap(date, unit, { step, mode })` |
 
 ```ts
-import { calendar } from "minuta/calendar";
-import { intervals } from "minuta/intervals";
-import { nativeUnits } from "minuta/native";
-import { withUnits } from "minuta/core";
+import { calendar } from "@aleksejdix/minuta/calendar";
+import { intervals } from "@aleksejdix/minuta/intervals";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(
   nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
@@ -162,10 +162,10 @@ its own.
 Write your own the same way:
 
 ```ts
-import type { Period, Units } from "minuta/core";
-import { bind, divideWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
-import { period } from "minuta";
+import type { Period, Units } from "@aleksejdix/minuta/core";
+import { bind, divideWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { period } from "@aleksejdix/minuta";
 
 const workdays = {
   workdaysIn: (units: Units, month: Period) =>
@@ -185,8 +185,8 @@ your units.
 ## Formatting
 
 ```ts
-import { formatPeriod, formatRange } from "minuta/format";
-import { period, range } from "minuta";
+import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
+import { period, range } from "@aleksejdix/minuta";
 
 formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH"); // "März 2026"
 formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH"); // "30. März – 5. Apr. 2026"
@@ -197,9 +197,9 @@ period's unit. Pass the units' `timeZone` to format periods of a time-zone
 adapter in its zone:
 
 ```ts
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { formatPeriod } from "minuta/format";
-import { periodWith } from "minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { formatPeriod } from "@aleksejdix/minuta/format";
+import { periodWith } from "@aleksejdix/minuta/core";
 
 const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
 const day = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");

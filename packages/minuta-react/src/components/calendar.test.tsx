@@ -5,7 +5,7 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { RenderResult } from "@testing-library/react";
 import type { WeekStart } from "./week-start";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const GRID_DAYS = 42;
 const JANUARY_2024_OUTSIDE_DAYS = 11;

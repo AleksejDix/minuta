@@ -30,7 +30,7 @@ These four functions are a _unit spec_. A set of specs, one per unit, plus a
 few settings, is called **units**. It is a plain object:
 
 ```ts
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = nativeUnits();
 
@@ -55,21 +55,21 @@ The settings travel with the specs:
 An **adapter** is a function that makes units for one date library, with your
 settings. Each lives in its own entry, so you only load the one you use:
 
-| Date library                      | Adapter                                                   | Import               |
-| --------------------------------- | --------------------------------------------------------- | -------------------- |
-| Built-in `Date` (no dependencies) | [`nativeUnits`](../../api/adapters/native-units/)         | `minuta/native`      |
-| date-fns                          | [`dateFnsUnits`](../../api/adapters/date-fns-units/)      | `minuta/date-fns`    |
-| date-fns-tz (any time zone)       | [`dateFnsTzUnits`](../../api/adapters/date-fns-tz-units/) | `minuta/date-fns-tz` |
-| Luxon                             | [`luxonUnits`](../../api/adapters/luxon-units/)           | `minuta/luxon`       |
-| Day.js                            | [`dayjsUnits`](../../api/adapters/dayjs-units/)           | `minuta/dayjs`       |
-| Moment                            | [`momentUnits`](../../api/adapters/moment-units/)         | `minuta/moment`      |
-| Temporal                          | [`temporalUnits`](../../api/adapters/temporal-units/)     | `minuta/temporal`    |
+| Date library                      | Adapter                                                   | Import                           |
+| --------------------------------- | --------------------------------------------------------- | -------------------------------- |
+| Built-in `Date` (no dependencies) | [`nativeUnits`](../../api/adapters/native-units/)         | `@aleksejdix/minuta/native`      |
+| date-fns                          | [`dateFnsUnits`](../../api/adapters/date-fns-units/)      | `@aleksejdix/minuta/date-fns`    |
+| date-fns-tz (any time zone)       | [`dateFnsTzUnits`](../../api/adapters/date-fns-tz-units/) | `@aleksejdix/minuta/date-fns-tz` |
+| Luxon                             | [`luxonUnits`](../../api/adapters/luxon-units/)           | `@aleksejdix/minuta/luxon`       |
+| Day.js                            | [`dayjsUnits`](../../api/adapters/dayjs-units/)           | `@aleksejdix/minuta/dayjs`       |
+| Moment                            | [`momentUnits`](../../api/adapters/moment-units/)         | `@aleksejdix/minuta/moment`      |
+| Temporal                          | [`temporalUnits`](../../api/adapters/temporal-units/)     | `@aleksejdix/minuta/temporal`    |
 
 Every adapter takes `weekStartsOn` and `weekend`. Days are named
 (`"sunday"`), and the numbers of `Date#getDay()` (0 = Sunday) work too:
 
 ```ts
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] });
 ```
@@ -87,7 +87,7 @@ The main entry, [`minuta`](../../api/minuta/overview/), has the native units
 built in, with weeks from Monday. There is nothing to set up:
 
 ```ts
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 
 period(new Date(2026, 2, 18), "week");
 // → Mon Mar 16 – Sun Mar 22
@@ -96,17 +96,17 @@ period(new Date(2026, 2, 18), "week");
 Use it when the built-in `Date`, local time and Monday weeks are what you
 need.
 
-## `minuta/core`: bring your own units
+## `@aleksejdix/minuta/core`: bring your own units
 
-[`minuta/core`](../../api/minuta-core/overview/) has the same operations
+[`@aleksejdix/minuta/core`](../../api/minuta-core/overview/) has the same operations
 without units built in. There are two ways to use it.
 
 **Bind once with `withUnits`.** You get an object with every operation, all
 using your units. This is the usual way:
 
 ```ts
-import { withUnits } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
 
@@ -119,8 +119,8 @@ form that takes the units first. Pass only the units you use, and the rest
 stay out of your bundle:
 
 ```ts
-import { nextWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { nextWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const { day, month } = nativeUnits();
 const units = { day, month };
@@ -141,8 +141,8 @@ Swap the adapter; the code stays the same. Here a day is computed in
 New York, even on a server in Europe:
 
 ```ts
-import { withUnits } from "minuta/core";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 
 const newYork = withUnits(dateFnsTzUnits({ timeZone: "America/New_York" }));
 
@@ -154,16 +154,16 @@ newYork.duration(day, "hour"); // → 23, the clocks go forward in New York that
 
 ## Plugins use the same units
 
-Calendar grids ([`minuta/calendar`](../../api/minuta-calendar/overview/)) and interval helpers
-([`minuta/intervals`](../../api/minuta-intervals/overview/))
+Calendar grids ([`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)) and interval helpers
+([`@aleksejdix/minuta/intervals`](../../api/minuta-intervals/overview/))
 come as **plugins**: objects of functions that take the units first. Pass them
 to `withUnits`, and they use the same week start, weekend and time zone as
 everything else:
 
 ```ts
-import { calendar } from "minuta/calendar";
-import { withUnits } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { calendar } from "@aleksejdix/minuta/calendar";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
   plugins: [calendar],
@@ -181,8 +181,8 @@ Units are plain data, so you can add one. Give it the four functions and put
 it next to an adapter's units:
 
 ```ts
-import { nextWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { nextWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const base = nativeUnits();
 const fortnight = {

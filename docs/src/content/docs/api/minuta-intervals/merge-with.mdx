@@ -3,9 +3,9 @@ title: mergeWith
 description: Join periods into one that runs from the earliest start to the latest end — and keep a unit like "month" when the result is exactly one.
 ---
 
-import { divide, period, range } from "minuta";
-import { mergeWith } from "minuta/intervals";
-import { nativeUnits } from "minuta/native";
+import { divide, period, range } from "@aleksejdix/minuta";
+import { mergeWith } from "@aleksejdix/minuta/intervals";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const units = nativeUnits();
@@ -25,7 +25,7 @@ latest end. When the result is exactly one whole unit, such as one month, it
 gets that unit.
 
 ```ts
-import { mergeWith } from "minuta/intervals";
+import { mergeWith } from "@aleksejdix/minuta/intervals";
 ```
 
 ```ts
@@ -35,9 +35,9 @@ mergeWith(units, periods, unit?)
 ## Example
 
 ```ts
-import { mergeWith } from "minuta/intervals";
-import { nativeUnits } from "minuta/native";
-import { divide, period } from "minuta";
+import { mergeWith } from "@aleksejdix/minuta/intervals";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { divide, period } from "@aleksejdix/minuta";
 
 const units = nativeUnits();
 const days = divide(period(new Date(2026, 2, 1), "month"), "day"); // the 31 days of March
@@ -96,7 +96,7 @@ The same goes for overlapping periods: they become one period with no
 double counting.
 
 ```ts
-import { range } from "minuta";
+import { range } from "@aleksejdix/minuta";
 
 mergeWith(units, [
   range(new Date(2026, 0, 1, 9), new Date(2026, 0, 1, 11)),

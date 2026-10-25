@@ -1,7 +1,7 @@
 /**
  * Period formatting entry point
  *
- * Import from 'minuta/format'
+ * Import from '@aleksejdix/minuta/format'
  *
  * Locale-aware labels for periods via Intl.DateTimeFormat.
  */

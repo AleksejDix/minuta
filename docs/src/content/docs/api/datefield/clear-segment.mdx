@@ -8,7 +8,7 @@ import {
   deriveFormat,
   parseSegments,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
@@ -17,7 +17,7 @@ Empty one segment and leave the rest alone, so clearing the month of
 `31.03.2026` gives `31.__.2026`.
 
 ```ts
-import { clearSegment } from "datefield";
+import { clearSegment } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -32,7 +32,7 @@ import {
   deriveFormat,
   parseSegments,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 
 const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
 // index:   0 = day, 1 = ".", 2 = month, 3 = ".", 4 = year

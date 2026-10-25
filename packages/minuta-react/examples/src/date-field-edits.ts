@@ -8,7 +8,7 @@ import {
   shown,
   typeText,
 } from "./date-field-test-utils";
-import { deriveFormat, placeholder } from "datefield";
+import { deriveFormat, placeholder } from "@aleksejdix/datefield";
 import type { Field } from "./date-field-test-utils";
 import { cleanup } from "@testing-library/react";
 import { isoDate } from "./date-field-dates";

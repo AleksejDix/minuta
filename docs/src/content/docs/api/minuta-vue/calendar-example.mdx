@@ -11,8 +11,8 @@ switches the first day of the week between Sunday and Monday. Use it to try
 the library, or read it as a template for your own calendar.
 
 ```js
-import { CalendarExample } from "minuta-vue/components";
-// also exported from "minuta-vue"
+import { CalendarExample } from "@aleksejdix/minuta-vue/components";
+// also exported from "@aleksejdix/minuta-vue"
 ```
 
 ```vue
@@ -23,8 +23,8 @@ import { CalendarExample } from "minuta-vue/components";
 
 ```vue
 <script setup>
-import { CalendarExample } from "minuta-vue";
-import "minuta-vue/style.css";
+import { CalendarExample } from "@aleksejdix/minuta-vue";
+import "@aleksejdix/minuta-vue/style.css";
 
 function onSelect(day) {
   alert(day.start.toDateString());

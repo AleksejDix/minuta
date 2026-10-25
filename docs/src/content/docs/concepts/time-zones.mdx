@@ -33,7 +33,7 @@ The engine decides the zone:
 The same code gives different days on different computers:
 
 ```ts
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 
 const day = period(new Date("2026-03-20T20:00:00Z"), "day");
 
@@ -53,8 +53,8 @@ Use [`dateFnsTzUnits`](../../api/adapters/date-fns-tz-units/) with an IANA
 zone name. Then every function computes in that zone, wherever it runs:
 
 ```ts
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { withUnits } from "minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const tokyo = withUnits(dateFnsTzUnits({ timeZone: "Asia/Tokyo" }));
 
@@ -71,7 +71,7 @@ Everything that depends on the day follows the zone of the units, not the
 computer's:
 
 - periods, `next`, `divide`, `duration`, …
-- month, year and day grids ([`minuta/calendar`](../../api/minuta-calendar/overview/)),
+- month, year and day grids ([`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)),
 - weekend checks — 22:00 UTC on Friday is Saturday in Tokyo,
 - `snapWith`, e.g. snapping to midnight or to a decade.
 
@@ -80,7 +80,7 @@ computer's:
 All units carry a `timeZone` setting with the zone name:
 
 ```ts
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 nativeUnits().timeZone; // → "Europe/Zurich" (on a computer in Zurich)
 dateFnsTzUnits({ timeZone: "Asia/Tokyo" }).timeZone; // → "Asia/Tokyo"
@@ -101,7 +101,7 @@ the wrong day.
   or `Intl.DateTimeFormat` with the units' `timeZone`:
 
   ```ts
-  import { formatPeriod } from "minuta/format";
+  import { formatPeriod } from "@aleksejdix/minuta/format";
 
   const day = tokyo.period(new Date("2026-03-20T20:00:00Z"), "day");
 
@@ -124,7 +124,7 @@ back once a year. In Europe/Zurich in 2026:
 minuta follows the real clock:
 
 ```ts
-import { duration, period } from "minuta";
+import { duration, period } from "@aleksejdix/minuta";
 
 // On a computer in Europe/Zurich
 duration(period(new Date(2026, 2, 29), "day"), "hour"); // → 23

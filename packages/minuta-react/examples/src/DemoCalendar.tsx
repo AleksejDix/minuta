@@ -2,9 +2,9 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-react/components";
+} from "@aleksejdix/minuta-react/components";
 import type { JSX } from "react";
-import type { Period } from "minuta-react";
+import type { Period } from "@aleksejdix/minuta-react";
 
 type DemoCalendarProps = Readonly<{
   locale: string;

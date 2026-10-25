@@ -1,4 +1,8 @@
-import { deriveFormat, fromDate, segmentsToString } from "datefield";
+import {
+  deriveFormat,
+  fromDate,
+  segmentsToString,
+} from "@aleksejdix/datefield";
 import { render, screen } from "@testing-library/react";
 import { DateFieldInput } from "./DateFieldInput";
 import { DateFieldRoot } from "./DateFieldRoot";

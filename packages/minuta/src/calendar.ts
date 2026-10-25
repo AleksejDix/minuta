@@ -4,8 +4,8 @@
  * object to pass to `withUnits` (or `bind`) with your units.
  *
  * @example
- * import { withUnits } from "minuta/core";
- * import { calendar } from "minuta/calendar";
+ * import { withUnits } from "@aleksejdix/minuta/core";
+ * import { calendar } from "@aleksejdix/minuta/calendar";
  *
  * const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
  * time.monthGrid(new Date());

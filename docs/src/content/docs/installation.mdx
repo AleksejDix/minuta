@@ -63,8 +63,17 @@ minuta is in beta (`1.0.0-beta`); the date field packages and `fechita` are at
 
 ## The core
 
+minuta is published on GitHub Packages under the `@aleksejdix` scope. Point
+the scope at GitHub's registry once, in your project's `.npmrc`; installing
+needs a GitHub token that can read packages, as every GitHub Packages
+install does:
+
+```ini
+@aleksejdix:registry=https://npm.pkg.github.com
+```
+
 ```sh
-npm install minuta
+npm install @aleksejdix/minuta
 ```
 
 That is all you need to work with periods on the built-in `Date`. No other
@@ -75,31 +84,31 @@ dependency.
 If your app already uses a date library, minuta can run on it. Import the
 adapter for that library:
 
-| Engine                   | Library                     | Import the adapter from |
-| ------------------------ | --------------------------- | ----------------------- |
-| date-fns                 | `date-fns`                  | `minuta/date-fns`       |
-| date-fns with time zones | `date-fns` + `@date-fns/tz` | `minuta/date-fns-tz`    |
-| Luxon                    | `luxon`                     | `minuta/luxon`          |
-| Day.js                   | `dayjs`                     | `minuta/dayjs`          |
-| Moment                   | `moment`                    | `minuta/moment`         |
-| Temporal                 | `@js-temporal/polyfill`     | `minuta/temporal`       |
+| Engine                   | Library                     | Import the adapter from          |
+| ------------------------ | --------------------------- | -------------------------------- |
+| date-fns                 | `date-fns`                  | `@aleksejdix/minuta/date-fns`    |
+| date-fns with time zones | `date-fns` + `@date-fns/tz` | `@aleksejdix/minuta/date-fns-tz` |
+| Luxon                    | `luxon`                     | `@aleksejdix/minuta/luxon`       |
+| Day.js                   | `dayjs`                     | `@aleksejdix/minuta/dayjs`       |
+| Moment                   | `moment`                    | `@aleksejdix/minuta/moment`      |
+| Temporal                 | `@js-temporal/polyfill`     | `@aleksejdix/minuta/temporal`    |
 
 date-fns, @date-fns/tz, Luxon and the Temporal polyfill are optional
 dependencies of minuta: npm installs them with minuta unless you pass
 `--omit=optional`. Day.js and Moment are not, so install them yourself:
 
 ```sh
-npm install minuta dayjs
-npm install minuta moment
+npm install @aleksejdix/minuta dayjs
+npm install @aleksejdix/minuta moment
 ```
 
 :::caution
 Importing an adapter without its library installed fails at import time, for
-example `minuta/dayjs` without `dayjs`.
+example `@aleksejdix/minuta/dayjs` without `dayjs`.
 :::
 
 :::note
-`minuta/temporal` uses the runtime's `Temporal` where there is one and
+`@aleksejdix/minuta/temporal` uses the runtime's `Temporal` where there is one and
 `@js-temporal/polyfill` otherwise. It never sets a global `Temporal`.
 :::
 
@@ -108,7 +117,7 @@ How to choose: see [Date engines](../concepts/date-engines/).
 ## React
 
 ```sh
-npm install minuta minuta-react
+npm install @aleksejdix/minuta @aleksejdix/minuta-react
 ```
 
 Needs React 18 or 19.
@@ -116,7 +125,7 @@ Needs React 18 or 19.
 ## Vue
 
 ```sh
-npm install minuta minuta-vue
+npm install @aleksejdix/minuta @aleksejdix/minuta-vue
 ```
 
 Needs Vue 3.5 or newer.
@@ -128,7 +137,7 @@ locales, `input-dom` connects it to an `<input>`, and `fechita` reads pasted
 dates. `input-state` and `text-buffer` come along as dependencies.
 
 ```sh
-npm install datefield input-dom fechita
+npm install @aleksejdix/datefield @aleksejdix/input-dom @aleksejdix/fechita
 ```
 
 Needs an ES2022 runtime with `Intl.Segmenter` and `Object.hasOwn`: Chrome and
@@ -140,11 +149,11 @@ See [The input stack](../concepts/the-input-stack/) for how they fit together.
 ## Only the parser
 
 ```sh
-npm install fechita
+npm install @aleksejdix/fechita
 ```
 
 `fechita` has no dependencies. It parses dates in every CLDR locale; import
-`fechita/core` and single locales to ship only the languages you need.
+`@aleksejdix/fechita/core` and single locales to ship only the languages you need.
 
 Needs an ES2022 runtime with `Object.hasOwn` and `Array.prototype.at`: Chrome
 and Edge 93, Safari 15.4, Firefox 92, Node 16.9 or newer.

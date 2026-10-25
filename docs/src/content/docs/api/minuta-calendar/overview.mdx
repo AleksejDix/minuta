@@ -8,12 +8,12 @@ sidebar:
 
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 
-`minuta/calendar` builds what a calendar screen needs: the days of a month
+`@aleksejdix/minuta/calendar` builds what a calendar screen needs: the days of a month
 view, the weeks of a year, the hours of a day, and whether a day is on the
 weekend.
 
 ```ts
-import { calendar, monthGridWith } from "minuta/calendar";
+import { calendar, monthGridWith } from "@aleksejdix/minuta/calendar";
 ```
 
 It is a separate entry point, so it costs nothing in your bundle until you
@@ -44,8 +44,8 @@ The grids and checks follow these settings. A Sunday-first calendar is just
 other units:
 
 ```ts
-import { monthGridWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 monthGridWith(nativeUnits(), new Date(2026, 2, 15)).periods[0];
 // → Mon Feb 23 2026
@@ -68,8 +68,8 @@ Passing the units every time gets old. Give the `calendar` plugin to
 `withUnits` and call the functions without them:
 
 ```ts
-import { calendar } from "minuta/calendar";
-import { withUnits } from "minuta/core";
+import { calendar } from "@aleksejdix/minuta/calendar";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
   plugins: [calendar],

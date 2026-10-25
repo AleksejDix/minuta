@@ -3,14 +3,14 @@ title: placeholder
 description: The empty text of a date format, such as __.__.____ for de-CH.
 ---
 
-import { deriveFormat, placeholder } from "datefield";
+import { deriveFormat, placeholder } from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 Build the empty text of a format: an underscore for each digit, the separators
 as they are, so `de-CH` gives `__.__.____`.
 
 ```ts
-import { placeholder } from "datefield";
+import { placeholder } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -20,7 +20,7 @@ placeholder(format);
 ## Example
 
 ```ts
-import { deriveFormat, placeholder } from "datefield";
+import { deriveFormat, placeholder } from "@aleksejdix/datefield";
 
 placeholder(deriveFormat("de-CH")); // → "__.__.____"
 placeholder(deriveFormat("en-US")); // → "__/__/____"

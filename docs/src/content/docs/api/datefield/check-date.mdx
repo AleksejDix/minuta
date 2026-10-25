@@ -3,7 +3,12 @@ title: checkDate
 description: Report why a date field's date is not allowed — before min, after max or unavailable — without blocking what the user types.
 ---
 
-import { DateProblem, checkDate, deriveFormat, parseSegments } from "datefield";
+import {
+  DateProblem,
+  checkDate,
+  deriveFormat,
+  parseSegments,
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const format = deriveFormat("de-CH");
@@ -20,7 +25,7 @@ steps to with the arrow keys; it tells you, so you can mark it invalid and show 
 message.
 
 ```ts
-import { checkDate } from "datefield";
+import { checkDate } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -30,7 +35,12 @@ checkDate(segments, { min, max, isUnavailable });
 ## Example
 
 ```ts
-import { DateProblem, checkDate, deriveFormat, parseSegments } from "datefield";
+import {
+  DateProblem,
+  checkDate,
+  deriveFormat,
+  parseSegments,
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 const rules = {

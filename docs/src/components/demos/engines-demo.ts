@@ -3,14 +3,14 @@
  * with minuta only the import changes, and the result is the same.
  */
 import { dayLabel, demoRoots, fillList, inputDate, part } from "./dom";
-import type { Period } from "minuta";
-import { dateFnsUnits } from "minuta/date-fns";
-import { dayjsUnits } from "minuta/dayjs";
-import { luxonUnits } from "minuta/luxon";
-import { momentUnits } from "minuta/moment";
-import { nativeUnits } from "minuta/native";
-import { temporalUnits } from "minuta/temporal";
-import { withUnits } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta";
+import { dateFnsUnits } from "@aleksejdix/minuta/date-fns";
+import { dayjsUnits } from "@aleksejdix/minuta/dayjs";
+import { luxonUnits } from "@aleksejdix/minuta/luxon";
+import { momentUnits } from "@aleksejdix/minuta/moment";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 type Engine = Readonly<{
   /** The adapter function's name */
@@ -29,7 +29,7 @@ const ENGINES: ReadonlyMap<string, Engine> = new Map<string, Engine>([
     {
       adapter: "nativeUnits",
       make: () => nativeUnits(),
-      module: "minuta/native",
+      module: "@aleksejdix/minuta/native",
       without: `const first = new Date(date.getFullYear(), date.getMonth(), 1);
 const last = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 // …then find the Mondays by hand, walk 7 days at a time,
@@ -41,7 +41,7 @@ const last = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     {
       adapter: "dateFnsUnits",
       make: () => dateFnsUnits(),
-      module: "minuta/date-fns",
+      module: "@aleksejdix/minuta/date-fns",
       without: `eachWeekOfInterval(
   { start: startOfMonth(date), end: endOfMonth(date) },
   { weekStartsOn: 1 },
@@ -55,7 +55,7 @@ const last = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     {
       adapter: "luxonUnits",
       make: () => luxonUnits(),
-      module: "minuta/luxon",
+      module: "@aleksejdix/minuta/luxon",
       without: `const month = DateTime.fromJSDate(date).startOf("month");
 Interval.fromDateTimes(month, month.endOf("month"))
   .splitBy({ weeks: 1 });
@@ -67,7 +67,7 @@ Interval.fromDateTimes(month, month.endOf("month"))
     {
       adapter: "dayjsUnits",
       make: () => dayjsUnits(),
-      module: "minuta/dayjs",
+      module: "@aleksejdix/minuta/dayjs",
       without: `dayjs.extend(isoWeek);
 let week = dayjs(date).startOf("month").startOf("isoWeek");
 // …then loop with week.add(1, "week") until the month ends,
@@ -79,7 +79,7 @@ let week = dayjs(date).startOf("month").startOf("isoWeek");
     {
       adapter: "momentUnits",
       make: () => momentUnits(),
-      module: "minuta/moment",
+      module: "@aleksejdix/minuta/moment",
       without: `const week = moment(date).startOf("month").startOf("isoWeek");
 // …then loop with week.add(1, "week") — which mutates week —
 // and cut the first and last week yourself`,
@@ -90,7 +90,7 @@ let week = dayjs(date).startOf("month").startOf("isoWeek");
     {
       adapter: "temporalUnits",
       make: () => temporalUnits(),
-      module: "minuta/temporal",
+      module: "@aleksejdix/minuta/temporal",
       without: `const first = Temporal.PlainDate.from(iso).with({ day: 1 });
 const monday = first.subtract({ days: first.dayOfWeek - 1 });
 // …then add({ weeks: 1 }) in a loop, and cut the weeks
@@ -132,7 +132,7 @@ function verdict(
 
 function solution(engine: Engine): string {
   return `import { ${engine.adapter} } from "${engine.module}";
-import { withUnits } from "minuta/core";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(${engine.adapter}());
 time.divide(time.period(date, "month"), "week");`;

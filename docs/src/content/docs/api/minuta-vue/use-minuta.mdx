@@ -3,8 +3,8 @@ title: useMinuta
 description: A Vue composable that binds every minuta function to your units and keeps the browsed period reactive.
 ---
 
-import { withUnits } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Flow from "../../../../components/diagrams/Flow.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -17,7 +17,7 @@ _browsed period_ — the month (or week, day, …) the user is looking at — as
 reactive state.
 
 ```js
-import { useMinuta } from "minuta-vue";
+import { useMinuta } from "@aleksejdix/minuta-vue";
 ```
 
 ```js
@@ -30,7 +30,7 @@ A button that shows the browsed month and moves to the next month on click.
 
 ```vue
 <script setup>
-import { useMinuta } from "minuta-vue";
+import { useMinuta } from "@aleksejdix/minuta-vue";
 
 const minuta = useMinuta({ unit: "month" });
 </script>
@@ -98,7 +98,7 @@ changing it later does not move the browsed period. Call `browse()` for that.
 
 ```js
 import { shallowRef } from "vue";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = shallowRef(nativeUnits());
 const minuta = useMinuta(() => ({ units: units.value }));

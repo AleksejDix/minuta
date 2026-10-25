@@ -3,7 +3,7 @@ title: Quick start
 description: Your first periods in five minutes — create a month, split it into days, step to the next month and label it.
 ---
 
-import { contains, divide, next, period, previous } from "minuta";
+import { contains, divide, next, period, previous } from "@aleksejdix/minuta";
 import Timeline from "../../components/diagrams/Timeline.astro";
 
 export const today = new Date(2026, 9, 12, 14, 30);
@@ -13,7 +13,7 @@ This page walks through the core idea in five small steps. Install minuta
 first:
 
 ```sh
-npm install minuta
+npm install @aleksejdix/minuta
 ```
 
 All examples run on the built-in `Date`, with weeks starting on Monday. The
@@ -25,7 +25,7 @@ A period is a stretch of time around a date, in a unit. Ask for the month
 around October 12:
 
 ```ts
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 
 const today = new Date(2026, 9, 12, 14, 30);
 const month = period(today, "month");
@@ -51,7 +51,7 @@ range and nothing more.
 `divide` cuts a period into smaller ones. A month into days:
 
 ```ts
-import { divide } from "minuta";
+import { divide } from "@aleksejdix/minuta";
 
 const days = divide(month, "day");
 // → 31 periods: Oct 1, Oct 2, … Oct 31
@@ -87,7 +87,7 @@ divide(month, "week");
 `next` and `previous` move to the neighbouring period of the same unit:
 
 ```ts
-import { next, previous } from "minuta";
+import { next, previous } from "@aleksejdix/minuta";
 
 next(month); //     → November 2026 (Nov 1 – Nov 30)
 previous(month); // → September 2026
@@ -108,7 +108,7 @@ clock changes are handled for you.
 ## 4. Ask questions
 
 ```ts
-import { contains, duration, same } from "minuta";
+import { contains, duration, same } from "@aleksejdix/minuta";
 
 contains(month, today); //                  → true
 contains(month, new Date(2026, 10, 1)); //  → false
@@ -131,11 +131,11 @@ same(period(today, "day"), period(new Date(2026, 9, 30), "day"), "month");
 
 ## 5. Label it
 
-`formatPeriod` from `minuta/format` writes a period the way the locale reads
+`formatPeriod` from `@aleksejdix/minuta/format` writes a period the way the locale reads
 it:
 
 ```ts
-import { formatPeriod } from "minuta/format";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 
 formatPeriod(month, "en-US"); //               → "October 2026"
 formatPeriod(month, "de-CH"); //               → "Oktober 2026"

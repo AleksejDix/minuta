@@ -3,7 +3,7 @@ title: insertText
 description: Type or paste text at the cursor, replacing the selected text.
 ---
 
-import { createTextBuffer, insertText } from "text-buffer";
+import { createTextBuffer, insertText } from "@aleksejdix/text-buffer";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const selected = createTextBuffer("hello world", { anchor: 0, head: 5 });
@@ -12,7 +12,7 @@ export const empty = createTextBuffer("hello", { anchor: 0, head: 2 });
 Put text at the cursor. If text is selected, the new text replaces it.
 
 ```ts
-import { insertText } from "text-buffer";
+import { insertText } from "@aleksejdix/text-buffer";
 ```
 
 ```ts
@@ -22,7 +22,7 @@ insertText(buffer, text);
 ## Example
 
 ```ts
-import { createTextBuffer, insertText } from "text-buffer";
+import { createTextBuffer, insertText } from "@aleksejdix/text-buffer";
 
 insertText(createTextBuffer("hello"), " world");
 // → "hello world", cursor at 11

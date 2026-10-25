@@ -99,9 +99,9 @@ function operationsFor(units: Units): Minuta {
  * only the units you need, or an adapter's full set.
  *
  * @example
- * import { calendar } from "minuta/calendar";
- * import { nativeUnits } from "minuta/native";
- * import { withUnits } from "minuta/core";
+ * import { calendar } from "@aleksejdix/minuta/calendar";
+ * import { nativeUnits } from "@aleksejdix/minuta/native";
+ * import { withUnits } from "@aleksejdix/minuta/core";
  *
  * const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
  * time.next(time.period(new Date(), "week"));

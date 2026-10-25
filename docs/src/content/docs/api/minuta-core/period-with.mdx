@@ -3,8 +3,8 @@ title: periodWith
 description: Get the whole day, week, month or year that a date falls in, computed with the units you pass.
 ---
 
-import { periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = new Date(2026, 2, 18);
@@ -15,7 +15,7 @@ Get the whole unit of time that a date falls in (its day, week, month, year),
 computed with the units you pass.
 
 ```ts
-import { periodWith } from "minuta/core";
+import { periodWith } from "@aleksejdix/minuta/core";
 ```
 
 ```ts
@@ -25,8 +25,8 @@ periodWith(units, date, unit);
 ## Example
 
 ```ts
-import { periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = nativeUnits({ weekStartsOn: "sunday" });
 
@@ -82,9 +82,9 @@ details on every unit, local time and daylight saving.
 The same date gives different periods with different units:
 
 ```ts
-import { periodWith } from "minuta/core";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { nativeUnits } from "minuta/native";
+import { periodWith } from "@aleksejdix/minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 periodWith(nativeUnits(), new Date(2026, 2, 18), "week");
 // → Mon Mar 16 – Sun Mar 22 (weeks start on Monday by default)

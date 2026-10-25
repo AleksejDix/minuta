@@ -22,7 +22,7 @@ describe("llms.txt", () => {
 
   it("documents every entry", { timeout: 30_000 }, () => {
     expect.hasAssertions();
-    expect(RENDERED).toContain("## `minuta/core`");
+    expect(RENDERED).toContain("## `@aleksejdix/minuta/core`");
     expect(RENDERED).toContain("## Error codes");
   });
 });

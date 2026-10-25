@@ -12,14 +12,14 @@ import {
   toDate,
   typeDate,
   withSegments,
-} from 'datefield'
+} from '@aleksejdix/datefield'
 import { computed, shallowRef, watch } from 'vue'
-import type { DateFormat } from 'datefield'
-import type { InputController } from 'input-dom'
-import type { InputState } from 'input-state'
-import { attachInput } from 'input-dom'
-import { createInputState } from 'input-state'
-import { parseDate } from 'fechita'
+import type { DateFormat } from '@aleksejdix/datefield'
+import type { InputController } from '@aleksejdix/input-dom'
+import type { InputState } from '@aleksejdix/input-state'
+import { attachInput } from '@aleksejdix/input-dom'
+import { createInputState } from '@aleksejdix/input-state'
+import { parseDate } from '@aleksejdix/fechita'
 
 type DateField = Readonly<{
   date: ComputedRef<Readonly<Date> | undefined>

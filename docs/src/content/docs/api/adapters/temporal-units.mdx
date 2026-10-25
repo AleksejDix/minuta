@@ -3,9 +3,9 @@ title: temporalUnits
 description: Units computed with the TC39 Temporal API, using the polyfill when the runtime has no Temporal — in the computer's time zone.
 ---
 
-import { divideWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
-import { temporalUnits } from "minuta/temporal";
+import { divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) =>
@@ -17,7 +17,7 @@ uses the `@js-temporal/polyfill`. Dates are read in the time zone of the
 computer the code runs on.
 
 ```ts
-import { temporalUnits } from "minuta/temporal";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 ```
 
 ```ts
@@ -27,8 +27,8 @@ temporalUnits(options?)
 ## Example
 
 ```ts
-import { temporalUnits } from "minuta/temporal";
-import { withUnits } from "minuta/core";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
 
@@ -71,7 +71,7 @@ The weeks of March 2026, computed once by Temporal and once by the built-in
 ## Install
 
 ```sh
-npm install minuta @js-temporal/polyfill
+npm install @aleksejdix/minuta @js-temporal/polyfill
 ```
 
 minuta is tested with `@js-temporal/polyfill` 0.5. It is listed as an
@@ -105,12 +105,12 @@ Each call checks for `globalThis.Temporal`:
 - If the runtime has Temporal, it is used.
 - If not, minuta uses the polyfill it imports itself.
 
-`globalThis` is never changed, so importing `minuta/temporal` has no side
+`globalThis` is never changed, so importing `@aleksejdix/minuta/temporal` has no side
 effect on the rest of your app:
 
 ```ts
 typeof Temporal; // → "undefined" (Node 24 without flags)
-await import("minuta/temporal");
+await import("@aleksejdix/minuta/temporal");
 typeof Temporal; // → "undefined"
 ```
 

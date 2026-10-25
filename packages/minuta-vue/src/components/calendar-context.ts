@@ -1,5 +1,5 @@
 import type { InjectionKey, ShallowRef } from "vue";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import { inject } from "vue";
 
 /**

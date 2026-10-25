@@ -3,8 +3,8 @@ title: specFor
 description: Look up the rules for one unit (start, end, add, count) in a set of units.
 ---
 
-import { periodWith, specFor } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { periodWith, specFor } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = new Date(2026, 2, 18);
@@ -15,7 +15,7 @@ Look up the rules for one unit in a set of units, for example to find the
 start of a week or to add a month with exactly the rules minuta uses.
 
 ```ts
-import { specFor } from "minuta/core";
+import { specFor } from "@aleksejdix/minuta/core";
 ```
 
 ```ts
@@ -25,8 +25,8 @@ specFor(units, unit);
 ## Example
 
 ```ts
-import { specFor } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { specFor } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const week = specFor(nativeUnits(), "week");
 

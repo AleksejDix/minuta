@@ -4,7 +4,7 @@ Immutable text plus a selection, with pure editing operations. Layer 1 of the
 input stack: no input modes, no masks, no DOM.
 
 ```bash
-npm install text-buffer
+npm install @aleksejdix/text-buffer
 ```
 
 ```ts
@@ -14,7 +14,7 @@ import {
   insertText,
   moveCursor,
   select,
-} from "text-buffer";
+} from "@aleksejdix/text-buffer";
 
 let buffer = createTextBuffer("hello"); // cursor at the end
 buffer = insertText(buffer, " world"); // "hello world"

@@ -4,11 +4,11 @@ import {
   emptyText,
   setSelection,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 import { dateMask, withSegments } from "./field";
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
-import type { InputState } from "input-state";
+import type { InputState } from "@aleksejdix/input-state";
 import { toDate } from "./convert";
 
 const DE = deriveFormat("de-CH");

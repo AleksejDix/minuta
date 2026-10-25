@@ -3,9 +3,9 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import type { RenderResult } from "@testing-library/react";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 type OnSelect = (day: Period) => void;
 

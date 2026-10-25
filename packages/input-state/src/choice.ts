@@ -1,9 +1,9 @@
 // Choices under a mask: one of a few fixed texts, written and cleared whole
 
 import type { Mask, MaskToken } from "./mask";
-import type { TextBuffer } from "text-buffer";
+import type { TextBuffer } from "@aleksejdix/text-buffer";
 import { paddedOption } from "./mask";
-import { replaceRange } from "text-buffer";
+import { replaceRange } from "@aleksejdix/text-buffer";
 
 type ChoiceToken = Extract<MaskToken, { kind: "choice" }>;
 

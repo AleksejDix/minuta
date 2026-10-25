@@ -1,6 +1,6 @@
 import type { Context, Ref } from "react";
 import { createContext, useContext } from "react";
-import type { InputState } from "input-state";
+import type { InputState } from "@aleksejdix/input-state";
 
 type DateFieldContextValue = Readonly<{
   /** The field's date, `undefined` while incomplete or invalid */

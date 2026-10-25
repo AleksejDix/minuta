@@ -3,7 +3,7 @@ title: shift
 description: Move a period forward or back by a number of its own unit — three months ahead, two weeks back.
 ---
 
-import { period, range, shift } from "minuta";
+import { period, range, shift } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(new Date(2026, 2, 15), "month");
@@ -16,7 +16,7 @@ Move a period forward or back by a number of its own unit: three months
 ahead, two weeks back, one year back.
 
 ```ts
-import { shift } from "minuta";
+import { shift } from "@aleksejdix/minuta";
 ```
 
 ```ts
@@ -26,7 +26,7 @@ shift(period, steps);
 ## Example
 
 ```ts
-import { period, shift } from "minuta";
+import { period, shift } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 15), "month");
 
@@ -87,7 +87,7 @@ by [`divide`](../divide/)) moves by `steps` times its own length in
 milliseconds:
 
 ```ts
-import { range, shift } from "minuta";
+import { range, shift } from "@aleksejdix/minuta";
 
 const slot = range(
   new Date(2026, 2, 2, 9),
@@ -133,4 +133,4 @@ With `steps` of `0` nothing is checked: the period comes back as it is.
 
 - [`next`](../next/) and [`previous`](../previous/) — move by one.
 - [`period`](../period/) — create the period to move.
-- [`shiftWith`](../../minuta-core/shift-with/) (`minuta/core`) — the same, with your own units and week start.
+- [`shiftWith`](../../minuta-core/shift-with/) (`@aleksejdix/minuta/core`) — the same, with your own units and week start.

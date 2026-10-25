@@ -3,8 +3,8 @@ title: formatRange
 description: Show a period as "start – end" in any language, without repeating the month or year they share.
 ---
 
-import { divide, period, range } from "minuta";
-import { formatRange } from "minuta/format";
+import { divide, period, range } from "@aleksejdix/minuta";
+import { formatRange } from "@aleksejdix/minuta/format";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const ranges = [
@@ -20,7 +20,7 @@ Show a period as "start – end" in any language. Parts that start and end
 share, such as the month or the year, are written only once.
 
 ```ts
-import { formatRange } from "minuta/format";
+import { formatRange } from "@aleksejdix/minuta/format";
 ```
 
 ```ts
@@ -30,8 +30,8 @@ formatRange(period, locale, options?)
 ## Example
 
 ```ts
-import { formatRange } from "minuta/format";
-import { range } from "minuta";
+import { formatRange } from "@aleksejdix/minuta/format";
+import { range } from "@aleksejdix/minuta";
 
 formatRange(range(new Date(2026, 2, 1), new Date(2026, 2, 31)), "de-CH");
 // → "1.–31. März 2026"
@@ -99,7 +99,7 @@ When start and end look the same in the chosen fields, there is no dash at
 all:
 
 ```ts
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 
 formatRange(period(new Date(2026, 2, 1), "month"), "de-CH"); // → "März 2026"
 formatRange(period(new Date(2026, 2, 15), "day"), "en-US"); // → "March 15, 2026"

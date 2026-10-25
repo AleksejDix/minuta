@@ -3,7 +3,7 @@ title: slotPositions
 description: The positions in the text where a mask has slots the user can fill.
 ---
 
-import { emptyText, parseMask, slotPositions } from "input-state";
+import { emptyText, parseMask, slotPositions } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const dateMask = parseMask("99.99.9999");
@@ -13,7 +13,7 @@ Get the positions in the field's text that are slots, in order from left to
 right. Every other position is a literal.
 
 ```ts
-import { slotPositions } from "input-state";
+import { slotPositions } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -23,7 +23,7 @@ slotPositions(mask);
 ## Example
 
 ```ts
-import { parseMask, slotPositions } from "input-state";
+import { parseMask, slotPositions } from "@aleksejdix/input-state";
 
 slotPositions(parseMask("99.99.9999"));
 // → [0, 1, 3, 4, 6, 7, 8, 9]   (2 and 5 are the dots)

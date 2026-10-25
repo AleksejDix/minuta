@@ -9,13 +9,13 @@ The error codes that minuta puts at the start of every error message. Use them
 to tell one kind of error from another.
 
 ```ts
-import { MinutaError } from "minuta";
+import { MinutaError } from "@aleksejdix/minuta";
 ```
 
 ## Example
 
 ```ts
-import { MinutaError, period } from "minuta";
+import { MinutaError, period } from "@aleksejdix/minuta";
 
 try {
   period(new Date("nope"), "day");
@@ -74,12 +74,12 @@ class. Check `error instanceof RangeError` and the start of `error.message`.
 
 ## The codes
 
-| Key                            | Code                 | When                                                                                               |
-| ------------------------------ | -------------------- | -------------------------------------------------------------------------------------------------- |
-| `MinutaError.InvalidDate`      | `INVALID_DATE`       | A `Date` argument is invalid, such as `new Date("nope")`.                                          |
-| `MinutaError.InvalidOption`    | `INVALID_OPTION`     | An option such as `step` or `maxPeriods` of [`divide`](../divide/) is not a positive whole number. |
-| `MinutaError.TooManyPeriods`   | `TOO_MANY_PERIODS`   | [`divide`](../divide/) would create more pieces than `maxPeriods` allows.                          |
-| `MinutaError.UnitNotSupported` | `UNIT_NOT_SUPPORTED` | There is no such unit, e.g. `"fortnight"`, or the units you passed in `minuta/core` lack it.       |
+| Key                            | Code                 | When                                                                                                     |
+| ------------------------------ | -------------------- | -------------------------------------------------------------------------------------------------------- |
+| `MinutaError.InvalidDate`      | `INVALID_DATE`       | A `Date` argument is invalid, such as `new Date("nope")`.                                                |
+| `MinutaError.InvalidOption`    | `INVALID_OPTION`     | An option such as `step` or `maxPeriods` of [`divide`](../divide/) is not a positive whole number.       |
+| `MinutaError.TooManyPeriods`   | `TOO_MANY_PERIODS`   | [`divide`](../divide/) would create more pieces than `maxPeriods` allows.                                |
+| `MinutaError.UnitNotSupported` | `UNIT_NOT_SUPPORTED` | There is no such unit, e.g. `"fortnight"`, or the units you passed in `@aleksejdix/minuta/core` lack it. |
 
 ## Which functions check what
 
@@ -101,4 +101,4 @@ invalid date gives `[]` from `divide`, `NaN` from `duration` and `length`, and
 
 ## Related
 
-- [`MinutaError` in `minuta/core`](../../minuta-core/overview/) — the same object, also exported there.
+- [`MinutaError` in `@aleksejdix/minuta/core`](../../minuta-core/overview/) — the same object, also exported there.

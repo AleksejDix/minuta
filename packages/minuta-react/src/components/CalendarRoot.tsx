@@ -1,5 +1,5 @@
 import type { JSX, ReactNode } from "react";
-import type { Period, Units } from "minuta/core";
+import type { Period, Units } from "@aleksejdix/minuta/core";
 import { CalendarSelection } from "./CalendarSelection";
 import { MinutaRoot } from "#src/minuta-root";
 

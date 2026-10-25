@@ -3,9 +3,9 @@ title: parseDateWith
 description: Read the date in a text with the locales you pass in, in one call.
 ---
 
-import { parseDateWith } from "fechita/core";
-import { de } from "fechita/locales/de";
-import { en } from "fechita/locales/en";
+import { parseDateWith } from "@aleksejdix/fechita/core";
+import { de } from "@aleksejdix/fechita/locales/de";
+import { en } from "@aleksejdix/fechita/locales/en";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
 export const locales = { de, en };
@@ -19,7 +19,7 @@ Read the date in a text using only the locales you pass in. It is the
 function behind both `parseDate` and `withLocales`.
 
 ```ts
-import { parseDateWith } from "fechita/core";
+import { parseDateWith } from "@aleksejdix/fechita/core";
 ```
 
 ```ts
@@ -29,9 +29,9 @@ parseDateWith(locales, text, options?)
 ## Example
 
 ```ts
-import { parseDateWith } from "fechita/core";
-import { de } from "fechita/locales/de";
-import { en } from "fechita/locales/en";
+import { parseDateWith } from "@aleksejdix/fechita/core";
+import { de } from "@aleksejdix/fechita/locales/de";
+import { en } from "@aleksejdix/fechita/locales/en";
 
 const locales = { de, en };
 

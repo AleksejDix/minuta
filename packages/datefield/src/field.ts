@@ -5,8 +5,8 @@
  */
 
 import type { DateFormat, FormatToken, Segment } from "./types";
-import type { InputState, Mask, MaskToken } from "input-state";
-import { createTextBuffer } from "text-buffer";
+import type { InputState, Mask, MaskToken } from "@aleksejdix/input-state";
+import { createTextBuffer } from "@aleksejdix/text-buffer";
 import { segmentsToString } from "./convert";
 
 const DEFAULT_PLACEHOLDER = "_";

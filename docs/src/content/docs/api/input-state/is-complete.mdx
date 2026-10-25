@@ -3,7 +3,11 @@ title: isComplete
 description: Whether every slot of a masked input field is filled.
 ---
 
-import { createInputState, isComplete, parseMask } from "input-state";
+import {
+  createInputState,
+  isComplete,
+  parseMask,
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const mask = parseMask("99.99.9999");
@@ -14,7 +18,7 @@ export const impossible = createInputState({ mask, value: "31022026" });
 Check whether the user has filled every slot of a masked field.
 
 ```ts
-import { isComplete } from "input-state";
+import { isComplete } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -24,7 +28,11 @@ isComplete(state);
 ## Example
 
 ```ts
-import { createInputState, isComplete, parseMask } from "input-state";
+import {
+  createInputState,
+  isComplete,
+  parseMask,
+} from "@aleksejdix/input-state";
 
 const mask = parseMask("99.99.9999");
 

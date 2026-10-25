@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Minuta } from "minuta/core";
+import type { Minuta } from "@aleksejdix/minuta/core";
 
 function currentDate(): Date {
   return new Date();

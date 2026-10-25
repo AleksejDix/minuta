@@ -2,9 +2,9 @@
 import CalendarDay from "./CalendarDay.vue";
 import type { CalendarGridProps } from "./types";
 import CalendarWeekdays from "./CalendarWeekdays.vue";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import { computed } from "vue";
-import { monthGridWith } from "minuta/calendar";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 

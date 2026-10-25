@@ -3,8 +3,13 @@ title: finishField
 description: Finish the whole date field when it loses focus — pad the segment being typed and keep the day within its month.
 ---
 
-import { dateMask, deriveFormat, finishField, typeDate } from "datefield";
-import { createInputState } from "input-state";
+import {
+  dateMask,
+  deriveFormat,
+  finishField,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const format = deriveFormat("de-CH");
@@ -21,7 +26,7 @@ Finish the whole field, as on blur: pad the segment being typed with
 [`clampDay`](../clamp-day/), wherever the cursor is.
 
 ```ts
-import { finishField } from "datefield";
+import { finishField } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -31,8 +36,13 @@ finishField(format, state);
 ## Example
 
 ```ts
-import { dateMask, deriveFormat, finishField, typeDate } from "datefield";
-import { createInputState } from "input-state";
+import {
+  dateMask,
+  deriveFormat,
+  finishField,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 let field = createInputState({ mask: dateMask(format) });

@@ -6,14 +6,14 @@ period reactive, a provide/inject root, and composable calendar parts. The API
 mirrors `minuta-react`.
 
 ```bash
-npm install minuta minuta-vue
+npm install @aleksejdix/minuta @aleksejdix/minuta-vue
 ```
 
 ## `useMinuta(options?)`
 
 ```vue
 <script setup lang="ts">
-import { useMinuta } from "minuta-vue";
+import { useMinuta } from "@aleksejdix/minuta-vue";
 
 const minuta = useMinuta({ unit: "month" });
 </script>
@@ -53,7 +53,7 @@ period's start.
 
 ```vue
 <script setup lang="ts">
-import { MinutaRoot } from "minuta-vue";
+import { MinutaRoot } from "@aleksejdix/minuta-vue";
 import NextMonth from "./NextMonth.vue";
 import Year from "./Year.vue";
 </script>
@@ -72,7 +72,7 @@ const year = usePeriod("year");
 const { browse, browsing, next } = useMinutaContext();
 ```
 
-## Calendar parts (`minuta-vue/components`)
+## Calendar parts (`@aleksejdix/minuta-vue/components`)
 
 Flat, composable parts that read the context of `CalendarRoot`:
 
@@ -83,10 +83,10 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-vue/components";
-import type { Period } from "minuta/core";
-import { isWeekendWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+} from "@aleksejdix/minuta-vue/components";
+import type { Period } from "@aleksejdix/minuta/core";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
 const isWeekend = (day: Period) => isWeekendWith(sundayFirst, day);
@@ -160,7 +160,7 @@ keep the keyboard navigation.
 The parts ship scoped styles in one stylesheet; import it once:
 
 ```ts
-import "minuta-vue/style.css";
+import "@aleksejdix/minuta-vue/style.css";
 ```
 
 ## Development

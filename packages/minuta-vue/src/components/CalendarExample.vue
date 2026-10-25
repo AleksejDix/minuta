@@ -2,8 +2,8 @@
 import CalendarGrid from "./CalendarGrid.vue";
 import CalendarHeader from "./CalendarHeader.vue";
 import CalendarRoot from "./CalendarRoot.vue";
-import type { Period } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import type { Period } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { shallowRef } from "vue";
 
 const SUNDAY = 0;

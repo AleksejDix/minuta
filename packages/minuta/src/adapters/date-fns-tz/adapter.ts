@@ -23,8 +23,8 @@ const DEFAULT_TIMEZONE = "UTC";
  * the days `isWeekend` counts (Saturday and Sunday unless set).
  *
  * @example
- * import { dateFnsTzUnits } from "minuta/date-fns-tz";
- * import { withUnits } from "minuta/core";
+ * import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+ * import { withUnits } from "@aleksejdix/minuta/core";
  *
  * const time = withUnits(dateFnsTzUnits({ timeZone: "Europe/Zurich", weekStartsOn: "monday" }));
  * time.period(new Date(), "week");

@@ -3,7 +3,7 @@ title: Introduction
 description: What minuta is, the idea behind it, and which package you need.
 ---
 
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 import Timeline from "../../components/diagrams/Timeline.astro";
 
 export const moment = new Date(2026, 9, 12, 9, 30);
@@ -18,7 +18,7 @@ Most date libraries give you a point in time and a pile of helpers. minuta
 gives you a **period**: a stretch of time with a start, an end and a unit.
 
 ```ts
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 
 const october = period(new Date(2026, 9, 12), "month");
 // → start: Oct 1 2026, 00:00:00.000
@@ -77,8 +77,8 @@ Read [Periods and units](../concepts/periods-and-units/) for the full picture.
 | Parse dates people type or paste, in any language | `fechita`                                           |
 | Build a segmented date input                      | `datefield` + `input-dom` (+ `fechita` for pasting) |
 
-`minuta` itself has several entry points — `minuta`, `minuta/core`,
-`minuta/calendar`, `minuta/intervals`, `minuta/format` and one per date
+`minuta` itself has several entry points — `minuta`, `@aleksejdix/minuta/core`,
+`@aleksejdix/minuta/calendar`, `@aleksejdix/minuta/intervals`, `@aleksejdix/minuta/format` and one per date
 engine — so you only load what you use. [Installation](../installation/) shows
 the details.
 

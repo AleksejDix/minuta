@@ -3,8 +3,8 @@
  * dates in any language and reports ambiguity instead of guessing.
  */
 import { dayLabel, demoRoots, fillList, part, timeLabel } from "./dom";
-import type { Order } from "fechita";
-import { parseDate } from "fechita";
+import type { Order } from "@aleksejdix/fechita";
+import { parseDate } from "@aleksejdix/fechita";
 
 // What fechita said, as read-only data
 type Reading = Readonly<{

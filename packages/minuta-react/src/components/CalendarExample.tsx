@@ -4,10 +4,10 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { JSX } from "react";
 import { MONDAY } from "./week-start";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import type { WeekStart } from "./week-start";
 import { WeekStartToggle } from "./WeekStartToggle";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 type CalendarExampleProps = Readonly<{
   /** Called with the clicked day */

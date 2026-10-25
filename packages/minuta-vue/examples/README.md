@@ -1,7 +1,7 @@
 # Vue calendar demo
 
 Vue demo showcasing the `CalendarExample` component that now ships from
-`minuta-vue/components`.
+`@aleksejdix/minuta-vue/components`.
 
 ## Getting started
 

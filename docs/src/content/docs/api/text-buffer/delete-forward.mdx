@@ -3,7 +3,7 @@ title: deleteForward
 description: The Delete key — delete the selection, or the character after the cursor.
 ---
 
-import { createTextBuffer, deleteForward } from "text-buffer";
+import { createTextBuffer, deleteForward } from "@aleksejdix/text-buffer";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const cursor = createTextBuffer("hello", { anchor: 0, head: 0 });
@@ -13,7 +13,7 @@ Do what the Delete key does: delete the selected text, or the character after
 the cursor.
 
 ```ts
-import { deleteForward } from "text-buffer";
+import { deleteForward } from "@aleksejdix/text-buffer";
 ```
 
 ```ts
@@ -23,7 +23,7 @@ deleteForward(buffer);
 ## Example
 
 ```ts
-import { createTextBuffer, deleteForward } from "text-buffer";
+import { createTextBuffer, deleteForward } from "@aleksejdix/text-buffer";
 
 deleteForward(createTextBuffer("hello", { anchor: 0, head: 0 }));
 // → "ello", cursor at 0

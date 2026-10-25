@@ -3,7 +3,11 @@ title: segmentAtPosition
 description: Find which segment — day, month or year — the cursor is in.
 ---
 
-import { deriveFormat, parseSegments, segmentAtPosition } from "datefield";
+import {
+  deriveFormat,
+  parseSegments,
+  segmentAtPosition,
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
@@ -12,7 +16,7 @@ Find the segment the cursor is in, so a cursor at position 4 of `31.03.2026`
 is in the month. Use it to know which segment an arrow key should change.
 
 ```ts
-import { segmentAtPosition } from "datefield";
+import { segmentAtPosition } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -22,7 +26,11 @@ segmentAtPosition(segments, cursorPos);
 ## Example
 
 ```ts
-import { deriveFormat, parseSegments, segmentAtPosition } from "datefield";
+import {
+  deriveFormat,
+  parseSegments,
+  segmentAtPosition,
+} from "@aleksejdix/datefield";
 
 const segments = parseSegments(deriveFormat("de-CH"), "31.03.2026");
 // index:   0 = day, 1 = ".", 2 = month, 3 = ".", 4 = year

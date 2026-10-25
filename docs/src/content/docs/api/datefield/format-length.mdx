@@ -8,7 +8,7 @@ import {
   formatLength,
   fromDate,
   segmentsToString,
-} from "datefield";
+} from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const written = (locale) =>
@@ -19,7 +19,7 @@ Count how many characters a date in a format takes, separators included:
 `de-CH` dates are 10 characters long (`31.03.2026`).
 
 ```ts
-import { formatLength } from "datefield";
+import { formatLength } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -29,7 +29,7 @@ formatLength(format);
 ## Example
 
 ```ts
-import { deriveFormat, formatLength } from "datefield";
+import { deriveFormat, formatLength } from "@aleksejdix/datefield";
 
 formatLength(deriveFormat("de-CH")); // → 10   "31.03.2026"
 formatLength(deriveFormat("ko-KR")); // → 13   "2026. 03. 31."

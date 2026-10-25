@@ -3,8 +3,13 @@ title: finishSegment
 description: Finish the half-typed segment at the cursor — pad it with zeros and move on, so 1 becomes 01.
 ---
 
-import { dateMask, deriveFormat, finishSegment, typeDate } from "datefield";
-import { createInputState } from "input-state";
+import {
+  dateMask,
+  deriveFormat,
+  finishSegment,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const format = deriveFormat("de-CH");
@@ -22,7 +27,7 @@ Finish the segment the cursor is in: pad what was typed with zeros and move the
 cursor to the next segment, so a day of `1_` becomes `01`.
 
 ```ts
-import { finishSegment } from "datefield";
+import { finishSegment } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -32,8 +37,13 @@ finishSegment(format, state);
 ## Example
 
 ```ts
-import { dateMask, deriveFormat, finishSegment, typeDate } from "datefield";
-import { createInputState } from "input-state";
+import {
+  dateMask,
+  deriveFormat,
+  finishSegment,
+  typeDate,
+} from "@aleksejdix/datefield";
+import { createInputState } from "@aleksejdix/input-state";
 
 const format = deriveFormat("de-CH");
 let field = createInputState({ mask: dateMask(format) });

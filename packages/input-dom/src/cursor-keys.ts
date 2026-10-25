@@ -1,5 +1,5 @@
-import type { InputState } from "input-state";
-import { setSelection } from "input-state";
+import type { InputState } from "@aleksejdix/input-state";
+import { setSelection } from "@aleksejdix/input-state";
 
 const ONE = 1;
 const START = 0;

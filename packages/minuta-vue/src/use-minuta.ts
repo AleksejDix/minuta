@@ -1,10 +1,10 @@
-import type { Minuta, Period, Units } from "minuta/core";
+import type { Minuta, Period, Units } from "@aleksejdix/minuta/core";
 import type { MinutaOptions, MinutaState, Source } from "#src/types";
 import { computed, shallowRef, toValue } from "vue";
 import type { ComputedRef } from "vue";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { useClock } from "#src/use-clock";
-import { withUnits } from "minuta/core";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const DEFAULT_UNITS: Units = nativeUnits();
 const DEFAULT_UNIT = "month";

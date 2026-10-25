@@ -3,9 +3,9 @@ title: luxonUnits
 description: Units computed with Luxon — for apps that already use Luxon, in Luxon's default time zone.
 ---
 
-import { divideWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
-import { luxonUnits } from "minuta/luxon";
+import { divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { luxonUnits } from "@aleksejdix/minuta/luxon";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) =>
@@ -16,7 +16,7 @@ library built around immutable `DateTime` objects. Dates are read in Luxon's
 default time zone, which is the computer's zone unless you change it.
 
 ```ts
-import { luxonUnits } from "minuta/luxon";
+import { luxonUnits } from "@aleksejdix/minuta/luxon";
 ```
 
 ```ts
@@ -26,8 +26,8 @@ luxonUnits(options?)
 ## Example
 
 ```ts
-import { luxonUnits } from "minuta/luxon";
-import { withUnits } from "minuta/core";
+import { luxonUnits } from "@aleksejdix/minuta/luxon";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(luxonUnits({ weekStartsOn: "sunday" }));
 
@@ -67,7 +67,7 @@ The weeks of March 2026, computed once by Luxon and once by the built-in
 ## Install
 
 ```sh
-npm install minuta luxon
+npm install @aleksejdix/minuta luxon
 ```
 
 minuta is tested with Luxon 3. Luxon is listed as an optional dependency of

@@ -3,9 +3,9 @@ title: applyInputEvent
 description: Turn one browser beforeinput event into the next input state — typing, pasting, dropping or deleting.
 ---
 
-import { dateMask, deriveFormat, typeDate } from "datefield";
-import { applyInputEvent } from "input-dom";
-import { createInputState, parseMask } from "input-state";
+import { dateMask, deriveFormat, typeDate } from "@aleksejdix/datefield";
+import { applyInputEvent } from "@aleksejdix/input-dom";
+import { createInputState, parseMask } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
@@ -28,7 +28,7 @@ It is the core step of [`attachInput`](../attach-input/), exported for building
 your own binding.
 
 ```ts
-import { applyInputEvent } from "input-dom";
+import { applyInputEvent } from "@aleksejdix/input-dom";
 ```
 
 ```ts
@@ -38,8 +38,8 @@ applyInputEvent(state, event, insert?)
 ## Example
 
 ```ts
-import { applyInputEvent } from "input-dom";
-import { createInputState, parseMask } from "input-state";
+import { applyInputEvent } from "@aleksejdix/input-dom";
+import { createInputState, parseMask } from "@aleksejdix/input-state";
 
 const state = createInputState({ mask: parseMask("99.99.9999") });
 
@@ -122,7 +122,7 @@ Pass datefield's [`typeDate`](../../datefield/type-date/) as `insert`, so
 separators finish a segment and pastes are read as dates:
 
 ```ts
-import { dateMask, deriveFormat, typeDate } from "datefield";
+import { dateMask, deriveFormat, typeDate } from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 const field = createInputState({ mask: dateMask(format) });

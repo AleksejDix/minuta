@@ -4,10 +4,10 @@
  * you choose, or the locale's.
  */
 import { demoRoots, part } from "./dom";
-import { isWeekendWith, monthGridWith } from "minuta/calendar";
-import type { Period } from "minuta";
-import type { WeekdayNumber } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
+import type { Period } from "@aleksejdix/minuta";
+import type { WeekdayNumber } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 type Cell = Readonly<{ day: number; outside: boolean; weekend: boolean }>;
 type WeekInfo = Readonly<{ firstDay: number; weekend: readonly number[] }>;

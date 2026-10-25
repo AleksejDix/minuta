@@ -3,7 +3,7 @@ title: slotChar
 description: The character a mask slot stores for a typed character, or nothing when the slot rejects it.
 ---
 
-import { createInputState, parseMask, paste } from "input-state";
+import { createInputState, parseMask, paste } from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const arabic = paste(
@@ -15,7 +15,7 @@ Find out what a slot stores when the user types a character. Digits of every
 script become `0`–`9`; characters the slot does not take give nothing.
 
 ```ts
-import { slotChar } from "input-state";
+import { slotChar } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -25,7 +25,7 @@ slotChar(kind, char);
 ## Example
 
 ```ts
-import { slotChar } from "input-state";
+import { slotChar } from "@aleksejdix/input-state";
 
 slotChar("digit", "٣"); // → "3"   (Arabic-Indic)
 slotChar("digit", "３"); // → "3"   (full-width)

@@ -5,8 +5,8 @@
  */
 
 import type { DateFormat, Segment } from "./types";
-import { setSelection, slotChar, typeChar } from "input-state";
-import type { InputState } from "input-state";
+import { setSelection, slotChar, typeChar } from "@aleksejdix/input-state";
+import type { InputState } from "@aleksejdix/input-state";
 import { clampDay } from "./rotate";
 import { fromDate } from "./convert";
 import { fullYear } from "./year";
@@ -170,7 +170,7 @@ function pastedDate(
  * last segment finished.
  *
  * @example
- * import { parseDate } from "fechita";
+ * import { parseDate } from "@aleksejdix/fechita";
  *
  * const format = deriveFormat("de-CH");
  * const field = createInputState({ mask: dateMask(format) });

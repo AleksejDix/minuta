@@ -4,9 +4,9 @@ import { CalendarDay } from "./CalendarDay";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import type { RenderResult } from "@testing-library/react";
-import { period } from "minuta";
+import { period } from "@aleksejdix/minuta";
 
 type OnSelect = (day: Period) => void;
 

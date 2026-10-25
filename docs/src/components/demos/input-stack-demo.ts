@@ -14,13 +14,13 @@ import {
   toDate,
   typeDate,
   withSegments,
-} from "datefield";
-import { createInputState, isComplete } from "input-state";
+} from "@aleksejdix/datefield";
+import { createInputState, isComplete } from "@aleksejdix/input-state";
 import { dayLabel, demoRoots, part } from "./dom";
-import type { DateFormat } from "datefield";
-import type { InputState } from "input-state";
-import { attachInput } from "input-dom";
-import { parseDate } from "fechita";
+import type { DateFormat } from "@aleksejdix/datefield";
+import type { InputState } from "@aleksejdix/input-state";
+import { attachInput } from "@aleksejdix/input-dom";
+import { parseDate } from "@aleksejdix/fechita";
 
 const LOCALE = "de-CH";
 const DIGITS = 8;

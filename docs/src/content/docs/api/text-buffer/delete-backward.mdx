@@ -3,7 +3,7 @@ title: deleteBackward
 description: Backspace — delete the selection, or the character before the cursor.
 ---
 
-import { createTextBuffer, deleteBackward } from "text-buffer";
+import { createTextBuffer, deleteBackward } from "@aleksejdix/text-buffer";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const cursor = createTextBuffer("hello");
@@ -13,7 +13,7 @@ Do what Backspace does: delete the selected text, or the character before the
 cursor.
 
 ```ts
-import { deleteBackward } from "text-buffer";
+import { deleteBackward } from "@aleksejdix/text-buffer";
 ```
 
 ```ts
@@ -23,7 +23,7 @@ deleteBackward(buffer);
 ## Example
 
 ```ts
-import { createTextBuffer, deleteBackward } from "text-buffer";
+import { createTextBuffer, deleteBackward } from "@aleksejdix/text-buffer";
 
 deleteBackward(createTextBuffer("hello"));
 // → "hell", cursor at 4

@@ -6,10 +6,10 @@ sidebar:
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
-import { period, shift } from "minuta";
-import { isWeekendWith, monthGridWith } from "minuta/calendar";
-import { periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { period, shift } from "@aleksejdix/minuta";
+import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
+import { periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 
@@ -36,7 +36,7 @@ You need `minuta`. For steps 4 to 6 you also need `minuta-react` or
 `minuta-vue`:
 
 ```sh
-npm install minuta
+npm install @aleksejdix/minuta
 ```
 
 All results on this page are for March 2026, with the computer in the time
@@ -53,8 +53,8 @@ exactly those days. It takes the units (here the built-in `Date`, through
 `nativeUnits()`) and any date in the month you want:
 
 ```ts
-import { monthGridWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const grid = monthGridWith(nativeUnits(), new Date(2026, 2, 15));
 
@@ -75,8 +75,8 @@ To show them, cut the list into rows of 7. Start with an empty table:
 ```
 
 ```ts
-import { monthGridWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = nativeUnits();
 const grid = monthGridWith(units, new Date(2026, 2, 15));
@@ -116,9 +116,9 @@ days of March from the grey days around it.
   [`contain`](../../../api/minuta/contains/) it.
 
 ```ts
-import { contains, period } from "minuta";
-import { monthGridWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { contains, period } from "@aleksejdix/minuta";
+import { monthGridWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = nativeUnits();
 const grid = monthGridWith(units, new Date(2026, 2, 15));
@@ -182,9 +182,9 @@ The weekend does not change the grid. Mark weekend days yourself with
 code from step 1 with the new units and a `weekend` class:
 
 ```ts
-import { contains, period } from "minuta";
-import { isWeekendWith, monthGridWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { contains, period } from "@aleksejdix/minuta";
+import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = nativeUnits({
   weekStartsOn: "sunday",
@@ -246,7 +246,7 @@ a period, and step it with [`next`](../../../api/minuta/next/) and
 28, 30 or 31 days and the step from December to January are handled for you.
 
 ```ts
-import { next, period, previous } from "minuta";
+import { next, period, previous } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 15), "month");
 
@@ -268,10 +268,10 @@ and the grid for it:
 ```
 
 ```ts
-import { contains, next, period, previous } from "minuta";
-import { isWeekendWith, monthGridWith } from "minuta/calendar";
-import { formatPeriod } from "minuta/format";
-import { nativeUnits } from "minuta/native";
+import { contains, next, period, previous } from "@aleksejdix/minuta";
+import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
+import { formatPeriod } from "@aleksejdix/minuta/format";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const locale = "en-US";
 const units = nativeUnits({ weekStartsOn: "sunday" });
@@ -330,7 +330,7 @@ Mar 29 to Sat May 9.
 <MonthGrid month="2026-04" weekStartsOn="sunday" />
 
 :::tip
-`period`, `next` and `previous` from `minuta` use the built-in `Date`. With
+`period`, `next` and `previous` from `@aleksejdix/minuta` use the built-in `Date`. With
 another engine or a time zone, bind everything to your units once with
 [`withUnits`](../../../api/minuta-core/with-units/) and the
 [`calendar`](../../../api/minuta-calendar/calendar/) plugin, and call
@@ -386,14 +386,14 @@ Install the package for your framework:
 <TabItem label="React">
 
 ```sh
-npm install minuta minuta-react
+npm install @aleksejdix/minuta @aleksejdix/minuta-react
 ```
 
 </TabItem>
 <TabItem label="Vue">
 
 ```sh
-npm install minuta minuta-vue
+npm install @aleksejdix/minuta @aleksejdix/minuta-vue
 ```
 
 </TabItem>
@@ -412,8 +412,8 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-react/components";
-import { nativeUnits } from "minuta/native";
+} from "@aleksejdix/minuta-react/components";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 // Create the units once, outside the component
 const units = nativeUnits({ weekStartsOn: "sunday" });
@@ -452,9 +452,9 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-vue/components";
-import { nativeUnits } from "minuta/native";
-import "minuta-vue/style.css";
+} from "@aleksejdix/minuta-vue/components";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import "@aleksejdix/minuta-vue/style.css";
 
 const units = nativeUnits({ weekStartsOn: "sunday" });
 const start = new Date(2026, 2, 15);
@@ -569,9 +569,9 @@ import {
   CalendarGrid,
   CalendarHeader,
   CalendarRoot,
-} from "minuta-react/components";
-import { isWeekendWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+} from "@aleksejdix/minuta-react/components";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = nativeUnits({ weekStartsOn: "sunday" });
 

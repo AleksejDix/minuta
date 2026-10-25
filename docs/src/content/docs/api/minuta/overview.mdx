@@ -6,7 +6,7 @@ sidebar:
   label: Overview
 ---
 
-import { divide, next, period } from "minuta";
+import { divide, next, period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(new Date(2026, 2, 15), "month");
@@ -16,7 +16,7 @@ setup, no configuration. It computes with the built-in `Date` in the local
 time zone, and weeks start on Monday (ISO 8601).
 
 ```ts
-import { divide, next, period } from "minuta";
+import { divide, next, period } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 15), "month");
 
@@ -73,12 +73,12 @@ picture.
 | [`length`](../length/)            | How long a period is, in milliseconds.                       |
 | [`MinutaError`](../minuta-error/) | The codes at the start of every error message.               |
 
-## `minuta` or `minuta/core`?
+## `minuta` or `@aleksejdix/minuta/core`?
 
 Use **`minuta`** when the built-in `Date`, the local time zone and weeks from
 Monday to Sunday are what you need. That is most apps.
 
-Use **[`minuta/core`](../../minuta-core/overview/)** when you need any of:
+Use **[`@aleksejdix/minuta/core`](../../minuta-core/overview/)** when you need any of:
 
 - weeks that start on another day, such as Sunday;
 - another date library (date-fns, Luxon, Day.js, Moment, Temporal) or a fixed
@@ -87,14 +87,14 @@ Use **[`minuta/core`](../../minuta-core/overview/)** when you need any of:
 - plugins such as calendar grids, bound to the same settings;
 - the smallest possible bundle, with only the units you use.
 
-`minuta/core` has the same operations. They take the units as their first
+`@aleksejdix/minuta/core` has the same operations. They take the units as their first
 argument (`periodWith(units, date, "week")`), or you bind them once with
 `withUnits`. Periods from both are the same plain objects, so you can mix
 them. See [Date engines](../../../concepts/date-engines/).
 
 ```ts
-import { withUnits } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
 

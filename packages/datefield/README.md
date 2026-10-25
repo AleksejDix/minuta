@@ -6,11 +6,11 @@ ship. The format becomes an [`input-state`](../input-state) mask: typing
 overwrites slots, so correcting one digit never shifts the rest of the date.
 
 ```bash
-npm install datefield input-state
+npm install @aleksejdix/datefield @aleksejdix/input-state
 ```
 
 ```typescript
-import { createInputState, typeChar } from "input-state";
+import { createInputState, typeChar } from "@aleksejdix/input-state";
 import {
   clampDay,
   dateMask,
@@ -20,7 +20,7 @@ import {
   segmentAtPosition,
   toDate,
   withSegments,
-} from "datefield";
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat(navigator.language); // de-CH → __.__.____
 let field = createInputState({ mask: dateMask(format) });
@@ -58,9 +58,9 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
   `dateOrder(format)` so an ambiguous `04/05/2026` follows the field's order:
 
   ```ts
-  import { withLocales } from "fechita/core";
-  import { de } from "fechita/locales/de";
-  import { en } from "fechita/locales/en";
+  import { withLocales } from "@aleksejdix/fechita/core";
+  import { de } from "@aleksejdix/fechita/locales/de";
+  import { en } from "@aleksejdix/fechita/locales/en";
 
   const { parseDate } = withLocales({ de, en });
   const parse = (text: string) => {
@@ -82,7 +82,7 @@ const date = toDate(parseSegments(format, field.buffer.text)); // undefined unti
   stored as 0–9, so `toDate` always parses what is stored. To show the
   locale's digits, pass `localeDigits(locale)` to the view, e.g.
   `attachInput(element, field, { digits: localeDigits("ar-EG") })` from
-  `input-dom` shows ٣١/٠٣/٢٠٢٦ while the state keeps 31/03/2026.
+  `@aleksejdix/input-dom` shows ٣١/٠٣/٢٠٢٦ while the state keeps 31/03/2026.
 
 See [docs/zero-cost-parsing.md](docs/zero-cost-parsing.md) for the design and
 [docs/date-formats.md](docs/date-formats.md) for formats by country.

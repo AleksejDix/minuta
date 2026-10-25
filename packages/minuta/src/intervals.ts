@@ -4,9 +4,9 @@
  * snapping dates to unit boundaries.
  *
  * @example
- * import { withUnits } from "minuta/core";
- * import { intervals } from "minuta/intervals";
- * import { nativeUnits } from "minuta/native";
+ * import { withUnits } from "@aleksejdix/minuta/core";
+ * import { intervals } from "@aleksejdix/minuta/intervals";
+ * import { nativeUnits } from "@aleksejdix/minuta/native";
  *
  * const time = withUnits(nativeUnits(), { plugins: [intervals] });
  * time.merge(time.divide(time.period(new Date(), "month"), "day"), "month");

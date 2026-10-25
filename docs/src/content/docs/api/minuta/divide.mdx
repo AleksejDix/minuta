@@ -3,7 +3,7 @@ title: divide
 description: Split a period into smaller periods — a month into days, a day into hours, an hour into 15-minute slots.
 ---
 
-import { divide, period } from "minuta";
+import { divide, period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(new Date(2026, 2, 1), "month");
@@ -12,7 +12,7 @@ Split a period into smaller periods: a month into days, a day into hours, an
 hour into 15-minute slots.
 
 ```ts
-import { divide } from "minuta";
+import { divide } from "@aleksejdix/minuta";
 ```
 
 ```ts
@@ -22,7 +22,7 @@ divide(period, unit, options?)
 ## Example
 
 ```ts
-import { divide, period } from "minuta";
+import { divide, period } from "@aleksejdix/minuta";
 
 const march = period(new Date(2026, 2, 1), "month");
 
@@ -89,7 +89,7 @@ Pieces made with a `step` larger than 1 are always `"custom"` too: 15 minutes
 is not one whole unit.
 
 Weeks start on Monday here. To start them on Sunday, or to use another date
-library, use `divideWith` from `minuta/core` with your own units.
+library, use `divideWith` from `@aleksejdix/minuta/core` with your own units.
 
 ## Errors
 
@@ -109,5 +109,5 @@ divide(period(new Date(2026, 0, 1), "year"), "second");
 
 - `period` — create the period to divide.
 - `duration` — count the units without creating them.
-- `divideWith` (`minuta/core`) — the same, with your own units and week start.
-- `monthGridWith` (`minuta/calendar`) — a month as a calendar grid of weeks.
+- `divideWith` (`@aleksejdix/minuta/core`) — the same, with your own units and week start.
+- `monthGridWith` (`@aleksejdix/minuta/calendar`) — a month as a calendar grid of weeks.

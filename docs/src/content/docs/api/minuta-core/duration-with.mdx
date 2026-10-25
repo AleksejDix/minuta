@@ -3,8 +3,8 @@ title: durationWith
 description: Count how many whole units fit into a period — the hours in a day, the days in a month — with the units you pass.
 ---
 
-import { divideWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const units = nativeUnits();
@@ -14,7 +14,7 @@ Count how many whole units fit into a period (the hours in a day, the days in
 a month), computed with the units you pass.
 
 ```ts
-import { durationWith } from "minuta/core";
+import { durationWith } from "@aleksejdix/minuta/core";
 ```
 
 ```ts
@@ -24,8 +24,8 @@ durationWith(units, period, unit);
 ## Example
 
 ```ts
-import { durationWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { durationWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const units = nativeUnits();
 
@@ -71,8 +71,8 @@ Whether a day has 23, 24 or 25 hours depends on the time zone the units
 compute in. A time-zone adapter counts in its zone, wherever the code runs:
 
 ```ts
-import { durationWith, periodWith } from "minuta/core";
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
+import { durationWith, periodWith } from "@aleksejdix/minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 
 const newYork = dateFnsTzUnits({ timeZone: "America/New_York" });
 const day = periodWith(newYork, new Date("2026-03-08T12:00:00Z"), "day");

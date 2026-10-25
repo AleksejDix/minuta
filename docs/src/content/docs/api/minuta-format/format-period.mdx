@@ -3,8 +3,8 @@ title: formatPeriod
 description: Turn a period into a label in any language — "March 2026", "15. März 2026", "Mar 9 – 15, 2026" — picked by the period's unit.
 ---
 
-import { divide, period } from "minuta";
-import { formatPeriod, formatRange } from "minuta/format";
+import { divide, period } from "@aleksejdix/minuta";
+import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = new Date(2026, 2, 15, 14, 5, 9);
@@ -21,7 +21,7 @@ Turn a period into a label for people to read, in any language: "March
 period's unit.
 
 ```ts
-import { formatPeriod } from "minuta/format";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 ```
 
 ```ts
@@ -31,8 +31,8 @@ formatPeriod(period, locale, options?)
 ## Example
 
 ```ts
-import { formatPeriod } from "minuta/format";
-import { period } from "minuta";
+import { formatPeriod } from "@aleksejdix/minuta/format";
+import { period } from "@aleksejdix/minuta";
 
 const date = new Date(2026, 2, 15, 14, 5, 9);
 
@@ -90,7 +90,7 @@ Weeks and `"custom"` periods are shown as a range from start to end, the
 same as [`formatRange`](../format-range/). All other units show their start.
 
 ```ts
-import { range } from "minuta";
+import { range } from "@aleksejdix/minuta";
 
 formatPeriod(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "en-US");
 // → "Mar 30 – Apr 5, 2026"
@@ -103,7 +103,7 @@ want: Q2 2026 becomes "Apr 2026". Use `formatRange` to show all three
 months:
 
 ```ts
-import { formatRange } from "minuta/format";
+import { formatRange } from "@aleksejdix/minuta/format";
 
 const q2 = period(new Date(2026, 4, 1), "quarter");
 
@@ -156,8 +156,8 @@ otherwise. Periods made with zone-aware units, such as `dateFnsTzUnits`,
 must be formatted in that zone. Pass the units' `timeZone`:
 
 ```ts
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { periodWith } from "minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { periodWith } from "@aleksejdix/minuta/core";
 
 const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
 const day = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");

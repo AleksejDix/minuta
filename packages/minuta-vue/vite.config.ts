@@ -5,7 +5,7 @@ import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 
-const EXTERNAL = [/^minuta/u, /^vue(?:\/.*)?$/u];
+const EXTERNAL = [/^@aleksejdix\/minuta/u, /^vue(?:\/.*)?$/u];
 
 function fromRoot(file: string): string {
   return path.resolve(import.meta.dirname, file);
@@ -24,8 +24,8 @@ const demoConfig: UserConfig = {
   resolve: {
     alias: {
       "@": fromRoot("examples/src"),
-      "minuta-vue": fromRoot("src"),
-      "minuta-vue/components": fromRoot("src/components/index.ts"),
+      "@aleksejdix/minuta-vue": fromRoot("src"),
+      "@aleksejdix/minuta-vue/components": fromRoot("src/components/index.ts"),
     },
   },
   root: fromRoot("examples"),

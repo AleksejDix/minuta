@@ -27,11 +27,20 @@ export default defineConfig({
         find: /^@\//u,
         replacement: `${path.resolve(import.meta.dirname, "examples/src")}/`,
       },
-      { find: /^minuta$/u, replacement: core("index.ts") },
-      { find: /^minuta\/calendar$/u, replacement: core("calendar.ts") },
-      { find: /^minuta\/core$/u, replacement: core("core.ts") },
-      { find: /^minuta\/format$/u, replacement: core("format.ts") },
-      { find: /^minuta\/native$/u, replacement: core("native.ts") },
+      { find: /^@aleksejdix\/minuta$/u, replacement: core("index.ts") },
+      {
+        find: /^@aleksejdix\/minuta\/calendar$/u,
+        replacement: core("calendar.ts"),
+      },
+      { find: /^@aleksejdix\/minuta\/core$/u, replacement: core("core.ts") },
+      {
+        find: /^@aleksejdix\/minuta\/format$/u,
+        replacement: core("format.ts"),
+      },
+      {
+        find: /^@aleksejdix\/minuta\/native$/u,
+        replacement: core("native.ts"),
+      },
     ],
   },
   test: {

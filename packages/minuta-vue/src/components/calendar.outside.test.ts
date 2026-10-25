@@ -6,7 +6,7 @@ import {
 } from "#src/components/index";
 import { describe, expect, it } from "vitest";
 import { mountRender, silenceVueWarnings } from "#src/test/mount";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import { h } from "vue";
 
 const OUTSIDE_CALENDAR = "Calendar parts must be used within <CalendarRoot>";

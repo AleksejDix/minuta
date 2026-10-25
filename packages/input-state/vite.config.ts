@@ -9,7 +9,7 @@ export default defineConfig({
       formats: ["es"],
     },
     rollupOptions: {
-      external: ["text-buffer"],
+      external: ["@aleksejdix/text-buffer"],
     },
   },
   plugins: [

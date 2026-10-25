@@ -1,7 +1,11 @@
 import type { AttachOptions, InputController } from "./input-dom";
-import { createInputState, parseMask, setSelection } from "input-state";
+import {
+  createInputState,
+  parseMask,
+  setSelection,
+} from "@aleksejdix/input-state";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
-import type { InputState } from "input-state";
+import type { InputState } from "@aleksejdix/input-state";
 import { attachInput } from "./input-dom";
 
 const DATE = parseMask("99.99.9999");

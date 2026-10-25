@@ -1,7 +1,7 @@
 import type { JSX, ReactNode } from "react";
 import { useCallback, useId, useMemo, useState } from "react";
 import { CalendarContext } from "./calendar-context";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import { activeDay } from "./day-navigation";
 import { useMinutaContext } from "#src/minuta-context";
 import { useRovingFocus } from "./use-roving-focus";

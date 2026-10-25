@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-import { period, range } from "minuta";
+import { period, range } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const week = period(new Date(2026, 2, 18), "week");
@@ -39,7 +39,7 @@ All examples run in Europe/Zurich, with weeks from Monday to Sunday.
 Make the period for today, then ask whether it contains the date:
 
 ```ts
-import { contains, next, period } from "minuta";
+import { contains, next, period } from "@aleksejdix/minuta";
 
 const today = period(new Date(2026, 2, 18, 14, 30), "day");
 
@@ -61,7 +61,7 @@ contains(today, next(today).start); // → false, Thu Mar 19 00:00:00.000
 choose. The periods can have any units of their own:
 
 ```ts
-import { period, same } from "minuta";
+import { period, same } from "@aleksejdix/minuta";
 
 const today = period(new Date(2026, 2, 18), "day"); // a Wednesday
 const meeting = period(new Date(2026, 2, 18, 9), "hour");
@@ -99,7 +99,7 @@ To ask whether the whole week lies in a month, use `contains`.
 inside:
 
 ```ts
-import { contains, overlaps, period, range } from "minuta";
+import { contains, overlaps, period, range } from "@aleksejdix/minuta";
 
 const week = period(new Date(2026, 2, 18), "week");
 // → Mon Mar 16 00:00:00.000 – Sun Mar 22 23:59:59.999
@@ -139,7 +139,7 @@ sticks out on one side still belongs on the screen.
 Two bookings clash when they share at least one millisecond:
 
 ```ts
-import { overlaps, range } from "minuta";
+import { overlaps, range } from "@aleksejdix/minuta";
 
 const first = range(
   new Date(2026, 2, 18, 9),
@@ -219,7 +219,7 @@ End each range one millisecond early, or make the slots with
 into a period:
 
 ```ts
-import { duration, period, range } from "minuta";
+import { duration, period, range } from "@aleksejdix/minuta";
 
 duration(period(new Date(2026, 2, 18), "month"), "day"); // → 31
 duration(period(new Date(2026, 1, 1), "month"), "day"); //  → 28
@@ -253,7 +253,7 @@ day to 13:00 the next is 23 hours, so zero whole days.
 milliseconds. Divide it to get minutes or hours:
 
 ```ts
-import { length, period, range } from "minuta";
+import { length, period, range } from "@aleksejdix/minuta";
 
 const meeting = range(
   new Date(2026, 2, 18, 9),
@@ -281,7 +281,7 @@ A range ends exactly at the `Date` you pass, and that moment belongs to it.
 "from the 18th to the 25th" made like this leaves out the 25th:
 
 ```ts
-import { contains, duration, length, period, range } from "minuta";
+import { contains, duration, length, period, range } from "@aleksejdix/minuta";
 
 const trip = range(new Date(2026, 2, 18), new Date(2026, 2, 25));
 // → Wed Mar 18 00:00:00.000 – Wed Mar 25 00:00:00.000, unit "custom"

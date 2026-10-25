@@ -1,6 +1,6 @@
 import type { App, Component, ComputedRef, VNode } from 'vue'
 import { createApp, defineComponent, h, nextTick } from 'vue'
-import { deriveFormat, fromDate, segmentsToString } from 'datefield'
+import { deriveFormat, fromDate, segmentsToString } from '@aleksejdix/datefield'
 import DateFieldInput from './DateFieldInput.vue'
 import DateFieldRoot from './DateFieldRoot.vue'
 import { useDateFieldContext } from './date-field-context'

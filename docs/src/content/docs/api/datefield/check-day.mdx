@@ -3,7 +3,7 @@ title: checkDay
 description: Check one calendar day against a date field's min, max and unavailable rules, so the calendar disables exactly the days the field reports.
 ---
 
-import { DateProblem, checkDay } from "datefield";
+import { DateProblem, checkDay } from "@aleksejdix/datefield";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 
 export const rules = {
@@ -26,7 +26,7 @@ Check the day holding a date against the same rules as
 `isDisabled`, and the calendar disables exactly the days the field reports.
 
 ```ts
-import { checkDay } from "datefield";
+import { checkDay } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -36,7 +36,7 @@ checkDay(date, { min, max, isUnavailable });
 ## Example
 
 ```ts
-import { checkDay } from "datefield";
+import { checkDay } from "@aleksejdix/datefield";
 
 const rules = {
   isUnavailable: (date) => date.getDay() === 0 || date.getDay() === 6,
@@ -77,7 +77,7 @@ A [`DateProblem`](../date-problem/) code, or `undefined` when the day is allowed
 ## With the calendar
 
 ```tsx
-import { checkDay } from "datefield";
+import { checkDay } from "@aleksejdix/datefield";
 
 <CalendarRoot isDisabled={(day) => checkDay(day.start, rules) !== undefined}>
   …

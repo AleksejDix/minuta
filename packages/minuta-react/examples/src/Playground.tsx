@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { DateFieldDemo } from "./DateFieldDemo";
 import { DemoCalendar } from "./DemoCalendar";
 import type { JSX } from "react";
-import type { Period } from "minuta-react";
+import type { Period } from "@aleksejdix/minuta-react";
 
 const LOCALES = ["de-CH", "en-US", "en-GB", "ja-JP", "ko-KR", "fr-FR"];
 const DEFAULT_LOCALE = "de-CH";

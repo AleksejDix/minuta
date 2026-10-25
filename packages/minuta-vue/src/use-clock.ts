@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from "vue";
 import { shallowRef, watchEffect } from "vue";
-import type { Minuta } from "minuta/core";
+import type { Minuta } from "@aleksejdix/minuta/core";
 
 /**
  * The current date, re-read at the start of every day of the operations'

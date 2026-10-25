@@ -3,8 +3,8 @@ title: Locales
 description: The 104 per-locale imports of fechita, how to load only the ones you need, and how to list them.
 ---
 
-import { de } from "fechita/locales/de";
-import { en } from "fechita/locales/en";
+import { de } from "@aleksejdix/fechita/locales/de";
+import { en } from "@aleksejdix/fechita/locales/en";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 
 export const enRegions = Object.entries(en.regionOrders);
@@ -20,7 +20,7 @@ from Unicode CLDR 48. Load the ones you need and pass them to
 [`withLocales`](../with-locales/) or [`parseDateWith`](../parse-date-with/).
 
 The default entry, `fechita`, already includes all of them. You only need
-these imports with `fechita/core`.
+these imports with `@aleksejdix/fechita/core`.
 
 How the two entry points get their data:
 
@@ -54,8 +54,8 @@ How the two entry points get their data:
 ## Import one locale
 
 ```ts
-import { withLocales } from "fechita/core";
-import { fr } from "fechita/locales/fr";
+import { withLocales } from "@aleksejdix/fechita/core";
+import { fr } from "@aleksejdix/fechita/locales/fr";
 
 const { parseDate } = withLocales({ fr });
 
@@ -63,18 +63,18 @@ parseDate("mardi 31 mars 2026"); // → valid: 31 March 2026
 ```
 
 The path ends in the locale tag, and the export has the same name:
-`fechita/locales/de` exports `de`, `fechita/locales/ja` exports `ja`.
+`@aleksejdix/fechita/locales/de` exports `de`, `@aleksejdix/fechita/locales/ja` exports `ja`.
 
 Tags with a hyphen are exported in camel case. Give them their real tag as
 the key, so that the `locale` option finds them:
 
-| Import                                               | Pass as                   |
-| ---------------------------------------------------- | ------------------------- |
-| `import { zhHant } from "fechita/locales/zh-Hant"`   | `{ "zh-Hant": zhHant }`   |
-| `import { srLatn } from "fechita/locales/sr-Latn"`   | `{ "sr-Latn": srLatn }`   |
-| `import { hiLatn } from "fechita/locales/hi-Latn"`   | `{ "hi-Latn": hiLatn }`   |
-| `import { kkArab } from "fechita/locales/kk-Arab"`   | `{ "kk-Arab": kkArab }`   |
-| `import { yueHans } from "fechita/locales/yue-Hans"` | `{ "yue-Hans": yueHans }` |
+| Import                                                           | Pass as                   |
+| ---------------------------------------------------------------- | ------------------------- |
+| `import { zhHant } from "@aleksejdix/fechita/locales/zh-Hant"`   | `{ "zh-Hant": zhHant }`   |
+| `import { srLatn } from "@aleksejdix/fechita/locales/sr-Latn"`   | `{ "sr-Latn": srLatn }`   |
+| `import { hiLatn } from "@aleksejdix/fechita/locales/hi-Latn"`   | `{ "hi-Latn": hiLatn }`   |
+| `import { kkArab } from "@aleksejdix/fechita/locales/kk-Arab"`   | `{ "kk-Arab": kkArab }`   |
+| `import { yueHans } from "@aleksejdix/fechita/locales/yue-Hans"` | `{ "yue-Hans": yueHans }` |
 
 ## Regions come with the language
 
@@ -83,7 +83,7 @@ are inside it. `en` knows that `en-US` writes month first, `en-GB` writes day
 first and `en-CA` writes year first.
 
 ```ts
-import { en } from "fechita/locales/en";
+import { en } from "@aleksejdix/fechita/locales/en";
 
 const { parseDate } = withLocales({ en });
 
@@ -134,10 +134,10 @@ These are the locales with modern coverage in CLDR.
 
 ## See the list in code
 
-`fechita/locales/all` exports every locale in one object, keyed by tag:
+`@aleksejdix/fechita/locales/all` exports every locale in one object, keyed by tag:
 
 ```ts
-import { allLocales } from "fechita/locales/all";
+import { allLocales } from "@aleksejdix/fechita/locales/all";
 
 Object.keys(allLocales).length; // → 104
 Object.keys(allLocales); // → ["af", "ak", "am", …, "zh-Hant", "zu"]

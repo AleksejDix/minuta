@@ -1,8 +1,8 @@
-import type { Period, Unit } from "minuta/core";
+import type { Period, Unit } from "@aleksejdix/minuta/core";
 import { computed, effect, isRef, ref } from "vue";
 import { describe, expect, it } from "vitest";
 import { probeInRoot, silenceVueWarnings } from "./test/mount";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { useMinutaContext } from "./minuta-context";
 import { usePeriod } from "./use-period";
 

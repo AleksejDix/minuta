@@ -3,7 +3,7 @@ title: useMinutaContext
 description: A React hook that reads the minuta state of the closest MinutaRoot.
 ---
 
-import { divide, period } from "minuta";
+import { divide, period } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -14,7 +14,7 @@ A hook that reads the minuta state of the closest
 above the component.
 
 ```js
-import { useMinutaContext } from "minuta-react";
+import { useMinutaContext } from "@aleksejdix/minuta-react";
 ```
 
 ```js
@@ -26,7 +26,7 @@ const minuta = useMinutaContext();
 A label that shows the browsed month and how many days it has.
 
 ```jsx
-import { MinutaRoot, useMinutaContext } from "minuta-react";
+import { MinutaRoot, useMinutaContext } from "@aleksejdix/minuta-react";
 
 function MonthInfo() {
   const { browsing, divide } = useMinutaContext();

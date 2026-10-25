@@ -3,7 +3,12 @@ title: paste
 description: Paste text into an input field; in a masked field the characters fill the slots one by one.
 ---
 
-import { createInputState, parseMask, paste, setSelection } from "input-state";
+import {
+  createInputState,
+  parseMask,
+  paste,
+  setSelection,
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const empty = createInputState({ mask: parseMask("99.99.9999") });
@@ -15,7 +20,7 @@ the slots one after another, and characters a slot does not accept are
 skipped.
 
 ```ts
-import { paste } from "input-state";
+import { paste } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -25,7 +30,12 @@ paste(state, text);
 ## Example
 
 ```ts
-import { createInputState, parseMask, paste, setSelection } from "input-state";
+import {
+  createInputState,
+  parseMask,
+  paste,
+  setSelection,
+} from "@aleksejdix/input-state";
 
 const mask = parseMask("99.99.9999");
 const empty = createInputState({ mask });

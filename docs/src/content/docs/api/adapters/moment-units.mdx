@@ -3,9 +3,9 @@ title: momentUnits
 description: Units computed with Moment.js — for existing apps that use Moment, in the computer's time zone.
 ---
 
-import { divideWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
-import { momentUnits } from "minuta/moment";
+import { divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { momentUnits } from "@aleksejdix/minuta/moment";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) =>
@@ -16,7 +16,7 @@ date library. Dates are read in the time zone of the computer the code runs
 on.
 
 ```ts
-import { momentUnits } from "minuta/moment";
+import { momentUnits } from "@aleksejdix/minuta/moment";
 ```
 
 ```ts
@@ -26,8 +26,8 @@ momentUnits(options?)
 ## Example
 
 ```ts
-import { momentUnits } from "minuta/moment";
-import { withUnits } from "minuta/core";
+import { momentUnits } from "@aleksejdix/minuta/moment";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(momentUnits({ weekStartsOn: "sunday" }));
 
@@ -70,7 +70,7 @@ The weeks of March 2026, computed once by Moment and once by the built-in
 ## Install
 
 ```sh
-npm install minuta moment
+npm install @aleksejdix/minuta moment
 ```
 
 Moment is not a dependency of minuta; install it yourself. minuta is tested

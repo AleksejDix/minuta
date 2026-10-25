@@ -1,9 +1,9 @@
 import { computed, effect, ref, shallowRef } from "vue";
 import { describe, expect, it } from "vitest";
 import type { MinutaState } from "./types";
-import type { Period } from "minuta/core";
+import type { Period } from "@aleksejdix/minuta/core";
 import type { ReactiveEffectRunner } from "vue";
-import { nativeUnits } from "minuta/native";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import { useMinuta } from "./use-minuta";
 
 const NONE = 0;

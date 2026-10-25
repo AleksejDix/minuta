@@ -2,8 +2,8 @@
 import { activeDay, dayForKey } from "./day-navigation";
 import { computed, nextTick, useTemplateRef } from "vue";
 import type { CalendarDayProps } from "./types";
-import type { Period } from "minuta/core";
-import { isWeekendWith } from "minuta/calendar";
+import type { Period } from "@aleksejdix/minuta/core";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 

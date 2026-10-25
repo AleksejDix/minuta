@@ -1,5 +1,5 @@
 {
-  "name": "minuta-react",
+  "name": "@aleksejdix/minuta-react",
   "version": "1.0.0-beta.1",
   "description": "React hooks for minuta",
   "author": "Aleksej Dix <git@aleksejdix.com>",
@@ -59,7 +59,7 @@
     "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
   },
   "dependencies": {
-    "minuta": "^1.0.0-beta.1"
+    "@aleksejdix/minuta": "^1.0.0-beta.1"
   },
   "devDependencies": {
     "@minuta/tsconfig": "^2.0.0-alpha.1",
@@ -70,10 +70,10 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/browser-playwright": "^4.0.13",
     "clsx": "^2.1.1",
-    "datefield": "^0.1.0",
-    "fechita": "^0.1.0",
-    "input-dom": "^0.1.0",
-    "input-state": "^0.1.0",
+    "@aleksejdix/datefield": "^0.1.0",
+    "@aleksejdix/fechita": "^0.1.0",
+    "@aleksejdix/input-dom": "^0.1.0",
+    "@aleksejdix/input-state": "^0.1.0",
     "playwright": "^1.63.0",
     "react": "^18.0.0",
     "react-dom": "^18.3.1",
@@ -92,5 +92,8 @@
     "react": {
       "optional": true
     }
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

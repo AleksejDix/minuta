@@ -3,7 +3,7 @@ title: deriveFormat
 description: Ask the browser how a locale writes a date, and get it back as a list of parts you can build a date field from.
 ---
 
-import { deriveFormat, placeholder } from "datefield";
+import { deriveFormat, placeholder } from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const empty = (locale) => placeholder(deriveFormat(locale));
@@ -13,7 +13,7 @@ day–dot–month–dot–year and `en-US` gives you month–slash–day–slash
 never write a format string yourself.
 
 ```ts
-import { deriveFormat } from "datefield";
+import { deriveFormat } from "@aleksejdix/datefield";
 ```
 
 ```ts
@@ -23,7 +23,7 @@ deriveFormat(locale, options?)
 ## Example
 
 ```ts
-import { deriveFormat, placeholder } from "datefield";
+import { deriveFormat, placeholder } from "@aleksejdix/datefield";
 
 placeholder(deriveFormat("de-CH")); // → "__.__.____"
 placeholder(deriveFormat("en-US")); // → "__/__/____"

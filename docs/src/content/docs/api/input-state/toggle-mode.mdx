@@ -8,7 +8,7 @@ import {
   setSelection,
   toggleMode,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const insert = setSelection(createInputState({ value: "hello" }), 0);
@@ -18,7 +18,7 @@ Switch a free-text field between insert mode and overwrite mode, like the
 Insert key in an editor.
 
 ```ts
-import { toggleMode } from "input-state";
+import { toggleMode } from "@aleksejdix/input-state";
 ```
 
 ```ts
@@ -34,7 +34,7 @@ import {
   setSelection,
   toggleMode,
   typeChar,
-} from "input-state";
+} from "@aleksejdix/input-state";
 
 let field = setSelection(createInputState({ value: "hello" }), 0);
 field.mode; // → "insert"

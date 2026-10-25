@@ -3,7 +3,7 @@ title: useMinutaContext
 description: A Vue composable that reads the minuta state of the nearest MinutaRoot.
 ---
 
-import { divide, period } from "minuta";
+import { divide, period } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -14,7 +14,7 @@ A composable that reads the minuta state of the nearest
 above the component.
 
 ```js
-import { useMinutaContext } from "minuta-vue";
+import { useMinutaContext } from "@aleksejdix/minuta-vue";
 ```
 
 ```js
@@ -29,7 +29,7 @@ A label that shows the browsed month and how many days it has.
 <!-- MonthInfo.vue -->
 <script setup>
 import { computed } from "vue";
-import { useMinutaContext } from "minuta-vue";
+import { useMinutaContext } from "@aleksejdix/minuta-vue";
 
 const minuta = useMinutaContext();
 const name = computed(() =>

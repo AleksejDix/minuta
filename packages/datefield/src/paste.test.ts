@@ -1,9 +1,9 @@
 import { dateOrder, deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
 import type { DateFormat } from "./types";
-import { createInputState } from "input-state";
+import { createInputState } from "@aleksejdix/input-state";
 import { dateMask } from "./field";
-import { parseDate } from "fechita";
+import { parseDate } from "@aleksejdix/fechita";
 import { toDate } from "./convert";
 import { typeDate } from "./type-date";
 

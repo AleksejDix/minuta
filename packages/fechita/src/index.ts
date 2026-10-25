@@ -1,7 +1,7 @@
 /**
  * Read dates the way people write them, in every locale with modern
  * coverage in Unicode CLDR. For fewer locales and a smaller bundle, use
- * `withLocales` from `fechita/core`.
+ * `withLocales` from `@aleksejdix/fechita/core`.
  *
  * @module fechita
  */

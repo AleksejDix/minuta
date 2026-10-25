@@ -6,13 +6,13 @@ sidebar:
   label: Overview
 ---
 
-import { divideWith, periodWith } from "minuta/core";
-import { dateFnsUnits } from "minuta/date-fns";
-import { dayjsUnits } from "minuta/dayjs";
-import { luxonUnits } from "minuta/luxon";
-import { momentUnits } from "minuta/moment";
-import { nativeUnits } from "minuta/native";
-import { temporalUnits } from "minuta/temporal";
+import { divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { dateFnsUnits } from "@aleksejdix/minuta/date-fns";
+import { dayjsUnits } from "@aleksejdix/minuta/dayjs";
+import { luxonUnits } from "@aleksejdix/minuta/luxon";
+import { momentUnits } from "@aleksejdix/minuta/moment";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) =>
@@ -25,11 +25,11 @@ quarter, month, week, day, hour, minute, second), plus the week start, the
 weekend and the time zone.
 
 You make units once and pass them to `withUnits`, to the `…With` functions
-of `minuta/core`, or to the plugins.
+of `@aleksejdix/minuta/core`, or to the plugins.
 
 ```ts
-import { nativeUnits } from "minuta/native";
-import { withUnits } from "minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
 time.period(new Date(2026, 2, 18), "week");
@@ -42,15 +42,15 @@ time zone, or the date library your app already uses.
 
 ## The engines
 
-| Function                                  | Entry                | Library to install         | Time zone                                  | Pick it when                                   |
-| ----------------------------------------- | -------------------- | -------------------------- | ------------------------------------------ | ---------------------------------------------- |
-| [`nativeUnits`](../native-units/)         | `minuta/native`      | none                       | the computer's                             | you want no dependencies — the default choice. |
-| [`dateFnsUnits`](../date-fns-units/)      | `minuta/date-fns`    | `date-fns`                 | the computer's                             | your app uses date-fns.                        |
-| [`dateFnsTzUnits`](../date-fns-tz-units/) | `minuta/date-fns-tz` | `date-fns`, `@date-fns/tz` | **any IANA zone you choose** (default UTC) | you need one fixed zone, e.g. on a server.     |
-| [`luxonUnits`](../luxon-units/)           | `minuta/luxon`       | `luxon`                    | Luxon's default (the computer's)           | your app uses Luxon.                           |
-| [`dayjsUnits`](../dayjs-units/)           | `minuta/dayjs`       | `dayjs`                    | the computer's                             | your app uses Day.js.                          |
-| [`momentUnits`](../moment-units/)         | `minuta/moment`      | `moment`                   | the computer's                             | an existing app uses Moment.                   |
-| [`temporalUnits`](../temporal-units/)     | `minuta/temporal`    | `@js-temporal/polyfill`    | the computer's                             | you are moving to Temporal.                    |
+| Function                                  | Entry                            | Library to install         | Time zone                                  | Pick it when                                   |
+| ----------------------------------------- | -------------------------------- | -------------------------- | ------------------------------------------ | ---------------------------------------------- |
+| [`nativeUnits`](../native-units/)         | `@aleksejdix/minuta/native`      | none                       | the computer's                             | you want no dependencies — the default choice. |
+| [`dateFnsUnits`](../date-fns-units/)      | `@aleksejdix/minuta/date-fns`    | `date-fns`                 | the computer's                             | your app uses date-fns.                        |
+| [`dateFnsTzUnits`](../date-fns-tz-units/) | `@aleksejdix/minuta/date-fns-tz` | `date-fns`, `@date-fns/tz` | **any IANA zone you choose** (default UTC) | you need one fixed zone, e.g. on a server.     |
+| [`luxonUnits`](../luxon-units/)           | `@aleksejdix/minuta/luxon`       | `luxon`                    | Luxon's default (the computer's)           | your app uses Luxon.                           |
+| [`dayjsUnits`](../dayjs-units/)           | `@aleksejdix/minuta/dayjs`       | `dayjs`                    | the computer's                             | your app uses Day.js.                          |
+| [`momentUnits`](../moment-units/)         | `@aleksejdix/minuta/moment`      | `moment`                   | the computer's                             | an existing app uses Moment.                   |
+| [`temporalUnits`](../temporal-units/)     | `@aleksejdix/minuta/temporal`    | `@js-temporal/polyfill`    | the computer's                             | you are moving to Temporal.                    |
 
 `date-fns`, `@date-fns/tz`, `luxon` and `@js-temporal/polyfill` are optional
 dependencies of minuta. `dayjs` and `moment` are not; install them yourself.

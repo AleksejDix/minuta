@@ -3,7 +3,7 @@ title: replaceRange
 description: Replace a range of the text with new text and put the cursor after it.
 ---
 
-import { createTextBuffer, replaceRange } from "text-buffer";
+import { createTextBuffer, replaceRange } from "@aleksejdix/text-buffer";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const buffer = createTextBuffer("hello world");
@@ -13,7 +13,7 @@ Replace the text between two positions with new text. The cursor ends up right
 after the new text.
 
 ```ts
-import { replaceRange } from "text-buffer";
+import { replaceRange } from "@aleksejdix/text-buffer";
 ```
 
 ```ts
@@ -23,7 +23,7 @@ replaceRange(buffer, range, text);
 ## Example
 
 ```ts
-import { createTextBuffer, replaceRange } from "text-buffer";
+import { createTextBuffer, replaceRange } from "@aleksejdix/text-buffer";
 
 const buffer = createTextBuffer("hello world");
 

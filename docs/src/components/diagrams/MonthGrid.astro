@@ -4,11 +4,11 @@
  * `monthGridWith`: 6 weeks of 7 days, days outside the month muted,
  * weekend days marked, one day optionally selected.
  */
-import { contains, period, same } from "minuta";
-import { isWeekendWith, monthGridWith } from "minuta/calendar";
-import type { Weekday } from "minuta/core";
-import { formatPeriod } from "minuta/format";
-import { nativeUnits } from "minuta/native";
+import { contains, period, same } from "@aleksejdix/minuta";
+import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
+import type { Weekday } from "@aleksejdix/minuta/core";
+import { formatPeriod } from "@aleksejdix/minuta/format";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 type Props = Readonly<{
   /** First day of a highlighted range, as `YYYY-MM-DD` */

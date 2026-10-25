@@ -1,4 +1,4 @@
-import { createInputState, setSelection } from "input-state";
+import { createInputState, setSelection } from "@aleksejdix/input-state";
 import { describe, expect, it } from "vitest";
 import { finishField, typeDate } from "./type-date";
 import type { DateFormat } from "./types";

@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { formatPeriod } from "minuta/format";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import { useCalendarContext } from "./calendar-context";
 import { useCallback } from "react";
 import { useMinutaContext } from "#src/minuta-context";

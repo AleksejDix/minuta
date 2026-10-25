@@ -3,9 +3,9 @@ title: isWeekendWith
 description: Check whether a period lies completely on weekend days — Saturday and Sunday, or the weekend you set.
 ---
 
-import { divide, period, range } from "minuta";
-import { isWeekendWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
+import { divide, period, range } from "@aleksejdix/minuta";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -17,7 +17,7 @@ Check whether a period lies completely on weekend days. The weekend is
 Saturday and Sunday unless you set other days in the units.
 
 ```ts
-import { isWeekendWith } from "minuta/calendar";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
 ```
 
 ```ts
@@ -27,9 +27,9 @@ isWeekendWith(units, period);
 ## Example
 
 ```ts
-import { isWeekendWith } from "minuta/calendar";
-import { nativeUnits } from "minuta/native";
-import { period } from "minuta";
+import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { period } from "@aleksejdix/minuta";
 
 const units = nativeUnits();
 
@@ -100,7 +100,7 @@ The check looks at every day the period touches, even partly. All of them
 must be weekend days.
 
 ```ts
-import { range } from "minuta";
+import { range } from "@aleksejdix/minuta";
 
 const units = nativeUnits();
 
@@ -156,8 +156,8 @@ Which day it is depends on the time zone. The check uses the zone of the
 already Saturday morning in Tokyo:
 
 ```ts
-import { dateFnsTzUnits } from "minuta/date-fns-tz";
-import { periodWith } from "minuta/core";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { periodWith } from "@aleksejdix/minuta/core";
 
 const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
 const moment = new Date("2026-03-20T22:00:00Z");

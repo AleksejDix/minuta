@@ -6,19 +6,19 @@ sidebar:
   label: Overview
 ---
 
-import { periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = new Date(2026, 2, 18);
 
-`minuta/core` has the same operations as [`minuta`](../../minuta/overview/),
+`@aleksejdix/minuta/core` has the same operations as [`minuta`](../../minuta/overview/),
 without any units built in. You bring the units, and with them the date
 library, the first day of the week, the weekend and the time zone.
 
 ```ts
-import { withUnits } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { withUnits } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
 
@@ -97,21 +97,21 @@ here too so you can import everything from one place:
 | [`length`](../../minuta/length/)            | How long a period is, in milliseconds.         |
 | [`MinutaError`](../../minuta/minuta-error/) | The codes at the start of every error message. |
 
-## When to use `minuta/core`
+## When to use `@aleksejdix/minuta/core`
 
-Use `minuta/core` instead of `minuta` when you need:
+Use `@aleksejdix/minuta/core` instead of `minuta` when you need:
 
 - weeks that start on another day, such as Sunday;
 - another date library (date-fns, Luxon, Day.js, Moment, Temporal) or a fixed
   time zone;
 - your own weekend days, or a unit of your own;
-- plugins, such as calendar grids from `minuta/calendar`, bound to the same
+- plugins, such as calendar grids from `@aleksejdix/minuta/calendar`, bound to the same
   settings;
 - the smallest bundle: pass only the units you use.
 
 ```ts
-import { nextWith, periodWith } from "minuta/core";
-import { nativeUnits } from "minuta/native";
+import { nextWith, periodWith } from "@aleksejdix/minuta/core";
+import { nativeUnits } from "@aleksejdix/minuta/native";
 
 const { day, month } = nativeUnits();
 const units = { day, month }; // only these two end up in the bundle
