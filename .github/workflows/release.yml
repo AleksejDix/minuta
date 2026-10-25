@@ -24,6 +24,12 @@ jobs:
 
       - run: npm ci
 
+      # input-dom and minuta-react run their tests in real browsers. An
+      # install that hangs (it has) fails the release instead of holding it.
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+        timeout-minutes: 10
+
       - run: npm test
         env:
           TZ: UTC
