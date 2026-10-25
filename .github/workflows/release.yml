@@ -6,6 +6,13 @@ on:
   push:
     tags:
       - "v*"
+  # By hand, on master, to finish a release that stopped part way: it
+  # publishes only the versions not published yet.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The release's tag, such as v1.0.0-beta.1"
+        required: true
 
 jobs:
   release:
@@ -37,10 +44,23 @@ jobs:
       - run: npm run build --workspaces --if-present
 
       # In dependency order: each package's own packages are published first.
+      # A version already published is skipped, so a run that stopped part
+      # way can run again. npm puts a prerelease (1.0.0-beta.1) under `next`,
+      # never `latest`, and refuses one without a tag.
       - name: Publish
         run: |
           for package in text-buffer input-state datefield input-dom fechita minuta minuta-vue minuta-react; do
-            npm publish -w "@aleksejdix/$package"
+            name="@aleksejdix/$package"
+            version=$(node -p "require('./packages/$package/package.json').version")
+            if npm view "$name@$version" version > /dev/null 2>&1; then
+              echo "$name@$version is published already"
+              continue
+            fi
+            case "$version" in
+              *-*) tag=next ;;
+              *) tag=latest ;;
+            esac
+            npm publish -w "$name" --tag "$tag"
           done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,4 +68,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          prerelease: ${{ contains(inputs.tag || github.ref_name, '-') }}
           generate_release_notes: true
