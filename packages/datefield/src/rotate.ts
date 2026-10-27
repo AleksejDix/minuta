@@ -241,4 +241,4 @@ function rotateSegment(
   return clampDay(rotated);
 }
 
-export { clampDay, rotateSegment };
+export { FIXED_RANGES, MAX_DAYS_IN_MONTH, clampDay, rotateSegment };
