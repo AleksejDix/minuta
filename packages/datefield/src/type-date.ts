@@ -8,6 +8,7 @@ import type { DateFormat, Segment } from "./types";
 import { setSelection, slotChar, typeChar } from "@aleksejdix/input-state";
 import type { InputState } from "@aleksejdix/input-state";
 import { clampDay } from "./rotate";
+import { digitFit } from "./digit-fit";
 import { fromDate } from "./convert";
 import { fullYear } from "./year";
 import { nextSegment } from "./navigate";
@@ -109,6 +110,23 @@ function finishSegment(
   return setSelection(finished, Math.max(next.start, seg.end));
 }
 
+// One keystroke: padded, refused or typed as digitFit says
+function typedDigit(
+  format: Readonly<DateFormat>,
+  state: InputState,
+  digit: string
+): InputState {
+  const fit = digitFit(format, state, digit);
+  if (fit === "refused") {
+    return state;
+  }
+  const next = typeChar(state, digit);
+  if (fit === "padded") {
+    return finishSegment(format, next);
+  }
+  return next;
+}
+
 // Digits fill slots, separators finish the segment, anything else is ignored
 function typedChars(
   format: Readonly<DateFormat>,
@@ -117,7 +135,10 @@ function typedChars(
 ): InputState {
   let next = state;
   for (const char of text) {
-    if (slotChar("digit", char) !== undefined) {
+    const digit = slotChar("digit", char);
+    if (digit !== undefined && text.length === ONE_CHAR) {
+      next = typedDigit(format, next, digit);
+    } else if (digit !== undefined) {
       next = typeChar(next, char);
     } else if (SEPARATOR.test(char)) {
       next = finishSegment(format, next);
