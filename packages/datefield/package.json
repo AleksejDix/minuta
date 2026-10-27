@@ -1,6 +1,6 @@
 {
   "name": "@aleksejdix/datefield",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Headless segmented date input: Intl locale formats as input masks, segment rotation and day clamping.",
   "license": "Apache-2.0",
