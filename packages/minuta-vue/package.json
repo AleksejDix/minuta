@@ -15,7 +15,8 @@
   },
   "homepage": "https://github.com/AleksejDix/minuta",
   "sideEffects": [
-    "**/*.css"
+    "**/*.css",
+    "./examples/src/temporal-ready.ts"
   ],
   "files": [
     "dist"

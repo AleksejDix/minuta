@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// oxlint-disable-next-line import/no-unassigned-import -- installs Temporal before anything below computes
+import './temporal-ready'
 import { CalendarGrid, CalendarHeader, CalendarRoot } from '@aleksejdix/minuta-vue/components'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import DateFieldInput from './DateFieldInput.vue'
