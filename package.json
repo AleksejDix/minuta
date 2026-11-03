@@ -48,7 +48,6 @@
     "@changesets/cli": "^2.27.0",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
-    "@js-temporal/polyfill": "^0.5.1",
     "@vitest/coverage-v8": "^4.0.13",
     "knip": "^6.38.0",
     "lefthook": "^2.1.14",
