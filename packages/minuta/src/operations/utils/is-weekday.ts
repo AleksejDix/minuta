@@ -7,8 +7,8 @@ import { daysTouched } from "./days-touched";
  * `weekend` (Saturday and Sunday unless set).
  *
  * @example
- * isWeekdayWith(temporalUnits(), period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
- * isWeekdayWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 22), "day")); // true (a Sunday)
+ * isWeekdayWith(temporalUnits(), period(Temporal.PlainDate.from("2026-03-18"), "day")); // true (a Wednesday)
+ * isWeekdayWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-22"), "day")); // true (a Sunday)
  *
  * @param units - Units whose `weekend` to use, with a `day` spec
  * @param period - The period to check
@@ -16,7 +16,7 @@ import { daysTouched } from "./days-touched";
  */
 function isWeekdayWith(units: Units, period: Period): boolean {
   const weekend = units.weekend ?? DEFAULT_WEEKEND;
-  return daysTouched(units, period).every((day) => !weekend.includes(day));
+  return daysTouched(period).every((day) => !weekend.includes(day));
 }
 
 export { isWeekdayWith };

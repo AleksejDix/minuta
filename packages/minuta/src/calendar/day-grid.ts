@@ -1,18 +1,21 @@
-import type { Period, Units } from "#src/types";
+import type { TimePeriod, TimeValue, Units } from "#src/types";
+import { isZoned, toPlainDate, zonedPeriod } from "#src/values";
 import { divideWith } from "#src/operations/divide";
 import { periodWith } from "#src/operations/period";
+import { timeZoneOf } from "#src/units";
 
 /**
  * One real hour of a day, labelled with its wall-clock hour.
  */
-type HourSlot = Period &
+type HourSlot = TimePeriod &
   Readonly<{
-    /** Wall-clock hour (0-23) in the units' time zone */
+    /** Wall-clock hour (0-23) the slot starts in, in the day's zone */
     hour: number;
   }>;
 
 /**
- * The real hours of a day: 23, 24 or 25 slots, with DST metadata.
+ * The real hours of a day: 23, 24 or 25 slots, with the skipped and the
+ * repeated wall-clock hour.
  */
 type DayGrid = Readonly<{
   /** The hour slots of the day */
@@ -26,23 +29,8 @@ type DayGrid = Readonly<{
 type DstHours = Pick<DayGrid, "ambiguousHour" | "gapHour">;
 
 const HOURS_PER_DAY = 24;
-const MIDNIGHT = 0;
 const ONE_HOUR = 1;
 const SKIPPED_HOURS = 2;
-const DECIMAL_RADIX = 10;
-
-function wallClockHour(date: Readonly<Date>, timeZone: string): number {
-  const formatted = new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    hour12: false,
-    timeZone,
-  }).format(date);
-  const hour = Number.parseInt(formatted, DECIMAL_RADIX);
-  if (hour === HOURS_PER_DAY) {
-    return MIDNIGHT;
-  }
-  return hour;
-}
 
 function hoursLater(hour: number, hours: number): number {
   return (hour + hours) % HOURS_PER_DAY;
@@ -71,34 +59,42 @@ function detectDstHours(slots: readonly HourSlot[]): DstHours {
   return { ambiguousHour, gapHour };
 }
 
+// The zone the day lies in: a moment's own, else the units'
+function zoneOf(units: Units, value: TimeValue): string {
+  if (isZoned(value)) {
+    return value.timeZoneId;
+  }
+  return timeZoneOf(units);
+}
+
 /**
- * The real hours of the day containing `date`: 23 on a spring-forward day,
- * 25 on a fall-back day, 24 otherwise. Each slot carries its wall-clock hour
- * in `units.timeZone` (the runtime's zone when unset).
+ * The real hours of the day containing `value`: 23 on a spring-forward day,
+ * 25 on a fall-back day, 24 otherwise. The day lies in the zone of a moment
+ * passed in, else in the units' time zone; each slot carries the wall-clock
+ * hour it starts in.
  *
  * @example
- * import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
  * import { dayGridWith } from "@aleksejdix/minuta/calendar";
  *
- * const units = dateFnsTzUnits({ timeZone: "America/New_York" });
- * const { periods, gapHour } = dayGridWith(units, new Date("2024-03-10T12:00:00Z"));
+ * const units = temporalUnits({ timeZone: "America/New_York" });
+ * const { periods, gapHour } = dayGridWith(units, Temporal.PlainDate.from("2024-03-10"));
  * periods.length; // 23
  * gapHour; // 2
  *
  * @param units - Units with `day` and `hour` specs
- * @param date - Any date in the day
+ * @param value - Any value in the day
  * @returns The hour slots with the skipped and repeated hour
  */
-function dayGridWith(units: Units, date: Readonly<Date>): DayGrid {
-  const timeZone =
-    units.timeZone ?? new Intl.DateTimeFormat().resolvedOptions().timeZone;
+function dayGridWith(units: Units, value: TimeValue): DayGrid {
+  const timeZone = zoneOf(units, value);
+  const day = periodWith(units, toPlainDate(value, timeZone), "day");
   const periods: HourSlot[] = divideWith(
     units,
-    periodWith(units, date, "day"),
+    zonedPeriod(day, timeZone),
     "hour"
   ).map((slot): HourSlot => ({
     end: slot.end,
-    hour: wallClockHour(slot.start, timeZone),
+    hour: slot.start.hour,
     start: slot.start,
     unit: slot.unit,
   }));
