@@ -12,15 +12,10 @@ type FirstEntry = (name: string) => string | undefined;
 const PACKAGE_NAMES: Readonly<Record<string, string>> = {
   calendar: "@aleksejdix/minuta/calendar",
   core: "@aleksejdix/minuta/core",
-  "date-fns": "@aleksejdix/minuta/date-fns",
   "date-fns-tz": "@aleksejdix/minuta/date-fns-tz",
-  dayjs: "@aleksejdix/minuta/dayjs",
   format: "@aleksejdix/minuta/format",
   index: "@aleksejdix/minuta",
   intervals: "@aleksejdix/minuta/intervals",
-  luxon: "@aleksejdix/minuta/luxon",
-  moment: "@aleksejdix/minuta/moment",
-  native: "@aleksejdix/minuta/temporal",
   temporal: "@aleksejdix/minuta/temporal",
 };
 
