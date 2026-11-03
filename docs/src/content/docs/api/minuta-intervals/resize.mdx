@@ -3,13 +3,14 @@ title: resize
 description: Move the start or the end of a period and keep the other edge — e.g. make a meeting longer.
 ---
 
+import { zonedDateTime } from "../../../../components/temporal";
 import { range } from "@aleksejdix/minuta";
 import { resize } from "@aleksejdix/minuta/intervals";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const meeting = range(
-  new Date(2026, 2, 29, 9, 0),
-  new Date(2026, 2, 29, 10, 0)
+  zonedDateTime("2026-03-29T09:00[Europe/Zurich]"),
+  zonedDateTime("2026-03-29T10:00[Europe/Zurich]")
 );
 
 Move the start or the end of a period while the other edge stays where it
@@ -44,19 +45,31 @@ resize(meeting, "start", new Date(2026, 2, 29, 8, 0));
 <Timeline
   caption="The meeting from 9:00 to 10:00, with its end moved to 11:30 and, separately, its start moved to 8:00 (pins). The other edge stays put."
   marks={[
-    { date: new Date(2026, 2, 29, 8, 0), label: "8:00" },
-    { date: new Date(2026, 2, 29, 11, 30), label: "11:30" },
+    { date: zonedDateTime("2026-03-29T08:00[Europe/Zurich]"), label: "8:00" },
+    { date: zonedDateTime("2026-03-29T11:30[Europe/Zurich]"), label: "11:30" },
   ]}
   tracks={[
     { label: "meeting", periods: [meeting] },
     {
       label: 'resize(meeting, "end", …)',
-      periods: [resize(meeting, "end", new Date(2026, 2, 29, 11, 30))],
+      periods: [
+        resize(
+          meeting,
+          "end",
+          zonedDateTime("2026-03-29T11:30[Europe/Zurich]")
+        ),
+      ],
       tone: "accent",
     },
     {
       label: 'resize(meeting, "start", …)',
-      periods: [resize(meeting, "start", new Date(2026, 2, 29, 8, 0))],
+      periods: [
+        resize(
+          meeting,
+          "start",
+          zonedDateTime("2026-03-29T08:00[Europe/Zurich]")
+        ),
+      ],
       tone: "accent",
     },
   ]}
@@ -90,7 +103,9 @@ resize(meeting, "end", new Date(2026, 2, 29, 8, 59));
 
 <Timeline
   caption="11:00 (pin) lies after the end of the meeting. A start there would cross the end, so the result row stays empty: undefined."
-  marks={[{ date: new Date(2026, 2, 29, 11, 0), label: "11:00" }]}
+  marks={[
+    { date: zonedDateTime("2026-03-29T11:00[Europe/Zurich]"), label: "11:00" },
+  ]}
   tracks={[
     { label: "meeting", periods: [meeting] },
     { label: 'resize(meeting, "start", …)', periods: [], tone: "accent" },

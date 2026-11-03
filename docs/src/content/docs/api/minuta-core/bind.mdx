@@ -3,6 +3,7 @@ title: bind
 description: Bind every function of a plugin to one set of units, so you can call them without passing the units.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { period } from "@aleksejdix/minuta";
 import { bind, divideWith } from "@aleksejdix/minuta/core";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
@@ -11,11 +12,9 @@ import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const workdays = {
   workdaysIn: (units, month) =>
-    divideWith(units, month, "day").filter(
-      (day) => day.start.getDay() % 6 !== 0
-    ),
+    divideWith(units, month, "day").filter((day) => day.start.dayOfWeek < 6),
 };
-export const march = period(new Date(2026, 2, 1), "month");
+export const march = period(plainDate("2026-03-01"), "month");
 
 Bind every function of a plugin to one set of units, so you can call them
 without passing the units each time.
@@ -74,9 +73,7 @@ import { period } from "@aleksejdix/minuta";
 
 const workdays = {
   workdaysIn: (units, month) =>
-    divideWith(units, month, "day").filter(
-      (day) => day.start.getDay() % 6 !== 0
-    ),
+    divideWith(units, month, "day").filter((day) => day.start.dayOfWeek < 6),
 };
 
 const march = period(new Date(2026, 2, 1), "month");

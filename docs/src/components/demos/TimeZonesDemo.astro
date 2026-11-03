@@ -50,6 +50,8 @@ const day = time.period(date, "day");</pre>
 
 <script>
   import { mountTimeZonesDemos } from "./time-zones-demo";
+  import { temporalReady } from "@aleksejdix/minuta/temporal";
 
+  await temporalReady();
   mountTimeZonesDemos();
 </script>

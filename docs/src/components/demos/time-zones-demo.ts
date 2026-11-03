@@ -2,8 +2,9 @@
  * Time zones: "a day is 24 hours" and `getHours()` break on clock-change
  * days and in other zones; units in a zone get the real day.
  */
-import { demoRoots, part } from "./dom";
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta";
+import { demoRoots, part, plainDate } from "./dom";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { withUnits } from "@aleksejdix/minuta/core";
 
 const HOUR_MS = 3_600_000;
@@ -31,9 +32,14 @@ function dateAndClock(date: Readonly<Date>, timeZone: string): string {
   }).format(date);
 }
 
-// Noon UTC lies inside the same calendar day in every zone offered here
-function noonOf(input: HTMLInputElement): Date {
-  return new Date(`${input.value || "2026-03-29"}T12:00:00Z`);
+// The calendar date the input holds
+function dateOf(input: HTMLInputElement): PlainDate {
+  return plainDate(input.value || "2026-03-29");
+}
+
+// A moment as the Date the hand-written code would hold
+function asDate(moment: ZonedDateTime): Date {
+  return new Date(moment.epochMilliseconds);
 }
 
 function naiveVerdict(
@@ -73,16 +79,19 @@ function showProblem(
 
 function show(root: HTMLElement): void {
   const timeZone = part(root, "zone", HTMLSelectElement).value;
-  const time = withUnits(dateFnsTzUnits({ timeZone }));
-  const day = time.period(noonOf(part(root, "date", HTMLInputElement)), "day");
+  const time = withUnits(temporalUnits({ timeZone }));
+  const day = time.period(dateOf(part(root, "date", HTMLInputElement)), "day");
   const hours = time.duration(day, "hour");
-  showProblem(root, day.start, { hours, timeZone });
+  // The day as moments in the zone: from its start to the next day's
+  const start = day.start.toZonedDateTime({ timeZone });
+  const end = day.end.toZonedDateTime({ timeZone });
+  showProblem(root, asDate(start), { hours, timeZone });
   part(root, "span", HTMLElement).textContent =
-    `${dateAndClock(day.start, timeZone)} → ${dateAndClock(day.end, timeZone)}`;
+    `${dateAndClock(asDate(start), timeZone)} → ${dateAndClock(asDate(end), timeZone)}`;
   part(root, "hours", HTMLElement).textContent = String(hours);
   part(root, "clock", HTMLElement).textContent = time
     .divide(day, "hour")
-    .map((hour) => clock(hour.start, timeZone))
+    .map((hour) => clock(asDate(hour.start), timeZone))
     .join("  ");
 }
 

@@ -2,14 +2,16 @@
  * Periods and units: month math on a Date skips months, `next` on a period
  * does not; then explore any period, step it and split it.
  */
-import type { Period, Unit } from "@aleksejdix/minuta";
+import type { Period, PlainDate, Unit } from "@aleksejdix/minuta";
 import {
   dayLabel,
   demoRoots,
   fillList,
   inputDate,
+  inputPlainDate,
+  now,
   part,
-  timeLabel,
+  valueLabel,
 } from "./dom";
 import {
   divide,
@@ -17,6 +19,7 @@ import {
   period,
   previous as previousPeriod,
 } from "@aleksejdix/minuta";
+import { formatRange } from "@aleksejdix/minuta/format";
 
 const DAYS_BY_HAND = 30;
 const MONTHS = 12;
@@ -44,8 +47,9 @@ function unitNamed(value: string): Unit {
   return "day";
 }
 
+// A period as its start and its end; the end is the first value after it
 function span(piece: Period): string {
-  return `${timeLabel(piece.start)} → ${timeLabel(piece.end)}`;
+  return `${valueLabel(piece.start)} → ${valueLabel(piece.end)}`;
 }
 
 function verdict(date: Readonly<Date>, plusMonth: Readonly<Date>): string {
@@ -66,10 +70,13 @@ function showProblem(root: HTMLElement, date: Readonly<Date>): void {
   part(root, "verdict", HTMLElement).textContent = verdict(date, plusMonth);
 }
 
-function showAnswer(root: HTMLElement, date: Readonly<Date>): void {
+function showAnswer(root: HTMLElement, date: PlainDate): void {
   const month = nextPeriod(period(date, "month"));
-  part(root, "next-month", HTMLElement).textContent =
-    `${dayLabel(month.start)} – ${dayLabel(month.end)}`;
+  part(root, "next-month", HTMLElement).textContent = formatRange(
+    month,
+    "en-US",
+    { day: "numeric", month: "short", weekday: "short", year: "numeric" }
+  );
 }
 
 function pieceLabels(pieces: readonly Period[]): string[] {
@@ -99,8 +106,8 @@ function fillSubUnits(root: HTMLElement, unit: Unit): void {
 }
 
 // The explorer's period, stepped with the buttons
-function mountExplorer(root: HTMLElement): (date: Readonly<Date>) => void {
-  let current: Period = period(new Date(), "month");
+function mountExplorer(root: HTMLElement): (date: PlainDate) => void {
+  let current: Period = period(now(), "month");
   part(root, "previous", HTMLButtonElement).addEventListener("click", () => {
     current = previousPeriod(current);
     showPeriod(root, current);
@@ -124,10 +131,12 @@ function mount(root: HTMLElement): void {
   const dateInput = part(root, "date", HTMLInputElement);
   const explore = mountExplorer(root);
   function update(): void {
+    // The problem is Date arithmetic, so it gets a Date; minuta gets the date
     const date = inputDate(dateInput) ?? new Date();
+    const day = inputPlainDate(dateInput) ?? now().toPlainDate();
     showProblem(root, date);
-    showAnswer(root, date);
-    explore(date);
+    showAnswer(root, day);
+    explore(day);
   }
   dateInput.addEventListener("input", update);
   part(root, "unit", HTMLSelectElement).addEventListener("change", update);

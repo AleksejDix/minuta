@@ -3,8 +3,38 @@
  * hours as rings, made with minuta's own `period`, `divide` and `contains`,
  * with a second hand sweeping over them.
  */
+import type { Period, ZonedDateTime } from "@aleksejdix/minuta";
 import { contains, divide, period } from "@aleksejdix/minuta";
-import type { Period } from "@aleksejdix/minuta";
+import type { Temporal } from "@js-temporal/polyfill";
+import { formatPeriod } from "@aleksejdix/minuta/format";
+
+type TemporalApi = typeof Temporal;
+
+function hasTemporal(scope: object): scope is { Temporal: TemporalApi } {
+  return "Temporal" in scope && scope.Temporal !== undefined;
+}
+
+// The runtime's Temporal, or the polyfill temporalReady() installed
+function temporal(): TemporalApi {
+  const scope: object = globalThis;
+  if (!hasTemporal(scope)) {
+    throw new Error("Await temporalReady() before the dial draws");
+  }
+  return scope.Temporal;
+}
+
+// Now, in the browser's zone
+function currentMoment(): ZonedDateTime {
+  return temporal().Now.zonedDateTimeISO();
+}
+
+// Where a period edge lies, in milliseconds since 1970 UTC
+function epochOf(value: Period["end"]): number {
+  if ("epochMilliseconds" in value) {
+    return value.epochMilliseconds;
+  }
+  return value.toZonedDateTime({ timeZone: "UTC" }).epochMilliseconds;
+}
 
 type Ring = Readonly<{
   /** Degrees left empty between two pieces */
@@ -59,17 +89,17 @@ function arc(radius: number, from: number, to: number): string {
   return `M ${point(radius, from)} A ${String(radius)} ${String(radius)} 0 ${String(large)} 1 ${point(radius, to)}`;
 }
 
-function state(piece: Period, now: Readonly<Date>): string {
+function state(piece: Period, now: ZonedDateTime): string {
   if (contains(piece, now)) {
     return "now";
   }
-  if (piece.end < now) {
+  if (epochOf(piece.end) <= now.epochMilliseconds) {
     return "past";
   }
   return "future";
 }
 
-function ringMarkup(ring: Ring, now: Readonly<Date>): string {
+function ringMarkup(ring: Ring, now: ZonedDateTime): string {
   const step = FULL_TURN / ring.pieces.length;
   return ring.pieces
     .map((piece, index) => {
@@ -81,7 +111,6 @@ function ringMarkup(ring: Ring, now: Readonly<Date>): string {
 }
 
 function labelsMarkup(months: readonly Period[]): string {
-  const letter = new Intl.DateTimeFormat("en-US", { month: "narrow" });
   const step = FULL_TURN / months.length;
   return months
     .map((month, index) => {
@@ -89,22 +118,19 @@ function labelsMarkup(months: readonly Period[]): string {
         LABEL_RADIUS,
         index * step + step / HALF
       );
-      return `<text class="dial-label" x="${across}" y="${down}">${letter.format(month.start)}</text>`;
+      return `<text class="dial-label" x="${across}" y="${down}">${formatPeriod(month, "en-US", { month: "narrow" })}</text>`;
     })
     .join("");
 }
 
-function centerMarkup(now: Readonly<Date>): string {
-  const monthYear = new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-  return `<text class="dial-date" x="${String(CENTER)}" y="${String(CENTER)}">${String(now.getDate())}</text>
-<text class="dial-caption" x="${String(CENTER)}" y="${String(CENTER + TEXT_LINE)}">${monthYear.format(now)}</text>
+function centerMarkup(now: ZonedDateTime): string {
+  const month = formatPeriod(period(now, "month"), "en-US");
+  return `<text class="dial-date" x="${String(CENTER)}" y="${String(CENTER)}">${String(now.day)}</text>
+<text class="dial-caption" x="${String(CENTER)}" y="${String(CENTER + TEXT_LINE)}">${month}</text>
 <text class="dial-time" x="${String(CENTER)}" y="${String(CENTER + TEXT_LINE * HALF)}"></text>`;
 }
 
-function rings(now: Readonly<Date>): Ring[] {
+function rings(now: ZonedDateTime): Ring[] {
   const year = period(now, "year");
   return [
     {
@@ -128,11 +154,11 @@ function rings(now: Readonly<Date>): Ring[] {
   ];
 }
 
-function dialMarkup(now: Readonly<Date>): string {
+function dialMarkup(now: ZonedDateTime): string {
   const all = rings(now);
-  const label = new Intl.DateTimeFormat("en-US", { dateStyle: "full" }).format(
-    now
-  );
+  const label = formatPeriod(period(now, "day"), "en-US", {
+    dateStyle: "full",
+  });
   return `<svg viewBox="0 0 ${String(CENTER * HALF)} ${String(CENTER * HALF)}" role="img" aria-label="A dial of ${label}: the year's months, this month's days and today's hours">
 ${all.map((ring) => ringMarkup(ring, now)).join("")}
 ${labelsMarkup(divide(period(now, "year"), "month"))}
@@ -177,7 +203,7 @@ function animate(root: HTMLElement, smooth: boolean): void {
     const current = Math.floor(Date.now() / MS_A_MINUTE);
     if (current !== minute) {
       minute = current;
-      root.innerHTML = dialMarkup(new Date());
+      root.innerHTML = dialMarkup(currentMoment());
       root.classList.add("is-drawn");
     }
     tick(root, smooth);
@@ -197,7 +223,7 @@ function animate(root: HTMLElement, smooth: boolean): void {
 function mountDials(): void {
   const smooth = !globalThis.matchMedia(REDUCED_MOTION).matches;
   for (const root of document.querySelectorAll<HTMLElement>("[data-dial]")) {
-    root.innerHTML = dialMarkup(new Date());
+    root.innerHTML = dialMarkup(currentMoment());
     animate(root, smooth);
   }
 }

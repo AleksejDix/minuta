@@ -1,0 +1,73 @@
+---
+title: boundAs
+description: Name the signature a plugin function has once bound, so overloads and type parameters survive withUnits and bind.
+---
+
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+Name the signature a plugin function has once `withUnits` or `bind` binds
+it. Binding works out a function's bound type from its parameters after
+`units`; that keeps only the last overload of an overloaded function and
+none of its type parameters. A plugin function that has either names its
+bound form with `boundAs` instead. It is a type only: the function is
+returned as it is.
+
+```ts
+import { boundAs } from "@aleksejdix/minuta/core";
+```
+
+```ts
+boundAs<Shape>(): (fn) => fn
+```
+
+## Example
+
+```ts
+import type { Period, Units } from "@aleksejdix/minuta/core";
+import { boundAs, withUnits } from "@aleksejdix/minuta/core";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
+
+// Once bound: a period of one kind in, the same kind out
+type FirstBound = <Source extends Period>(
+  periods: readonly Source[]
+) => Source | undefined;
+
+const first = <Source extends Period>(
+  _units: Units,
+  periods: readonly Source[]
+) => periods[0];
+
+const plugin = { first: boundAs<FirstBound>()(first) };
+const time = withUnits(temporalUnits(), { plugins: [plugin] });
+time.first([time.period(Temporal.PlainDate.from("2026-03-18"), "day")]); // a DatePeriod
+```
+
+<Flow
+  steps={[
+    {
+      code: "boundAs<FirstBound>()(first)",
+      layer: "Your plugin",
+      text: "Marks the function with its bound signature, as a type only.",
+    },
+    {
+      code: "withUnits(units, { plugins: [plugin] })",
+      layer: "Binding",
+      text: "Uses the named signature instead of the function's own parameters.",
+    },
+    {
+      code: "time.first([day])",
+      layer: "Your code",
+      text: "Gets back the kind of period it passed in.",
+    },
+  ]}
+/>
+
+## Returns
+
+A function that returns its argument unchanged, typed with the bound
+signature `Shape`.
+
+## Related
+
+- [`bind`](../bind/) — bind one plugin.
+- [`withUnits`](../with-units/) — bind the operations and plugins.

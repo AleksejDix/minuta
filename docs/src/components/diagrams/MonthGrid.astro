@@ -4,10 +4,11 @@
  * `monthGridWith`: 6 weeks of 7 days, days outside the month muted,
  * weekend days marked, one day optionally selected.
  */
+import type { DatePeriod, Weekday } from "@aleksejdix/minuta/core";
 import { contains, period, same } from "@aleksejdix/minuta";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
-import type { Weekday } from "@aleksejdix/minuta/core";
 import { formatPeriod } from "@aleksejdix/minuta/format";
+import { plainDate } from "./dates";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type Props = Readonly<{
@@ -42,13 +43,13 @@ const {
 } = Astro.props;
 
 /**
- * The local day a `YYYY-MM-DD` string names.
+ * The day a `YYYY-MM-DD` string names.
  *
  * @param iso - The day
  * @returns Its day period
  */
-function dayOf(iso: string): ReturnType<typeof period> {
-  return period(new Date(`${iso}T00:00:00`), "day");
+function dayOf(iso: string): DatePeriod {
+  return period(plainDate(iso), "day");
 }
 
 /**
@@ -57,11 +58,13 @@ function dayOf(iso: string): ReturnType<typeof period> {
  * @param day - A day of the grid
  * @returns True between `from` and `to`, both included
  */
-function inRange(day: Readonly<{ start: Readonly<Date> }>): boolean {
+function inRange(day: DatePeriod): boolean {
   if (from === undefined || to === undefined) {
     return false;
   }
-  return day.start >= dayOf(from).start && day.start <= dayOf(to).start;
+  // From the first day to the last, both included: up to the day after `to`
+  const span = { end: dayOf(to).end, start: dayOf(from).start, unit: "custom" } as const;
+  return contains(span, day);
 }
 
 /**
@@ -70,15 +73,15 @@ function inRange(day: Readonly<{ start: Readonly<Date> }>): boolean {
  * @param day - A day of the grid
  * @returns True for a day in `marks`
  */
-function isMarked(day: Readonly<{ start: Readonly<Date> }>): boolean {
-  return marks.some((iso) => same(period(day.start, "day"), dayOf(iso), "day"));
+function isMarked(day: DatePeriod): boolean {
+  return marks.some((iso) => same(day, dayOf(iso), "day"));
 }
 
 const units = temporalUnits({ weekStartsOn });
-const monthStart = new Date(`${month}-01T00:00:00`);
+const monthStart = plainDate(`${month}-01`);
 const grid = monthGridWith(units, monthStart);
 const thisMonth = period(monthStart, "month");
-const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" });
+
 
 /**
  * Whether a day is the selected one.
@@ -86,20 +89,16 @@ const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" });
  * @param day - A day of the grid
  * @returns True for the `selected` day
  */
-function isSelected(day: Readonly<{ start: Readonly<Date> }>): boolean {
+function isSelected(day: DatePeriod): boolean {
   if (selected === undefined) {
     return false;
   }
-  return same(
-    period(day.start, "day"),
-    period(new Date(`${selected}T00:00:00`), "day"),
-    "day"
-  );
+  return same(day, dayOf(selected), "day");
 }
 
 const headers = grid.periods
   .slice(FIRST, DAYS_A_WEEK)
-  .map((day) => weekday.format(day.start));
+  .map((day) => formatPeriod(day, locale, { weekday: "short" }));
 const weeks = Array.from(
   { length: grid.periods.length / DAYS_A_WEEK },
   (_unused, row) =>
@@ -107,7 +106,7 @@ const weeks = Array.from(
       .slice(row * DAYS_A_WEEK, (row + ONE) * DAYS_A_WEEK)
       .map((day) => ({
         inRange: inRange(day),
-        label: day.start.getDate(),
+        label: day.start.day,
         marked: isMarked(day),
         outside: !contains(thisMonth, day.start),
         selected: isSelected(day),

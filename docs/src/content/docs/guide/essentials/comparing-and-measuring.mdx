@@ -5,19 +5,23 @@ sidebar:
   order: 4
 ---
 
+import { plainDate, zonedDateTime } from "../../../../components/temporal";
 import { period, range } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const week = period(new Date(2026, 2, 18), "week");
+export const week = period(plainDate("2026-03-18"), "week");
 export const meeting = range(
-  new Date(2026, 2, 20, 9),
-  new Date(2026, 2, 20, 9, 59, 59, 999)
+  zonedDateTime("2026-03-20T09:00[Europe/Zurich]"),
+  zonedDateTime("2026-03-20T10:00[Europe/Zurich]")
 );
-export const party = range(new Date(2026, 2, 22, 23), new Date(2026, 2, 23, 1));
-export const trip = range(new Date(2026, 2, 18), new Date(2026, 2, 25));
+export const party = range(
+  zonedDateTime("2026-03-22T23:00[Europe/Zurich]"),
+  zonedDateTime("2026-03-23T01:00[Europe/Zurich]")
+);
+export const trip = range(plainDate("2026-03-18"), plainDate("2026-03-25"));
 export const wholeTrip = range(
-  period(new Date(2026, 2, 18), "day").start,
-  period(new Date(2026, 2, 25), "day").end
+  period(plainDate("2026-03-18"), "day").start,
+  period(plainDate("2026-03-25"), "day").end
 );
 
 Once you have periods, you ask questions about them. Is this event today?
@@ -164,7 +168,10 @@ overlaps(first, third); //  → false, third starts right after first ends
     {
       label: "first",
       periods: [
-        range(new Date(2026, 2, 18, 9), new Date(2026, 2, 18, 10, 59, 59, 999)),
+        range(
+          zonedDateTime("2026-03-18T09:00[Europe/Zurich]"),
+          zonedDateTime("2026-03-18T11:00[Europe/Zurich]")
+        ),
       ],
       tone: "accent",
     },
@@ -172,8 +179,8 @@ overlaps(first, third); //  → false, third starts right after first ends
       label: "second",
       periods: [
         range(
-          new Date(2026, 2, 18, 10, 30),
-          new Date(2026, 2, 18, 11, 59, 59, 999)
+          zonedDateTime("2026-03-18T10:30[Europe/Zurich]"),
+          zonedDateTime("2026-03-18T12:00[Europe/Zurich]")
         ),
       ],
       tone: "accent",
@@ -182,8 +189,8 @@ overlaps(first, third); //  → false, third starts right after first ends
       label: "third",
       periods: [
         range(
-          new Date(2026, 2, 18, 11),
-          new Date(2026, 2, 18, 11, 59, 59, 999)
+          zonedDateTime("2026-03-18T11:00[Europe/Zurich]"),
+          zonedDateTime("2026-03-18T12:00[Europe/Zurich]")
         ),
       ],
       tone: "ink",
@@ -306,13 +313,18 @@ duration(wholeTrip, "day"); // → 8
 
 <Timeline
   caption="trip stops at midnight at the start of Mar 25, so noon that day (the pin) is outside. wholeTrip ends with the day and takes it in."
-  marks={[{ date: new Date(2026, 2, 25, 12), label: "Mar 25, 12:00" }]}
+  marks={[
+    {
+      date: zonedDateTime("2026-03-25T12:00[Europe/Zurich]"),
+      label: "Mar 25, 12:00",
+    },
+  ]}
   tracks={[
     { label: "trip", periods: [trip], tone: "ink" },
     { label: "wholeTrip", periods: [wholeTrip], tone: "accent" },
     {
       label: 'period(Mar 25, "day")',
-      periods: [period(new Date(2026, 2, 25), "day")],
+      periods: [period(plainDate("2026-03-25"), "day")],
       tone: "muted",
     },
   ]}

@@ -3,12 +3,13 @@ title: same
 description: Check whether two periods fall in the same day, week, month or year.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const monday = period(new Date(2026, 2, 16), "day");
-export const friday = period(new Date(2026, 2, 20), "day");
-export const week = period(new Date(2026, 2, 31), "week");
+export const monday = period(plainDate("2026-03-16"), "day");
+export const friday = period(plainDate("2026-03-20"), "day");
+export const week = period(plainDate("2026-03-31"), "week");
 
 Check whether two periods fall in the same day, week, month or year: are
 Monday and Friday in the same week, are these two appointments on the same
@@ -90,12 +91,12 @@ same(week, period(new Date(2026, 3, 1), "month"), "month"); // → false
   tracks={[
     {
       label: "march",
-      periods: [period(new Date(2026, 2, 1), "month")],
+      periods: [period(plainDate("2026-03-01"), "month")],
       tone: "muted",
     },
     {
       label: "april",
-      periods: [period(new Date(2026, 3, 1), "month")],
+      periods: [period(plainDate("2026-04-01"), "month")],
       tone: "muted",
     },
     { label: "week", periods: [week], tone: "accent" },

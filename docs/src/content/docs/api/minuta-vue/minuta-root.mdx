@@ -3,11 +3,12 @@ title: MinutaRoot
 description: A Vue component that runs useMinuta once and provides the result to every component inside it.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { next, period } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const december = period(new Date(2026, 11, 1), "month");
+export const december = period(plainDate("2026-12-01"), "month");
 export const january = next(december);
 
 A component that runs [`useMinuta`](../use-minuta/) once and provides the

@@ -5,12 +5,17 @@ sidebar:
   order: 2
 ---
 
+import { plainDate } from "../../../components/temporal";
 import { divideWith, periodWith } from "@aleksejdix/minuta/core";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) =>
-  divideWith(units, periodWith(units, new Date(2026, 2, 1), "month"), "week");
+  divideWith(
+    units,
+    periodWith(units, plainDate("2026-03-01"), "month"),
+    "week"
+  );
 
 minuta does not do date math itself. It asks a **date engine**: a set of
 small rules for each unit of time. minuta computes with
@@ -76,10 +81,10 @@ The settings travel with the specs:
 An **adapter** is a function that makes units with your settings. Each lives
 in its own entry, so you only load the one you use:
 
-| Engine                      | Adapter                                                   | Import                           |
-| --------------------------- | --------------------------------------------------------- | -------------------------------- |
-| Temporal                    | [`temporalUnits`](../../api/adapters/temporal-units/)     | `@aleksejdix/minuta/temporal`    |
-| date-fns-tz (any time zone) | [`dateFnsTzUnits`](../../api/adapters/date-fns-tz-units/) | `@aleksejdix/minuta/date-fns-tz` |
+| Engine                      | Adapter                                                | Import                           |
+| --------------------------- | ------------------------------------------------------ | -------------------------------- |
+| Temporal                    | [`temporalUnits`](../../api/adapters/temporal-units/)  | `@aleksejdix/minuta/temporal`    |
+| date-fns-tz (any time zone) | [`dateFnsTzUnits`](../../api/adapters/temporal-units/) | `@aleksejdix/minuta/date-fns-tz` |
 
 Every adapter takes `weekStartsOn` and `weekend`. Days are named
 (`"sunday"`), and the numbers of `Date#getDay()` (0 = Sunday) work too:

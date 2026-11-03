@@ -3,20 +3,27 @@ title: mergeWith
 description: Join periods into one that runs from the earliest start to the latest end — and keep a unit like "month" when the result is exactly one.
 ---
 
+import { plainDate, zonedDateTime } from "../../../../components/temporal";
 import { divide, period, range } from "@aleksejdix/minuta";
 import { mergeWith } from "@aleksejdix/minuta/intervals";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const units = temporalUnits();
-export const jan = period(new Date(2026, 0, 1), "month");
-export const mar = period(new Date(2026, 2, 1), "month");
+export const jan = period(plainDate("2026-01-01"), "month");
+export const mar = period(plainDate("2026-03-01"), "month");
 export const meetings = [
-  range(new Date(2026, 0, 1, 9), new Date(2026, 0, 1, 11)),
-  range(new Date(2026, 0, 1, 10), new Date(2026, 0, 1, 12)),
+  range(
+    zonedDateTime("2026-01-01T09:00[Europe/Zurich]"),
+    zonedDateTime("2026-01-01T11:00[Europe/Zurich]")
+  ),
+  range(
+    zonedDateTime("2026-01-01T10:00[Europe/Zurich]"),
+    zonedDateTime("2026-01-01T12:00[Europe/Zurich]")
+  ),
 ];
 export const days7 = divide(
-  range(new Date(2026, 2, 16), new Date(2026, 2, 22, 23, 59, 59, 999)),
+  range(plainDate("2026-03-16"), plainDate("2026-03-23")),
   "day"
 );
 

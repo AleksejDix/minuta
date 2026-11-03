@@ -3,11 +3,12 @@ title: specFor
 description: Look up the rules for one unit (start, end, add, count) in a set of units.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { periodWith, specFor } from "@aleksejdix/minuta/core";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const date = new Date(2026, 2, 18);
+export const date = plainDate("2026-03-18");
 export const week = specFor(temporalUnits(), "week");
 export const month = specFor(temporalUnits(), "month");
 
@@ -35,13 +36,17 @@ week.startOf(new Date(2026, 2, 18));
 ```
 
 <Timeline
-  caption="startOf and endOf of the week spec, around the pin at Mar 18. A period is made of exactly these two ends."
+  caption="startOf of the week spec, and the start of the next week, around the pin at Mar 18. A period runs from the one to the other."
   marks={[{ date, label: "Mar 18" }]}
   tracks={[
     {
-      label: "startOf(date) – endOf(date)",
+      label: "startOf(date) – add(startOf(date), 1)",
       periods: [
-        { end: week.endOf(date), start: week.startOf(date), unit: "week" },
+        {
+          end: week.add(week.startOf(date), 1),
+          start: week.startOf(date),
+          unit: "week",
+        },
       ],
       tone: "accent",
     },
@@ -81,15 +86,15 @@ month.
 <Timeline
   caption="month.add(Jan 31, 1): the pin moves from Jan 31 to Feb 28, the last day of February, not into March."
   marks={[
-    { date: new Date(2026, 0, 31), label: "Jan 31" },
-    { date: month.add(new Date(2026, 0, 31), 1), label: "Feb 28" },
+    { date: plainDate("2026-01-31"), label: "Jan 31" },
+    { date: month.add(plainDate("2026-01-31"), 1), label: "Feb 28" },
   ]}
   tracks={[
     {
       label: "months",
       periods: [
-        periodWith(temporalUnits(), new Date(2026, 0, 1), "month"),
-        periodWith(temporalUnits(), new Date(2026, 1, 1), "month"),
+        periodWith(temporalUnits(), plainDate("2026-01-01"), "month"),
+        periodWith(temporalUnits(), plainDate("2026-02-01"), "month"),
       ],
       tone: "muted",
     },

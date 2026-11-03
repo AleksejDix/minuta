@@ -3,15 +3,16 @@ title: shiftWith
 description: Move a period forward or back by a number of its own unit, with the units you pass.
 ---
 
+import { plainDate, zonedDateTime } from "../../../../components/temporal";
 import { periodWith, range, shiftWith } from "@aleksejdix/minuta/core";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const units = temporalUnits({ weekStartsOn: "sunday" });
-export const week = periodWith(units, new Date(2026, 2, 18), "week");
+export const week = periodWith(units, plainDate("2026-03-18"), "week");
 export const slot = range(
-  new Date(2026, 2, 2, 9),
-  new Date(2026, 2, 2, 9, 59, 59, 999)
+  zonedDateTime("2026-03-02T09:00[Europe/Zurich]"),
+  zonedDateTime("2026-03-02T10:00[Europe/Zurich]")
 );
 
 Move a period forward or back by a number of its own unit (two weeks ahead,
