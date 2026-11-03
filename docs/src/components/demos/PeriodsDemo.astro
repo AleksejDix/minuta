@@ -54,8 +54,8 @@ import DemoFrame from "./DemoFrame.astro";
 </DemoFrame>
 
 <script>
-  import { temporalReady } from "@aleksejdix/minuta/temporal";
   import { mountPeriodsDemos } from "./periods-demo";
+  import { temporalReady } from "@aleksejdix/minuta/temporal";
 
   await temporalReady();
   mountPeriodsDemos();
