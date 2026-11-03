@@ -46,4 +46,3 @@ function gap(from: TimePoint, to: TimePoint): Period | undefined {
 }
 
 export { gap };
-export type { TimePoint };
