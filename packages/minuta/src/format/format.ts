@@ -1,6 +1,13 @@
-import type { Period } from "#src/types";
+import type { Period, PlainDate, ZonedDateTime } from "#src/types";
+import { compare, isDatePeriod, isPlainDate } from "#src/values";
 
 type DisplayOptions = Readonly<Intl.DateTimeFormatOptions>;
+
+const ONE_DAY = 1;
+const EQUAL = 0;
+const MONTH_OFFSET = 1;
+const UTC = "UTC";
+const EPOCH = 0;
 
 /**
  * Display options for custom ranges and unknown period types.
@@ -37,32 +44,97 @@ const PERIOD_OPTIONS: Readonly<Partial<Record<string, DisplayOptions>>> = {
   year: { year: "numeric" },
 };
 
-function optionsFor(period: Period, options: DisplayOptions): DisplayOptions {
+// The options that pick what to show; any of them replaces the defaults
+const FIELDS: readonly (keyof Intl.DateTimeFormatOptions)[] = [
+  "dateStyle",
+  "day",
+  "dayPeriod",
+  "era",
+  "fractionalSecondDigits",
+  "hour",
+  "minute",
+  "month",
+  "second",
+  "timeStyle",
+  "timeZoneName",
+  "weekday",
+  "year",
+];
+
+/** A value as `Intl` takes it everywhere: a Date and the zone to read it in. */
+type IntlValue = Readonly<{ date: Date; timeZone: string }>;
+
+/**
+ * A date or a moment as every `Intl.DateTimeFormat` takes it, native or
+ * polyfilled Temporal, in a browser or on a server: a date as its midnight
+ * in UTC, read in UTC so no zone shifts it; a moment as its instant, read
+ * in its own zone.
+ *
+ * @param value - A date or a moment
+ * @returns The Date and its zone
+ */
+function toIntl(value: PlainDate | ZonedDateTime): IntlValue {
+  if (isPlainDate(value)) {
+    const date = new Date(EPOCH);
+    date.setUTCFullYear(value.year, value.month - MONTH_OFFSET, value.day);
+    return { date, timeZone: UTC };
+  }
+  return {
+    date: new Date(value.epochMilliseconds),
+    timeZone: value.timeZoneId,
+  };
+}
+
+function optionsFor(
+  period: Period,
+  options: DisplayOptions,
+  timeZone: string
+): Intl.DateTimeFormatOptions {
+  const picksFields = FIELDS.some((field) => options[field] !== undefined);
+  const defaults = PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS;
   const merged: Intl.DateTimeFormatOptions = {};
-  return Object.assign(
-    merged,
-    PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS,
-    options
-  );
+  if (!picksFields) {
+    Object.assign(merged, defaults);
+  }
+  Object.assign(merged, { timeZone }, options);
+  if (isDatePeriod(period)) {
+    // A date is the same day in every zone: read it where it was written
+    merged.timeZone = UTC;
+  }
+  return merged;
 }
 
 /**
- * Format a period as a locale-aware range string.
+ * The last value a period shows: the day before the end for dates (the end
+ * is excluded), the end itself for moments, where 10:00–11:00 reads right.
  *
- * Uses Intl.DateTimeFormat.formatRange() which intelligently collapses
- * shared parts (same year, same month).
+ * @param period - Any period
+ * @returns The value to show as the range's end
+ */
+function lastShown(period: Period): PlainDate | ZonedDateTime {
+  if (isDatePeriod(period) && compare(period.start, period.end) < EQUAL) {
+    return period.end.subtract({ days: ONE_DAY });
+  }
+  return period.end;
+}
+
+/**
+ * Format a period as a locale-aware range string, collapsing shared parts
+ * (same year, same month) with `Intl.DateTimeFormat#formatRange`. A date
+ * period shows its first and its last day; a time period its start and its
+ * end. The same text everywhere: on native Temporal and the polyfill, on a
+ * server and in the browser.
  *
  * @example
- * // Same month: "1.–31. März 2026"
- * // Cross month: "30. März – 5. Apr. 2026"
- * // Cross year: "29. Dez. 2025 – 4. Jan. 2026"
+ * formatRange(march, "de-CH"); // "1.–31. März 2026"
+ * formatRange(lastWeekOfMarch, "de-CH"); // "30. März – 5. Apr. 2026"
+ * formatRange(hour, "en-US"); // "Mar 18, 10:00 – 11:00 AM"
+ *
  * @param period - Period to format
  * @param locale - BCP 47 locale
- * formatRange(period, "en-US", { timeZone: units.timeZone }); // in the units' zone
- * @param period - Period to format
- * @param locale - BCP 47 locale
- * @param options - Intl options merged over the defaults for the period's unit,
- *   e.g. `{ timeZone: units.timeZone }`
+ * @param options - Intl options. Ones that pick fields (`month`, `weekday`,
+ *   `dateStyle` …) replace the unit's defaults; others (`hourCycle`,
+ *   `timeZone` for moments) are added to them
  * @returns The formatted range
  */
 function formatRange(
@@ -70,35 +142,33 @@ function formatRange(
   locale: string,
   options: DisplayOptions = {}
 ): string {
-  const fmt = new Intl.DateTimeFormat(locale, optionsFor(period, options));
-  return fmt.formatRange(period.start, period.end);
+  const start = toIntl(period.start);
+  const end = toIntl(lastShown(period));
+  const format = new Intl.DateTimeFormat(
+    locale,
+    optionsFor(period, options, start.timeZone)
+  );
+  return format.formatRange(start.date, end.date);
 }
 
 /**
- * Format a period as a locale-aware display string.
- *
- * Uses Intl.DateTimeFormat — zero locale data shipped.
- * Automatically picks the right format based on period type.
+ * Format a period as a locale-aware display string, picking the right
+ * format for its unit: a weekday and a day for a day, the month and year
+ * for a month, a range for weeks and custom periods. The same text
+ * everywhere: on native Temporal and the polyfill, on a server and in the
+ * browser.
  *
  * @example
- * // month period, de-CH
- * formatPeriod(monthPeriod, "de-CH")
- * // → "März 2026"
+ * formatPeriod(march, "de-CH"); // "März 2026"
+ * formatPeriod(day, "en-US"); // "March 15, 2026"
+ * formatPeriod(day, "en-US", { weekday: "short" }); // "Sun"
+ * formatPeriod(week, "ja-JP"); // "2026/03/09～2026/03/15"
  *
- * // day period, en-US
- * formatPeriod(dayPeriod, "en-US")
- * // → "March 15, 2026"
- *
- * // week period, ja-JP
- * formatPeriod(weekPeriod, "ja-JP")
- * // → "2026/03/09～2026/03/15"
- *
- * // a period of time-zone units, in their zone
- * formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone })
  * @param period - Period to format
  * @param locale - BCP 47 locale
- * @param options - Intl options merged over the defaults for the period's unit,
- *   e.g. `{ timeZone: units.timeZone }`
+ * @param options - Intl options. Ones that pick fields (`month`, `weekday`,
+ *   `dateStyle` …) replace the unit's defaults; others (`hourCycle`,
+ *   `timeZone` for moments) are added to them
  * @returns The formatted period
  */
 function formatPeriod(
@@ -109,9 +179,12 @@ function formatPeriod(
   if (period.unit === "week" || period.unit === "custom") {
     return formatRange(period, locale, options);
   }
-
-  const fmt = new Intl.DateTimeFormat(locale, optionsFor(period, options));
-  return fmt.format(period.start);
+  const start = toIntl(period.start);
+  const format = new Intl.DateTimeFormat(
+    locale,
+    optionsFor(period, options, start.timeZone)
+  );
+  return format.format(start.date);
 }
 
 export { formatPeriod, formatRange };

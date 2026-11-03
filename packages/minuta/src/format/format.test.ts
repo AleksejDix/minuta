@@ -1,125 +1,140 @@
+import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { formatPeriod, formatRange } from "./format";
 import { periodWith, range } from "#src/operations/period";
-import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
+import type { DateUnit } from "#src/types";
 import { temporalUnits } from "#src/adapters/temporal/index";
 
-const units = temporalUnits();
-const MARCH_15 = new Date("2026-03-15T00:00:00");
+// A zone far from UTC: a date that shifted with the zone would show it
+const units = temporalUnits({ timeZone: "Pacific/Kiritimati" });
 
-describe("formatPeriod() day and month", () => {
-  it("formats a day period in de-CH", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = periodWith(units, MARCH_15, "day");
-    const result = formatPeriod(period, "de-CH");
-    expect(result).toContain("15");
-    expect(result).toContain("März");
-    expect(result).toContain("2026");
-  });
+// Intl's thin and narrow no-break spaces as plain spaces, for readable assertions
+function plain(written: string): string {
+  return written.replaceAll(/[\u2009\u202F]/gu, " ");
+}
 
-  it("formats a day period in en-US", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = periodWith(units, MARCH_15, "day");
-    const result = formatPeriod(period, "en-US");
-    expect(result).toContain("March");
-    expect(result).toContain("15");
-    expect(result).toContain("2026");
-  });
+function periodOf(
+  value: string,
+  unit: DateUnit
+): ReturnType<typeof periodWith<DateUnit>> {
+  return periodWith(units, date(value), unit);
+}
 
-  it("formats a month period in de-CH", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = periodWith(units, MARCH_15, "month");
-    const result = formatPeriod(period, "de-CH");
-    expect(result).toContain("März");
-    expect(result).toContain("2026");
-  });
+describe("formatPeriod(): dates", () => {
+  it.each([
+    { expected: "15. März 2026", locale: "de-CH", unit: "day" },
+    { expected: "March 15, 2026", locale: "en-US", unit: "day" },
+    { expected: "März 2026", locale: "de-CH", unit: "month" },
+    { expected: "March 2026", locale: "en-US", unit: "month" },
+    { expected: "2026", locale: "en-US", unit: "year" },
+  ] as const)(
+    "a $unit in $locale: $expected",
+    { timeout: 5000 },
+    ({ expected, locale, unit }) => {
+      expect.hasAssertions();
+      const period = periodOf("2026-03-15", unit);
+      expect(plain(formatPeriod(period, locale))).toBe(expected);
+    }
+  );
 
-  it("formats a month period in en-US", { timeout: 5000 }, () => {
+  it("writes a week as the range of its days", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const period = periodWith(units, MARCH_15, "month");
-    const result = formatPeriod(period, "en-US");
-    expect(result).toContain("March");
-    expect(result).toContain("2026");
+    const week = periodOf("2026-03-11", "week");
+    expect(plain(formatPeriod(week, "en-US"))).toBe("Mar 9 – 15, 2026");
   });
 });
 
-describe("formatPeriod() year and week", () => {
-  it("formats a year period", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = periodWith(units, new Date("2026-01-01T00:00:00"), "year");
-    const result = formatPeriod(period, "de-CH");
-    expect(result).toContain("2026");
-  });
+describe("formatPeriod(): weekdays and zones", () => {
+  it(
+    "writes only the weekday when asked for it alone",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const sunday = periodOf("2026-03-15", "day");
+      expect(plain(formatPeriod(sunday, "en-US", { weekday: "short" }))).toBe(
+        "Sun"
+      );
+      expect(plain(formatPeriod(sunday, "de-CH", { weekday: "long" }))).toBe(
+        "Sonntag"
+      );
+    }
+  );
 
-  it("formats a week period as a range", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = periodWith(units, new Date("2026-03-11T00:00:00"), "week");
-    const result = formatPeriod(period, "de-CH");
-    // Week should be formatted as a range
-    expect(result).toMatch(/\d.*–.*\d/u);
-  });
-
-  it("formats a week period in en-US as a range", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = periodWith(units, new Date("2026-03-11T00:00:00"), "week");
-    const result = formatPeriod(period, "en-US");
-    expect(result).toMatch(/\d.*–.*\d/u);
-  });
+  it(
+    "keeps a date's day whatever time zone is asked for",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const day = periodOf("2026-03-15", "day");
+      expect(
+        plain(formatPeriod(day, "en-US", { timeZone: "Pacific/Pago_Pago" }))
+      ).toBe("March 15, 2026");
+    }
+  );
 });
 
 describe("formatRange()", () => {
-  it("formats same-month range in de-CH", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = range(
-      new Date("2026-03-01T00:00:00"),
-      new Date("2026-03-31T00:00:00")
-    );
-    const result = formatRange(period, "de-CH");
-    expect(result).toContain("März");
-    expect(result).toContain("2026");
-  });
-
-  it("formats cross-month range in de-CH", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = range(
-      new Date("2026-03-30T00:00:00"),
-      new Date("2026-04-05T00:00:00")
-    );
-    const result = formatRange(period, "de-CH");
-    expect(result).toContain("2026");
-  });
-
-  it("formats cross-year range in en-US", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const period = range(
-      new Date("2025-12-29T00:00:00"),
-      new Date("2026-01-04T00:00:00")
-    );
-    const result = formatRange(period, "en-US");
-    expect(result).toContain("2025");
-    expect(result).toContain("2026");
-  });
+  it.each([
+    {
+      expected: "1.–31. März 2026",
+      from: "2026-03-01",
+      locale: "de-CH",
+      to: "2026-04-01",
+    },
+    {
+      expected: "30. März – 5. Apr. 2026",
+      from: "2026-03-30",
+      locale: "de-CH",
+      to: "2026-04-06",
+    },
+    {
+      expected: "Dec 29, 2025 – Jan 4, 2026",
+      from: "2025-12-29",
+      locale: "en-US",
+      to: "2026-01-05",
+    },
+  ] as const)(
+    "$from to $to in $locale: $expected",
+    { timeout: 5000 },
+    ({ expected, from, locale, to }) => {
+      expect.hasAssertions();
+      const span = range(date(from), date(to));
+      expect(plain(formatRange(span, locale))).toBe(expected);
+    }
+  );
 });
 
-describe("format options", () => {
-  const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
-  // 05:00 on March 21 in Tokyo, still March 20 in UTC and the Americas
-  const tokyoDay = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
+describe("formatRange(): moments", () => {
+  it(
+    "writes a time period to its real end, in its own zone",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const hour = periodWith(
+        units,
+        zoned("2026-03-18T10:00[Europe/Zurich]"),
+        "hour"
+      );
+      expect(plain(formatRange(hour, "en-US", { hourCycle: "h23" }))).toBe(
+        "Mar 18, 10:00 – 11:00"
+      );
+    }
+  );
 
-  it("formats in the units' time zone", { timeout: 5000 }, () => {
+  it("writes a moment in another zone when asked", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const options = { timeZone: tokyo.timeZone };
-    expect(formatPeriod(tokyoDay, "en-US", options)).toBe("March 21, 2026");
-    expect(formatRange(tokyoDay, "en-US", options)).toBe("March 21, 2026");
-  });
-
-  it("merges options over the unit's defaults", { timeout: 5000 }, () => {
-    expect.hasAssertions();
+    const hour = periodWith(
+      units,
+      zoned("2026-03-18T10:00[Europe/Zurich]"),
+      "hour"
+    );
     expect(
-      formatPeriod(tokyoDay, "en-US", {
-        timeZone: "Asia/Tokyo",
-        weekday: "long",
-      })
-    ).toBe("Saturday, March 21, 2026");
+      plain(
+        formatPeriod(hour, "en-US", {
+          hourCycle: "h23",
+          timeZone: "Asia/Tokyo",
+        })
+      )
+    ).toBe("Mar 18, 18:00");
   });
 });
