@@ -31,7 +31,7 @@ function weekKey(week: readonly Period[]): string {
   if (first === undefined) {
     return "";
   }
-  return first.start.toISOString();
+  return first.start.toString();
 }
 
 /**

@@ -5,6 +5,7 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { RenderResult } from "@testing-library/react";
 import type { WeekStart } from "./week-start";
+import { date } from "#src/test-temporal";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const GRID_DAYS = 42;
@@ -16,7 +17,7 @@ const NO_DAYS = 0;
 function renderCalendar(weekStartsOn: WeekStart = MONDAY): RenderResult {
   return render(
     <CalendarRoot
-      date={new Date("2024-01-15T00:00:00")}
+      date={date("2024-01-15")}
       units={temporalUnits({ weekStartsOn })}
     >
       <CalendarHeader />
@@ -128,9 +129,9 @@ describe("<CalendarGrid>", () => {
   it("should render days with the children function", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { container } = render(
-      <CalendarRoot date={new Date("2024-01-15T00:00:00")}>
+      <CalendarRoot date={date("2024-01-15")}>
         <CalendarGrid>
-          {(day) => <i className="custom">{day.start.getDate()}</i>}
+          {(day) => <i className="custom">{day.start.day}</i>}
         </CalendarGrid>
       </CalendarRoot>
     );

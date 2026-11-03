@@ -28,7 +28,7 @@ function CalendarWeek({ renderDay, week }: CalendarWeekProps): JSX.Element {
       {week.map((day) => (
         <td
           className="grid-cell"
-          key={day.start.toISOString()}
+          key={day.start.toString()}
           aria-selected={selected !== undefined && same(selected, day, "day")}
         >
           {renderDay(day)}

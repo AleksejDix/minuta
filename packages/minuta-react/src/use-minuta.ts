@@ -1,14 +1,16 @@
 import type { MinutaOptions, MinutaState } from "./types";
-import type { Period, Units } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
 import { useCallback, useMemo, useState } from "react";
+import { currentMoment } from "./now";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useClock } from "./use-clock";
 import { withUnits } from "@aleksejdix/minuta/core";
 
 const DEFAULT_UNITS: Units = temporalUnits();
 
-function currentDate(): Date {
-  return new Date();
+// The units' zone, else the runtime's
+function timeZoneOf(units: Units): string {
+  return units.timeZone ?? new Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 /**
@@ -29,8 +31,8 @@ function useMinuta(options: MinutaOptions = {}): MinutaState {
     unit = "month",
     units = DEFAULT_UNITS,
   } = options;
-  const [browsedDate, setBrowsedDate] = useState<Readonly<Date>>(
-    date ?? currentDate
+  const [browsedDate, setBrowsedDate] = useState<TimeValue>(
+    () => date ?? currentMoment(timeZoneOf(units))
   );
   const ops = useMemo(() => withUnits(units), [units]);
   const clock = useClock(ops, nowOption !== undefined);

@@ -1,10 +1,11 @@
+import type { Period, TimeValue } from "@aleksejdix/minuta/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { date, now } from "#src/test-temporal";
 import { CalendarDay } from "./CalendarDay";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import type { Period } from "@aleksejdix/minuta/core";
 import type { RenderResult } from "@testing-library/react";
 import { period } from "@aleksejdix/minuta";
 
@@ -12,14 +13,11 @@ type OnSelect = (day: Period) => void;
 
 const ONE = 1;
 const SELECTED_DAY = 20;
-const JANUARY_15: Period = period(new Date("2024-01-15T00:00:00"), "day");
+const JANUARY_15: Period = period(date("2024-01-15"), "day");
 
-function renderCalendar(
-  date: Readonly<Date>,
-  onSelect?: OnSelect
-): RenderResult {
+function renderCalendar(value: TimeValue, onSelect?: OnSelect): RenderResult {
   return render(
-    <CalendarRoot date={date} onSelect={onSelect}>
+    <CalendarRoot date={value} onSelect={onSelect}>
       <CalendarHeader />
       <CalendarGrid />
     </CalendarRoot>
@@ -64,7 +62,7 @@ describe("<CalendarDay> states", () => {
 
   it("should mark today", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const { container } = renderCalendar(new Date());
+    const { container } = renderCalendar(now());
 
     const today = only([
       ...container.querySelectorAll<HTMLElement>('[aria-current="date"]'),
@@ -98,9 +96,7 @@ describe("<CalendarDay> selection", () => {
 
     fireEvent.click(dayButton(SELECTED_DAY));
 
-    expect(onSelect).toHaveBeenCalledWith(
-      period(new Date("2024-01-20T00:00:00"), "day")
-    );
+    expect(onSelect).toHaveBeenCalledWith(period(date("2024-01-20"), "day"));
   });
 
   it("should mark the clicked day as selected", { timeout: 5000 }, () => {

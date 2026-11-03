@@ -1,13 +1,21 @@
-import type { Minuta, Period, Unit, Units } from "@aleksejdix/minuta/core";
+import type {
+  Minuta,
+  Period,
+  TimePeriod,
+  TimeValue,
+  Unit,
+  Units,
+  ZonedDateTime,
+} from "@aleksejdix/minuta/core";
 
 /**
  * Options of `useMinuta()` and the props of `MinutaRoot`.
  */
 type MinutaOptions = Readonly<{
-  /** Initially browsed date, default: now */
-  date?: Readonly<Date> | undefined;
+  /** Initially browsed date or moment, default: now */
+  date?: TimeValue | undefined;
   /** The moment that counts as "now", default: the clock, re-read at every new day */
-  now?: Readonly<Date> | undefined;
+  now?: ZonedDateTime | undefined;
   /** Unit of the browsed period, default: `"month"` */
   unit?: Unit | undefined;
   /** Unit specs, default: `temporalUnits()` (weeks start on Monday) */
@@ -24,8 +32,8 @@ type MinutaState = Minuta &
     browse: (period: Period) => void;
     /** The browsed period */
     browsing: Period;
-    /** The second containing the `now` date */
-    now: Period;
+    /** The second containing the `now` moment */
+    now: TimePeriod;
   }>;
 
 export type { MinutaOptions, MinutaState };

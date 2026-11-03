@@ -1,5 +1,6 @@
 import type { MinutaOptions, MinutaState } from "./types";
 import { describe, expect, it } from "vitest";
+import { now, zoned } from "./test-temporal";
 import type { RenderHookResult } from "@testing-library/react";
 import { renderHook } from "@testing-library/react";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
@@ -9,9 +10,11 @@ import { withUnits } from "@aleksejdix/minuta/core";
 const MONDAY = 1;
 const SUNDAY = 0;
 const MS_PER_SECOND = 1000;
+const FIFTEEN = 15;
+const WEEK = 7;
 
-function createTestDate(): Date {
-  return new Date("2024-01-15T12:30:45");
+function createTestDate(): ReturnType<typeof zoned> {
+  return zoned("2024-01-15T12:30:45[Europe/Zurich]");
 }
 
 function renderMinuta(
@@ -39,14 +42,14 @@ describe("useMinuta() operations", () => {
   });
 
   it(
-    "should default to native units with Monday weeks",
+    "should default to Temporal units with Monday weeks",
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
       const { result } = renderMinuta({ date: createTestDate() });
 
       const week = result.current.period(createTestDate(), "week");
-      expect(week.start.getDay()).toBe(MONDAY);
+      expect(week.start.dayOfWeek).toBe(MONDAY);
     }
   );
 
@@ -56,9 +59,8 @@ describe("useMinuta() operations", () => {
     const { result } = renderMinuta({ date: createTestDate(), units });
 
     expect(result.current.units).toBe(units);
-    expect(result.current.period(createTestDate(), "week").start.getDay()).toBe(
-      SUNDAY
-    );
+    const week = result.current.period(createTestDate(), "week");
+    expect(week.start.dayOfWeek % WEEK).toBe(SUNDAY);
   });
 });
 
@@ -82,26 +84,27 @@ describe("useMinuta() browsing period", () => {
     const { result } = renderMinuta({ date: testDate, unit: "day" });
 
     expect(result.current.browsing.unit).toBe("day");
-    expect(result.current.browsing.start.getDate()).toBe(testDate.getDate());
+    expect(result.current.browsing.start.day).toBe(FIFTEEN);
+    expect(result.current.browsing.start.toString()).toBe(
+      testDate.toPlainDate().toString()
+    );
   });
 
   it("should default the browsed date to now", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { result } = renderMinuta({});
 
-    expect(result.current.contains(result.current.browsing, new Date())).toBe(
-      true
-    );
+    expect(result.current.contains(result.current.browsing, now())).toBe(true);
   });
 });
 
 describe("useMinuta() now period", () => {
   it("should use provided now date", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const nowDate = new Date("2024-01-20T10:00:00");
+    const nowDate = zoned("2024-01-20T10:00:00[Europe/Zurich]");
     const { result } = renderMinuta({ date: createTestDate(), now: nowDate });
 
-    expect(result.current.now.start).toStrictEqual(nowDate);
+    expect(result.current.now.start.toString()).toBe(nowDate.toString());
   });
 
   it("should create now period with second unit", { timeout: 5000 }, () => {
@@ -116,16 +119,14 @@ describe("useMinuta() now period", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const beforeCreate = new Date();
+      const beforeCreate = Date.now();
       const { result } = renderMinuta({ date: createTestDate() });
-      const afterCreate = new Date();
+      const afterCreate = Date.now();
 
-      const nowTime = result.current.now.start.getTime();
-      // The now.start is startOf(now, "second"), truncated to second boundary
-      expect(nowTime).toBeGreaterThanOrEqual(
-        beforeCreate.getTime() - MS_PER_SECOND
-      );
-      expect(nowTime).toBeLessThanOrEqual(afterCreate.getTime());
+      const nowTime = result.current.now.start.epochMilliseconds;
+      // The now.start is the start of now's second
+      expect(nowTime).toBeGreaterThanOrEqual(beforeCreate - MS_PER_SECOND);
+      expect(nowTime).toBeLessThanOrEqual(afterCreate);
     }
   );
 });

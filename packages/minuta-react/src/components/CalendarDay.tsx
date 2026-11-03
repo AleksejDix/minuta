@@ -2,6 +2,7 @@ import type { JSX, KeyboardEvent, KeyboardEventHandler, Ref } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { Period } from "@aleksejdix/minuta/core";
 import { dayForKey } from "./day-navigation";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -28,35 +29,22 @@ const NOT_TABBABLE = -1;
 const SELECT_KEYS: ReadonlySet<string> = new Set(["Enter", " "]);
 
 /**
- * The day number, the short weekday and the full date of `date` in
- * `timeZone`.
+ * The day number, the short weekday and the full date of a day.
  *
- * @param date - The day's start
+ * @param day - The day period
  * @param locale - BCP 47 locale
- * @param timeZone - The units' time zone, undefined for the runtime's
  * @returns The labels
  */
-function dayLabels(
-  date: Readonly<Date>,
-  locale: string,
-  timeZone: string | undefined
-): DayLabels {
+function dayLabels(day: Period, locale: string): DayLabels {
   return {
-    full: new Intl.DateTimeFormat(locale, {
+    full: formatPeriod(day, locale, {
       day: "numeric",
       month: "long",
-      timeZone,
       weekday: "long",
       year: "numeric",
-    }).format(date),
-    number: new Intl.DateTimeFormat(locale, {
-      day: "numeric",
-      timeZone,
-    }).format(date),
-    weekday: new Intl.DateTimeFormat(locale, {
-      timeZone,
-      weekday: "short",
-    }).format(date),
+    }),
+    number: formatPeriod(day, locale, { day: "numeric" }),
+    weekday: formatPeriod(day, locale, { weekday: "short" }),
   };
 }
 
@@ -173,15 +161,11 @@ function CalendarDay({
   day,
   locale = DEFAULT_LOCALE,
 }: CalendarDayProps): JSX.Element {
-  const { units } = useMinutaContext();
   const { select } = useCalendarContext();
   const state = useDayState(day);
   const button = useKeyboardFocus(day, state.isActive);
   const handleKeyDown = useDayKeys(day);
-  const labels = useMemo(
-    () => dayLabels(day.start, locale, units.timeZone),
-    [day, locale, units]
-  );
+  const labels = useMemo(() => dayLabels(day, locale), [day, locale]);
 
   const handleClick = useCallback(() => {
     select(day);

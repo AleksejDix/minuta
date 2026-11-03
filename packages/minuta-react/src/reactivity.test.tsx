@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { MinutaRoot } from "./minuta-root";
 import type { RenderHookResult } from "@testing-library/react";
 import { act } from "react";
+import { date } from "./test-temporal";
 import { renderHook } from "@testing-library/react";
 import { useMinutaContext } from "./minuta-context";
 import { usePeriod } from "./use-period";
@@ -15,10 +16,10 @@ type Hooks = Readonly<{
 
 type MinutaRef = Readonly<{ current: Hooks }>;
 
-const JANUARY = 0;
-const FEBRUARY = 1;
-const MARCH = 2;
-const DECEMBER = 11;
+const JANUARY = 1;
+const FEBRUARY = 2;
+const MARCH = 3;
+const DECEMBER = 12;
 const FIRST_DAY = 1;
 const PREVIOUS_YEAR = 2023;
 const TEST_YEAR = 2024;
@@ -40,7 +41,7 @@ function firstOf<Item>(items: readonly Item[]): Item {
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- ReactNode contains ReactElement<any>, which cannot be deeply readonly
 function DayRoot({ children }: Readonly<{ children: ReactNode }>): JSX.Element {
   return (
-    <MinutaRoot date={new Date("2024-01-15T00:00:00")} unit="day">
+    <MinutaRoot date={date("2024-01-15")} unit="day">
       {children}
     </MinutaRoot>
   );
@@ -66,8 +67,8 @@ describe("usePeriod() derivation", () => {
     const { result } = renderPeriod("month");
 
     expect(result.current.period.unit).toBe("month");
-    expect(result.current.period.start.getMonth()).toBe(JANUARY);
-    expect(result.current.period.start.getDate()).toBe(FIRST_DAY);
+    expect(result.current.period.start.month).toBe(JANUARY);
+    expect(result.current.period.start.day).toBe(FIRST_DAY);
   });
 
   it("should update when browsing changes", { timeout: 5000 }, () => {
@@ -102,7 +103,7 @@ describe("usePeriod() navigation", () => {
 
     shiftBrowsing(result, DAYS_TO_FEBRUARY);
 
-    expect(result.current.period.start.getMonth()).toBe(FEBRUARY);
+    expect(result.current.period.start.month).toBe(FEBRUARY);
   });
 
   it("should navigate to previous month", { timeout: 5000 }, () => {
@@ -111,8 +112,8 @@ describe("usePeriod() navigation", () => {
 
     shiftBrowsing(result, DAYS_TO_DECEMBER);
 
-    expect(result.current.period.start.getMonth()).toBe(DECEMBER);
-    expect(result.current.period.start.getFullYear()).toBe(PREVIOUS_YEAR);
+    expect(result.current.period.start.month).toBe(DECEMBER);
+    expect(result.current.period.start.year).toBe(PREVIOUS_YEAR);
   });
 
   it(
@@ -121,11 +122,11 @@ describe("usePeriod() navigation", () => {
     () => {
       expect.hasAssertions();
       const { result } = renderPeriod("year");
-      expect(result.current.period.start.getFullYear()).toBe(TEST_YEAR);
+      expect(result.current.period.start.year).toBe(TEST_YEAR);
 
       shiftBrowsing(result, DAYS_TO_NEXT_YEAR);
 
-      expect(result.current.period.start.getFullYear()).toBe(NEXT_YEAR);
+      expect(result.current.period.start.year).toBe(NEXT_YEAR);
     }
   );
 });
@@ -146,8 +147,8 @@ describe("usePeriod() divide reactivity", () => {
       result.current.period,
       "week"
     );
-    expect(firstOf(febWeeks).start.getTime()).not.toBe(
-      firstOf(janWeeks).start.getTime()
+    expect(firstOf<Period>(febWeeks).start.toString()).not.toBe(
+      firstOf<Period>(janWeeks).start.toString()
     );
   });
 });
@@ -174,6 +175,6 @@ describe("usePeriod() multiple hooks", () => {
     });
 
     // 60 days from Jan 15 = March
-    expect(result.current.month.start.getMonth()).toBe(MARCH);
+    expect(result.current.month.start.month).toBe(MARCH);
   });
 });

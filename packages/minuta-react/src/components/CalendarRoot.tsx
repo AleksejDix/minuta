@@ -1,12 +1,12 @@
 import type { JSX, ReactNode } from "react";
-import type { Period, Units } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
 import { CalendarSelection } from "./CalendarSelection";
 import { MinutaRoot } from "#src/minuta-root";
 
 type CalendarRootProps = Readonly<{
   children?: ReactNode;
-  /** Initially browsed date, default: now */
-  date?: Readonly<Date> | undefined;
+  /** Initially browsed date or moment, default: now */
+  date?: TimeValue | undefined;
   /** Whether a day can't be selected, default: none */
   isDisabled?: ((day: Period) => boolean) | undefined;
   /** Called with the clicked day */
