@@ -3,3 +3,4 @@
 
 // Re-export the main adapter functionality
 export { temporalUnits } from "./adapter";
+export { temporalReady } from "./temporal-api";

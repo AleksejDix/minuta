@@ -1075,7 +1075,7 @@ time.period(new Date(), "week");
 temporalUnits(options: WeekOptions = {}): AllUnits
 ```
 
-Unit specs for every unit, computed with the TC39 Temporal API (falls back to `@js-temporal/polyfill` when the runtime has no Temporal, leaving `globalThis` alone). Pass the result to
+Unit specs for every unit, computed with the TC39 Temporal API (reads the runtime's Temporal when computing; where it is missing, `await temporalReady()` first). Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
 (`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
@@ -1087,4 +1087,22 @@ import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(temporalUnits({ weekStartsOn: "monday" }));
 time.period(new Date(), "week");
+```
+
+### `temporalReady`
+
+```ts
+temporalReady(): Promise<void>
+```
+
+Make Temporal available before minuta computes with it. Does nothing where
+the runtime has Temporal (Chrome and Edge 144+, Firefox 139+, Node 26+);
+elsewhere it loads `@js-temporal/polyfill` in its own chunk and installs it
+on `globalThis`. Await it once, before anything renders.
+
+```ts
+import { temporalReady, temporalUnits } from "@aleksejdix/minuta/temporal";
+
+await temporalReady();
+const units = temporalUnits();
 ```
