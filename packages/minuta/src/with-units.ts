@@ -4,7 +4,9 @@
  * function, so the bound object and the default entry cannot drift apart.
  */
 
-import type { Bound, BoundPlugin, Plugin } from "#src/bind";
+import type { BoundPlugin, Plugin } from "#src/bind";
+import type { Chunks, DivideOptions } from "#src/operations/divide";
+import type { Period, PeriodOf, TimeValue, Unit, Units } from "#src/types";
 import {
   contains,
   divideWith,
@@ -18,24 +20,29 @@ import {
   sameWith,
   shiftWith,
 } from "#src/operations/index";
-import type { Units } from "#src/types";
 import { bind } from "#src/bind";
 
 /**
- * All operations, bound to one set of units.
+ * All operations, bound to one set of units. Written out rather than
+ * derived, so the generic signatures keep their type parameters: a day's
+ * `period` is a `DatePeriod`, `next` of a `TimePeriod` a `TimePeriod`.
  */
 type Minuta = Readonly<{
   contains: typeof contains;
-  divide: Bound<typeof divideWith>;
-  duration: Bound<typeof durationWith>;
+  divide: <Source extends Period, Name extends Unit>(
+    period: Source,
+    unit: Name,
+    options?: DivideOptions
+  ) => Chunks<Source, Name>;
+  duration: (period: Period, unit: Unit) => number;
   length: typeof length;
-  next: Bound<typeof nextWith>;
+  next: <Source extends Period>(period: Source) => Source;
   overlaps: typeof overlaps;
-  period: Bound<typeof periodWith>;
-  previous: Bound<typeof previousWith>;
+  period: <Name extends Unit>(value: TimeValue, unit: Name) => PeriodOf<Name>;
+  previous: <Source extends Period>(period: Source) => Source;
   range: typeof range;
-  same: Bound<typeof sameWith>;
-  shift: Bound<typeof shiftWith>;
+  same: (first: Period, second: Period, unit: Unit | "custom") => boolean;
+  shift: <Source extends Period>(period: Source, steps: number) => Source;
   /** The units every member is bound to */
   units: Units;
 }>;
