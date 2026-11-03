@@ -3,20 +3,21 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "#src/components/index";
-import type { Period, Units } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
 import { h, nextTick } from "vue";
 import type { VNode } from "vue";
+import { date as dateOf } from "./temporal";
 import { mountRender } from "#src/test/mount";
 
 type CalendarSetup = Readonly<{
-  date?: Readonly<Date>;
+  date?: TimeValue;
   isDisabled?: (day: Period) => boolean;
   locale?: string;
   onSelect?: (day: Period) => void;
   units?: Units;
 }>;
 
-const JANUARY_15 = new Date("2024-01-15T00:00:00");
+const JANUARY_15 = dateOf("2024-01-15");
 
 /**
  * Renders a calendar with a header and the grid, browsing January 2024.

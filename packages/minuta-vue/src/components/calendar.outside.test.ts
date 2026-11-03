@@ -7,11 +7,12 @@ import {
 import { describe, expect, it } from "vitest";
 import { mountRender, silenceVueWarnings } from "#src/test/mount";
 import type { Period } from "@aleksejdix/minuta/core";
+import { date } from "#src/test/temporal";
 import { h } from "vue";
 
 const OUTSIDE_CALENDAR = "Calendar parts must be used within <CalendarRoot>";
 
-const testDate = new Date("2024-03-13T00:00:00");
+const testDate = date("2024-03-13");
 
 describe("calendar parts outside CalendarRoot", () => {
   it.each([CalendarHeader, CalendarWeekdays, CalendarGrid])(

@@ -1,8 +1,12 @@
+import { date, now, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
+import type { TimePeriod } from "@aleksejdix/minuta/core";
 import { isRef } from "vue";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
 import { withUnits } from "@aleksejdix/minuta/core";
+
+const WEEK_LENGTH = 7;
 
 const MONDAY = 1;
 const DAYS_PER_WEEK = 7;
@@ -24,7 +28,7 @@ const WEEK_DAY_INDEXES = [
 // Now is a second period, so its start can lie up to a second before creation
 const SECOND_MS = 1000;
 
-const testDate = new Date("2024-01-15T12:30:45");
+const testDate = zoned("2024-01-15T12:30:45[Europe/Zurich]");
 
 describe("useMinuta() defaults", () => {
   it("returns reactive browsing and now", { timeout: 5000 }, () => {
@@ -43,7 +47,9 @@ describe("useMinuta() defaults", () => {
       expect.hasAssertions();
       const minuta = useMinuta({ date: testDate });
 
-      expect(minuta.period(testDate, "week").start.getDay()).toBe(MONDAY);
+      expect(
+        minuta.period(testDate, "week").start.dayOfWeek % WEEK_LENGTH
+      ).toBe(MONDAY);
       expect(Object.keys(minuta.units.value)).toStrictEqual(
         Object.keys(temporalUnits())
       );
@@ -61,13 +67,16 @@ describe("useMinuta() defaults", () => {
 
   it("defaults the date and now to the current date", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const before = new Date();
+    const before = now();
     const minuta = useMinuta();
-    const after = new Date();
+    const after = now();
 
-    const nowTime = minuta.now.value.start.getTime();
-    expect(nowTime).toBeGreaterThanOrEqual(before.getTime() - SECOND_MS);
-    expect(nowTime).toBeLessThanOrEqual(after.getTime());
+    const nowPeriod: TimePeriod = minuta.now.value;
+    const nowTime = nowPeriod.start.epochMilliseconds;
+    expect(nowTime).toBeGreaterThanOrEqual(
+      before.epochMilliseconds - SECOND_MS
+    );
+    expect(nowTime).toBeLessThanOrEqual(after.epochMilliseconds);
     expect(minuta.browsing.value).toStrictEqual(minuta.period(after, "month"));
   });
 });
@@ -80,7 +89,9 @@ describe("useMinuta() options", () => {
         date: testDate,
         units: temporalUnits({ weekStartsOn }),
       });
-      expect(minuta.period(testDate, "week").start.getDay()).toBe(weekStartsOn);
+      expect(
+        minuta.period(testDate, "week").start.dayOfWeek % WEEK_LENGTH
+      ).toBe(weekStartsOn);
     }
   });
 
@@ -99,19 +110,19 @@ describe("useMinuta() options", () => {
     const minuta = useMinuta({ date: testDate, unit: "day" });
 
     expect(minuta.browsing.value).toStrictEqual({
-      end: new Date("2024-01-15T23:59:59.999"),
-      start: new Date("2024-01-15T00:00:00"),
+      end: date("2024-01-16"),
+      start: date("2024-01-15"),
       unit: "day",
     });
   });
 
   it("uses the given now as a second period", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const nowDate = new Date("2024-01-20T15:30:45");
+    const nowDate = zoned("2024-01-20T15:30:45[Europe/Zurich]");
     const minuta = useMinuta({ date: testDate, now: nowDate });
 
     expect(minuta.now.value).toStrictEqual({
-      end: new Date("2024-01-20T15:30:45.999"),
+      end: zoned("2024-01-20T15:30:46[Europe/Zurich]"),
       start: nowDate,
       unit: "second",
     });
@@ -138,18 +149,16 @@ describe("useMinuta() operations", () => {
 describe("useMinuta() edge cases", () => {
   it("browses dates at year boundaries", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const endOfYear = new Date("2023-12-31T23:59:59");
+    const endOfYear = zoned("2023-12-31T23:59:59[Europe/Zurich]");
     const minuta = useMinuta({ date: endOfYear });
 
-    expect(minuta.browsing.value.start).toStrictEqual(
-      new Date("2023-12-01T00:00:00")
-    );
+    expect(minuta.browsing.value.start).toStrictEqual(date("2023-12-01"));
     expect(minuta.contains(minuta.browsing.value, endOfYear)).toBe(true);
   });
 
   it("browses leap days", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const leapDay = new Date("2024-02-29T00:00:00");
+    const leapDay = date("2024-02-29");
     const minuta = useMinuta({ date: leapDay, unit: "day" });
 
     expect(minuta.browsing.value.start).toStrictEqual(leapDay);

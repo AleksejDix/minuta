@@ -2,9 +2,12 @@ import type { Period, Unit } from "@aleksejdix/minuta/core";
 import { computed, effect, isRef, ref } from "vue";
 import { describe, expect, it } from "vitest";
 import { probeInRoot, silenceVueWarnings } from "./test/mount";
+import { date } from "#src/test/temporal";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinutaContext } from "./minuta-context";
 import { usePeriod } from "./use-period";
+
+const MONTH_OFFSET = 1;
 
 const ONE_RUN = 1;
 const TWO_RUNS = 2;
@@ -18,7 +21,7 @@ const DAYS_IN_JANUARY = 31;
 const DAYS_PER_WEEK = 7;
 const DAYS_IN_2024 = 366;
 
-const testDate = new Date("2024-01-15T00:00:00");
+const testDate = date("2024-01-15");
 
 describe("usePeriod()", () => {
   it("returns a computed period of the unit", { timeout: 5000 }, () => {
@@ -29,7 +32,7 @@ describe("usePeriod()", () => {
 
     expect(isRef(year)).toBe(true);
     expect(year.value.unit).toBe("year");
-    expect(year.value.start.getFullYear()).toBe(YEAR_2024);
+    expect(year.value.start.year).toBe(YEAR_2024);
   });
 
   it("contains the start of the browsed period", { timeout: 5000 }, () => {
@@ -38,7 +41,7 @@ describe("usePeriod()", () => {
       date: testDate,
     });
 
-    expect(week.value.start).toStrictEqual(new Date("2024-01-01T00:00:00"));
+    expect(week.value.start).toStrictEqual(date("2024-01-01"));
   });
 
   it("uses the units of the root", { timeout: 5000 }, () => {
@@ -48,7 +51,7 @@ describe("usePeriod()", () => {
       units: temporalUnits({ weekStartsOn: SUNDAY }),
     });
 
-    expect(week.value.start).toStrictEqual(new Date("2023-12-31T00:00:00"));
+    expect(week.value.start).toStrictEqual(date("2023-12-31"));
   });
 
   it("throws outside MinutaRoot", { timeout: 5000 }, () => {
@@ -80,7 +83,7 @@ describe("usePeriod() reactivity", () => {
     minuta.browse(minuta.shift(year.value, ONE_YEAR));
 
     expect(runs).toHaveLength(TWO_RUNS);
-    expect(year.value.start.getFullYear()).toBe(YEAR_2025);
+    expect(year.value.start.year).toBe(YEAR_2025);
   });
 });
 
@@ -98,9 +101,9 @@ describe("usePeriod() with several periods", () => {
     );
     const { minuta, month, week, year } = result;
     const info = computed(() => ({
-      month: month.value.start.getMonth(),
-      weekStart: week.value.start.getDate(),
-      year: year.value.start.getFullYear(),
+      month: month.value.start.month - MONTH_OFFSET,
+      weekStart: week.value.start.day,
+      year: year.value.start.year,
     }));
     expect(info.value).toStrictEqual({
       month: JANUARY,

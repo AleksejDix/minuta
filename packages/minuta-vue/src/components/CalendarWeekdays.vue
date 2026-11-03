@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CalendarWeekdaysProps } from "./types";
 import { computed } from "vue";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -10,20 +11,13 @@ defineSlots<Record<string, never>>();
 
 useCalendarContext();
 const minuta = useMinutaContext();
-const formatters = computed(() => {
-  const { timeZone } = minuta.units.value;
-  return {
-    full: new Intl.DateTimeFormat(locale, { timeZone, weekday: "long" }),
-    short: new Intl.DateTimeFormat(locale, { timeZone, weekday: "short" }),
-  };
-});
 // The column headers of the grid: short labels abbreviating the full weekday
 const weekdays = computed(() =>
   minuta
     .divide(minuta.period(minuta.browsing.value.start, "week"), "day")
     .map((day) => ({
-      full: formatters.value.full.format(day.start),
-      short: formatters.value.short.format(day.start),
+      full: formatPeriod(day, locale, { weekday: "long" }),
+      short: formatPeriod(day, locale, { weekday: "short" }),
     }))
 );
 </script>
