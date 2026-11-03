@@ -1,9 +1,11 @@
 import type { Temporal } from "@js-temporal/polyfill";
-import { Temporal as polyfill } from "@js-temporal/polyfill";
 
 type TemporalApi = typeof Temporal;
 
 const MONTH_INDEX_OFFSET = 1;
+
+const MISSING_TEMPORAL =
+  "minuta needs Temporal: await temporalReady() first, or run on Chrome 144+, Firefox 139+, Node 26+";
 
 /**
  * Check whether a scope object exposes a Temporal implementation.
@@ -15,16 +17,38 @@ function hasTemporal(scope: object): scope is { Temporal: TemporalApi } {
 }
 
 /**
- * Read the runtime's Temporal, falling back to `@js-temporal/polyfill`
- * without touching `globalThis`.
+ * Read the runtime's Temporal when computing, never at import.
  * @returns The Temporal namespace
+ * @throws {Error} When the runtime has no Temporal and `temporalReady()` has not installed the polyfill
  */
 function getTemporal(): TemporalApi {
   const scope: object = globalThis;
   if (hasTemporal(scope)) {
     return scope.Temporal;
   }
-  return polyfill;
+  throw new Error(MISSING_TEMPORAL);
+}
+
+/**
+ * Make Temporal available before minuta computes with it. Does nothing where
+ * the runtime has Temporal (Chrome and Edge 144+, Firefox 139+, Node 26+);
+ * elsewhere it loads `@js-temporal/polyfill` in its own chunk and installs it
+ * on `globalThis`. Await it once, before anything renders.
+ *
+ * @example
+ * import { temporalReady, temporalUnits } from "@aleksejdix/minuta/temporal";
+ *
+ * await temporalReady();
+ * const units = temporalUnits();
+ *
+ * @returns Resolves once `globalThis.Temporal` exists
+ */
+async function temporalReady(): Promise<void> {
+  if (hasTemporal(globalThis)) {
+    return;
+  }
+  const { Temporal: polyfill } = await import("@js-temporal/polyfill");
+  Object.assign(globalThis, { Temporal: polyfill });
 }
 
 /**
@@ -40,4 +64,4 @@ function toPlainDate(date: Readonly<Date>): Temporal.PlainDate {
   });
 }
 
-export { getTemporal, toPlainDate };
+export { getTemporal, temporalReady, toPlainDate };

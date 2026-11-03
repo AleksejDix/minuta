@@ -1,3 +1,5 @@
-import { Temporal } from "@js-temporal/polyfill";
+import { beforeAll } from "vitest";
+import { temporalReady } from "./packages/minuta/src/adapters/temporal/temporal-api.ts";
 
-globalThis.Temporal = Temporal;
+// Node 24 has no Temporal: install the polyfill the way apps do
+beforeAll(temporalReady);

@@ -13,7 +13,7 @@ import type { WeekOptions } from "#src/weekday";
 import { adapterUnits } from "#src/adapters/adapter-units";
 
 /**
- * Unit specs for every unit, computed with the TC39 Temporal API (falls back to `@js-temporal/polyfill` when the runtime has no Temporal, leaving `globalThis` alone). Pass the result to
+ * Unit specs for every unit, computed with the TC39 Temporal API (reads the runtime's Temporal when computing; where it is missing, `await temporalReady()` first). Pass the result to
  * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
  * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
  * (`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets

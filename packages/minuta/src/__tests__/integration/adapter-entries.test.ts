@@ -31,6 +31,25 @@ const ADAPTER_ENTRIES: readonly AdapterEntry[] = [
   ["moment", "momentUnits", momentUnits],
 ];
 
+// Exports an entry has besides its factory
+const EXTRA_EXPORTS: ReadonlyMap<string, readonly string[]> = new Map([
+  ["temporal", ["temporalReady"]],
+]);
+
+/**
+ * Every name an entry should export.
+ *
+ * @param entry - The entry's file name
+ * @param factoryName - The name of its units factory
+ * @returns The factory's name and the entry's other exports
+ */
+function expectedExports(
+  entry: string,
+  factoryName: string
+): ReadonlySet<string> {
+  return new Set([factoryName, ...(EXTRA_EXPORTS.get(entry) ?? [])]);
+}
+
 /**
  * Load a module namespace as a name → value map.
  *
@@ -53,13 +72,15 @@ const SETTINGS: ReadonlySet<string> = new Set([
 
 describe("export verification: adapter entries", () => {
   it.each(ADAPTER_ENTRIES)(
-    "%s entry should export only %s",
+    "%s entry should export %s and nothing else of its own",
     { timeout: 5000 },
     async (entry: string, factoryName: string, factory: () => AllUnits) => {
       expect.hasAssertions();
       const namespace: unknown = await import(`#src/${entry}`);
       const entryExports = exportsOf(namespace);
-      expect([...entryExports.keys()]).toStrictEqual([factoryName]);
+      expect(new Set(entryExports.keys())).toStrictEqual(
+        expectedExports(entry, factoryName)
+      );
       expect(entryExports.get(factoryName)).toBe(factory);
     }
   );
