@@ -2,8 +2,6 @@ import type { Temporal } from "@js-temporal/polyfill";
 
 type TemporalApi = typeof Temporal;
 
-const MONTH_INDEX_OFFSET = 1;
-
 const MISSING_TEMPORAL =
   "minuta needs Temporal: await temporalReady() first, or run on Chrome 144+, Firefox 139+, Node 26+";
 
@@ -51,17 +49,4 @@ async function temporalReady(): Promise<void> {
   Object.assign(globalThis, { Temporal: polyfill });
 }
 
-/**
- * Convert a local Date to a Temporal PlainDate (local calendar date).
- * @param date - The local Date
- * @returns The matching PlainDate
- */
-function toPlainDate(date: Readonly<Date>): Temporal.PlainDate {
-  return getTemporal().PlainDate.from({
-    day: date.getDate(),
-    month: date.getMonth() + MONTH_INDEX_OFFSET,
-    year: date.getFullYear(),
-  });
-}
-
-export { getTemporal, temporalReady, toPlainDate };
+export { getTemporal, temporalReady };

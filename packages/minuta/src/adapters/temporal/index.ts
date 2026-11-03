@@ -1,6 +1,5 @@
-// Temporal API Adapter Plugin
-// Modular functional adapter using TC39 Temporal API
+// Temporal units: every built-in unit computed with the TC39 Temporal API
 
-// Re-export the main adapter functionality
 export { temporalUnits } from "./adapter";
+export type { TemporalUnitsOptions } from "./adapter";
 export { temporalReady } from "./temporal-api";

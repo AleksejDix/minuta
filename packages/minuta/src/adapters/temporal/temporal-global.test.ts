@@ -1,9 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { date } from "#src/test/temporal";
 
-const YEAR = 2026;
-const MARCH = 2;
-const MID_MONTH = 15;
-const FIRST_DAY = 1;
 const ONE_MONTH = 1;
 
 const MISSING_TEMPORAL =
@@ -26,9 +23,8 @@ describe("minuta/temporal reads globalThis.Temporal", () => {
       Object.getOwnPropertyDescriptor(globalThis, "Temporal")
     ).toStrictEqual(before);
     const units = temporalUnits();
-    const march = new Date(YEAR, MARCH, MID_MONTH);
-    expect(units.month.startOf(march)).toStrictEqual(
-      new Date(YEAR, MARCH, FIRST_DAY)
+    expect(units.month.startOf(date("2026-03-15")).toString()).toBe(
+      "2026-03-01"
     );
   });
 
@@ -41,7 +37,7 @@ describe("minuta/temporal reads globalThis.Temporal", () => {
       Reflect.deleteProperty(globalThis, "Temporal");
       const units = temporalUnits();
       expect(() =>
-        units.month.add(new Date(YEAR, MARCH, MID_MONTH), ONE_MONTH)
+        units.month.diff(date("2026-03-15"), date("2026-04-15"))
       ).toThrow(MISSING_TEMPORAL);
     }
   );
@@ -60,9 +56,9 @@ describe("temporalReady", () => {
       await temporalReady();
       expect("Temporal" in globalThis).toBe(true);
       const units = temporalUnits();
-      expect(
-        units.month.add(new Date(YEAR, MARCH, MID_MONTH), ONE_MONTH)
-      ).toStrictEqual(new Date(YEAR, MARCH + ONE_MONTH, MID_MONTH));
+      expect(units.month.add(date("2026-03-15"), ONE_MONTH).toString()).toBe(
+        "2026-04-15"
+      );
     }
   );
 
