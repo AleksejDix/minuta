@@ -1,15 +1,23 @@
-import type { Unit, UnitSpec, Units } from "#src/types";
+import type {
+  DateSpec,
+  DateUnit,
+  PlainDate,
+  TimeSpec,
+  Unit,
+  Units,
+  ZonedDateTime,
+} from "#src/types";
 import {
   assertPositiveInteger,
-  assertValidDate,
-  endFrom,
+  nextStart,
   specFor,
+  timeSpecFor,
 } from "#src/units";
+import { compare, isPlainDate } from "#src/values";
+import { getTemporal } from "#src/adapters/temporal/temporal-api";
 
 const DEFAULT_STEP = 1;
-const ONE = 1;
-// Midday UTC lies in 1970 and in the same week in every time zone
-const EPOCH = new Date("1970-01-01T12:00:00Z");
+const EQUAL = 0;
 
 /** How `snap` / `snapWith` picks the boundary. */
 type SnapMode = "ceil" | "floor" | "nearest";
@@ -25,7 +33,7 @@ type SnapOptions = Readonly<{
 }>;
 
 // Steps count from the start of the enclosing unit, so they follow the clock
-const ENCLOSING: Readonly<Partial<Record<Unit, Unit>>> = {
+const ENCLOSING: Readonly<Partial<Record<string, Unit>>> = {
   day: "month",
   hour: "day",
   minute: "hour",
@@ -34,100 +42,241 @@ const ENCLOSING: Readonly<Partial<Record<Unit, Unit>>> = {
   second: "minute",
 };
 
-type Bounds = Readonly<{ floor: Readonly<Date>; next: Readonly<Date> }>;
+// Midday UTC on Jan 1 1970 lies in the same week in every time zone
+const EPOCH_INSTANT = "1970-01-01T12:00:00Z";
+const EPOCH_DATE = "1970-01-01";
 
-type StepContext = Readonly<{
-  date: Readonly<Date>;
-  spec: UnitSpec;
-  step: number;
-  unit: Unit;
-  units: Units;
+type Value = PlainDate | ZonedDateTime;
+
+/** A unit's boundaries around a value. */
+type Bounds<Kind extends Value> = Readonly<{ floor: Kind; next: Kind }>;
+
+/** A unit on one kind of value: its start, the next start, and counting. */
+type Line<Kind extends Value> = Readonly<{
+  add: (value: Kind, amount: number) => Kind;
+  diff: (from: Kind, to: Kind) => number;
+  next: (start: Kind) => Kind;
+  startOf: (value: Kind) => Kind;
 }>;
 
-/** Where steps are counted from, and where the last one ends at the latest. */
-type Grid = Readonly<{ anchor: Readonly<Date>; limit?: Readonly<Date> }>;
+type Snap<Kind extends Value> = Readonly<{
+  /** How far one value lies before another, to find the nearest */
+  distance: (from: Kind, to: Kind) => bigint;
+  /** Where steps count from without an enclosing unit */
+  epoch: Kind;
+  line: Line<Kind>;
+  mode: SnapMode;
+  /** The enclosing unit's line, or none for weeks and years */
+  outer: Line<Kind> | undefined;
+  step: number;
+  value: Kind;
+}>;
 
-/*
- * The next unit starts the moment after this one ends: one unit after a
- * day that starts at 01:00 (Azores, Mar 29 2026) is 01:00, an hour into a
- * day that starts at midnight.
- */
-function unitBounds(spec: UnitSpec, date: Readonly<Date>): Bounds {
-  const floor = spec.startOf(date);
-  return { floor, next: new Date(endFrom(spec, floor).getTime() + ONE) };
+type Request<Kind extends Value> = Readonly<{
+  mode: SnapMode;
+  step: number;
+  unit: Unit;
+  value: Kind;
+}>;
+
+function dateLine(spec: DateSpec): Line<PlainDate> {
+  return {
+    add: spec.add,
+    diff: spec.diff,
+    next: (start) => spec.add(start, DEFAULT_STEP),
+    startOf: spec.startOf,
+  };
 }
 
-function gridOf(ctx: StepContext): Grid {
-  const enclosing = ENCLOSING[ctx.unit];
+function timeLine(spec: TimeSpec): Line<ZonedDateTime> {
+  return {
+    add: spec.add,
+    diff: spec.diff,
+    next: (start) => nextStart(spec, start),
+    startOf: spec.startOf,
+  };
+}
+
+function daysBetween(from: PlainDate, to: PlainDate): bigint {
+  return BigInt(from.until(to, { largestUnit: "day" }).days);
+}
+
+function nanosecondsBetween(from: ZonedDateTime, to: ZonedDateTime): bigint {
+  return to.epochNanoseconds - from.epochNanoseconds;
+}
+
+// Where steps count from: the enclosing unit's start, else the epoch's unit
+function anchorOf<Kind extends Value>(snap: Snap<Kind>): Kind {
+  if (snap.outer === undefined) {
+    return snap.line.startOf(snap.epoch);
+  }
+  return snap.outer.startOf(snap.value);
+}
+
+// The bounds, with `next` no later than the end of the enclosing unit
+function capped<Kind extends Value>(
+  outer: Line<Kind> | undefined,
+  anchor: Kind,
+  bounds: Bounds<Kind>
+): Bounds<Kind> {
+  if (outer === undefined) {
+    return bounds;
+  }
+  const limit = outer.next(anchor);
+  if (compare(bounds.next, limit) > EQUAL) {
+    return { floor: bounds.floor, next: limit };
+  }
+  return bounds;
+}
+
+// The boundaries every `step` units from the anchor, capped at the enclosing unit's end
+function steppedBounds<Kind extends Value>(snap: Snap<Kind>): Bounds<Kind> {
+  const { line, step } = snap;
+  const anchor = anchorOf(snap);
+  const first = Math.floor(line.diff(anchor, snap.value) / step) * step;
+  const floor = line.add(anchor, first);
+  const next = line.add(anchor, first + step);
+  return capped(snap.outer, anchor, { floor, next });
+}
+
+function boundsOf<Kind extends Value>(snap: Snap<Kind>): Bounds<Kind> {
+  if (snap.step === DEFAULT_STEP) {
+    const floor = snap.line.startOf(snap.value);
+    return { floor, next: snap.line.next(floor) };
+  }
+  return steppedBounds(snap);
+}
+
+function snapped<Kind extends Value>(snap: Snap<Kind>): Kind {
+  const { mode, value } = snap;
+  const { floor, next } = boundsOf(snap);
+  if (compare(floor, value) === EQUAL) {
+    return value;
+  }
+  if (mode === "floor") {
+    return floor;
+  }
+  if (
+    mode === "ceil" ||
+    snap.distance(floor, value) >= snap.distance(value, next)
+  ) {
+    return next;
+  }
+  return floor;
+}
+
+// The enclosing unit's spec on dates, when there is one
+function outerDateLine(units: Units, unit: Unit): Line<PlainDate> | undefined {
+  const enclosing = ENCLOSING[unit];
   if (enclosing === undefined) {
-    // No enclosing unit (week, year): count from 1970
-    return { anchor: ctx.spec.startOf(EPOCH) };
+    return undefined;
   }
-  const outer = specFor(ctx.units, enclosing);
-  const anchor = outer.startOf(ctx.date);
-  // The last step of a month or day ends where the next one begins
-  return { anchor, limit: outer.add(anchor, ONE) };
+  const spec: DateSpec | TimeSpec = specFor(units, enclosing);
+  if (spec.kind === "time") {
+    return undefined;
+  }
+  return dateLine(spec);
 }
 
-function stepBounds(ctx: StepContext): Bounds {
-  const { date, spec, step } = ctx;
-  const { anchor, limit } = gridOf(ctx);
-  const first = Math.floor(spec.diff(anchor, date) / step) * step;
-  const next = spec.add(anchor, first + step);
-  if (limit !== undefined && next > limit) {
-    return { floor: spec.add(anchor, first), next: limit };
+// The enclosing unit's spec on moments, when there is one
+function outerTimeLine(
+  units: Units,
+  unit: Unit
+): Line<ZonedDateTime> | undefined {
+  const enclosing = ENCLOSING[unit];
+  if (enclosing === undefined) {
+    return undefined;
   }
-  return { floor: spec.add(anchor, first), next };
+  return timeLine(timeSpecFor(units, enclosing));
 }
 
-function boundsOf(ctx: StepContext): Bounds {
-  if (ctx.step === DEFAULT_STEP) {
-    return unitBounds(ctx.spec, ctx.date);
-  }
-  return stepBounds(ctx);
+function snapDate(
+  units: Units,
+  spec: DateSpec,
+  request: Request<PlainDate>
+): PlainDate {
+  return snapped({
+    distance: daysBetween,
+    epoch: getTemporal().PlainDate.from(EPOCH_DATE),
+    line: dateLine(spec),
+    mode: request.mode,
+    outer: outerDateLine(units, request.unit),
+    step: request.step,
+    value: request.value,
+  });
 }
 
-function pick(date: Readonly<Date>, bounds: Bounds, mode: SnapMode): Date {
-  const { floor, next } = bounds;
-  const time = date.getTime();
-  if (mode === "floor" || floor.getTime() === time) {
-    return new Date(floor);
-  }
-  if (mode === "ceil" || time - floor.getTime() >= next.getTime() - time) {
-    return new Date(next);
-  }
-  return new Date(floor);
+function snapMoment(
+  units: Units,
+  request: Request<ZonedDateTime>
+): ZonedDateTime {
+  const { unit, value } = request;
+  return snapped({
+    distance: nanosecondsBetween,
+    epoch: getTemporal()
+      .Instant.from(EPOCH_INSTANT)
+      .toZonedDateTimeISO(value.timeZoneId),
+    line: timeLine(timeSpecFor(units, unit)),
+    mode: request.mode,
+    outer: outerTimeLine(units, unit),
+    step: request.step,
+    value,
+  });
 }
 
 /**
- * Snap a date to a boundary of `step` units: the unit's start, or every
- * `step`-th one counted from the start of the enclosing unit (minutes from
- * the hour, hours from the day, days from the month, months and quarters
- * from the year; weeks and years from 1970).
+ * Snap a date or a moment to a boundary of `step` units: the unit's start,
+ * or every `step`-th one counted from the start of the enclosing unit
+ * (minutes from the hour, hours from the day, days from the month, months
+ * and quarters from the year; weeks and years from 1970). A date snaps to
+ * dates; a moment snaps to moments in its zone, for date units to the start
+ * of a day.
  *
  * @example
- * snapWith(units, new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
- * snapWith(units, new Date(2026, 2, 15, 10, 37), "day", { mode: "ceil" }); // Mar 16
- * snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // the week's start
+ * snapWith(units, Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), "minute", { step: 15 }); // 10:30
+ * snapWith(units, Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), "day", { mode: "ceil" }); // Mar 16 00:00
+ * snapWith(units, Temporal.PlainDate.from("2026-03-18"), "week", { mode: "floor" }); // 2026-03-16
  *
  * @param units - Available unit specs
- * @param date - The date to snap
+ * @param value - The date or moment to snap
  * @param unit - The unit whose boundaries to snap to
  * @param options - `step` (units between boundaries) and `mode`
- * @returns The boundary; `date` itself when it is one
+ * @returns The boundary, of the value's kind; `value` itself when it is one
+ * @throws {TypeError} For a date and a time unit: dates snap to date units
  */
-// oxlint-disable-next-line eslint/max-params -- Context-first core signature: (units, date, unit, options)
+// oxlint-disable-next-line eslint/max-params -- Context-first core signature: (units, value, unit, options)
 function snapWith(
   units: Units,
-  date: Readonly<Date>,
+  value: PlainDate,
+  unit: DateUnit,
+  options?: SnapOptions
+): PlainDate;
+// oxlint-disable-next-line eslint/max-params -- Context-first core signature: (units, value, unit, options)
+function snapWith(
+  units: Units,
+  value: ZonedDateTime,
+  unit: Unit,
+  options?: SnapOptions
+): ZonedDateTime;
+// oxlint-disable-next-line eslint/max-params -- Context-first core signature: (units, value, unit, options)
+function snapWith(
+  units: Units,
+  value: PlainDate | ZonedDateTime,
   unit: Unit,
   options: SnapOptions = {}
-): Date {
-  assertValidDate(date, "date");
+): PlainDate | ZonedDateTime {
   const { mode = "nearest", step = DEFAULT_STEP } = options;
   assertPositiveInteger(step, "snapWith() step");
-  const spec = specFor(units, unit);
-  return pick(date, boundsOf({ date, spec, step, unit, units }), mode);
+  if (!isPlainDate(value)) {
+    return snapMoment(units, { mode, step, unit, value });
+  }
+  const spec: DateSpec | TimeSpec = specFor(units, unit);
+  if (spec.kind === "time") {
+    throw new TypeError(
+      `A date snaps to date units, not to "${unit}": snap a ZonedDateTime instead.`
+    );
+  }
+  return snapDate(units, spec, { mode, step, unit, value });
 }
 
 export { snapWith };

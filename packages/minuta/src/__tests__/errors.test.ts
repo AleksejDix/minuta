@@ -3,6 +3,7 @@ import { MinutaError } from "#src/units";
 import { date } from "#src/test/temporal";
 import { divideWith } from "#src/operations/divide";
 import { periodWith } from "#src/operations/period";
+import { snapWith } from "#src/operations/snap";
 import { temporalUnits } from "#src/adapters/temporal/index";
 
 const MAX_PERIODS = 10;
@@ -62,6 +63,9 @@ describe("option errors", () => {
       expect(() =>
         divideWith(units, day, "hour", { maxPeriods: step })
       ).toThrow(`${MinutaError.InvalidOption}: divideWith() maxPeriods ${fix}`);
+      expect(() =>
+        snapWith(units, date("2026-01-01"), "day", { step })
+      ).toThrow(`${MinutaError.InvalidOption}: snapWith() step ${fix}`);
     }
   );
 });
