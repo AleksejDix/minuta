@@ -1,19 +1,27 @@
 import type { Period } from "#src/types";
+import { compare } from "#src/values";
+import { sameKind } from "./kinds";
+
+const EQUAL = 0;
 
 /**
- * Checks if two periods share any time.
+ * Whether two periods share any time. Periods that only touch (one ends
+ * where the other starts) do not overlap. Next to a time period, a date
+ * period becomes moments in that period's zone.
  *
  * @example
- * overlaps(range(new Date(2026, 2, 1), new Date(2026, 2, 10)), range(new Date(2026, 2, 5), new Date(2026, 2, 20))); // true
+ * overlaps(march, april); // false: they touch
+ * overlaps(march, period(Temporal.PlainDate.from("2026-03-31"), "week")); // true
  *
  * @param first - The first period
  * @param second - The second period
  * @returns True when the periods overlap
  */
 function overlaps(first: Period, second: Period): boolean {
+  const [left, right] = sameKind(first, second);
   return (
-    first.start.getTime() <= second.end.getTime() &&
-    second.start.getTime() <= first.end.getTime()
+    compare(left.start, right.end) < EQUAL &&
+    compare(right.start, left.end) < EQUAL
   );
 }
 

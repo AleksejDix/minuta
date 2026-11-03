@@ -3,8 +3,15 @@
  * so a missing unit fails the same way everywhere.
  */
 
-import type { SpecOf, Unit, Units } from "#src/types";
-import { runtimeTimeZone } from "#src/values";
+import type {
+  DateSpec,
+  SpecOf,
+  TimeSpec,
+  Unit,
+  Units,
+  ZonedDateTime,
+} from "#src/types";
+import { compare, runtimeTimeZone } from "#src/values";
 
 const ONE = 1;
 
@@ -68,6 +75,97 @@ function timeZoneOf(units: Units): string {
   return units.timeZone ?? runtimeTimeZone();
 }
 
+const EQUAL = 0;
+
+// Whether a moment is the start of its own day in its zone
+function isStartOfDay(date: ZonedDateTime): boolean {
+  const start = date
+    .toPlainDate()
+    .toZonedDateTime({ timeZone: date.timeZoneId });
+  return compare(start, date) === EQUAL;
+}
+
+/**
+ * A date spec working on moments, in each moment's own zone. Unit starts are
+ * the start of their first day, which is not midnight where the clocks skip
+ * it; `add` keeps the wall time, except from the start of a day, where it
+ * gives the start of the day it lands on.
+ *
+ * @param spec - A date unit's spec
+ * @returns The same unit on moments
+ */
+function zonedDateSpec(spec: DateSpec): TimeSpec {
+  /**
+   * The moment `amount` units later.
+   *
+   * @param date - Any moment
+   * @param amount - How many units
+   * @returns The moment
+   */
+  function add(date: ZonedDateTime, amount: number): ZonedDateTime {
+    const timeZone = date.timeZoneId;
+    const day = spec.add(date.toPlainDate(), amount);
+    if (isStartOfDay(date)) {
+      return day.toZonedDateTime({ timeZone });
+    }
+    return day.toZonedDateTime({ plainTime: date.toPlainTime(), timeZone });
+  }
+  return {
+    add,
+    diff: (from, to) => {
+      let count = spec.diff(from.toPlainDate(), to.toPlainDate());
+      const sign = Math.sign(compare(to, from));
+      while (sign * compare(add(from, count), to) > EQUAL) {
+        count -= sign;
+      }
+      while (sign * compare(add(from, count + sign), to) <= EQUAL) {
+        count += sign;
+      }
+      return count;
+    },
+    kind: "time",
+    startOf: (date) =>
+      spec
+        .startOf(date.toPlainDate())
+        .toZonedDateTime({ timeZone: date.timeZoneId }),
+  };
+}
+
+/**
+ * The spec for `unit` working on moments: a time unit's own spec, or a date
+ * unit's spec in each moment's zone (see `zonedDateSpec`).
+ *
+ * @param units - Available unit specs
+ * @param unit - Unit to look up
+ * @returns A spec on moments
+ * @throws {RangeError} `UNIT_NOT_SUPPORTED` when `units` has no spec for `unit`
+ */
+function timeSpecFor(units: Units, unit: Unit): TimeSpec {
+  const spec: DateSpec | TimeSpec = specFor(units, unit);
+  if (spec.kind === "time") {
+    return spec;
+  }
+  return zonedDateSpec(spec);
+}
+
+/**
+ * Where the unit after the one starting at `start` begins. For time units
+ * that is the next wall-clock boundary or the zone's next clock change,
+ * whichever comes first, so a unit never spans a clock change.
+ *
+ * @param spec - The unit's spec on moments
+ * @param start - A unit start
+ * @returns The next unit's start
+ */
+function nextStart(spec: TimeSpec, start: ZonedDateTime): ZonedDateTime {
+  const next = spec.startOf(spec.add(start, ONE));
+  const change = start.getTimeZoneTransition("next");
+  if (change !== null && compare(change, next) < EQUAL) {
+    return change;
+  }
+  return next;
+}
+
 /**
  * Throw an `INVALID_OPTION` `RangeError` unless `value` is a positive whole
  * number.
@@ -84,5 +182,12 @@ function assertPositiveInteger(value: number, option: string): void {
   }
 }
 
-export { MinutaError, assertPositiveInteger, specFor, timeZoneOf };
+export {
+  MinutaError,
+  assertPositiveInteger,
+  nextStart,
+  specFor,
+  timeSpecFor,
+  timeZoneOf,
+};
 export type { MinutaErrorCode };

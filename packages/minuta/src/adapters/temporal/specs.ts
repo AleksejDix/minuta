@@ -120,10 +120,21 @@ const year: DateSpec = {
   startOf: (date) => date.with({ day: FIRST, month: FIRST }),
 };
 
+// The later of two moments
+function laterOf(left: ZonedDateTime, right: ZonedDateTime): ZonedDateTime {
+  if (compare(left, right) < EQUAL) {
+    return right;
+  }
+  return left;
+}
+
 /**
- * A time spec of a fixed length. Starts are wall-clock boundaries, so hours
- * start at full hours in zones offset by 30 or 45 minutes; steps are exact
- * time, so the repeated hour of a fall-back night is two hours.
+ * A time spec of a fixed length that follows the wall clock. A unit starts
+ * at its wall-clock start, or at the zone's last clock change when that
+ * comes later: where the clocks jump from 1:59 to 2:30 (Lord Howe), the hour
+ * from 2:30 to 3:00 is the half of hour 2 that exists, and where they go
+ * back half an hour, the repeated half hour is a unit of its own. Steps and
+ * counts are exact time.
  *
  * @param smallestUnit - The Temporal unit
  * @returns The spec
@@ -134,7 +145,17 @@ function fixedSpec(smallestUnit: "hour" | "minute" | "second"): TimeSpec {
     add: (date, amount) => date.add({ [field]: amount }),
     diff: (from, to) => from.until(to, { largestUnit: smallestUnit })[field],
     kind: "time",
-    startOf: (date) => date.round({ roundingMode: "floor", smallestUnit }),
+    startOf: (date) => {
+      const wallStart = date.round({ roundingMode: "floor", smallestUnit });
+      // The last clock change at or before `date`
+      const change = date
+        .add({ nanoseconds: ONE })
+        .getTimeZoneTransition("previous");
+      if (change === null) {
+        return wallStart;
+      }
+      return laterOf(wallStart, change);
+    },
   };
 }
 
