@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import path from "node:path";
@@ -46,4 +47,7 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
   ],
+  test: {
+    setupFiles: [fromRoot("../../vitest.setup.ts")],
+  },
 });
