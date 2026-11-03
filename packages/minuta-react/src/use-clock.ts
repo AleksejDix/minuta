@@ -1,8 +1,13 @@
+import type { Minuta, ZonedDateTime } from "@aleksejdix/minuta/core";
 import { useEffect, useState } from "react";
-import type { Minuta } from "@aleksejdix/minuta/core";
+import { currentMoment } from "./now";
 
-function currentDate(): Date {
-  return new Date();
+// The zone the operations' units read moments in
+function timeZoneOf(operations: Minuta): string {
+  return (
+    operations.units.timeZone ??
+    new Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
 }
 
 function keepClock(): void {
@@ -10,23 +15,26 @@ function keepClock(): void {
 }
 
 /**
- * The current date, re-read at the start of every day of `operations`'
- * units, so "today" never goes stale. Inactive while `isControlled`.
+ * The current moment in the units' zone, re-read at the start of every day
+ * there, so "today" never goes stale. Inactive while `isControlled`.
  *
  * @param operations - The bound operations whose days to follow
  * @param isControlled - Whether the caller passes `now` itself
- * @returns The date the clock was last read
+ * @returns The moment the clock was last read
  */
-function useClock(operations: Minuta, isControlled: boolean): Readonly<Date> {
-  const [clock, setClock] = useState<Readonly<Date>>(currentDate);
+function useClock(operations: Minuta, isControlled: boolean): ZonedDateTime {
+  const [clock, setClock] = useState<ZonedDateTime>(() =>
+    currentMoment(timeZoneOf(operations))
+  );
   useEffect(() => {
     if (isControlled) {
       return keepClock;
     }
-    const nextDay = operations.next(operations.period(clock, "day")).start;
+    const tomorrow = operations.next(operations.period(clock, "day")).start;
+    const nextDay = tomorrow.toZonedDateTime({ timeZone: clock.timeZoneId });
     const timer = setTimeout(() => {
-      setClock(currentDate());
-    }, nextDay.getTime() - Date.now());
+      setClock(currentMoment(timeZoneOf(operations)));
+    }, nextDay.epochMilliseconds - Date.now());
     return (): void => {
       clearTimeout(timer);
     };

@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import { useMemo } from "react";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -22,21 +23,15 @@ const DEFAULT_LOCALE = "en-US";
 function CalendarWeekdays({
   locale = DEFAULT_LOCALE,
 }: CalendarWeekdaysProps): JSX.Element {
-  const { browsing, divide, period, units } = useMinutaContext();
+  const { browsing, divide, period } = useMinutaContext();
 
   const labels = useMemo((): readonly WeekdayLabel[] => {
-    const { timeZone } = units;
-    const full = new Intl.DateTimeFormat(locale, { timeZone, weekday: "long" });
-    const short = new Intl.DateTimeFormat(locale, {
-      timeZone,
-      weekday: "short",
-    });
     const week = period(browsing.start, "week");
     return divide(week, "day").map((day) => ({
-      full: full.format(day.start),
-      short: short.format(day.start),
+      full: formatPeriod(day, locale, { weekday: "long" }),
+      short: formatPeriod(day, locale, { weekday: "short" }),
     }));
-  }, [browsing, divide, locale, period, units]);
+  }, [browsing, divide, locale, period]);
 
   return (
     <thead className="weekday-grid">

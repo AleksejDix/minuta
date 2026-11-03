@@ -3,7 +3,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { at } from "#src/test-temporal";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const MARCH_DAYS = 31;
 const FIRST_DAY = 1;
@@ -12,7 +13,7 @@ const MARCH_NUMBERS: readonly string[] = Array.from(
   (_unused, index) => String(index + FIRST_DAY)
 );
 // UTC+14: far from every runtime zone the tests run in
-const units = dateFnsTzUnits({ timeZone: "Pacific/Kiritimati" });
+const units = temporalUnits({ timeZone: "Pacific/Kiritimati" });
 
 describe("calendar parts with time-zone units", () => {
   afterEach(cleanup);
@@ -20,7 +21,10 @@ describe("calendar parts with time-zone units", () => {
   it("numbers the days in the units' time zone", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { container } = render(
-      <CalendarRoot date={new Date("2026-03-15T00:00:00Z")} units={units}>
+      <CalendarRoot
+        date={at("2026-03-15T00:00:00Z", "Pacific/Kiritimati")}
+        units={units}
+      >
         <CalendarHeader />
         <CalendarGrid />
       </CalendarRoot>

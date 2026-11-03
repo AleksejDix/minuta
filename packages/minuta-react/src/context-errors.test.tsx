@@ -3,6 +3,7 @@ import { render, renderHook } from "@testing-library/react";
 import { CalendarDay } from "./components/CalendarDay";
 import { CalendarHeader } from "./components/CalendarHeader";
 import { MinutaRoot } from "./minuta-root";
+import { date } from "./test-temporal";
 import { period } from "@aleksejdix/minuta";
 import { useMinutaContext } from "./minuta-context";
 import { usePeriod } from "./use-period";
@@ -65,7 +66,7 @@ describe("calendar parts outside their root", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const day = period(new Date("2024-01-15T00:00:00"), "day");
+      const day = period(date("2024-01-15"), "day");
 
       suppressErrorOutput(() => {
         expect(() => {

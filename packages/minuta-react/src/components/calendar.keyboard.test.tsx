@@ -5,6 +5,7 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { Period } from "@aleksejdix/minuta/core";
 import type { RenderResult } from "@testing-library/react";
+import { date } from "#src/test-temporal";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type OnSelect = (day: Period) => void;
@@ -88,11 +89,7 @@ function renderCalendar(
   onSelect?: OnSelect
 ): RenderResult {
   return render(
-    <CalendarRoot
-      date={new Date("2024-01-15T00:00:00")}
-      onSelect={onSelect}
-      units={units}
-    >
+    <CalendarRoot date={date("2024-01-15")} onSelect={onSelect} units={units}>
       <CalendarHeader />
       <CalendarGrid />
     </CalendarRoot>

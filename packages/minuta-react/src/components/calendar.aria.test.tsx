@@ -1,21 +1,22 @@
+import type { Period, TimeValue } from "@aleksejdix/minuta/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { date as dateOf, now } from "#src/test-temporal";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import type { Period } from "@aleksejdix/minuta/core";
 import type { RenderResult } from "@testing-library/react";
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type Setup = Readonly<{
-  date?: Readonly<Date>;
+  date?: TimeValue;
   isDisabled?: (day: Period) => boolean;
   locale?: string;
   onSelect?: (day: Period) => void;
 }>;
 
-const JANUARY_15 = new Date("2024-01-15T00:00:00");
+const JANUARY_15 = dateOf("2024-01-15");
 const JANUARY_17 = "Wednesday, January 17, 2024";
 const GRID_ROWS = 7;
 const ONE = 1;
@@ -120,7 +121,7 @@ describe("calendar roving tabindex", () => {
 
   it("should start on today when it is shown", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const { container } = renderCalendar({ date: new Date() });
+    const { container } = renderCalendar({ date: now() });
 
     expect(tabbable(container).getAttribute("aria-current")).toBe("date");
   });

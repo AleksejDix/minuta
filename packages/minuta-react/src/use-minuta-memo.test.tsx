@@ -1,15 +1,17 @@
-import type { Unit, Units } from "@aleksejdix/minuta/core";
+import type { Unit, Units, ZonedDateTime } from "@aleksejdix/minuta/core";
 import { describe, expect, it } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
+import { zoned } from "./test-temporal";
 
 type Props = Readonly<{ unit: Unit; units: Units }>;
 
 const SUNDAY = 0;
+const WEEK = 7;
 
-function createTestDate(): Date {
-  return new Date("2024-01-15T12:30:45");
+function createTestDate(): ZonedDateTime {
+  return zoned("2024-01-15T12:30:45[Europe/Zurich]");
 }
 
 function renderWithProps(
@@ -56,7 +58,7 @@ describe("useMinuta() memoization", () => {
 
       expect(result.current.units).toBe(sundayUnits);
       expect(result.current.next).not.toBe(initial.next);
-      expect(result.current.browsing.start.getDay()).toBe(SUNDAY);
+      expect(result.current.browsing.start.dayOfWeek % WEEK).toBe(SUNDAY);
     }
   );
 

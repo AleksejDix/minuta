@@ -1,18 +1,21 @@
 import type { JSX, ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { MinutaRoot } from "./minuta-root";
+import type { ZonedDateTime } from "@aleksejdix/minuta/core";
 import { renderHook } from "@testing-library/react";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinutaContext } from "./minuta-context";
 import { withUnits } from "@aleksejdix/minuta/core";
+import { zoned } from "./test-temporal";
 
 type WrapperProps = Readonly<{ children: ReactNode }>;
 
 const SUNDAY = 0;
+const WEEK = 7;
 const UNITS = temporalUnits({ weekStartsOn: SUNDAY });
 
-function createTestDate(): Date {
-  return new Date("2024-01-15T12:30:45");
+function createTestDate(): ZonedDateTime {
+  return zoned("2024-01-15T12:30:45[Europe/Zurich]");
 }
 
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- ReactNode contains ReactElement<any>, which cannot be deeply readonly
@@ -38,7 +41,7 @@ describe("<MinutaRoot>", () => {
       expect(result.current.browsing).toStrictEqual(
         withUnits(UNITS).period(createTestDate(), "week")
       );
-      expect(result.current.browsing.start.getDay()).toBe(SUNDAY);
+      expect(result.current.browsing.start.dayOfWeek % WEEK).toBe(SUNDAY);
     }
   );
 });

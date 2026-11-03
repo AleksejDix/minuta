@@ -1,4 +1,5 @@
 import type { MinutaOptions, MinutaState } from "./types";
+import { date, zoned } from "./test-temporal";
 import { describe, expect, it } from "vitest";
 import type { RenderHookResult } from "@testing-library/react";
 import { act } from "react";
@@ -6,15 +7,17 @@ import { renderHook } from "@testing-library/react";
 import { useMinuta } from "./use-minuta";
 
 const SHIFT_STEPS = 5;
-const FEBRUARY = 1;
-const JUNE = 5;
+const LATER = 1;
+const EARLIER = -1;
+const FEBRUARY = 2;
+const JUNE = 6;
 const NEXT_YEAR = 2025;
 
 function renderMinuta(
   options: MinutaOptions = {}
 ): RenderHookResult<MinutaState, unknown> {
-  const date = new Date("2024-01-15T12:30:45");
-  return renderHook(() => useMinuta({ date, unit: options.unit }));
+  const browsed = zoned("2024-01-15T12:30:45[Europe/Zurich]");
+  return renderHook(() => useMinuta({ date: browsed, unit: options.unit }));
 }
 
 describe("useMinuta() browse", () => {
@@ -27,10 +30,11 @@ describe("useMinuta() browse", () => {
       result.current.browse(result.current.next(result.current.browsing));
     });
 
-    expect(result.current.browsing.start.getTime()).toBeGreaterThan(
-      initialBrowsing.start.getTime()
-    );
-    expect(result.current.browsing.start.getMonth()).toBe(FEBRUARY);
+    const before = initialBrowsing.start.toString();
+    const after = result.current.browsing.start.toString();
+    // ISO dates compare like the dates they write
+    expect(Math.sign(after.localeCompare(before))).toBe(LATER);
+    expect(result.current.browsing.start.month).toBe(FEBRUARY);
   });
 
   it("should browse to the previous period", { timeout: 5000 }, () => {
@@ -42,9 +46,9 @@ describe("useMinuta() browse", () => {
       result.current.browse(result.current.previous(result.current.browsing));
     });
 
-    expect(result.current.browsing.start.getTime()).toBeLessThan(
-      initialBrowsing.start.getTime()
-    );
+    const before = initialBrowsing.start.toString();
+    const after = result.current.browsing.start.toString();
+    expect(Math.sign(after.localeCompare(before))).toBe(EARLIER);
   });
 });
 
@@ -59,7 +63,7 @@ describe("useMinuta() browse with shift", () => {
       );
     });
 
-    expect(result.current.browsing.start.getMonth()).toBe(JUNE);
+    expect(result.current.browsing.start.month).toBe(JUNE);
   });
 
   it("should keep browse stable across renders", { timeout: 5000 }, () => {
@@ -82,17 +86,14 @@ describe("useMinuta() browsing another period", () => {
     () => {
       expect.hasAssertions();
       const { result } = renderMinuta();
-      const otherPeriod = result.current.period(
-        new Date("2025-01-01T00:00:00"),
-        "month"
-      );
+      const otherPeriod = result.current.period(date("2025-01-01"), "month");
 
       act(() => {
         result.current.browse(result.current.next(otherPeriod));
       });
 
-      expect(result.current.browsing.start.getMonth()).toBe(FEBRUARY);
-      expect(result.current.browsing.start.getFullYear()).toBe(NEXT_YEAR);
+      expect(result.current.browsing.start.month).toBe(FEBRUARY);
+      expect(result.current.browsing.start.year).toBe(NEXT_YEAR);
     }
   );
 
@@ -102,7 +103,7 @@ describe("useMinuta() browsing another period", () => {
     () => {
       expect.hasAssertions();
       const { result } = renderMinuta({ unit: "month" });
-      const day = result.current.period(new Date("2024-03-20T00:00:00"), "day");
+      const day = result.current.period(date("2024-03-20"), "day");
 
       act(() => {
         result.current.browse(day);
