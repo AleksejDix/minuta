@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { h, nextTick } from "vue";
 import { itemAt, mountRender } from "#src/test/mount";
 import type { VNode } from "vue";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const DAYS_IN_GRID = 42;
 const OUTSIDE_DAYS_MARCH_2024 = 11;
@@ -157,7 +157,7 @@ describe("calendarWeekdays in calendarGrid", () => {
   it("follows the week start of the units", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const element = renderCalendar({
-      units: nativeUnits({ weekStartsOn: SUNDAY }),
+      units: temporalUnits({ weekStartsOn: SUNDAY }),
     });
 
     expect(weekdayLabels(element)).toStrictEqual([

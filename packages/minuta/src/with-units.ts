@@ -100,10 +100,10 @@ function operationsFor(units: Units): Minuta {
  *
  * @example
  * import { calendar } from "@aleksejdix/minuta/calendar";
- * import { nativeUnits } from "@aleksejdix/minuta/native";
+ * import { temporalUnits } from "@aleksejdix/minuta/temporal";
  * import { withUnits } from "@aleksejdix/minuta/core";
  *
- * const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
+ * const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
  * time.next(time.period(new Date(), "week"));
  * time.monthGrid(new Date()); // from the plugin
  * time.units; // the units passed in

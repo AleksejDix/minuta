@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { formatPeriod, formatRange } from "./format";
 import { periodWith, range } from "#src/operations/period";
 import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
-const units = nativeUnits();
+const units = temporalUnits();
 const MARCH_15 = new Date("2026-03-15T00:00:00");
 
 describe("formatPeriod() day and month", () => {

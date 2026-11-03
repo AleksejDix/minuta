@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { firstOf, lastOf } from "./grid-test-helpers";
 import { monthGridWith } from "./month-grid";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 import { yearGridWith } from "./year-grid";
 
 const SUNDAY = 0;
@@ -17,8 +17,8 @@ const YEAR_2025 = 2025;
 const MIN_WEEKS = 52;
 const MAX_WEEKS = 54;
 
-const units = nativeUnits({ weekStartsOn: MONDAY });
-const sundayUnits = nativeUnits({ weekStartsOn: SUNDAY });
+const units = temporalUnits({ weekStartsOn: MONDAY });
+const sundayUnits = temporalUnits({ weekStartsOn: SUNDAY });
 
 const jan2024 = monthGridWith(units, new Date("2024-01-15T00:00:00"));
 

@@ -10,7 +10,7 @@ type MinutaOptions = Readonly<{
   now?: Readonly<Date> | undefined;
   /** Unit of the browsed period, default: `"month"` */
   unit?: Unit | undefined;
-  /** Unit specs, default: `nativeUnits()` (weeks start on Monday) */
+  /** Unit specs, default: `temporalUnits()` (weeks start on Monday) */
   units?: Units | undefined;
 }>;
 

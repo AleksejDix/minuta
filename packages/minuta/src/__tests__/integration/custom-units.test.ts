@@ -8,7 +8,7 @@ import {
   withUnits,
 } from "#src/core";
 import { mergeWith, snapWith } from "#src/intervals";
-import { nativeUnits } from "#src/native";
+import { temporalUnits } from "#src/temporal";
 
 /*
  * A unit of your own: register its name, pass its spec next to an adapter's
@@ -22,7 +22,7 @@ declare module "#src/types" {
   }
 }
 
-const native = nativeUnits();
+const native = temporalUnits();
 const DAYS = 14;
 const WEEKS = 2;
 const ONE_MS = 1;

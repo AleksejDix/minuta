@@ -1,9 +1,11 @@
 /**
- * Divide time into pieces. Every operation, ready to use: bound to the native
- * Date units with weeks starting on Monday (ISO 8601).
+ * Divide time into pieces. Every operation, ready to use: bound to the
+ * Temporal units with weeks starting on Monday (ISO 8601). Where the runtime
+ * has no Temporal, `await temporalReady()` from `@aleksejdix/minuta/temporal`
+ * first.
  *
- * For other week starts, other date libraries or a smaller bundle, use
- * `withUnits` from `@aleksejdix/minuta/core`.
+ * For other week starts or a smaller bundle, use `withUnits` from
+ * `@aleksejdix/minuta/core`.
  *
  * @module minuta
  */
@@ -17,7 +19,7 @@ import {
   shiftWith,
 } from "#src/operations/index";
 import type { Minuta } from "#src/with-units";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 /*
  * Each function binds the units on its own, so bundlers drop the unused
@@ -25,10 +27,10 @@ import { nativeUnits } from "#src/adapters/native/index";
  * drift apart.
  */
 // oxlint-disable-next-line eslint/no-inline-comments -- The pure marker lets bundlers drop the units when no bound function is used
-const units = /* @__PURE__ */ nativeUnits();
+const units = /* @__PURE__ */ temporalUnits();
 
 /**
- * Split a period into chunks of `unit`, clipped to the period. Native units,
+ * Split a period into chunks of `unit`, clipped to the period. Temporal units,
  * weeks start on Monday; `divideWith` in `minuta/core` takes your own units.
  *
  * @example
@@ -45,7 +47,7 @@ function divide(
 }
 
 /**
- * How many complete `unit`s fit into a period. Native units, calendar- and
+ * How many complete `unit`s fit into a period. Temporal units, calendar- and
  * DST-aware; `durationWith` in `minuta/core` takes your own units.
  *
  * @example
@@ -62,7 +64,7 @@ function duration(
 }
 
 /**
- * The next period of the same unit. Native units, weeks start on Monday.
+ * The next period of the same unit. Temporal units, weeks start on Monday.
  *
  * @example
  * next(period(new Date(2026, 2, 15), "month")); // April 2026
@@ -77,7 +79,7 @@ function next(
 }
 
 /**
- * The period of `unit` that contains `date`. Native units, weeks start on
+ * The period of `unit` that contains `date`. Temporal units, weeks start on
  * Monday; `periodWith` in `minuta/core` takes your own units.
  *
  * @example
@@ -94,7 +96,7 @@ function period(
 }
 
 /**
- * The previous period of the same unit. Native units, weeks start on Monday.
+ * The previous period of the same unit. Temporal units, weeks start on Monday.
  *
  * @example
  * previous(period(new Date(2026, 2, 15), "month")); // February 2026
@@ -109,7 +111,7 @@ function previous(
 }
 
 /**
- * Whether two periods fall into the same `unit`. Native units.
+ * Whether two periods fall into the same `unit`. Temporal units.
  *
  * @example
  * same(period(new Date(2026, 2, 16), "day"), period(new Date(2026, 2, 20), "day"), "week"); // true
@@ -124,7 +126,7 @@ function same(
 }
 
 /**
- * Move a period by `steps` of its own unit; negative moves back. Native units.
+ * Move a period by `steps` of its own unit; negative moves back. Temporal units.
  *
  * @example
  * shift(period(new Date(2026, 2, 15), "month"), 3); // June 2026

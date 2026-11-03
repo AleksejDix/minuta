@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Units } from "#src/types";
 import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
-import { dateFnsUnits } from "#src/adapters/date-fns/index";
 import { divideWith } from "#src/operations/divide";
-import { luxonUnits } from "#src/adapters/luxon/index";
-import { nativeUnits } from "#src/adapters/native/index";
 import { nextWith } from "#src/operations/shift";
 import { periodWith } from "#src/operations/period";
 import { temporalUnits } from "#src/adapters/temporal/index";
@@ -183,9 +180,7 @@ describe("bug: fall-back 25-hour day across non-timezone adapters", () => {
    * These verify normal behavior on a non-DST day for each adapter.
    */
   const allUnits: readonly UnitsCase[] = [
-    { name: "native", units: nativeUnits() },
-    { name: "date-fns", units: dateFnsUnits() },
-    { name: "luxon", units: luxonUnits() },
+    { name: "temporal", units: temporalUnits() },
     { name: "minuta-temporal", units: temporalUnits() },
   ];
 

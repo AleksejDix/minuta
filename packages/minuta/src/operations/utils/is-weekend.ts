@@ -7,8 +7,8 @@ import { daysTouched } from "./days-touched";
  * the units' `weekend` (Saturday and Sunday unless set).
  *
  * @example
- * isWeekendWith(nativeUnits(), period(new Date(2026, 2, 21), "day")); // true (a Saturday)
- * isWeekendWith(nativeUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 20), "day")); // true (a Friday)
+ * isWeekendWith(temporalUnits(), period(new Date(2026, 2, 21), "day")); // true (a Saturday)
+ * isWeekendWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 20), "day")); // true (a Friday)
  *
  * @param units - Units whose `weekend` to use, with a `day` spec
  * @param period - The period to check

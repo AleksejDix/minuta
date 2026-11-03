@@ -31,8 +31,10 @@ const days = divide(months[2], "day"); // 31 periods (March)
 const quarters = divide(days[0], "minute", { step: 15 }); // 96 periods
 ```
 
-The default entry is bound to the native `Date` units with weeks starting on
-Monday (ISO 8601), so there is nothing to configure.
+The default entry is bound to the Temporal units with weeks starting on
+Monday (ISO 8601), so there is nothing to configure. Where the runtime has no
+Temporal (Safari, Node 24), `await temporalReady()` from
+`@aleksejdix/minuta/temporal` first.
 
 ## Operations
 
@@ -81,24 +83,19 @@ them once and you get the same operations:
 
 ```ts
 import { withUnits } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
 time.period(new Date(), "week"); // starts on Sunday
 ```
 
 Days are named (`"monday"`); the numbers of `Date#getDay()` (0 = Sunday) work
 too.
 
-| Adapter                           | Import                                                 |
-| --------------------------------- | ------------------------------------------------------ |
-| Native `Date` (zero dependencies) | `nativeUnits` from `@aleksejdix/minuta/native`         |
-| date-fns                          | `dateFnsUnits` from `@aleksejdix/minuta/date-fns`      |
-| date-fns-tz (time zones)          | `dateFnsTzUnits` from `@aleksejdix/minuta/date-fns-tz` |
-| Day.js                            | `dayjsUnits` from `@aleksejdix/minuta/dayjs`           |
-| Luxon                             | `luxonUnits` from `@aleksejdix/minuta/luxon`           |
-| Moment                            | `momentUnits` from `@aleksejdix/minuta/moment`         |
-| Temporal                          | `temporalUnits` from `@aleksejdix/minuta/temporal`     |
+| Adapter                  | Import                                                 |
+| ------------------------ | ------------------------------------------------------ |
+| Temporal                 | `temporalUnits` from `@aleksejdix/minuta/temporal`     |
+| date-fns-tz (time zones) | `dateFnsTzUnits` from `@aleksejdix/minuta/date-fns-tz` |
 
 The bound object's members have exactly the types of the default entry, so
 the two cannot drift apart.
@@ -110,9 +107,9 @@ units first; unit-free functions take none:
 
 ```ts
 import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const { day, month } = nativeUnits();
+const { day, month } = temporalUnits();
 const units = { day, month }; // only what you use ends up in the bundle
 
 nextWith(units, periodWith(units, new Date(), "month"));
@@ -135,11 +132,11 @@ minuta:
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
 import { intervals } from "@aleksejdix/minuta/intervals";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(
-  nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
+  temporalUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
   { plugins: [calendar, intervals] }
 );
 time.monthGrid(new Date()).periods; // always 42 days: no layout jumps
@@ -164,7 +161,7 @@ Write your own the same way:
 ```ts
 import type { Period, Units } from "@aleksejdix/minuta/core";
 import { bind, divideWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { period } from "@aleksejdix/minuta";
 
 const workdays = {
@@ -175,7 +172,7 @@ const workdays = {
 };
 
 const march = period(new Date(2026, 2, 1), "month");
-bind(nativeUnits(), workdays).workdaysIn(march); // 22 day periods
+bind(temporalUnits(), workdays).workdaysIn(march); // 22 day periods
 ```
 
 Custom units are data too: add the name to `UnitRegistry` through module

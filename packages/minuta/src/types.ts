@@ -82,14 +82,14 @@ type Settings = Readonly<{
 
 /**
  * The unit specs available to unit-aware functions. Partial, so a bundle can
- * carry only the units it uses; adapters such as `nativeUnits()` return all,
+ * carry only the units it uses; adapters such as `temporalUnits()` return all,
  * plus the `weekend`.
  */
 type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & Settings;
 
 /**
  * A spec for every built-in unit, as returned by the adapters. Add specs of
- * your own units next to them: `Object.assign({ fortnight }, nativeUnits())`.
+ * your own units next to them: `Object.assign({ fortnight }, temporalUnits())`.
  */
 type AllUnits = Readonly<Record<BuiltInUnit, UnitSpec>> & Settings;
 

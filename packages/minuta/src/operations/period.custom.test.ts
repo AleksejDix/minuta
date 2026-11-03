@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const JANUARY = 0;
 const FEBRUARY = 1;
@@ -10,7 +10,7 @@ const FIVE_PM = 17;
 const YEAR_2023 = 2023;
 const YEAR_2024 = 2024;
 
-const units = nativeUnits();
+const units = temporalUnits();
 
 describe("periodWith()", () => {
   it("should create a month period", { timeout: 5000 }, () => {

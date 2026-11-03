@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { AllUnits } from "#src/types";
-import { dateFnsUnits } from "#src/adapters/date-fns/index";
-import { dayjsUnits } from "#src/adapters/dayjs/index";
-import { luxonUnits } from "#src/adapters/luxon/index";
-import { momentUnits } from "#src/adapters/moment/index";
-import { nativeUnits } from "#src/adapters/native/index";
 import { periodWith } from "#src/operations/period";
 import { temporalUnits } from "#src/adapters/temporal/index";
 
@@ -19,11 +14,6 @@ type WeekStart = typeof SATURDAY | typeof SUNDAY;
 type Create = (weekStartsOn: WeekStart) => AllUnits;
 
 const ENGINES: readonly (readonly [name: string, create: Create])[] = [
-  ["Native", (weekStartsOn) => nativeUnits({ weekStartsOn })],
-  ["date-fns", (weekStartsOn) => dateFnsUnits({ weekStartsOn })],
-  ["Day.js", (weekStartsOn) => dayjsUnits({ weekStartsOn })],
-  ["Luxon", (weekStartsOn) => luxonUnits({ weekStartsOn })],
-  ["Moment.js", (weekStartsOn) => momentUnits({ weekStartsOn })],
   ["Temporal", (weekStartsOn) => temporalUnits({ weekStartsOn })],
 ];
 

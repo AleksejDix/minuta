@@ -8,7 +8,7 @@ type CalendarRootProps = Readonly<{
   date?: Readonly<Date> | undefined;
   /** Whether a day can't be selected, default: none */
   isDisabled?: ((day: Period) => boolean) | undefined;
-  /** Unit specs, default `nativeUnits()`; the week start lives in the units */
+  /** Unit specs, default `temporalUnits()`; the week start lives in the units */
   units?: Units | undefined;
 }>;
 

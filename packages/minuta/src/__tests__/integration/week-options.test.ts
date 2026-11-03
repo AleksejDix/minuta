@@ -3,11 +3,6 @@ import { describe, expect, it } from "vitest";
 import { isWeekdayWith, isWeekendWith } from "#src/calendar";
 import { periodWith, range } from "#src/core";
 import { dateFnsTzUnits } from "#src/date-fns-tz";
-import { dateFnsUnits } from "#src/date-fns";
-import { dayjsUnits } from "#src/dayjs";
-import { luxonUnits } from "#src/luxon";
-import { momentUnits } from "#src/moment";
-import { nativeUnits } from "#src/native";
 import { temporalUnits } from "#src/temporal";
 
 // The process time zone, so date-fns-tz's local days match the others
@@ -21,8 +16,6 @@ const FACTORIES: readonly (readonly [
   string,
   (options: WeekOptions) => AllUnits,
 ])[] = [
-  ["Native", nativeUnits],
-  ["date-fns", dateFnsUnits],
   [
     "date-fns-tz",
     (options) =>
@@ -32,9 +25,6 @@ const FACTORIES: readonly (readonly [
         weekend: options.weekend,
       }),
   ],
-  ["Day.js", dayjsUnits],
-  ["Luxon", luxonUnits],
-  ["Moment.js", momentUnits],
   ["Temporal", temporalUnits],
 ];
 
@@ -84,7 +74,7 @@ describe.each(FACTORIES)("week options of %s", (_name, createUnits) => {
 });
 
 describe("isWeekendWith() over several days", () => {
-  const units = nativeUnits({ weekend: ["friday", "saturday"] });
+  const units = temporalUnits({ weekend: ["friday", "saturday"] });
 
   it("is true when every day touched is weekend", { timeout: 5000 }, () => {
     expect.hasAssertions();

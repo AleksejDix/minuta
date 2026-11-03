@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { nativeUnits } from "#src/adapters/native/index";
 import { range } from "./period";
 import { shiftWith } from "./shift";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const ONE_MS = 1;
 const ONE_STEP = 1;
@@ -10,7 +10,7 @@ const THREE_STEPS = 3;
 const NO_STEPS = 0;
 
 describe("shiftWith() with custom periods", () => {
-  const units = nativeUnits();
+  const units = temporalUnits();
   const tenDays = range(
     new Date("2024-01-01T00:00"),
     new Date("2024-01-10T23:59:59.999")

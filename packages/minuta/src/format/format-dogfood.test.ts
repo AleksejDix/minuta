@@ -12,10 +12,10 @@ import {
 import { describe, expect, it } from "vitest";
 import { format, formatAsRange } from "#src/test/format";
 import { intervals } from "#src/intervals";
-import { nativeUnits } from "#src/native";
+import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/core";
 
-const { clamp, gap, merge, move, snap, split } = withUnits(nativeUnits(), {
+const { clamp, gap, merge, move, snap, split } = withUnits(temporalUnits(), {
   plugins: [intervals],
 });
 

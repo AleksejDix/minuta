@@ -3,11 +3,11 @@ import { describe, expect, it } from "vitest";
 import { monthGridWith, yearGridWith } from "#src/calendar";
 import { MinutaError } from "#src/units";
 import { intervals } from "#src/intervals";
-import { nativeUnits } from "#src/native";
+import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/core";
 
 const INVALID = new Date("nope");
-const units = nativeUnits();
+const units = temporalUnits();
 const { gap, move, resize, snap, split } = withUnits(units, {
   plugins: [intervals],
 });

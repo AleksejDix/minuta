@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { Period } from "#src/types";
 import { divideWith } from "#src/operations/divide";
 import { mergeWith } from "#src/operations/merge";
-import { nativeUnits } from "#src/adapters/native/index";
 import { periodWith } from "#src/operations/period";
 import { shiftWith } from "#src/operations/shift";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const MORNING_HOURS = 12;
 const FIRST_INDEX = 0;
@@ -24,7 +24,7 @@ const FEB_28 = 28;
 const DEC_30 = 30;
 const DEC_31 = 31;
 
-const units = nativeUnits();
+const units = temporalUnits();
 
 /**
  * Narrow away undefined, failing the test otherwise.

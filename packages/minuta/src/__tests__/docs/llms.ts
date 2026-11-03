@@ -20,7 +20,7 @@ const PACKAGE_NAMES: Readonly<Record<string, string>> = {
   intervals: "@aleksejdix/minuta/intervals",
   luxon: "@aleksejdix/minuta/luxon",
   moment: "@aleksejdix/minuta/moment",
-  native: "@aleksejdix/minuta/native",
+  native: "@aleksejdix/minuta/temporal",
   temporal: "@aleksejdix/minuta/temporal",
 };
 
@@ -31,7 +31,7 @@ const HEADER = `# minuta
 ## Rules
 
 - Every unit-aware function exists twice: \`xWith(units, …)\` in \`@aleksejdix/minuta/core\` takes the units first; \`x(…)\` in \`@aleksejdix/minuta\` is the same function bound to the native \`Date\` units with weeks starting on Monday. Unit-free functions have one form and take no units.
-- \`withUnits(units, { plugins })\` (from \`@aleksejdix/minuta/core\`) binds every core operation, and the functions of plugins such as \`calendar\` (\`@aleksejdix/minuta/calendar\`: grids, \`isWeekday\`, \`isWeekend\`) and \`intervals\` (\`@aleksejdix/minuta/intervals\`: \`gap\`, \`clamp\`, \`merge\`, \`split\`, \`resize\`, \`move\`, \`snap\`), to your units, e.g. \`withUnits(nativeUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })\`; the result's \`units\` are the units passed in. \`bind(units, plugin)\` binds a plugin on its own.
+- \`withUnits(units, { plugins })\` (from \`@aleksejdix/minuta/core\`) binds every core operation, and the functions of plugins such as \`calendar\` (\`@aleksejdix/minuta/calendar\`: grids, \`isWeekday\`, \`isWeekend\`) and \`intervals\` (\`@aleksejdix/minuta/intervals\`: \`gap\`, \`clamp\`, \`merge\`, \`split\`, \`resize\`, \`move\`, \`snap\`), to your units, e.g. \`withUnits(temporalUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })\`; the result's \`units\` are the units passed in. \`bind(units, plugin)\` binds a plugin on its own.
 - \`Units\` is a partial map of unit specs; pass only the units you use (\`{ day, month }\`) to keep the bundle small.
 - No result is \`undefined\`, never \`null\` (\`clamp\` without overlap, \`merge([])\`, …).
 - Invalid input throws \`RangeError\`; the message starts with one of the error codes below and says how to fix it.

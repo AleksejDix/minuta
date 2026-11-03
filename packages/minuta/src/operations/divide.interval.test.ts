@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Period } from "#src/types";
 import { divideWith } from "./divide";
-import { nativeUnits } from "#src/adapters/native/index";
 import { periodWith } from "./period";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const ONE_MS = 1;
 const SINGLE = 1;
@@ -17,7 +17,7 @@ const FORTY_EIGHT = 48;
 const MIN_BIWEEKLY = 26;
 const MAX_BIWEEKLY = 27;
 
-const units = nativeUnits();
+const units = temporalUnits();
 
 function required(slot: Period | undefined): Period {
   if (slot === undefined) {

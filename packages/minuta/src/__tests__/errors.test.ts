@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { periodWith, range } from "#src/operations/period";
 import { MinutaError } from "#src/units";
 import { divideWith } from "#src/operations/divide";
-import { nativeUnits } from "#src/adapters/native/index";
 import { snapWith } from "#src/operations/snap";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const MAX_PERIODS = 10;
 const ZERO = 0;
@@ -22,11 +22,11 @@ describe("error messages", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const { day, month } = nativeUnits();
+      const { day, month } = temporalUnits();
 
       expect(() => periodWith({ day, month }, new Date(), "week")).toThrow(
         `${MinutaError.UnitNotSupported}: no "week" spec in the units passed (available: day, month). ` +
-          'Pass a full set such as nativeUnits(), or add a "week" spec to your units.'
+          'Pass a full set such as temporalUnits(), or add a "week" spec to your units.'
       );
     }
   );
@@ -42,7 +42,7 @@ describe("error messages", () => {
 
   it("gives divideWith's limit a code and a fix", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const units = nativeUnits();
+    const units = temporalUnits();
     const year = periodWith(units, new Date("2026-01-01T00:00:00"), "year");
 
     expect(() =>
@@ -60,7 +60,7 @@ describe("option errors", () => {
     { timeout: 5000 },
     (step) => {
       expect.hasAssertions();
-      const units = nativeUnits();
+      const units = temporalUnits();
       const day = periodWith(units, new Date("2026-01-01T00:00:00"), "day");
       const date = new Date("2026-01-01T10:37:00");
       const fix = "must be a positive whole number";

@@ -1,15 +1,15 @@
 import type { JSX, ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { MinutaRoot } from "./minuta-root";
-import { nativeUnits } from "@aleksejdix/minuta/native";
 import { renderHook } from "@testing-library/react";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinutaContext } from "./minuta-context";
 import { withUnits } from "@aleksejdix/minuta/core";
 
 type WrapperProps = Readonly<{ children: ReactNode }>;
 
 const SUNDAY = 0;
-const UNITS = nativeUnits({ weekStartsOn: SUNDAY });
+const UNITS = temporalUnits({ weekStartsOn: SUNDAY });
 
 function createTestDate(): Date {
   return new Date("2024-01-15T12:30:45");

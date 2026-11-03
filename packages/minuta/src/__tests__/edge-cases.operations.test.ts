@@ -3,15 +3,15 @@ import { periodWith, range } from "#src/operations/period";
 import { contains } from "#src/operations/contains";
 import { gap } from "#src/operations/gap";
 import { mergeWith } from "#src/operations/merge";
-import { nativeUnits } from "#src/adapters/native/index";
 import { overlaps } from "#src/operations/overlaps";
 import { sameWith } from "#src/operations/same";
 import { shiftWith } from "#src/operations/shift";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const DAYS_IN_COMMON_YEAR = 365;
 const DAYS_IN_LEAP_YEAR = 366;
 
-const units = nativeUnits({ weekStartsOn: 1 });
+const units = temporalUnits({ weekStartsOn: 1 });
 
 /**
  * Narrow away undefined, failing the test otherwise.

@@ -1,10 +1,8 @@
 import type { AllUnits, Period } from "#src/types";
 import { describe, expect, it } from "vitest";
-import type { WeekStartsOn } from "#src/adapters/native/units/week";
-import { dateFnsUnits } from "#src/adapters/date-fns/index";
+import type { WeekStartsOn } from "#src/adapters/temporal/units/week";
 import { firstOf } from "./grid-test-helpers";
-import { luxonUnits } from "#src/adapters/luxon/index";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 import { yearGridWith } from "./year-grid";
 
 const SUNDAY = 0;
@@ -23,11 +21,7 @@ type UnitsFactory = (
   options: Readonly<{ weekStartsOn: WeekStartsOn }>
 ) => AllUnits;
 
-const ADAPTERS = [
-  ["native", nativeUnits],
-  ["date-fns", dateFnsUnits],
-  ["luxon", luxonUnits],
-] as const;
+const ADAPTERS = [["temporal", temporalUnits]] as const;
 
 function firstPeriod(periods: readonly Period[]): Period {
   const [first] = periods;
@@ -129,7 +123,7 @@ describe("yearGridWith() with hand-built units", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const sunday = nativeUnits({ weekStartsOn: "sunday" });
+      const sunday = temporalUnits({ weekStartsOn: "sunday" });
       const units = { day: sunday.day, week: sunday.week, year: sunday.year };
       const grid = yearGridWith(units, new Date("2026-06-01T12:00:00"));
       expect(grid.weekStartsOn).toBe(SUNDAY);

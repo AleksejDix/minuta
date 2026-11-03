@@ -6,7 +6,7 @@ import {
 } from "#src/calendar";
 import { describe, expect, it } from "vitest";
 import { bind } from "#src/core";
-import { nativeUnits } from "#src/native";
+import { temporalUnits } from "#src/temporal";
 
 const UNIT_FREE_OPERATIONS: readonly string[] = [
   "contains",
@@ -146,7 +146,7 @@ describe("export verification: calendar.ts", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const units = nativeUnits({ weekStartsOn: 0 });
+      const units = temporalUnits({ weekStartsOn: 0 });
       const grids = bind(units, calendar);
 
       for (const date of GRID_DATES) {

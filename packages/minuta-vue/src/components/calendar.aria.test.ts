@@ -9,8 +9,8 @@ import {
 import { describe, expect, it } from "vitest";
 import type { Period } from "@aleksejdix/minuta/core";
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
 import { nextTick } from "vue";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const JANUARY_17 = "Wednesday, January 17, 2024";
 const JANUARY_14 = "Sunday, January 14, 2024";
@@ -51,7 +51,7 @@ function selectedCells(element: HTMLElement): string[] {
  * @returns True on Saturday and Sunday
  */
 function isWeekend(day: Period): boolean {
-  return isWeekendWith(nativeUnits(), day);
+  return isWeekendWith(temporalUnits(), day);
 }
 
 describe("calendar grid semantics", () => {

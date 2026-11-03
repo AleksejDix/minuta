@@ -2,11 +2,9 @@ import { contains, periodWith } from "#src/operations/index";
 import { describe, expect, it } from "vitest";
 import { firstOf, lastOf, spanDays, spanOf } from "./grid-test-helpers";
 import type { Period } from "#src/types";
-import type { WeekStartsOn } from "#src/adapters/native/units/week";
-import { dateFnsUnits } from "#src/adapters/date-fns/index";
-import { luxonUnits } from "#src/adapters/luxon/index";
+import type { WeekStartsOn } from "#src/adapters/temporal/units/week";
 import { monthGridWith } from "./month-grid";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const SUNDAY = 0;
 const MONDAY = 1;
@@ -19,11 +17,7 @@ const FEBRUARY = 1;
 const GRID_DAYS = 42;
 const LEAP_FEBRUARY_DAYS = 29;
 
-const adapters = [
-  { create: nativeUnits, name: "native" },
-  { create: dateFnsUnits, name: "date-fns" },
-  { create: luxonUnits, name: "luxon" },
-] as const;
+const adapters = [{ create: temporalUnits, name: "temporal" }] as const;
 
 const weekStarts: readonly WeekStartsOn[] = [
   SUNDAY,
@@ -140,7 +134,7 @@ describe("monthGridWith() edge cases", () => {
     // Feb 15, 2024 (leap year)
     const date = new Date("2024-02-15T00:00:00");
     const days = monthGridWith(
-      nativeUnits({ weekStartsOn: MONDAY }),
+      temporalUnits({ weekStartsOn: MONDAY }),
       date
     ).periods;
 
@@ -160,7 +154,7 @@ describe("monthGridWith() edge cases", () => {
       expect.hasAssertions();
       // Jan 1, 2024
       const date = new Date("2024-01-01T00:00:00");
-      const stableMonth = monthGridWith(nativeUnits({ weekStartsOn }), date);
+      const stableMonth = monthGridWith(temporalUnits({ weekStartsOn }), date);
       expect(firstOf(stableMonth.periods).start.getDay()).toBe(weekStartsOn);
 
       // Always 42 days

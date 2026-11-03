@@ -9,7 +9,7 @@ import {
 } from "#src/test/calendar";
 import { describe, expect, it } from "vitest";
 import type { Period } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type KeyCase = Readonly<{
   expected: string;
@@ -115,7 +115,7 @@ describe("calendar keyboard navigation", () => {
   it("respects a Sunday week start", { timeout: 5000 }, async () => {
     expect.hasAssertions();
     const element = renderCalendar({
-      units: nativeUnits({ weekStartsOn: "sunday" }),
+      units: temporalUnits({ weekStartsOn: "sunday" }),
     });
     dayNamed(element, JANUARY_17).focus();
 

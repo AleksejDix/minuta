@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
 import { dayGridWith } from "./day-grid";
 import { length } from "#src/operations/duration";
-import { nativeUnits } from "#src/adapters/native/index";
 import { periodWith } from "#src/operations/period";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const HOURS_PER_DAY = 24;
 const MS_PER_HOUR = 3_600_000;
@@ -194,7 +194,7 @@ describe("dayGridWith() in zones without DST", () => {
 });
 
 describe("dayGridWith() in the runtime zone", () => {
-  const units = nativeUnits();
+  const units = temporalUnits();
 
   it.each([
     "2026-03-08T12:00",

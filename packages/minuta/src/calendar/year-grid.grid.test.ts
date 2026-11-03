@@ -1,9 +1,7 @@
 import type { Period, Units } from "#src/types";
 import { describe, expect, it } from "vitest";
-import { dateFnsUnits } from "#src/adapters/date-fns/index";
 import { divideWith } from "#src/operations/index";
-import { luxonUnits } from "#src/adapters/luxon/index";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 import { yearGridWith } from "./year-grid";
 
 const SUNDAY = 0;
@@ -21,9 +19,7 @@ const SHORT_YEAR_DAYS = 364;
 const LONG_YEAR_DAYS = 371;
 
 const ADAPTERS = [
-  ["native", nativeUnits({ weekStartsOn: MONDAY })],
-  ["date-fns", dateFnsUnits({ weekStartsOn: MONDAY })],
-  ["luxon", luxonUnits({ weekStartsOn: MONDAY })],
+  ["temporal", temporalUnits({ weekStartsOn: MONDAY })],
 ] as const;
 
 const YEAR_STARTS = [

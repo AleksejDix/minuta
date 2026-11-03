@@ -1,8 +1,8 @@
 import type { MinutaOptions, MinutaState } from "./types";
 import { describe, expect, it } from "vitest";
 import type { RenderHookResult } from "@testing-library/react";
-import { nativeUnits } from "@aleksejdix/minuta/native";
 import { renderHook } from "@testing-library/react";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
 import { withUnits } from "@aleksejdix/minuta/core";
 
@@ -23,7 +23,7 @@ function renderMinuta(
 describe("useMinuta() operations", () => {
   it("should expose the operations of withUnits", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const units = nativeUnits();
+    const units = temporalUnits();
     const expected = withUnits(units);
     const { result } = renderMinuta({ date: createTestDate(), units });
     const month = expected.period(createTestDate(), "month");
@@ -52,7 +52,7 @@ describe("useMinuta() operations", () => {
 
   it("should bind the given units", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const units = nativeUnits({ weekStartsOn: SUNDAY });
+    const units = temporalUnits({ weekStartsOn: SUNDAY });
     const { result } = renderMinuta({ date: createTestDate(), units });
 
     expect(result.current.units).toBe(units);
@@ -71,7 +71,7 @@ describe("useMinuta() browsing period", () => {
       const { result } = renderMinuta({ date: createTestDate() });
 
       expect(result.current.browsing).toStrictEqual(
-        withUnits(nativeUnits()).period(createTestDate(), "month")
+        withUnits(temporalUnits()).period(createTestDate(), "month")
       );
     }
   );
