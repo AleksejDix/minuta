@@ -14,7 +14,9 @@
     "url": "https://github.com/AleksejDix/minuta/issues"
   },
   "homepage": "https://github.com/AleksejDix/minuta",
-  "sideEffects": false,
+  "sideEffects": [
+    "./examples/src/temporal-ready.ts"
+  ],
   "files": [
     "dist"
   ],
