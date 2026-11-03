@@ -4,12 +4,12 @@ description: Get the whole day, week, month or year that a date falls in, comput
 ---
 
 import { periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = new Date(2026, 2, 18);
-export const monday = nativeUnits();
-export const sunday = nativeUnits({ weekStartsOn: "sunday" });
+export const monday = temporalUnits();
+export const sunday = temporalUnits({ weekStartsOn: "sunday" });
 
 Get the whole unit of time that a date falls in (its day, week, month, year),
 computed with the units you pass.
@@ -26,9 +26,9 @@ periodWith(units, date, unit);
 
 ```ts
 import { periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const units = nativeUnits({ weekStartsOn: "sunday" });
+const units = temporalUnits({ weekStartsOn: "sunday" });
 
 periodWith(units, new Date(2026, 2, 18), "week");
 // → { start: Sun Mar 15 2026 00:00:00.000,
@@ -58,15 +58,15 @@ periodWith(units, new Date(2026, 2, 18), "week");
   ]}
 />
 
-Here `monday` is `nativeUnits()` and `sunday` is
-`nativeUnits({ weekStartsOn: "sunday" })`. A month has no week start, so both
+Here `monday` is `temporalUnits()` and `sunday` is
+`temporalUnits({ weekStartsOn: "sunday" })`. A month has no week start, so both
 give March.
 
 ## Parameters
 
 | Name    | What it is                                                                                                                            |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `units` | The units to compute with, e.g. `nativeUnits()`. See [Date engines](../../../concepts/date-engines/).                                 |
+| `units` | The units to compute with, e.g. `temporalUnits()`. See [Date engines](../../../concepts/date-engines/).                               |
 | `date`  | Any `Date` inside the period you want.                                                                                                |
 | `unit`  | The size of the period: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`, `"minute"`, `"second"`, or a unit of your own. |
 
@@ -74,7 +74,7 @@ give March.
 
 A period: `{ start, end, unit }`, from the first to the last millisecond of
 the unit (both included). It works exactly like [`period`](../../minuta/period/),
-which is `periodWith` with `nativeUnits()` bound. Read that page for the
+which is `periodWith` with `temporalUnits()` bound. Read that page for the
 details on every unit, local time and daylight saving.
 
 ## The units decide the rules
@@ -84,9 +84,9 @@ The same date gives different periods with different units:
 ```ts
 import { periodWith } from "@aleksejdix/minuta/core";
 import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-periodWith(nativeUnits(), new Date(2026, 2, 18), "week");
+periodWith(temporalUnits(), new Date(2026, 2, 18), "week");
 // → Mon Mar 16 – Sun Mar 22 (weeks start on Monday by default)
 
 const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
@@ -99,7 +99,7 @@ periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
 `units` can hold just the units you use. A unit that is not there throws:
 
 ```ts
-const { day, month } = nativeUnits();
+const { day, month } = temporalUnits();
 
 periodWith({ day, month }, new Date(2026, 2, 18), "month"); // works
 periodWith({ day, month }, new Date(2026, 2, 18), "week");

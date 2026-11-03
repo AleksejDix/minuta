@@ -9,7 +9,7 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 import { period, shift } from "@aleksejdix/minuta";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
 import { periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 
@@ -19,11 +19,11 @@ export const iso = (day) =>
     String(day.start.getMonth() + 1).padStart(2, "0"),
     String(day.start.getDate()).padStart(2, "0"),
   ].join("-");
-export const fridaySaturday = nativeUnits({
+export const fridaySaturday = temporalUnits({
   weekStartsOn: "sunday",
   weekend: ["friday", "saturday"],
 });
-export const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
+export const sundayFirst = temporalUnits({ weekStartsOn: "sunday" });
 export const focused = period(new Date(2026, 2, 18), "day");
 export const focusedWeek = periodWith(sundayFirst, focused.start, "week");
 
@@ -49,14 +49,14 @@ only shows how to use them.
 A month view needs more days than the month has: the first row starts in the
 previous month and the last rows end in the next one.
 [`monthGridWith`](../../../api/minuta-calendar/month-grid-with/) gives you
-exactly those days. It takes the units (here the built-in `Date`, through
-`nativeUnits()`) and any date in the month you want:
+exactly those days. It takes the units (here Temporal, through
+`temporalUnits()`) and any date in the month you want:
 
 ```ts
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const grid = monthGridWith(nativeUnits(), new Date(2026, 2, 15));
+const grid = monthGridWith(temporalUnits(), new Date(2026, 2, 15));
 
 grid.periods.length; //   → 42
 grid.periods[0]; //       → Mon Feb 23 2026, a whole day
@@ -76,9 +76,9 @@ To show them, cut the list into rows of 7. Start with an empty table:
 
 ```ts
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const units = nativeUnits();
+const units = temporalUnits();
 const grid = monthGridWith(units, new Date(2026, 2, 15));
 
 // Cut the 42 days into 6 weeks of 7
@@ -118,9 +118,9 @@ days of March from the grey days around it.
 ```ts
 import { contains, period } from "@aleksejdix/minuta";
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const units = nativeUnits();
+const units = temporalUnits();
 const grid = monthGridWith(units, new Date(2026, 2, 15));
 const month = period(grid.monthStart, "month");
 const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short" });
@@ -166,7 +166,7 @@ The week starts on Monday unless you say otherwise. Both the week start and
 the weekend are settings of the units, so you change them in one place:
 
 ```ts
-const units = nativeUnits({
+const units = temporalUnits({
   weekStartsOn: "sunday",
   weekend: ["friday", "saturday"],
 });
@@ -184,9 +184,9 @@ code from step 1 with the new units and a `weekend` class:
 ```ts
 import { contains, period } from "@aleksejdix/minuta";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const units = nativeUnits({
+const units = temporalUnits({
   weekStartsOn: "sunday",
   weekend: ["friday", "saturday"],
 });
@@ -271,10 +271,10 @@ and the grid for it:
 import { contains, next, period, previous } from "@aleksejdix/minuta";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
 import { formatPeriod } from "@aleksejdix/minuta/format";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const locale = "en-US";
-const units = nativeUnits({ weekStartsOn: "sunday" });
+const units = temporalUnits({ weekStartsOn: "sunday" });
 const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" });
 
 // The month on screen: the only state of the calendar
@@ -330,8 +330,8 @@ Mar 29 to Sat May 9.
 <MonthGrid month="2026-04" weekStartsOn="sunday" />
 
 :::tip
-`period`, `next` and `previous` from `@aleksejdix/minuta` use the built-in `Date`. With
-another engine or a time zone, bind everything to your units once with
+`period`, `next` and `previous` from `@aleksejdix/minuta` use the Temporal units with
+Monday weeks. With another week start or a time zone, bind everything to your units once with
 [`withUnits`](../../../api/minuta-core/with-units/) and the
 [`calendar`](../../../api/minuta-calendar/calendar/) plugin, and call
 `time.monthGrid(date)`, `time.next(month)` and so on.
@@ -413,10 +413,10 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-react/components";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 // Create the units once, outside the component
-const units = nativeUnits({ weekStartsOn: "sunday" });
+const units = temporalUnits({ weekStartsOn: "sunday" });
 
 export function DatePicker() {
   const [picked, setPicked] = useState();
@@ -453,10 +453,10 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-vue/components";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import "@aleksejdix/minuta-vue/style.css";
 
-const units = nativeUnits({ weekStartsOn: "sunday" });
+const units = temporalUnits({ weekStartsOn: "sunday" });
 const start = new Date(2026, 2, 15);
 const picked = shallowRef();
 </script>
@@ -571,9 +571,9 @@ import {
   CalendarRoot,
 } from "@aleksejdix/minuta-react/components";
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const units = nativeUnits({ weekStartsOn: "sunday" });
+const units = temporalUnits({ weekStartsOn: "sunday" });
 
 export function WeekendCalendar() {
   return (

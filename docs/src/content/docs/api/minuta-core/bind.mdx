@@ -5,7 +5,7 @@ description: Bind every function of a plugin to one set of units, so you can cal
 
 import { period } from "@aleksejdix/minuta";
 import { bind, divideWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -33,9 +33,9 @@ bind(units, plugin);
 ```ts
 import { bind } from "@aleksejdix/minuta/core";
 import { calendar } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
+const grids = bind(temporalUnits({ weekStartsOn: "sunday" }), calendar);
 
 grids.monthGrid(new Date(2026, 2, 18)).periods;
 // → 42 days, starting Sun Mar 1
@@ -50,7 +50,7 @@ row starts on a Sunday without passing them again.
 
 | Name     | What it is                                                                      |
 | -------- | ------------------------------------------------------------------------------- |
-| `units`  | The units to bind, usually from an adapter such as `nativeUnits()`.             |
+| `units`  | The units to bind, usually from an adapter such as `temporalUnits()`.           |
 | `plugin` | A plugin: an object whose functions all take the units as their first argument. |
 
 ## Returns
@@ -69,7 +69,7 @@ own arguments. That is the same shape as the `…With` functions of
 
 ```ts
 import { bind, divideWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { period } from "@aleksejdix/minuta";
 
 const workdays = {
@@ -81,7 +81,7 @@ const workdays = {
 
 const march = period(new Date(2026, 2, 1), "month");
 
-bind(nativeUnits(), workdays).workdaysIn(march);
+bind(temporalUnits(), workdays).workdaysIn(march);
 // → 22 day periods, Monday to Friday
 ```
 
@@ -91,7 +91,7 @@ bind(nativeUnits(), workdays).workdaysIn(march);
     { label: "march", periods: [march], tone: "muted" },
     {
       label: "workdaysIn(march)",
-      periods: bind(nativeUnits(), workdays).workdaysIn(march),
+      periods: bind(temporalUnits(), workdays).workdaysIn(march),
       tone: "accent",
     },
   ]}

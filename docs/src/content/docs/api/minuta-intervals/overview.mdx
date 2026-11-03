@@ -8,7 +8,7 @@ sidebar:
 
 import { range } from "@aleksejdix/minuta";
 import { move, snapWith } from "@aleksejdix/minuta/intervals";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const meeting = range(
@@ -55,7 +55,7 @@ hour, then move the meeting there:
 
 ```ts
 import { move, snapWith } from "@aleksejdix/minuta/intervals";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { range } from "@aleksejdix/minuta";
 
 const meeting = range(
@@ -64,7 +64,7 @@ const meeting = range(
 );
 const dropped = new Date(2026, 2, 17, 14, 8);
 
-move(meeting, snapWith(nativeUnits(), dropped, "minute", { step: 15 }));
+move(meeting, snapWith(temporalUnits(), dropped, "minute", { step: 15 }));
 // → { start: Tue Mar 17 14:15, end: 15:15, unit: "custom" }
 ```
 
@@ -76,7 +76,10 @@ move(meeting, snapWith(nativeUnits(), dropped, "minute", { step: 15 }));
     {
       label: "move(meeting, snapped)",
       periods: [
-        move(meeting, snapWith(nativeUnits(), dropped, "minute", { step: 15 })),
+        move(
+          meeting,
+          snapWith(temporalUnits(), dropped, "minute", { step: 15 })
+        ),
       ],
       tone: "accent",
     },

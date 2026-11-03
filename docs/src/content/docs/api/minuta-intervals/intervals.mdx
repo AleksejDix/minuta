@@ -5,11 +5,11 @@ description: The intervals plugin — pass it to withUnits to get clamp, gap, me
 
 import { withUnits } from "@aleksejdix/minuta/core";
 import { intervals } from "@aleksejdix/minuta/intervals";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const time = withUnits(nativeUnits(), { plugins: [intervals] });
+export const time = withUnits(temporalUnits(), { plugins: [intervals] });
 export const days = time.divide(
   time.period(new Date(2026, 2, 1), "month"),
   "day"
@@ -30,10 +30,10 @@ withUnits(units, { plugins: [intervals] });
 
 ```ts
 import { intervals } from "@aleksejdix/minuta/intervals";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(nativeUnits(), { plugins: [intervals] });
+const time = withUnits(temporalUnits(), { plugins: [intervals] });
 
 const days = time.divide(time.period(new Date(2026, 2, 1), "month"), "day");
 time.merge(days, "month"); // → March, unit "month"
@@ -110,7 +110,7 @@ operations:
 ```ts
 import { bind } from "@aleksejdix/minuta/core";
 
-const tools = bind(nativeUnits(), intervals);
+const tools = bind(temporalUnits(), intervals);
 tools.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
 ```
 

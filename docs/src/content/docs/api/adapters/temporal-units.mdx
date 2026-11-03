@@ -3,8 +3,8 @@ title: temporalUnits
 description: Units computed with the TC39 Temporal API — native Temporal, or the polyfill temporalReady loads where it is missing — in the computer's time zone.
 ---
 
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 import { divideWith, periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -41,16 +41,16 @@ calendar arithmetic for days, months, quarters and years inside the units.
 
 ## When to choose it
 
-- You are moving your app to Temporal and want minuta to use the same
-  arithmetic.
+- It is the default: the `minuta` entry is bound to `temporalUnits()`. Call
+  it yourself for another week start or weekend.
 
-The results are the same as with [`nativeUnits`](../native-units/). The
-units do **not** use Temporal's time zones: they work in the computer's
-zone like `nativeUnits`. For a fixed zone, use
+The units do **not** use Temporal's time zones yet: they work in the
+computer's zone. For a fixed zone, use
 [`dateFnsTzUnits`](../date-fns-tz-units/).
 
-The weeks of March 2026, computed once by Temporal and once by the built-in
-`Date`. The bars are the same, down to the cut pieces at the month's edges:
+The weeks of March 2026, computed once by Temporal and once by date-fns in
+the computer's zone. The bars are the same, down to the cut pieces at the
+month's edges:
 
 <Timeline
   caption='divideWith(units, march, "week") with both engines. The hatched pieces are the first and last weeks, cut at the edges of March.'
@@ -61,8 +61,12 @@ The weeks of March 2026, computed once by Temporal and once by the built-in
       tone: "accent",
     },
     {
-      label: "nativeUnits()",
-      periods: weeksOfMarch(nativeUnits()),
+      label: "dateFnsTzUnits({ timeZone })",
+      periods: weeksOfMarch(
+        dateFnsTzUnits({
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        })
+      ),
       tone: "muted",
     },
   ]}

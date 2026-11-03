@@ -16,7 +16,7 @@ first:
 npm install @aleksejdix/minuta
 ```
 
-All examples run on the built-in `Date`, with weeks starting on Monday. The
+All examples run on Temporal, with weeks starting on Monday. The
 results are shown as comments.
 
 ## 1. Create a period
@@ -146,6 +146,6 @@ formatPeriod(period(today, "day"), "en-US"); // → "October 12, 2026"
 
 - [Periods and units](../concepts/periods-and-units/) — the model behind all of this.
 - [Weeks and calendars](../concepts/weeks-and-calendars/) — month grids, week start, weekends.
-- [Date engines](../concepts/date-engines/) — run on date-fns, Luxon, Day.js, Moment or Temporal.
+- [Date engines](../concepts/date-engines/) — week starts, time zones and your own units.
 - The [reference](../api/minuta/overview/) — every function, explained.
 - The [live demo](../demo/) — a date field and calendar built on minuta.

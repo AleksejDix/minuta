@@ -4,12 +4,12 @@ description: Look up the rules for one unit (start, end, add, count) in a set of
 ---
 
 import { periodWith, specFor } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = new Date(2026, 2, 18);
-export const week = specFor(nativeUnits(), "week");
-export const month = specFor(nativeUnits(), "month");
+export const week = specFor(temporalUnits(), "week");
+export const month = specFor(temporalUnits(), "month");
 
 Look up the rules for one unit in a set of units, for example to find the
 start of a week or to add a month with exactly the rules minuta uses.
@@ -26,9 +26,9 @@ specFor(units, unit);
 
 ```ts
 import { specFor } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const week = specFor(nativeUnits(), "week");
+const week = specFor(temporalUnits(), "week");
 
 week.startOf(new Date(2026, 2, 18));
 // → Mon Mar 16 2026 00:00:00.000
@@ -50,10 +50,10 @@ week.startOf(new Date(2026, 2, 18));
 
 ## Parameters
 
-| Name    | What it is                                                       |
-| ------- | ---------------------------------------------------------------- |
-| `units` | A set of units, usually from an adapter such as `nativeUnits()`. |
-| `unit`  | The unit to look up: `"day"`, `"week"`, `"month"`, …             |
+| Name    | What it is                                                         |
+| ------- | ------------------------------------------------------------------ |
+| `units` | A set of units, usually from an adapter such as `temporalUnits()`. |
+| `unit`  | The unit to look up: `"day"`, `"week"`, `"month"`, …               |
 
 ## Returns
 
@@ -68,7 +68,7 @@ operation in minuta is built from these four.
 | `diff(from, to)`    | How many whole units fit from `from` to `to`, rounded toward zero. |
 
 ```ts
-const month = specFor(nativeUnits(), "month");
+const month = specFor(temporalUnits(), "month");
 
 month.endOf(new Date(2026, 1, 10)); // → Sat Feb 28 2026 23:59:59.999
 month.add(new Date(2026, 0, 31), 1); // → Sat Feb 28 2026 00:00:00.000
@@ -88,8 +88,8 @@ month.
     {
       label: "months",
       periods: [
-        periodWith(nativeUnits(), new Date(2026, 0, 1), "month"),
-        periodWith(nativeUnits(), new Date(2026, 1, 1), "month"),
+        periodWith(temporalUnits(), new Date(2026, 0, 1), "month"),
+        periodWith(temporalUnits(), new Date(2026, 1, 1), "month"),
       ],
       tone: "muted",
     },
@@ -114,7 +114,7 @@ built-in operations.
 The message lists the units that _are_ there:
 
 ```ts
-const { day, month } = nativeUnits();
+const { day, month } = temporalUnits();
 
 specFor({ day, month }, "hour");
 // RangeError: UNIT_NOT_SUPPORTED: no "hour" spec in the units passed (available: day, month). …

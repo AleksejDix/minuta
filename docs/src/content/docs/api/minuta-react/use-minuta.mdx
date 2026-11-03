@@ -74,17 +74,17 @@ What one click does to the state:
 
 All options are optional. You can call `useMinuta()` with nothing.
 
-| Name    | What it is                                                                | Default                       |
-| ------- | ------------------------------------------------------------------------- | ----------------------------- |
-| `date`  | The date to browse first. Read only once, on the first render.            | now                           |
-| `now`   | The moment that counts as "now". Pass it to fix "today", e.g. in tests.   | the clock                     |
-| `unit`  | The size of the browsed period: `"month"`, `"week"`, `"day"`, `"year"`, … | `"month"`                     |
-| `units` | The units every function uses. The week start lives here.                 | `nativeUnits()`, Monday weeks |
+| Name    | What it is                                                                | Default                         |
+| ------- | ------------------------------------------------------------------------- | ------------------------------- |
+| `date`  | The date to browse first. Read only once, on the first render.            | now                             |
+| `now`   | The moment that counts as "now". Pass it to fix "today", e.g. in tests.   | the clock                       |
+| `unit`  | The size of the browsed period: `"month"`, `"week"`, `"day"`, `"year"`, … | `"month"`                       |
+| `units` | The units every function uses. The week start lives here.                 | `temporalUnits()`, Monday weeks |
 
 ```js
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
+const sundayFirst = temporalUnits({ weekStartsOn: "sunday" });
 
 useMinuta({ units: sundayFirst, unit: "week" });
 ```
