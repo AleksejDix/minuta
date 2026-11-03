@@ -1,7 +1,10 @@
-import type { Period, Units } from "#src/types";
-import { assertValidDate, specFor } from "#src/units";
+import type { DatePeriod, PlainDate, TimeValue, Units } from "#src/types";
+import { specFor, timeZoneOf } from "#src/units";
 import { divideWith } from "#src/operations/divide";
-import { weekdayWith } from "#src/operations/utils/days-touched";
+import { toPlainDate } from "#src/values";
+import { weekdayOf } from "#src/operations/utils/days-touched";
+
+const ONE = 1;
 
 /**
  * The whole weeks covering a year (`periods`), the year's first day and the
@@ -9,9 +12,10 @@ import { weekdayWith } from "#src/operations/utils/days-touched";
  */
 type YearGrid = Readonly<{
   /** The week periods covering the year */
-  periods: readonly Period[];
+  periods: readonly DatePeriod[];
+  /** The weekday the grid starts on, 0 = Sunday … 6 = Saturday */
   weekStartsOn: number;
-  yearStart: Readonly<Date>;
+  yearStart: PlainDate;
 }>;
 
 /**
@@ -19,31 +23,30 @@ type YearGrid = Readonly<{
  * week containing December 31. The week start comes from the `week` unit.
  *
  * @example
- * yearGridWith(temporalUnits({ weekStartsOn: "monday" }), new Date(2026, 5, 1)).periods; // 53 week periods
+ * yearGridWith(temporalUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-06-01")).periods; // 53 week periods
  *
  * @param units - Available unit specs (needs `year` and `week`)
- * @param date - Any date in the target year
+ * @param value - Any value in the target year
  * @returns The week periods with grid metadata
  */
-function yearGridWith(units: Units, date: Readonly<Date>): YearGrid {
-  assertValidDate(date, "date");
+function yearGridWith(units: Units, value: TimeValue): YearGrid {
   const year = specFor(units, "year");
   const week = specFor(units, "week");
-  const yearStart = year.startOf(date);
+  const yearStart = year.startOf(toPlainDate(value, timeZoneOf(units)));
+  const lastDay = year.add(yearStart, ONE).subtract({ days: ONE });
   const gridStart = week.startOf(yearStart);
-  const gridEnd = week.endOf(year.endOf(date));
-  const periods = divideWith(
-    units,
-    { end: gridEnd, start: gridStart, unit: "custom" },
-    "week"
-  );
+  const grid: DatePeriod = {
+    end: week.add(week.startOf(lastDay), ONE),
+    start: gridStart,
+    unit: "custom",
+  };
   return {
-    periods,
+    periods: divideWith(units, grid, "week"),
     /*
      * The weekday the grid starts on, so it matches the periods even when
      * hand-built units have a week spec but no `weekStartsOn` setting
      */
-    weekStartsOn: weekdayWith(units, gridStart),
+    weekStartsOn: weekdayOf(gridStart),
     yearStart,
   };
 }

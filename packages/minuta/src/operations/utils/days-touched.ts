@@ -1,64 +1,63 @@
-import type { Period, Units } from "#src/types";
+import type { Period, PlainDate } from "#src/types";
 import type { WeekdayNumber } from "#src/weekday";
-import { specFor } from "#src/units";
+import { isDatePeriod } from "#src/values";
 
 const DAYS_PER_WEEK = 7;
-const ONE_DAY = 1;
-const NOT_FOUND = -1;
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const ONE = 1;
+const ONE_NANOSECOND = 1;
+const BEFORE = 0;
 
 function toWeekdayNumber(day: number): WeekdayNumber {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- A value modulo 7 is always 0-6
   return (day % DAYS_PER_WEEK) as WeekdayNumber;
 }
 
-// The weekday a date falls on in `timeZone`, as `Date#getDay()` numbers it
-function weekdayIn(date: Readonly<Date>, timeZone: string): number {
-  const name = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    weekday: "short",
-  }).format(date);
-  const index = WEEKDAYS.indexOf(name);
-  if (index === NOT_FOUND) {
-    throw new RangeError(`Unknown weekday "${name}"`);
+/**
+ * The weekday of a date, as 0 (Sunday) to 6 (Saturday).
+ *
+ * @param date - Any calendar date
+ * @returns The weekday number
+ */
+function weekdayOf(date: PlainDate): WeekdayNumber {
+  return toWeekdayNumber(date.dayOfWeek);
+}
+
+// The first and the last date a period touches, in its own zone for moments
+function datesOf(period: Period): readonly [PlainDate, PlainDate] {
+  if (isDatePeriod(period)) {
+    const last = period.end.subtract({ days: ONE });
+    if (last.until(period.start).sign > BEFORE) {
+      return [period.start, period.start];
+    }
+    return [period.start, last];
   }
-  return index;
+  const first = period.start.toPlainDate();
+  if (period.end.epochNanoseconds <= period.start.epochNanoseconds) {
+    return [first, first];
+  }
+  const last = period.end
+    .subtract({ nanoseconds: ONE_NANOSECOND })
+    .toPlainDate();
+  return [first, last];
 }
 
 /**
- * The weekday of every day the period touches, at most one week, read in
- * `units.timeZone` (the runtime's zone when unset) and counted with the
- * units' `day` spec.
+ * The weekday of every day the period touches, at most one week: a date
+ * period's own dates, a time period's dates in its zone.
  *
- * @param units - Units with a `day` spec
  * @param period - The period to walk
- * @returns The `Date#getDay()` number of each day touched
+ * @returns The weekday number of each day touched
  */
-/**
- * The weekday a date falls on in the units' time zone (the computer's when
- * the units have none), as `Date#getDay()` numbers it.
- *
- * @param units - Units with an optional `timeZone`
- * @param date - Any moment
- * @returns 0 (Sunday) to 6 (Saturday)
- */
-function weekdayWith(units: Units, date: Readonly<Date>): WeekdayNumber {
-  const timeZone =
-    units.timeZone ?? new Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return toWeekdayNumber(weekdayIn(date, timeZone));
-}
-
-function daysTouched(units: Units, period: Period): WeekdayNumber[] {
-  const day = specFor(units, "day");
-  const firstDay = day.startOf(period.start);
-  const first = weekdayWith(units, firstDay);
+function daysTouched(period: Period): WeekdayNumber[] {
+  const [first, last] = datesOf(period);
   const count = Math.min(
-    day.diff(firstDay, period.end) + ONE_DAY,
+    first.until(last, { largestUnit: "day" }).days + ONE,
     DAYS_PER_WEEK
   );
+  const firstDay = first.dayOfWeek;
   return Array.from({ length: count }, (_unused, offset) =>
-    toWeekdayNumber(first + offset)
+    toWeekdayNumber(firstDay + offset)
   );
 }
 
-export { daysTouched, weekdayWith };
+export { daysTouched, weekdayOf };
