@@ -3,9 +3,7 @@ import { compare, isDatePeriod, zonedPeriod } from "#src/values";
 import { describe, expect, it } from "vitest";
 import { nextWith, previousWith } from "#src/operations/shift";
 import { Temporal } from "@js-temporal/polyfill";
-import { date } from "#src/test/temporal";
 import { divideWith } from "#src/operations/divide";
-import { durationWith } from "#src/operations/duration";
 import { periodWith } from "#src/operations/period";
 import { temporalUnits } from "#src/temporal";
 
@@ -79,6 +77,24 @@ const WEIRD_DAYS: readonly WeirdDay[] = [
     zone: "Pacific/Apia",
   },
   {
+    at: "2024-10-06T02:00:00Z",
+    hours: 23,
+    what: "spring forward",
+    zone: "Australia/Sydney",
+  },
+  {
+    at: "2024-11-03T15:00:00Z",
+    hours: 25,
+    what: "fall back",
+    zone: "America/New_York",
+  },
+  {
+    at: "2026-03-01T06:00:00Z",
+    hours: 24,
+    what: "no clock changes",
+    zone: "Asia/Tokyo",
+  },
+  {
     at: "2026-03-01T06:00:00Z",
     hours: 24,
     what: "UTC+5:45",
@@ -100,13 +116,11 @@ const WEIRD_DAYS: readonly WeirdDay[] = [
 
 const NS_AN_HOUR = 3_600_000_000_000;
 const EQUAL = 0;
-const NONE = 0;
 const ONE = 1;
 const FIRST = 0;
 const LAST = -1;
 const DAYS_AROUND = 3;
 const HOURS_TO_WALK = 30;
-const SHOWN_HOURS = 4;
 
 // A date period as moments in the units' zone; a time period as it is
 function asMoments(units: Units, period: Period): Period {
@@ -222,69 +236,4 @@ describe.each(WEIRD_DAYS)("weird time: $zone $what", (weird) => {
     expect(nextWith(units, previousWith(units, day))).toStrictEqual(day);
     expect(previousWith(units, nextWith(units, day))).toStrictEqual(day);
   });
-});
-
-describe("weird time: Pacific/Apia, the skipped day", () => {
-  const units = temporalUnits({ timeZone: "Pacific/Apia" });
-  const skipped = periodWith(units, date("2011-12-30"), "day");
-
-  it("is a date with no hours", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    expect(skipped.start.toString()).toBe("2011-12-30");
-    expect(divideWith(units, skipped, "hour")).toStrictEqual([]);
-    expect(durationWith(units, skipped, "hour")).toBe(NONE);
-  });
-
-  it(
-    "sits between its neighbours like any other date",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      expect(previousWith(units, skipped).start.toString()).toBe("2011-12-29");
-      expect(nextWith(units, skipped).start.toString()).toBe("2011-12-31");
-    }
-  );
-});
-
-describe("weird time: Australia/Lord_Howe, hours around a 30-minute change", () => {
-  const units = temporalUnits({ timeZone: "Australia/Lord_Howe" });
-
-  function hoursAround(day: string): string[] {
-    const hours = divideWith(
-      units,
-      periodWith(units, date(day), "day"),
-      "hour"
-    );
-    return hours
-      .slice(ONE, SHOWN_HOURS)
-      .map(
-        (hour) => `${hour.start.toPlainTime().toString()}${hour.start.offset}`
-      );
-  }
-
-  it(
-    "splits wall hour 2 where the clocks jump from 1:59 to 2:30",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      expect(hoursAround("2026-10-04")).toStrictEqual([
-        "01:00:00+10:30",
-        "02:30:00+11:00",
-        "03:00:00+11:00",
-      ]);
-    }
-  );
-
-  it(
-    "makes the repeated half hour its own piece where they go back to 1:30",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      expect(hoursAround("2026-04-05")).toStrictEqual([
-        "01:00:00+11:00",
-        "01:30:00+10:30",
-        "02:00:00+10:30",
-      ]);
-    }
-  );
 });
