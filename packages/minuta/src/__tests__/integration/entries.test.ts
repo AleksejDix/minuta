@@ -5,7 +5,9 @@ import {
   yearGridWith,
 } from "#src/calendar";
 import { describe, expect, it } from "vitest";
+import type { TimeValue } from "#src/types";
 import { bind } from "#src/core";
+import { dateTime } from "#src/test/temporal";
 import { temporalUnits } from "#src/temporal";
 
 const UNIT_FREE_OPERATIONS: readonly string[] = [
@@ -38,10 +40,10 @@ const INTERVAL_EXPORTS: readonly string[] = [
 
 const REMOVED_ENTRIES: readonly string[] = ["operations", "helpers"];
 
-const GRID_DATES: readonly Readonly<Date>[] = [
-  new Date("2024-01-01T00:00:00"),
-  new Date("2024-03-31T12:00:00"),
-  new Date("2024-12-31T23:59:59.999"),
+const GRID_DATES: readonly TimeValue[] = [
+  dateTime("2024-01-01T00:00:00"),
+  dateTime("2024-03-31T12:00:00"),
+  dateTime("2024-12-31T23:59:59.999"),
 ];
 
 /**
@@ -70,6 +72,7 @@ describe("export verification: core.ts", () => {
           ...UNIT_FREE_OPERATIONS,
           "MinutaError",
           "bind",
+          "boundAs",
           "specFor",
           "withUnits",
         ])

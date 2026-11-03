@@ -13,7 +13,6 @@
 
 ## Error codes
 
-- `INVALID_DATE`: A Date argument is invalid (`new Date("nope")`).
 - `INVALID_OPTION`: An option such as `step` or `maxPeriods` is not a positive whole number.
 - `TOO_MANY_PERIODS`: `divideWith` would create more chunks than `maxPeriods` allows.
 - `UNIT_NOT_SUPPORTED`: The `units` passed to a function have no spec for the requested unit.
@@ -23,15 +22,15 @@
 ### `divide`
 
 ```ts
-divide(period: Period, unit: Unit, options: DivideOptions = {}): Period[]
+divide(period: Source, unit: Name, options: DivideOptions = {}): Chunks<Source, Name>
 ```
 
 Split a period into chunks of `unit`, clipped to the period. Temporal units,
 weeks start on Monday; `divideWith` in `minuta/core` takes your own units.
 
 ```ts
-divide(period(new Date(2026, 2, 1), "month"), "day"); // 31 day periods
-divide(period(new Date(2026, 2, 1, 9), "hour"), "minute", { step: 15 }); // 4 periods
+divide(period(Temporal.PlainDate.from("2026-03-01"), "month"), "day"); // 31 day periods
+divide(period(Temporal.Now.zonedDateTimeISO(), "hour"), "minute", { step: 15 }); // 4 periods
 ```
 
 ### `duration`
@@ -44,46 +43,47 @@ How many complete `unit`s fit into a period. Temporal units, calendar- and
 DST-aware; `durationWith` in `minuta/core` takes your own units.
 
 ```ts
-duration(period(new Date(2026, 9, 8), "day"), "hour"); // 24
-duration(period(new Date(2026, 1, 1), "month"), "day"); // 28
+duration(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour"); // 24
+duration(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // 28
 ```
 
 ### `next`
 
 ```ts
-next(period: Period): Period
+next(period: Source): Source
 ```
 
 The next period of the same unit. Temporal units, weeks start on Monday.
 
 ```ts
-next(period(new Date(2026, 2, 15), "month")); // April 2026
+next(period(Temporal.PlainDate.from("2026-03-15"), "month")); // April 2026
 ```
 
 ### `period`
 
 ```ts
-period(date: Readonly<Date>, unit: Unit): Period
+period(value: TimeValue, unit: Name): PeriodOf<Name>
 ```
 
-The period of `unit` that contains `date`. Temporal units, weeks start on
-Monday; `periodWith` in `minuta/core` takes your own units.
+The period of `unit` that contains `value`. Temporal units, weeks start on
+Monday, moments in the runtime's zone; `periodWith` in `minuta/core` takes
+your own units.
 
 ```ts
-period(new Date(2026, 2, 15), "month"); // { start: Mar 1, end: Mar 31 23:59:59.999, unit: "month" }
-period(new Date(2026, 2, 18), "week"); // Monday Mar 16 to Sunday Mar 22
+period(Temporal.PlainDate.from("2026-03-15"), "month"); // { start: 2026-03-01, end: 2026-04-01, unit: "month" }
+period(Temporal.PlainDate.from("2026-03-18"), "week"); // Monday Mar 16 up to Monday Mar 23
 ```
 
 ### `previous`
 
 ```ts
-previous(period: Period): Period
+previous(period: Source): Source
 ```
 
 The previous period of the same unit. Temporal units, weeks start on Monday.
 
 ```ts
-previous(period(new Date(2026, 2, 15), "month")); // February 2026
+previous(period(Temporal.PlainDate.from("2026-03-15"), "month")); // February 2026
 ```
 
 ### `same`
@@ -95,45 +95,48 @@ same(first: Period, second: Period, unit: Unit | "custom"): boolean
 Whether two periods fall into the same `unit`. Temporal units.
 
 ```ts
-same(period(new Date(2026, 2, 16), "day"), period(new Date(2026, 2, 20), "day"), "week"); // true
+same(period(Temporal.PlainDate.from("2026-03-16"), "day"), period(Temporal.PlainDate.from("2026-03-20"), "day"), "week"); // true
 ```
 
 ### `shift`
 
 ```ts
-shift(period: Period, steps: number): Period
+shift(period: Source, steps: number): Source
 ```
 
 Move a period by `steps` of its own unit; negative moves back. Temporal units.
 
 ```ts
-shift(period(new Date(2026, 2, 15), "month"), 3); // June 2026
+shift(period(Temporal.PlainDate.from("2026-03-15"), "month"), 3); // June 2026
 ```
 
 ### `contains`
 
 ```ts
-contains(period: Period, target: Readonly<Date> | Period): boolean
+contains(period: Period, target: Target): boolean
 ```
 
-Check if a period contains a date or another period.
+Whether a period contains a date, a moment or another period. `end` is
+excluded: March does not contain April 1. A date counts as its whole day;
+next to a time period, dates become moments in that period's zone.
 
 ```ts
-contains(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 20)); // true
-contains(period(new Date(2026, 2, 1), "month"), period(new Date(2026, 3, 1), "day")); // false
+contains(march, Temporal.PlainDate.from("2026-03-20")); // true
+contains(march, Temporal.PlainDate.from("2026-04-01")); // false
 ```
 
 ### `length`
 
 ```ts
-length(period: Period): number
+length(period: Period): Temporal.Duration
 ```
 
-The period's length in milliseconds, measured over the half-open range
-`[start, end + 1 ms)`, so a whole day is exactly one day long.
+The period's length: whole days for a date period, exact hours, minutes
+and smaller for a time period.
 
 ```ts
-length(period(new Date(2026, 9, 8), "day")); // 86400000, outside a DST change
+length(march); // P31D
+length(zurichDayOfClockChange); // PT23H, as hours (a time period)
 ```
 
 ### `overlaps`
@@ -142,24 +145,30 @@ length(period(new Date(2026, 9, 8), "day")); // 86400000, outside a DST change
 overlaps(first: Period, second: Period): boolean
 ```
 
-Checks if two periods share any time.
+Whether two periods share any time. Periods that only touch (one ends
+where the other starts) do not overlap. Next to a time period, a date
+period becomes moments in that period's zone.
 
 ```ts
-overlaps(range(new Date(2026, 2, 1), new Date(2026, 2, 10)), range(new Date(2026, 2, 5), new Date(2026, 2, 20))); // true
+overlaps(march, april); // false: they touch
+overlaps(march, period(Temporal.PlainDate.from("2026-03-31"), "week")); // true
 ```
 
 ### `range`
 
 ```ts
-range(start: Readonly<Date>, end: Readonly<Date>): Period
+range(start: PlainDate, end: PlainDate): DatePeriod
+range(start: ZonedDateTime, end: ZonedDateTime): TimePeriod
+range(start: PlainDate | ZonedDateTime, end: PlainDate | ZonedDateTime): DatePeriod | TimePeriod
 ```
 
-A custom period from `start` to `end` (inclusive). Forgiving: dates given in
-reverse order are swapped.
+A custom period from `start` (included) to `end` (excluded). Forgiving:
+values given in reverse order are swapped. Equal values make an empty
+period.
 
 ```ts
-range(new Date(2026, 0, 1), new Date(2026, 2, 31))
-// { start: Jan 1, end: Mar 31, unit: "custom" }
+range(Temporal.PlainDate.from("2026-01-01"), Temporal.PlainDate.from("2026-04-01"));
+// { start: 2026-01-01, end: 2026-04-01, unit: "custom" }: January to March
 ```
 
 ### `MinutaError`
@@ -173,6 +182,22 @@ type MinutaErrorCode = (typeof MinutaError)[keyof typeof MinutaError];
 ```
 
 One of the {@link MinutaError} codes.
+
+### `Chunks`
+
+```ts
+type Chunks<
+  Source extends Period,
+  Name extends Unit,
+> = Source extends DatePeriod
+  ? Name extends DateUnit
+    ? DatePeriod[]
+    : TimePeriod[]
+  : TimePeriod[];
+```
+
+The chunks a division makes: date periods when a date period is divided
+by a date unit, time periods otherwise.
 
 ### `DivideOptions`
 
@@ -192,37 +217,118 @@ Options for `divide` / `divideWith`.
 ```ts
 type Minuta = Readonly<{
   contains: typeof contains;
-  divide: Bound<typeof divideWith>;
-  duration: Bound<typeof durationWith>;
+  divide: <Source extends Period, Name extends Unit>(
+    period: Source,
+    unit: Name,
+    options?: DivideOptions
+  ) => Chunks<Source, Name>;
+  duration: (period: Period, unit: Unit) => number;
   length: typeof length;
-  next: Bound<typeof nextWith>;
+  next: <Source extends Period>(period: Source) => Source;
   overlaps: typeof overlaps;
-  period: Bound<typeof periodWith>;
-  previous: Bound<typeof previousWith>;
+  period: <Name extends Unit>(value: TimeValue, unit: Name) => PeriodOf<Name>;
+  previous: <Source extends Period>(period: Source) => Source;
   range: typeof range;
-  same: Bound<typeof sameWith>;
-  shift: Bound<typeof shiftWith>;
+  same: (first: Period, second: Period, unit: Unit | "custom") => boolean;
+  shift: <Source extends Period>(period: Source, steps: number) => Source;
   /** The units every member is bound to */
   units: Units;
 }>;
 ```
 
-All operations, bound to one set of units.
+All operations, bound to one set of units. Written out rather than
+derived, so the generic signatures keep their type parameters: a day's
+`period` is a `DatePeriod`, `next` of a `TimePeriod` a `TimePeriod`.
+
+### `DatePeriod`
+
+```ts
+type DatePeriod = Readonly<{
+  end: PlainDate;
+  start: PlainDate;
+  unit: DateUnit | "custom";
+}>;
+```
+
+A span of calendar dates, `start` included and `end` excluded: March 2026
+is `[2026-03-01, 2026-04-01)`. No time zone: a day is a date, so clock
+changes cannot move it.
+
+### `DateUnit`
+
+```ts
+type DateUnit = {
+  [Name in Unit]: UnitRegistry[Name] extends "date" ? Name : never;
+}[Unit];
+```
+
+The units made of calendar dates: `"year"` … `"day"`, and your own.
 
 ### `Period`
 
 ```ts
-type Period = Readonly<{
-  end: Readonly<Date>;
-  start: Readonly<Date>;
-  unit: Unit | "custom";
+type Period = DatePeriod | TimePeriod;
+```
+
+The primitive: every time range is a Period. Plain, deeply readonly data,
+`start` included and `end` excluded.
+
+`periodWith(units, value, "month")` creates one aligned to a unit,
+`range(start, end)` a custom one.
+
+### `PeriodOf`
+
+```ts
+type PeriodOf<Name extends Unit> = Name extends DateUnit
+  ? DatePeriod
+  : TimePeriod;
+```
+
+The period a unit makes: a `DatePeriod` for date units, else a `TimePeriod`.
+
+### `PlainDate`
+
+```ts
+type PlainDate = Readonly<Temporal.PlainDate>;
+```
+
+A calendar date, read-only.
+
+### `TimePeriod`
+
+```ts
+type TimePeriod = Readonly<{
+  end: ZonedDateTime;
+  start: ZonedDateTime;
+  unit: TimeUnit | "custom";
 }>;
 ```
 
-The primitive: every time range is a Period. Plain, deeply readonly data.
+A span of moments in one time zone, `start` included and `end` excluded:
+the hour from 13:00 is `[13:00, 14:00)`.
 
-`periodWith(units, date, "month")` creates one aligned to a unit,
-`range(start, end)` a custom one. `end` is inclusive (the last millisecond).
+### `TimeUnit`
+
+```ts
+type TimeUnit = {
+  [Name in Unit]: UnitRegistry[Name] extends "time" ? Name : never;
+}[Unit];
+```
+
+The units made of moments: `"hour"`, `"minute"`, `"second"`, and your own.
+
+### `TimeValue`
+
+```ts
+type TimeValue =
+  | Readonly<Temporal.Instant>
+  | PlainDate
+  | Readonly<Temporal.PlainDateTime>
+  | ZonedDateTime;
+```
+
+A value a period can be made from. Date units read its calendar date;
+time units its moment, in the units' time zone unless it carries its own.
 
 ### `Unit`
 
@@ -236,12 +342,20 @@ A unit name: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`,
 ### `Units`
 
 ```ts
-type Units = Readonly<Partial<Record<Unit, UnitSpec>>> & Settings;
+type Units = Readonly<{ [Name in Unit]?: SpecOf<Name> }> & Settings;
 ```
 
 The unit specs available to unit-aware functions. Partial, so a bundle can
-carry only the units it uses; adapters such as `temporalUnits()` return all,
-plus the `weekend`.
+carry only the units it uses; `temporalUnits()` returns all, plus the
+settings.
+
+### `ZonedDateTime`
+
+```ts
+type ZonedDateTime = Readonly<Temporal.ZonedDateTime>;
+```
+
+A moment in a time zone, read-only.
 
 ### `Weekday`
 
@@ -267,13 +381,16 @@ Same as `contains` in `@aleksejdix/minuta`.
 ### `divideWith`
 
 ```ts
-divideWith(units: Units, period: Period, unit: Unit, options: DivideOptions = {}): Period[]
+divideWith(units: Units, period: Source, unit: Name, options: DivideOptions = {}): Chunks<Source, Name>
 ```
 
-Divide a period into chunks of `unit`, clipped to the period.
+Divide a period into chunks of `unit`, clipped to the period. A date
+period divided by a date unit gives date periods; divided by a time unit
+(a day into hours), its days become moments in the units' time zone, so a
+day the clocks skip has no hours at all.
 
 ```ts
-divideWith(units, month, "day")                 // 28-31 day periods
+divideWith(units, march, "day")                 // 31 day periods
 divideWith(units, hour, "minute", { step: 15 }) // 4 fifteen-minute periods
 ```
 
@@ -283,14 +400,14 @@ divideWith(units, hour, "minute", { step: 15 }) // 4 fifteen-minute periods
 durationWith(units: Units, period: Period, unit: Unit): number
 ```
 
-How many complete `unit`s fit into a period, measured over the half-open
-range `[start, end + 1 ms)` with the units' own calendar and DST rules.
-From a unit start, calendar units are counted by their boundaries, so a
-day without a midnight is still one day.
+How many complete `unit`s fit into a period, counted from its start with
+the units' calendar and clock rules. A date period counted in a time unit
+(a day in hours) becomes moments in the units' time zone first, so a day
+the clocks change on has 23 or 25 hours.
 
 ```ts
-durationWith(units, period(new Date(2026, 9, 8), "day"), "hour"); // 24
-durationWith(units, period(new Date(2026, 1, 1), "month"), "day"); // 28
+durationWith(units, march, "day"); // 31
+durationWith(units, period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // 23 in Zurich
 ```
 
 ### `length`
@@ -300,13 +417,13 @@ Same as `length` in `@aleksejdix/minuta`.
 ### `nextWith`
 
 ```ts
-nextWith(units: Units, period: Period): Period
+nextWith(units: Units, period: Source): Source
 ```
 
 The next period of the same unit.
 
 ```ts
-nextWith(temporalUnits(), periodWith(temporalUnits(), new Date(2026, 2, 15), "month")); // April 2026
+nextWith(units, march); // April
 ```
 
 ### `overlaps`
@@ -316,26 +433,30 @@ Same as `overlaps` in `@aleksejdix/minuta`.
 ### `periodWith`
 
 ```ts
-periodWith(units: Units, date: Readonly<Date>, unit: Unit): Period
+periodWith(units: Units, value: TimeValue, unit: Name): PeriodOf<Name>
 ```
 
-The period of `unit` that contains `date`.
+The period of `unit` that contains `value`. Date units read the value's
+calendar date; time units its moment, in the units' time zone unless the
+value carries its own.
 
 ```ts
-periodWith(units, new Date(2026, 2, 15), "month")
-// { start: Mar 1 00:00, end: Mar 31 23:59:59.999, unit: "month" }
+periodWith(units, Temporal.PlainDate.from("2026-03-15"), "month");
+// { start: 2026-03-01, end: 2026-04-01, unit: "month" }
+periodWith(units, Temporal.ZonedDateTime.from("2026-03-15T10:30[Europe/Zurich]"), "hour");
+// { start: 10:00, end: 11:00, unit: "hour" }
 ```
 
 ### `previousWith`
 
 ```ts
-previousWith(units: Units, period: Period): Period
+previousWith(units: Units, period: Source): Source
 ```
 
 The previous period of the same unit.
 
 ```ts
-previousWith(temporalUnits(), periodWith(temporalUnits(), new Date(2026, 2, 15), "month")); // February 2026
+previousWith(units, march); // February
 ```
 
 ### `range`
@@ -348,8 +469,9 @@ Same as `range` in `@aleksejdix/minuta`.
 sameWith(units: Units, first: Period, second: Period, unit: Unit | "custom"): boolean
 ```
 
-Whether two periods fall into the same `unit` (compared by their starts).
-With `"custom"`, both edges must be identical.
+Whether two periods fall into the same `unit`, compared by their starts:
+the same calendar unit for date units, the same moment's unit for time
+units. With `"custom"`, both edges must be identical.
 
 ```ts
 sameWith(units, mondayPeriod, fridayPeriod, "week") // true
@@ -358,7 +480,7 @@ sameWith(units, mondayPeriod, fridayPeriod, "week") // true
 ### `shiftWith`
 
 ```ts
-shiftWith(units: Units, period: Period, steps: number): Period
+shiftWith(units: Units, period: Source, steps: number): Source
 ```
 
 Move a period by `steps` of its own unit: the period that many places
@@ -384,6 +506,19 @@ const grids = bind(temporalUnits({ weekStartsOn: "sunday" }), calendar);
 grids.monthGrid(new Date());
 ```
 
+### `boundAs`
+
+```ts
+boundAs(): <Fn>(fn: Fn) => Fn & BoundAs<Shape>
+```
+
+Give a plugin function the signature it has once bound. Only a type: the
+function is returned as it is.
+
+```ts
+const snap = boundAs<typeof snapBound>()(snapWith);
+```
+
 ### `MinutaError`
 
 Same as `MinutaError` in `@aleksejdix/minuta`.
@@ -391,14 +526,13 @@ Same as `MinutaError` in `@aleksejdix/minuta`.
 ### `specFor`
 
 ```ts
-specFor(units: Units, unit: Unit): UnitSpec
+specFor(units: Units, unit: Name): SpecOf<Name>
 ```
 
-The spec for `unit`. For calendar units its `endOf` ends right before the
-next period starts, even where the clocks go back at midnight.
+The spec for `unit`.
 
 ```ts
-specFor(temporalUnits(), "week").startOf(new Date(2026, 2, 18)); // Monday Mar 16, 00:00
+specFor(temporalUnits(), "week").startOf(Temporal.PlainDate.from("2026-03-18")); // 2026-03-16, a Monday
 ```
 
 ### `MinutaErrorCode`
@@ -428,12 +562,27 @@ time.units; // the units passed in
 ### `Bound`
 
 ```ts
-type Bound<Fn> = Fn extends (units: Units, ...args: infer Args) => infer Result
-  ? (...args: Args) => Result
-  : never;
+type Bound<Fn> =
+  Fn extends BoundAs<infer Shape>
+    ? unknown extends Shape
+      ? Unmarked<Fn>
+      : Shape
+    : Unmarked<Fn>;
 ```
 
-`Fn` without its leading `units` parameter.
+`Fn` without its leading `units` parameter: the signature it names with
+`BoundAs`, else its own parameters after `units`.
+
+### `BoundAs`
+
+```ts
+type BoundAs<Shape> = Readonly<{ "~bound"?: Shape }>;
+```
+
+Marks a plugin function with the signature it has once bound. Binding
+through a conditional type keeps only the last overload of a function and
+none of its type parameters; a function that has overloads or type
+parameters names its bound form here instead.
 
 ### `BoundPlugin`
 
@@ -460,6 +609,10 @@ type WithUnits = (units: Units, ...args: readonly never[]) => unknown;
 ```
 
 A context-first function: unit specs first, then its own arguments.
+
+### `Chunks`
+
+Same as `Chunks` in `@aleksejdix/minuta`.
 
 ### `DivideOptions`
 
@@ -515,10 +668,12 @@ A day of the week as `Date#getDay()` numbers it: 0 = Sunday … 6 = Saturday.
 ### `AllUnits`
 
 ```ts
-type AllUnits = Readonly<Record<BuiltInUnit, UnitSpec>> & Settings;
+type AllUnits = Readonly<{ [Name in BuiltInUnit]: SpecOf<Name> }> &
+  Readonly<{ timeZone: string }> &
+  Settings;
 ```
 
-A spec for every built-in unit, as returned by the adapters. Add specs of
+A spec for every built-in unit, as `temporalUnits()` returns. Add specs of
 your own units next to them: `Object.assign({ fortnight }, temporalUnits())`.
 
 ### `BuiltInUnit`
@@ -535,12 +690,101 @@ type BuiltInUnit =
   | "year";
 ```
 
-The units every adapter provides. Units added to `UnitRegistry` come with
-your own spec, so they are not part of `AllUnits`.
+The units every set of units provides. Units added to `UnitRegistry` come
+with your own spec, so they are not part of `AllUnits`.
+
+### `DatePeriod`
+
+Same as `DatePeriod` in `@aleksejdix/minuta`.
+
+### `DateSpec`
+
+```ts
+type DateSpec = Readonly<{
+  /** Marks a spec of calendar dates */
+  kind: "date";
+  add: (date: PlainDate, amount: number) => PlainDate;
+  diff: (from: PlainDate, to: PlainDate) => number;
+  startOf: (date: PlainDate) => PlainDate;
+}>;
+```
+
+How one date unit behaves on calendar dates — plain data.
+
+- startOf: the first date of the unit containing `date`
+- add(date, n): the date `n` units later (negative: earlier)
+- diff(from, to): the number of complete units from `from` to `to`,
+  truncated toward zero: the largest `n` with `add(from, n) <= to` (for
+  an earlier `to`, the smallest `n` with `add(from, n) >= to`)
+
+### `DateUnit`
+
+Same as `DateUnit` in `@aleksejdix/minuta`.
 
 ### `Period`
 
 Same as `Period` in `@aleksejdix/minuta`.
+
+### `PeriodOf`
+
+Same as `PeriodOf` in `@aleksejdix/minuta`.
+
+### `PlainDate`
+
+Same as `PlainDate` in `@aleksejdix/minuta`.
+
+### `Settings`
+
+```ts
+type Settings = Readonly<{
+  /**
+   * IANA time zone that dates become moments in, e.g. when a day is divided
+   * into hours. Default: the runtime's.
+   */
+  timeZone?: string | undefined;
+  /** First day of the `week` spec, 0 = Sunday … 6 = Saturday. Default: Monday. */
+  weekStartsOn?: WeekdayNumber | undefined;
+  /** Weekend days, 0 = Sunday … 6 = Saturday. Default: Saturday and Sunday. */
+  weekend?: readonly WeekdayNumber[] | undefined;
+}>;
+```
+
+Settings that travel with the unit specs.
+
+### `SpecOf`
+
+```ts
+type SpecOf<Name extends Unit> = Name extends DateUnit ? DateSpec : TimeSpec;
+```
+
+The spec of a unit: a `DateSpec` for date units, else a `TimeSpec`.
+
+### `TimePeriod`
+
+Same as `TimePeriod` in `@aleksejdix/minuta`.
+
+### `TimeSpec`
+
+```ts
+type TimeSpec = Readonly<{
+  /** Marks a spec of moments */
+  kind: "time";
+  add: (date: ZonedDateTime, amount: number) => ZonedDateTime;
+  diff: (from: ZonedDateTime, to: ZonedDateTime) => number;
+  startOf: (date: ZonedDateTime) => ZonedDateTime;
+}>;
+```
+
+How one time unit behaves on moments, with the same contract as
+`DateSpec`. Results stay in the zone of the value passed in.
+
+### `TimeUnit`
+
+Same as `TimeUnit` in `@aleksejdix/minuta`.
+
+### `TimeValue`
+
+Same as `TimeValue` in `@aleksejdix/minuta`.
 
 ### `Unit`
 
@@ -548,33 +792,18 @@ Same as `Unit` in `@aleksejdix/minuta`.
 
 ### `UnitRegistry`
 
-Registry of unit names. An interface so plugins can add units through
+Registry of unit names and their kind: `"date"` units (a year … a day)
+are made of calendar dates, `"time"` units (an hour … a second) of
+moments in a time zone. An interface so plugins can add units through
 module augmentation; the matching spec is passed as data in `Units`.
 
 ### `Units`
 
 Same as `Units` in `@aleksejdix/minuta`.
 
-### `UnitSpec`
+### `ZonedDateTime`
 
-```ts
-type UnitSpec = Readonly<{
-  add: (date: Readonly<Date>, amount: number) => Date;
-  diff: (from: Readonly<Date>, to: Readonly<Date>) => number;
-  endOf: (date: Readonly<Date>) => Date;
-  startOf: (date: Readonly<Date>) => Date;
-}>;
-```
-
-How one unit behaves — plain data, like a country spec in ibanita.
-
-- startOf: earliest millisecond of the unit containing `date`
-- endOf: latest millisecond of the unit containing `date`
-- add(date, n) then add(result, -n) returns the original date
-- diff(from, to) is the number of complete units from `from` to `to`,
-  truncated toward zero: the largest `n` with `add(from, n) <= to` (for an
-  earlier `to`, the smallest `n` with `add(from, n) >= to`). The adapters
-  guarantee it; custom units must follow it
+Same as `ZonedDateTime` in `@aleksejdix/minuta`.
 
 ## `@aleksejdix/minuta/calendar`
 
@@ -596,19 +825,19 @@ or to `bind(units, calendar)`.
 ### `dayGridWith`
 
 ```ts
-dayGridWith(units: Units, date: Readonly<Date>): DayGrid
+dayGridWith(units: Units, value: TimeValue): DayGrid
 ```
 
-The real hours of the day containing `date`: 23 on a spring-forward day,
-25 on a fall-back day, 24 otherwise. Each slot carries its wall-clock hour
-in `units.timeZone` (the runtime's zone when unset).
+The real hours of the day containing `value`: 23 on a spring-forward day,
+25 on a fall-back day, 24 otherwise. The day lies in the zone of a moment
+passed in, else in the units' time zone; each slot carries the wall-clock
+hour it starts in.
 
 ```ts
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
 import { dayGridWith } from "@aleksejdix/minuta/calendar";
 
-const units = dateFnsTzUnits({ timeZone: "America/New_York" });
-const { periods, gapHour } = dayGridWith(units, new Date("2024-03-10T12:00:00Z"));
+const units = temporalUnits({ timeZone: "America/New_York" });
+const { periods, gapHour } = dayGridWith(units, Temporal.PlainDate.from("2024-03-10"));
 periods.length; // 23
 gapHour; // 2
 ```
@@ -616,27 +845,27 @@ gapHour; // 2
 ### `monthGridWith`
 
 ```ts
-monthGridWith(units: Units, date: Readonly<Date>): MonthGrid
+monthGridWith(units: Units, value: TimeValue): MonthGrid
 ```
 
 A stable month grid: 42 day periods (6 weeks) starting with the week that
 contains the first of the month. The week start comes from the `week` unit.
 
 ```ts
-const { periods } = monthGridWith(temporalUnits({ weekStartsOn: "monday" }), new Date(2026, 2, 15));
+const { periods } = monthGridWith(temporalUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-03-15"));
 ```
 
 ### `yearGridWith`
 
 ```ts
-yearGridWith(units: Units, date: Readonly<Date>): YearGrid
+yearGridWith(units: Units, value: TimeValue): YearGrid
 ```
 
 A stable year grid: whole weeks from the week containing January 1 to the
 week containing December 31. The week start comes from the `week` unit.
 
 ```ts
-yearGridWith(temporalUnits({ weekStartsOn: "monday" }), new Date(2026, 5, 1)).periods; // 53 week periods
+yearGridWith(temporalUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-06-01")).periods; // 53 week periods
 ```
 
 ### `isWeekdayWith`
@@ -649,8 +878,8 @@ Whether every day the period touches is a working day: not in the units'
 `weekend` (Saturday and Sunday unless set).
 
 ```ts
-isWeekdayWith(temporalUnits(), period(new Date(2026, 2, 18), "day")); // true (a Wednesday)
-isWeekdayWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 22), "day")); // true (a Sunday)
+isWeekdayWith(temporalUnits(), period(Temporal.PlainDate.from("2026-03-18"), "day")); // true (a Wednesday)
+isWeekdayWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-22"), "day")); // true (a Sunday)
 ```
 
 ### `isWeekendWith`
@@ -663,8 +892,8 @@ Whether every day the period touches is a weekend day, as configured by
 the units' `weekend` (Saturday and Sunday unless set).
 
 ```ts
-isWeekendWith(temporalUnits(), period(new Date(2026, 2, 21), "day")); // true (a Saturday)
-isWeekendWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(new Date(2026, 2, 20), "day")); // true (a Friday)
+isWeekendWith(temporalUnits(), period(Temporal.PlainDate.from("2026-03-21"), "day")); // true (a Saturday)
+isWeekendWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-20"), "day")); // true (a Friday)
 ```
 
 ### `DayGrid`
@@ -680,14 +909,15 @@ type DayGrid = Readonly<{
 }>;
 ```
 
-The real hours of a day: 23, 24 or 25 slots, with DST metadata.
+The real hours of a day: 23, 24 or 25 slots, with the skipped and the
+repeated wall-clock hour.
 
 ### `HourSlot`
 
 ```ts
-type HourSlot = Period &
+type HourSlot = TimePeriod &
   Readonly<{
-    /** Wall-clock hour (0-23) in the units' time zone */
+    /** Wall-clock hour (0-23) the slot starts in, in the day's zone */
     hour: number;
   }>;
 ```
@@ -698,9 +928,10 @@ One real hour of a day, labelled with its wall-clock hour.
 
 ```ts
 type MonthGrid = Readonly<{
-  monthStart: Readonly<Date>;
+  monthStart: PlainDate;
   /** The 42 day periods, row by row */
-  periods: readonly Period[];
+  periods: readonly DatePeriod[];
+  /** The weekday the grid starts on, 0 = Sunday … 6 = Saturday */
   weekStartsOn: number;
 }>;
 ```
@@ -713,9 +944,10 @@ the grid was built with.
 ```ts
 type YearGrid = Readonly<{
   /** The week periods covering the year */
-  periods: readonly Period[];
+  periods: readonly DatePeriod[];
+  /** The weekday the grid starts on, 0 = Sunday … 6 = Saturday */
   weekStartsOn: number;
-  yearStart: Readonly<Date>;
+  yearStart: PlainDate;
 }>;
 ```
 
@@ -728,28 +960,13 @@ week start the grid was built with.
 
 ```ts
 const intervals: Readonly<{
-  clamp: (
-    units: Units,
-    ...args: Readonly<Parameters<typeof clamp>>
-  ) => ReturnType<typeof clamp>;
-  gap: (
-    units: Units,
-    ...args: Readonly<Parameters<typeof gap>>
-  ) => ReturnType<typeof gap>;
-  merge: typeof mergeWith;
-  move: (
-    units: Units,
-    ...args: Readonly<Parameters<typeof move>>
-  ) => ReturnType<typeof move>;
-  resize: (
-    units: Units,
-    ...args: Readonly<Parameters<typeof resize>>
-  ) => ReturnType<typeof resize>;
-  snap: typeof snapWith;
-  split: (
-    units: Units,
-    ...args: Readonly<Parameters<typeof split>>
-  ) => ReturnType<typeof split>;
+  clamp: IgnoringUnits<typeof clamp>;
+  gap: IgnoringUnits<typeof gap>;
+  merge: typeof mergeWith & BoundAs<MergeBound>;
+  move: IgnoringUnits<typeof move>;
+  resize: IgnoringUnits<typeof resize>;
+  snap: typeof snapWith & BoundAs<SnapBound>;
+  split: IgnoringUnits<typeof split>;
 }>
 ```
 
@@ -762,15 +979,17 @@ or to `bind(units, intervals)`.
 clamp(period: Period, bounds: Period): Period | undefined
 ```
 
-Constrain a period to fit within bounds.
+Constrain a period to fit within bounds: the time the two share.
 
-Returns undefined if the period is entirely outside bounds.
+Returns undefined when they share no time, also when they only touch.
+Next to a time period, a date period becomes moments in that period's
+zone.
 
 ```ts
-const selection = range(new Date(2026, 0, 5), new Date(2026, 0, 25))
-const allowed = range(new Date(2026, 0, 10), new Date(2026, 0, 20))
-clamp(selection, allowed)
-// → { start: Jan 10, end: Jan 20, unit: "custom" }
+const selection = range(Temporal.PlainDate.from("2026-01-05"), Temporal.PlainDate.from("2026-01-25"));
+const allowed = range(Temporal.PlainDate.from("2026-01-10"), Temporal.PlainDate.from("2026-01-20"));
+clamp(selection, allowed);
+// → { start: 2026-01-10, end: 2026-01-20, unit: "custom" }
 ```
 
 ### `gap`
@@ -779,92 +998,106 @@ clamp(selection, allowed)
 gap(from: TimePoint, to: TimePoint): Period | undefined
 ```
 
-The time strictly between two dates or periods: from the millisecond after
-the earlier one ends to the millisecond before the later one starts. A date
-counts as its own millisecond. Order does not matter.
+The time between two dates, moments or periods: from where the earlier
+one ends to where the later one starts. A date counts as its whole day, a
+moment as an instant. Order does not matter.
 
 ```ts
-gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 5), "day"));
-// { start: Mar 3, end: Mar 4 23:59:59.999, unit: "custom" }
-gap(period(new Date(2026, 2, 2), "day"), period(new Date(2026, 2, 3), "day")); // undefined: they touch
+gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainDate.from("2026-03-05"), "day"));
+// { start: 2026-03-03, end: 2026-03-05, unit: "custom" }: Mar 3 and 4
+gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainDate.from("2026-03-03"), "day")); // undefined: they touch
 ```
 
 ### `mergeWith`
 
 ```ts
-mergeWith(units: Units, periods: readonly Period[], unit?: Unit): Period | undefined
+mergeWith(units: Units, periods: readonly Source[], unit?: Unit): Source | undefined
 ```
 
-Merge periods into one spanning the earliest start to the latest end. The
-result keeps `unit` (by default the first period's unit) only when it is
-exactly one period of that unit; otherwise its unit is `"custom"`.
+Merge periods of one kind into one spanning the earliest start to the
+latest end. The result keeps `unit` (by default the first period's unit)
+only when it is exactly one period of that unit; otherwise its unit is
+`"custom"`.
 
 ```ts
 mergeWith(units, [januaryFirstHalf, januarySecondHalf], "month"); // January, unit "month"
-mergeWith(units, [january, march]); // Jan 1 – Mar 31, unit "custom"
+mergeWith(units, [january, march]); // Jan 1 – Apr 1, unit "custom"
 mergeWith(units, []); // undefined
 ```
 
 ### `move`
 
 ```ts
-move(period: Period, targetDate: Readonly<Date>): Period
+move(period: DatePeriod, target: PlainDate): DatePeriod
+move(period: TimePeriod, target: ZonedDateTime): TimePeriod
+move(period: Period, target: PlainDate | ZonedDateTime): Period
 ```
 
-Relocate a period to a target date, preserving its duration.
+Relocate a period to start at `target`, keeping its length: days for a
+date period, exact time for a time period.
 
 ```ts
-const appointment = range(new Date(2026, 2, 29, 9, 0), new Date(2026, 2, 29, 10, 0))
-const relocated = move(appointment, new Date(2026, 3, 2, 14, 0))
+const appointment = range(Temporal.ZonedDateTime.from("2026-03-29T09:00[Europe/Zurich]"), Temporal.ZonedDateTime.from("2026-03-29T10:00[Europe/Zurich]"));
+move(appointment, Temporal.ZonedDateTime.from("2026-04-02T14:00[Europe/Zurich]"));
 // → { start: Apr 2 14:00, end: Apr 2 15:00, unit: "custom" }
 ```
 
 ### `resize`
 
 ```ts
-resize(period: Period, edge: "start" | "end", newDate: Readonly<Date>): Period | undefined
+resize(period: DatePeriod, edge: "start" | "end", value: PlainDate): DatePeriod | undefined
+resize(period: TimePeriod, edge: "start" | "end", value: ZonedDateTime): TimePeriod | undefined
+resize(period: Period, edge: "start" | "end", value: PlainDate | ZonedDateTime): Period | undefined
 ```
 
 Move one edge of a period while keeping the other fixed.
 
-Returns undefined if the new edge crosses the fixed edge.
+Returns undefined if the new edge crosses the fixed edge. Meeting it is
+fine: the result is an empty period.
 
 ```ts
-const meeting = range(new Date(2026, 2, 29, 9, 0), new Date(2026, 2, 29, 10, 0))
-resize(meeting, 'end', new Date(2026, 2, 29, 11, 30))
+const meeting = range(Temporal.ZonedDateTime.from("2026-03-29T09:00[Europe/Zurich]"), Temporal.ZonedDateTime.from("2026-03-29T10:00[Europe/Zurich]"));
+resize(meeting, "end", Temporal.ZonedDateTime.from("2026-03-29T11:30[Europe/Zurich]"));
 // → { start: 9:00, end: 11:30, unit: "custom" }
 ```
 
 ### `snapWith`
 
 ```ts
-snapWith(units: Units, date: Readonly<Date>, unit: Unit, options: SnapOptions = {}): Date
+snapWith(units: Units, value: PlainDate, unit: DateUnit, options?: SnapOptions): PlainDate
+snapWith(units: Units, value: ZonedDateTime, unit: Unit, options?: SnapOptions): ZonedDateTime
+snapWith(units: Units, value: PlainDate | ZonedDateTime, unit: Unit, options: SnapOptions = {}): PlainDate | ZonedDateTime
 ```
 
-Snap a date to a boundary of `step` units: the unit's start, or every
-`step`-th one counted from the start of the enclosing unit (minutes from
-the hour, hours from the day, days from the month, months and quarters
-from the year; weeks and years from 1970).
+Snap a date or a moment to a boundary of `step` units: the unit's start,
+or every `step`-th one counted from the start of the enclosing unit
+(minutes from the hour, hours from the day, days from the month, months
+and quarters from the year; weeks and years from 1970). A date snaps to
+dates; a moment snaps to moments in its zone, for date units to the start
+of a day.
 
 ```ts
-snapWith(units, new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // 10:30
-snapWith(units, new Date(2026, 2, 15, 10, 37), "day", { mode: "ceil" }); // Mar 16
-snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // the week's start
+snapWith(units, Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), "minute", { step: 15 }); // 10:30
+snapWith(units, Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), "day", { mode: "ceil" }); // Mar 16 00:00
+snapWith(units, Temporal.PlainDate.from("2026-03-18"), "week", { mode: "floor" }); // 2026-03-16
 ```
 
 ### `split`
 
 ```ts
-split(period: Period, splitDate: Readonly<Date>): [Period, Period] | undefined
+split(period: DatePeriod, at: PlainDate): [DatePeriod, DatePeriod] | undefined
+split(period: TimePeriod, at: ZonedDateTime): [TimePeriod, TimePeriod] | undefined
+split(period: Period, at: PlainDate | ZonedDateTime): [Period, Period] | undefined
 ```
 
-Split a period at a date inside it. Both parts are `"custom"` periods:
-half a month is not a month.
+Split a period where the second part starts. Both parts are `"custom"`
+periods: half a month is not a month. The first part ends where the
+second begins, so every moment belongs to exactly one of them.
 
 ```ts
-const parts = split(period(new Date(2026, 2, 1), "month"), new Date(2026, 2, 15));
-// [Mar 1 – Mar 14 23:59:59.999, Mar 15 – Mar 31 23:59:59.999]
-split(period(new Date(2026, 2, 1), "month"), new Date(2027, 0, 1)); // undefined
+split(march, Temporal.PlainDate.from("2026-03-15"));
+// [2026-03-01 – 2026-03-15, 2026-03-15 – 2026-04-01]
+split(march, Temporal.PlainDate.from("2027-01-01")); // undefined
 ```
 
 ### `SnapMode`
@@ -896,26 +1129,17 @@ Options for `snap` / `snapWith`.
 formatPeriod(period: Period, locale: string, options: DisplayOptions = {}): string
 ```
 
-Format a period as a locale-aware display string.
-
-Uses Intl.DateTimeFormat — zero locale data shipped.
-Automatically picks the right format based on period type.
+Format a period as a locale-aware display string, picking the right
+format for its unit: a weekday and a day for a day, the month and year
+for a month, a range for weeks and custom periods. The same text
+everywhere: on native Temporal and the polyfill, on a server and in the
+browser.
 
 ```ts
-// month period, de-CH
-formatPeriod(monthPeriod, "de-CH")
-// → "März 2026"
-
-// day period, en-US
-formatPeriod(dayPeriod, "en-US")
-// → "March 15, 2026"
-
-// week period, ja-JP
-formatPeriod(weekPeriod, "ja-JP")
-// → "2026/03/09～2026/03/15"
-
-// a period of time-zone units, in their zone
-formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone })
+formatPeriod(march, "de-CH"); // "März 2026"
+formatPeriod(day, "en-US"); // "March 15, 2026"
+formatPeriod(day, "en-US", { weekday: "short" }); // "Sun"
+formatPeriod(week, "ja-JP"); // "2026/03/09～2026/03/15"
 ```
 
 ### `formatRange`
@@ -924,37 +1148,16 @@ formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone })
 formatRange(period: Period, locale: string, options: DisplayOptions = {}): string
 ```
 
-Format a period as a locale-aware range string.
-
-Uses Intl.DateTimeFormat.formatRange() which intelligently collapses
-shared parts (same year, same month).
-
-```ts
-// Same month: "1.–31. März 2026"
-// Cross month: "30. März – 5. Apr. 2026"
-// Cross year: "29. Dez. 2025 – 4. Jan. 2026"
-```
-
-## `@aleksejdix/minuta/date-fns-tz`
-
-### `dateFnsTzUnits`
+Format a period as a locale-aware range string, collapsing shared parts
+(same year, same month) with `Intl.DateTimeFormat#formatRange`. A date
+period shows its first and its last day; a time period its start and its
+end. The same text everywhere: on native Temporal and the polyfill, on a
+server and in the browser.
 
 ```ts
-dateFnsTzUnits(options: WeekOptions & Readonly<{ timeZone?: string }> = {}): AllUnits
-```
-
-Unit specs for every unit, computed with date-fns in one IANA time zone (requires `date-fns` and `@date-fns/tz`). Pass the result to
-`withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
-`bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
-the days `isWeekend` counts (Saturday and Sunday unless set).
-
-```ts
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
-import { withUnits } from "@aleksejdix/minuta/core";
-
-const time = withUnits(dateFnsTzUnits({ timeZone: "Europe/Zurich", weekStartsOn: "monday" }));
-time.period(new Date(), "week");
+formatRange(march, "de-CH"); // "1.–31. März 2026"
+formatRange(lastWeekOfMarch, "de-CH"); // "30. März – 5. Apr. 2026"
+formatRange(hour, "en-US"); // "Mar 18, 10:00 – 11:00 AM"
 ```
 
 ## `@aleksejdix/minuta/temporal`
@@ -962,22 +1165,40 @@ time.period(new Date(), "week");
 ### `temporalUnits`
 
 ```ts
-temporalUnits(options: WeekOptions = {}): AllUnits
+temporalUnits(options: TemporalUnitsOptions = {}): AllUnits
 ```
 
-Unit specs for every unit, computed with the TC39 Temporal API (reads the runtime's Temporal when computing; where it is missing, `await temporalReady()` first). Pass the result to
+Unit specs for every unit, computed with the TC39 Temporal API: date
+units on `PlainDate`, time units on `ZonedDateTime`. Pass the result to
 `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
 `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
 (`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
-the days `isWeekend` counts (Saturday and Sunday unless set).
+the days `isWeekend` counts (Saturday and Sunday unless set); `timeZone`
+is where dates become moments. Where the runtime has no Temporal,
+`await temporalReady()` first.
 
 ```ts
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(temporalUnits({ weekStartsOn: "monday" }));
-time.period(new Date(), "week");
+const time = withUnits(temporalUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
+time.period(Temporal.PlainDate.from("2026-03-18"), "week"); // [Mar 15, Mar 22)
 ```
+
+### `TemporalUnitsOptions`
+
+```ts
+type TemporalUnitsOptions = WeekOptions &
+  Readonly<{
+    /**
+     * IANA time zone that dates become moments in, e.g. when a day is
+     * divided into hours: `"UTC"`, `"Europe/Zurich"`. Default: the runtime's.
+     */
+    timeZone?: string | undefined;
+  }>;
+```
+
+Options of `temporalUnits`: the week, the weekend and the time zone.
 
 ### `temporalReady`
 

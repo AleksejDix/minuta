@@ -20,20 +20,31 @@ export {
   sameWith,
   shiftWith,
 } from "#src/operations/index";
-export { bind } from "#src/bind";
+export { bind, boundAs } from "#src/bind";
 export { MinutaError, specFor } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
 export { withUnits } from "#src/with-units";
-export type { Bound, BoundPlugin, Plugin, WithUnits } from "#src/bind";
-export type { DivideOptions } from "#src/operations/index";
+export type { Bound, BoundAs, BoundPlugin, Plugin, WithUnits } from "#src/bind";
+export type { Chunks, DivideOptions } from "#src/operations/divide";
 export type { Minuta, WithUnitsOptions } from "#src/with-units";
 export type { WeekOptions, Weekday, WeekdayNumber } from "#src/weekday";
 export type {
   AllUnits,
   BuiltInUnit,
+  DatePeriod,
+  DateSpec,
+  DateUnit,
   Period,
+  PeriodOf,
+  PlainDate,
+  Settings,
+  SpecOf,
+  TimePeriod,
+  TimeSpec,
+  TimeUnit,
+  TimeValue,
   Unit,
   UnitRegistry,
   Units,
-  UnitSpec,
+  ZonedDateTime,
 } from "#src/types";

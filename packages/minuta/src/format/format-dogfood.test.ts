@@ -1,4 +1,4 @@
-import type { Period, Unit } from "#src/types";
+import type { DatePeriod, DateUnit } from "#src/types";
 import {
   contains,
   period as derivePeriod,
@@ -9,8 +9,10 @@ import {
   same,
   shift,
 } from "#src/index";
+import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { format, formatAsRange } from "#src/test/format";
+import { Temporal } from "@js-temporal/polyfill";
 import { intervals } from "#src/intervals";
 import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/core";
@@ -37,8 +39,8 @@ const NO_REMAINDER = 0;
  * @param unit - Unit of the period
  * @returns The period containing the date
  */
-function period(isoDate: string, unit: Unit): Period {
-  return derivePeriod(new Date(`${isoDate}T00:00:00`), unit);
+function period(isoDate: string, unit: DateUnit): DatePeriod {
+  return derivePeriod(date(isoDate), unit);
 }
 
 /**
@@ -119,7 +121,7 @@ describe("dogfood divide()", () => {
     expect.hasAssertions();
     const q1 = period("2024-01-15", "quarter");
     expect(
-      divide(q1, "month").map((month: Period) => format(month))
+      divide(q1, "month").map((month: DatePeriod) => format(month))
     ).toStrictEqual(["January 2024", "February 2024", "March 2024"]);
   });
 
@@ -167,9 +169,7 @@ describe("dogfood merge() and split()", () => {
   it("splits March at the 15th", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const march = period("2026-03-01", "month");
-    const [first, second] = required(
-      split(march, new Date("2026-03-15T00:00:00"))
-    );
+    const [first, second] = required(split(march, date("2026-03-15")));
     expect(formatAsRange(first)).toContain("Mar");
     expect(formatAsRange(second)).toContain("Mar");
   });
@@ -179,13 +179,13 @@ describe("dogfood contains()", () => {
   it("march contains March 15", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const march = period("2026-03-01", "month");
-    expect(contains(march, new Date("2026-03-15T00:00:00"))).toBe(true);
+    expect(contains(march, date("2026-03-15"))).toBe(true);
   });
 
   it("march does not contain April 1", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const march = period("2026-03-01", "month");
-    expect(contains(march, new Date("2026-04-01T00:00:00"))).toBe(false);
+    expect(contains(march, date("2026-04-01"))).toBe(false);
   });
 
   it("q1 contains February", { timeout: 5000 }, () => {
@@ -213,14 +213,8 @@ describe("dogfood same() and clamp()", () => {
 
   it("clamps a wide period to bounds", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const wide = range(
-      new Date("2024-01-01T00:00:00"),
-      new Date("2024-12-31T00:00:00")
-    );
-    const bounds = range(
-      new Date("2024-03-01T00:00:00"),
-      new Date("2024-06-30T00:00:00")
-    );
+    const wide = range(date("2024-01-01"), date("2024-12-31"));
+    const bounds = range(date("2024-03-01"), date("2024-06-30"));
     const result = required(clamp(wide, bounds));
     expect(formatAsRange(result)).toContain("Mar");
     expect(formatAsRange(result)).toContain("Jun");
@@ -230,41 +224,42 @@ describe("dogfood same() and clamp()", () => {
 describe("dogfood snap()", () => {
   it("snaps a date to nearest 15-minute interval", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const date = new Date("2024-03-15T10:38:00");
-    const snapped = snap(date, "minute", { step: SNAP_MINUTES });
+    const moment = zoned("2024-03-15T10:38[UTC]");
+    const snapped = snap(moment, "minute", { step: SNAP_MINUTES });
     // Should round to nearest 15-min boundary
-    expect(snapped.getMinutes() % SNAP_MINUTES).toBe(NO_REMAINDER);
+    expect(snapped.minute % SNAP_MINUTES).toBe(NO_REMAINDER);
   });
 
   it("floor snaps to earlier boundary", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const date = new Date("2024-03-15T10:37:00");
-    const snapped = snap(date, "minute", {
+    const moment = zoned("2024-03-15T10:37[UTC]");
+    const snapped = snap(moment, "minute", {
       mode: "floor",
       step: SNAP_MINUTES,
     });
-    expect(snapped.getTime()).toBeLessThanOrEqual(date.getTime());
+    expect(Temporal.ZonedDateTime.compare(snapped, moment)).toBeLessThanOrEqual(
+      NO_REMAINDER
+    );
   });
 
   it("ceil snaps to later boundary", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const date = new Date("2024-03-15T10:37:00");
-    const snapped = snap(date, "minute", {
+    const moment = zoned("2024-03-15T10:37[UTC]");
+    const snapped = snap(moment, "minute", {
       mode: "ceil",
       step: SNAP_MINUTES,
     });
-    expect(snapped.getTime()).toBeGreaterThanOrEqual(date.getTime());
+    expect(
+      Temporal.ZonedDateTime.compare(snapped, moment)
+    ).toBeGreaterThanOrEqual(NO_REMAINDER);
   });
 });
 
 describe("dogfood move() and gap()", () => {
   it("moves a period to a new anchor date", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const week = range(
-      new Date("2024-01-01T00:00:00"),
-      new Date("2024-01-07T00:00:00")
-    );
-    const moved = move(week, new Date("2024-06-01T00:00:00"));
+    const week = range(date("2024-01-01"), date("2024-01-07"));
+    const moved = move(week, date("2024-06-01"));
     expect(formatAsRange(moved)).toContain("Jun");
   });
 
