@@ -2,9 +2,12 @@ import type { ComputedRef, Ref } from "vue";
 import type { MinutaState, Period, Unit } from "./types";
 import { computed, effect, ref } from "vue";
 import { describe, expect, it } from "vitest";
+import { date } from "#src/test/temporal";
 import { probeInRoot } from "./test/mount";
 import { useMinutaContext } from "./minuta-context";
 import { usePeriod } from "./use-period";
+
+const MONTH_OFFSET = 1;
 
 const NONE = 0;
 const ONE_MATCH = 1;
@@ -23,7 +26,7 @@ const CHILD_UNIT: Readonly<Partial<Record<Unit | "custom", Unit>>> = {
   year: "month",
 };
 
-const testDate = new Date("2024-01-15T00:00:00");
+const testDate = date("2024-01-15");
 
 type DrillDown = Readonly<{
   children: ComputedRef<readonly Period[]>;
@@ -132,17 +135,17 @@ describe("selection workflow", () => {
   it("highlights the day of a reactive date", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { minuta, month } = probeMonth();
-    const highlighted = ref(new Date("2024-01-20T00:00:00"));
+    const highlighted = ref(date("2024-01-20"));
     const matches = computed(() =>
       minuta
         .divide(month.value, "day")
         .filter((day) => minuta.contains(day, highlighted.value))
     );
     expect(matches.value).toHaveLength(ONE_MATCH);
-    expect(firstOf(matches.value).start.getDate()).toBe(DAY_20);
+    expect(firstOf(matches.value).start.day).toBe(DAY_20);
 
-    highlighted.value = new Date("2024-01-25T00:00:00");
-    expect(firstOf(matches.value).start.getDate()).toBe(DAY_25);
+    highlighted.value = date("2024-01-25");
+    expect(firstOf(matches.value).start.day).toBe(DAY_25);
   });
 });
 
@@ -161,16 +164,14 @@ describe("combined computed workflow", () => {
     const combined = computed(() => {
       updates.push("combined");
       return {
-        month: result.month.value.start.getMonth(),
-        year: result.year.value.start.getFullYear(),
+        month: result.month.value.start.month - MONTH_OFFSET,
+        year: result.year.value.start.year,
       };
     });
     expect(combined.value).toStrictEqual({ month: 0, year: 2024 });
     const initialUpdates = updates.length;
 
-    result.minuta.browse(
-      result.minuta.period(new Date("2025-06-15T00:00:00"), "day")
-    );
+    result.minuta.browse(result.minuta.period(date("2025-06-15"), "day"));
 
     expect(combined.value).toStrictEqual({ month: 5, year: 2025 });
     expect(updates.length).toBeGreaterThan(initialUpdates);
@@ -187,10 +188,10 @@ describe("reactive updates", () => {
       }),
       { date: testDate }
     );
-    const runs: number[] = [];
+    const runs: string[] = [];
     for (const day of result.days) {
       effect(() => {
-        runs.push(day.value.start.getTime());
+        runs.push(day.value.start.toString());
       });
     }
 

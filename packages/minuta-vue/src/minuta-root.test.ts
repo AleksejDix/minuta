@@ -9,9 +9,13 @@ import {
 } from "./test/mount";
 import { MinutaRoot } from "#src/index";
 import type { MinutaState } from "./types";
+import { date } from "#src/test/temporal";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
 import { useMinutaContext } from "./minuta-context";
+
+const MONTH_OFFSET = 1;
+const WEEK_LENGTH = 7;
 
 const SUNDAY = 0;
 const MONDAY = 1;
@@ -20,17 +24,17 @@ const FIRST = 0;
 const SECOND = 1;
 const OUTSIDE_ROOT = "useMinutaContext() must be used within <MinutaRoot>";
 
-const testDate = new Date("2024-03-13T00:00:00");
+const testDate = date("2024-03-13");
 
 describe("useMinutaContext()", () => {
   it("returns the state of the nearest MinutaRoot", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const { result } = probeInRoot(useMinutaContext, { date: testDate });
 
-    expect(result.browsing.value.start).toStrictEqual(
-      new Date("2024-03-01T00:00:00")
+    expect(result.browsing.value.start).toStrictEqual(date("2024-03-01"));
+    expect(result.period(testDate, "week").start.dayOfWeek % WEEK_LENGTH).toBe(
+      MONDAY
     );
-    expect(result.period(testDate, "week").start.getDay()).toBe(MONDAY);
   });
 
   it("shares one state between all parts", { timeout: 5000 }, () => {
@@ -77,7 +81,7 @@ describe("minutaRoot", () => {
     expect(result.browsing.value).toStrictEqual(
       useMinuta(options).browsing.value
     );
-    expect(result.browsing.value.start.getDay()).toBe(SUNDAY);
+    expect(result.browsing.value.start.dayOfWeek % WEEK_LENGTH).toBe(SUNDAY);
   });
 
   it("follows prop changes", { timeout: 5000 }, async () => {
@@ -92,13 +96,13 @@ describe("minutaRoot", () => {
       )
     );
     const state = itemAt(part.results, FIRST);
-    expect(state.browsing.value.start.getDay()).toBe(MONDAY);
+    expect(state.browsing.value.start.dayOfWeek % WEEK_LENGTH).toBe(MONDAY);
 
     units.value = temporalUnits({ weekStartsOn: SUNDAY });
     await nextTick();
 
-    expect(state.browsing.value.start.getDay()).toBe(SUNDAY);
-    expect(state.browsing.value.start.getMonth()).toBe(MARCH);
+    expect(state.browsing.value.start.dayOfWeek % WEEK_LENGTH).toBe(SUNDAY);
+    expect(state.browsing.value.start.month - MONTH_OFFSET).toBe(MARCH);
   });
 });
 
@@ -111,13 +115,11 @@ describe("minutaRoot slot", () => {
         { date: testDate },
         {
           default: ({ minuta }: Readonly<{ minuta: MinutaState }>) =>
-            minuta.browsing.value.start.toDateString(),
+            minuta.browsing.value.start.toString(),
         }
       )
     );
 
-    expect(element.textContent).toBe(
-      new Date("2024-03-01T00:00:00").toDateString()
-    );
+    expect(element.textContent).toBe(date("2024-03-01").toString());
   });
 });

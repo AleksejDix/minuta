@@ -1,13 +1,19 @@
-import type { Minuta, Period, Units } from "@aleksejdix/minuta/core";
+import type { Minuta, Period, TimeValue, Units } from "@aleksejdix/minuta/core";
 import type { MinutaOptions, MinutaState, Source } from "#src/types";
 import { computed, shallowRef, toValue } from "vue";
 import type { ComputedRef } from "vue";
+import { currentMoment } from "#src/now";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useClock } from "#src/use-clock";
 import { withUnits } from "@aleksejdix/minuta/core";
 
 const DEFAULT_UNITS: Units = temporalUnits();
 const DEFAULT_UNIT = "month";
+
+// The units' zone, else the runtime's
+function timeZoneOf(units: Units): string {
+  return units.timeZone ?? new Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
 
 /**
  * Exposes the operations of the current units: each operation is a stable
@@ -48,10 +54,10 @@ function followOperations(
  * @returns The bound operations and the reactive browsing state
  */
 function useMinuta(options: Source<MinutaOptions> = {}): MinutaState {
-  const browsedDate = shallowRef<Readonly<Date>>(
-    toValue(options).date ?? new Date()
-  );
   const units = computed(() => toValue(options).units ?? DEFAULT_UNITS);
+  const browsedDate = shallowRef<TimeValue>(
+    toValue(options).date ?? currentMoment(timeZoneOf(units.value))
+  );
   const unit = computed(() => toValue(options).unit ?? DEFAULT_UNIT);
   const operations = computed(() => withUnits(units.value));
   const clock = useClock(operations, () => toValue(options).now !== undefined);

@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 import type { Period } from "@aleksejdix/minuta/core";
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
 import { nextTick } from "vue";
+import { now } from "#src/test/temporal";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const JANUARY_17 = "Wednesday, January 17, 2024";
@@ -119,7 +120,7 @@ describe("calendar roving tabindex", () => {
 
   it("starts on today when it is shown", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const element = renderCalendar({ date: new Date() });
+    const element = renderCalendar({ date: now() });
 
     expect(onlyTabbable(element).getAttribute("aria-current")).toBe("date");
   });

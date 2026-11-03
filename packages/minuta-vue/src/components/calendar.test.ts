@@ -3,7 +3,8 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "#src/components/index";
-import type { Period, Units } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
+import { date as dateOf, now } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { h, nextTick } from "vue";
 import { itemAt, mountRender } from "#src/test/mount";
@@ -19,10 +20,10 @@ const MARCH_16_CELL = 19;
 const NO_CELLS = 0;
 const ONE_CELL = 1;
 
-const testDate = new Date("2024-03-13T00:00:00");
+const testDate = dateOf("2024-03-13");
 
 type CalendarSetup = Readonly<{
-  date?: Readonly<Date>;
+  date?: TimeValue;
   locale?: string;
   onSelect?: (day: Period) => void;
   units?: Units;
@@ -207,7 +208,7 @@ describe("calendarGrid", () => {
           default: (): VNode =>
             h(CalendarGrid, undefined, {
               day: ({ day }: Readonly<{ day: Period }>): VNode =>
-                h("i", { class: "custom-day" }, day.start.getDate()),
+                h("i", { class: "custom-day" }, day.start.day),
             }),
         }
       )
@@ -221,16 +222,14 @@ describe("calendarGrid", () => {
 describe("calendarDay", () => {
   it("marks today", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const today = new Date();
+    const today = now();
     const marked = cellsWithClass(renderCalendar({ date: today }), "is-today");
 
     expect(marked).toHaveLength(ONE_CELL);
     expect(itemAt(marked, FIRST_CELL).getAttribute("aria-current")).toBe(
       "date"
     );
-    expect(itemAt(marked, FIRST_CELL).textContent).toBe(
-      String(today.getDate())
-    );
+    expect(itemAt(marked, FIRST_CELL).textContent).toBe(String(today.day));
   });
 });
 
@@ -249,7 +248,7 @@ describe("calendarDay selection", () => {
 
     const cell = itemAt(dayCells(element), MARCH_16_CELL);
     expect(selected.map((day) => day.start)).toStrictEqual([
-      new Date("2024-03-16T00:00:00"),
+      dateOf("2024-03-16"),
     ]);
     expect(cell.classList.contains("is-selected")).toBe(true);
     expect(

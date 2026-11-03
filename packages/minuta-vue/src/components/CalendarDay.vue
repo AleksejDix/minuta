@@ -3,6 +3,7 @@ import { activeDay, dayForKey } from "./day-navigation";
 import { computed, nextTick, useTemplateRef } from "vue";
 import type { CalendarDayProps } from "./types";
 import type { Period } from "@aleksejdix/minuta/core";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
@@ -19,21 +20,15 @@ const calendar = useCalendarContext();
 const minuta = useMinutaContext();
 const button = useTemplateRef<HTMLButtonElement>("button");
 
-// The labels in the units' time zone, which may differ from the runtime's
-const dayNumber = computed(() =>
-  new Intl.DateTimeFormat(locale, {
-    day: "numeric",
-    timeZone: minuta.units.value.timeZone,
-  }).format(day.start)
-);
+// The labels of the day's own date, the same on the server and in the browser
+const dayNumber = computed(() => formatPeriod(day, locale, { day: "numeric" }));
 const fullDate = computed(() =>
-  new Intl.DateTimeFormat(locale, {
+  formatPeriod(day, locale, {
     day: "numeric",
     month: "long",
-    timeZone: minuta.units.value.timeZone,
     weekday: "long",
     year: "numeric",
-  }).format(day.start)
+  })
 );
 const isOutside = computed(
   () => !minuta.contains(minuta.browsing.value, day.start)

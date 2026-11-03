@@ -12,6 +12,7 @@ import { shallowRef } from 'vue'
 
 const LOCALES = ['de-CH', 'en-US', 'en-GB', 'ja-JP', 'ko-KR', 'fr-FR']
 const DEFAULT_LOCALE = 'de-CH'
+const MONTH_OFFSET = 1
 
 const locale = shallowRef(DEFAULT_LOCALE)
 const value = shallowRef<Readonly<Date>>()
@@ -22,13 +23,15 @@ const value = shallowRef<Readonly<Date>>()
  */
 
 /**
- * Puts a picked day into the date field. A fresh Date so re-picking the same
+ * Puts a picked day into the date field. The field still takes a Date: the
+ * day's calendar date at local midnight, a fresh one so re-picking the same
  * day still resets the field.
  *
  * @param day - The selected day
  */
 function selectDay(day: Period): void {
-  value.value = new Date(day.start)
+  const { day: dayOfMonth, month, year } = day.start
+  value.value = new Date(year, month - MONTH_OFFSET, dayOfMonth)
 }
 
 /**

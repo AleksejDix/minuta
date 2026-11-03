@@ -1,11 +1,11 @@
-import type { Period, Units } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
 
 /**
  * Props of `<CalendarRoot>`.
  */
 type CalendarRootProps = Readonly<{
-  /** Initially browsed date, default: now */
-  date?: Readonly<Date> | undefined;
+  /** Initially browsed date or moment, default: now */
+  date?: TimeValue | undefined;
   /** Whether a day can't be selected, default: none */
   isDisabled?: ((day: Period) => boolean) | undefined;
   /** Unit specs, default `temporalUnits()`; the week start lives in the units */

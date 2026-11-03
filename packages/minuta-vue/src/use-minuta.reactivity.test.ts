@@ -1,10 +1,14 @@
+import type { Period, TimeValue } from "@aleksejdix/minuta/core";
 import { computed, effect, ref, shallowRef } from "vue";
+import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import type { MinutaState } from "./types";
-import type { Period } from "@aleksejdix/minuta/core";
 import type { ReactiveEffectRunner } from "vue";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
+
+const MONTH_OFFSET = 1;
+const WEEK_LENGTH = 7;
 
 const NONE = 0;
 const ONE_RUN = 1;
@@ -20,7 +24,7 @@ const MONDAY = 1;
 const ONE_HOUR_PAST_NOON = 13;
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr"] as const;
 
-const testDate = new Date("2024-01-15T12:30:45");
+const testDate = zoned("2024-01-15T12:30:45[Europe/Zurich]");
 
 /**
  * Creates a minuta state with an effect that records every browsing value.
@@ -68,7 +72,7 @@ describe("useMinuta() browsing", () => {
     const [, lastBrowsing] = runs;
     expect(runs).toHaveLength(TWO_RUNS);
     expect(lastBrowsing).toStrictEqual(
-      minuta.period(new Date("2024-02-01T00:00:00"), "month")
+      minuta.period(date("2024-02-01"), "month")
     );
   });
 
@@ -79,10 +83,10 @@ describe("useMinuta() browsing", () => {
       expect.hasAssertions();
       const minuta = useMinuta({ date: testDate });
 
-      minuta.browse(minuta.period(new Date("2024-03-20T00:00:00"), "day"));
+      minuta.browse(minuta.period(date("2024-03-20"), "day"));
 
       expect(minuta.browsing.value.unit).toBe("month");
-      expect(minuta.browsing.value.start.getMonth()).toBe(MARCH);
+      expect(minuta.browsing.value.start.month - MONTH_OFFSET).toBe(MARCH);
     }
   );
 });
@@ -94,11 +98,13 @@ describe("useMinuta() derived state", () => {
     () => {
       expect.hasAssertions();
       const minuta = useMinuta({ date: testDate });
-      const year = computed(() => minuta.browsing.value.start.getFullYear());
-      const month = computed(() => minuta.browsing.value.start.getMonth());
+      const year = computed(() => minuta.browsing.value.start.year);
+      const month = computed(
+        () => minuta.browsing.value.start.month - MONTH_OFFSET
+      );
       expect([year.value, month.value]).toStrictEqual([YEAR_2024, JANUARY]);
 
-      minuta.browse(minuta.period(new Date("2025-06-15T00:00:00"), "day"));
+      minuta.browse(minuta.period(date("2025-06-15"), "day"));
 
       expect([year.value, month.value]).toStrictEqual([YEAR_2025, JUNE]);
     }
@@ -108,7 +114,7 @@ describe("useMinuta() derived state", () => {
     expect.hasAssertions();
     const minuta = useMinuta({ date: testDate });
     const monthName = computed(
-      () => MONTH_NAMES[minuta.browsing.value.start.getMonth()]
+      () => MONTH_NAMES[minuta.browsing.value.start.month - MONTH_OFFSET]
     );
     expect(monthName.value).toBe("Jan");
 
@@ -136,35 +142,35 @@ describe("useMinuta() derived state", () => {
 describe("useMinuta() reactive options", () => {
   it("uses date only as the initial date", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const dateRef = shallowRef(testDate);
+    const dateRef = shallowRef<TimeValue>(testDate);
     const minuta = useMinuta(() => ({ date: dateRef.value }));
 
-    dateRef.value = new Date("2024-02-01T00:00:00");
+    dateRef.value = date("2024-02-01");
 
-    expect(minuta.browsing.value.start.getMonth()).toBe(JANUARY);
+    expect(minuta.browsing.value.start.month - MONTH_OFFSET).toBe(JANUARY);
   });
 });
 
 describe("useMinuta() reactive now", () => {
   it("follows a reactive now", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const nowRef = shallowRef(new Date("2024-01-01T12:00:00"));
+    const nowRef = shallowRef(zoned("2024-01-01T12:00:00[Europe/Zurich]"));
     const minuta = useMinuta(() => ({ date: testDate, now: nowRef.value }));
     const runs: Period[] = [];
     effect(() => {
       runs.push(minuta.now.value);
     });
 
-    nowRef.value = new Date("2024-01-01T13:00:00");
+    nowRef.value = zoned("2024-01-01T13:00:00[Europe/Zurich]");
 
     expect(runs).toHaveLength(TWO_RUNS);
-    expect(minuta.now.value.start.getHours()).toBe(ONE_HOUR_PAST_NOON);
+    expect(minuta.now.value.start.hour).toBe(ONE_HOUR_PAST_NOON);
   });
 
   it("updates only what depends on a changed option", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const dateRef = shallowRef(testDate);
-    const nowRef = shallowRef(new Date("2024-01-20T00:00:00"));
+    const dateRef = shallowRef<TimeValue>(testDate);
+    const nowRef = shallowRef(zoned("2024-01-20T00:00:00[Europe/Zurich]"));
     const minuta = useMinuta(() => ({
       date: dateRef.value,
       now: nowRef.value,
@@ -175,8 +181,8 @@ describe("useMinuta() reactive now", () => {
     });
 
     [dateRef.value, nowRef.value] = [
-      new Date("2024-02-01T00:00:00"),
-      new Date("2024-02-01T00:00:00"),
+      date("2024-02-01"),
+      zoned("2024-02-01T00:00:00[Europe/Zurich]"),
     ];
 
     expect(log).toStrictEqual(["browsing", "now", "now"]);
@@ -186,23 +192,21 @@ describe("useMinuta() reactive now", () => {
 describe("useMinuta() reactive units and unit", () => {
   it("recomputes periods when the units change", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const date = new Date("2024-01-03T12:00:00");
+    const moment = zoned("2024-01-03T12:00:00[Europe/Zurich]");
     const units = shallowRef(temporalUnits({ weekStartsOn: MONDAY }));
     const minuta = useMinuta(() => ({
-      date,
+      date: moment,
       unit: "week",
       units: units.value,
     }));
-    expect(minuta.browsing.value.start).toStrictEqual(
-      new Date("2024-01-01T00:00:00")
-    );
+    expect(minuta.browsing.value.start).toStrictEqual(date("2024-01-01"));
 
     units.value = temporalUnits({ weekStartsOn: SUNDAY });
 
-    expect(minuta.browsing.value.start).toStrictEqual(
-      new Date("2023-12-31T00:00:00")
+    expect(minuta.browsing.value.start).toStrictEqual(date("2023-12-31"));
+    expect(minuta.period(moment, "week").start.dayOfWeek % WEEK_LENGTH).toBe(
+      SUNDAY
     );
-    expect(minuta.period(date, "week").start.getDay()).toBe(SUNDAY);
   });
 
   it("recomputes browsing when the unit changes", { timeout: 5000 }, () => {
@@ -215,24 +219,22 @@ describe("useMinuta() reactive units and unit", () => {
     expect(minuta.browsing.value).toStrictEqual(
       minuta.period(testDate, "year")
     );
-    expect(minuta.browsing.value.start.getMonth()).toBe(JANUARY);
-    expect(minuta.next(minuta.browsing.value).start.getFullYear()).toBe(
-      YEAR_2025
-    );
+    expect(minuta.browsing.value.start.month - MONTH_OFFSET).toBe(JANUARY);
+    expect(minuta.next(minuta.browsing.value).start.year).toBe(YEAR_2025);
   });
 });
 
 describe("useMinuta() destructured operations", () => {
   it("follow a change of units", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const date = new Date("2024-01-03T12:00:00");
+    const moment = zoned("2024-01-03T12:00:00[Europe/Zurich]");
     const units = shallowRef(temporalUnits({ weekStartsOn: MONDAY }));
     const minuta = useMinuta(() => ({ units: units.value }));
     const { period } = minuta;
 
     units.value = temporalUnits({ weekStartsOn: SUNDAY });
 
-    expect(period(date, "week").start.getDay()).toBe(SUNDAY);
+    expect(period(moment, "week").start.dayOfWeek % WEEK_LENGTH).toBe(SUNDAY);
     expect(minuta.period).toBe(period);
   });
 });

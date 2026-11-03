@@ -55,7 +55,7 @@ function isSelected(day: Period): boolean {
       <tr v-for="(week, row) in weeks" :key="row">
         <td
           v-for="day in week"
-          :key="day.start.toISOString()"
+          :key="day.start.toString()"
           class="calendar-cell"
           :aria-selected="isSelected(day)"
         >
