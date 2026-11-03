@@ -1,11 +1,11 @@
 import type { MinutaOptions, MinutaState } from "./types";
 import type { Period, Units } from "@aleksejdix/minuta/core";
 import { useCallback, useMemo, useState } from "react";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useClock } from "./use-clock";
 import { withUnits } from "@aleksejdix/minuta/core";
 
-const DEFAULT_UNITS: Units = nativeUnits();
+const DEFAULT_UNITS: Units = temporalUnits();
 
 function currentDate(): Date {
   return new Date();

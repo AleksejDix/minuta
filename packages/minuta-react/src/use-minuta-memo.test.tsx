@@ -1,7 +1,7 @@
 import type { Unit, Units } from "@aleksejdix/minuta/core";
 import { describe, expect, it } from "vitest";
-import { nativeUnits } from "@aleksejdix/minuta/native";
 import { renderHook } from "@testing-library/react";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
 
 type Props = Readonly<{ unit: Unit; units: Units }>;
@@ -30,7 +30,7 @@ describe("useMinuta() memoization", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const units = nativeUnits();
+      const units = temporalUnits();
       const { result, rerender } = renderWithProps({ unit: "month", units });
       const first = result.current;
 
@@ -47,10 +47,10 @@ describe("useMinuta() memoization", () => {
       expect.hasAssertions();
       const { result, rerender } = renderWithProps({
         unit: "week",
-        units: nativeUnits(),
+        units: temporalUnits(),
       });
       const initial = result.current;
-      const sundayUnits = nativeUnits({ weekStartsOn: SUNDAY });
+      const sundayUnits = temporalUnits({ weekStartsOn: SUNDAY });
 
       rerender({ unit: "week", units: sundayUnits });
 
@@ -62,7 +62,7 @@ describe("useMinuta() memoization", () => {
 
   it("should update browsing when the unit changes", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const units = nativeUnits();
+    const units = temporalUnits();
     const { result, rerender } = renderWithProps({ unit: "month", units });
 
     rerender({ unit: "year", units });

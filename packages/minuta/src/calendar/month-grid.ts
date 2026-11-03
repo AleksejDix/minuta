@@ -21,7 +21,7 @@ const LAST_GRID_DAY_OFFSET = 41;
  * contains the first of the month. The week start comes from the `week` unit.
  *
  * @example
- * const { periods } = monthGridWith(nativeUnits({ weekStartsOn: "monday" }), new Date(2026, 2, 15));
+ * const { periods } = monthGridWith(temporalUnits({ weekStartsOn: "monday" }), new Date(2026, 2, 15));
  *
  * @param units - Available unit specs (needs `month`, `week` and `day`)
  * @param date - Any date in the target month

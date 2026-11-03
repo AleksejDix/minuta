@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { divide, period } from "#src/index";
 import { monthGridWith, yearGridWith } from "#src/calendar";
 import type { Period } from "#src/types";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const MONTH_GRID_DAYS = 42;
 const MIN_WEEKS_PER_YEAR = 52;
@@ -47,7 +47,7 @@ describe("calendar units integration: monthGridWith()", () => {
   it("should create monthGrid with 42 day periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const grid = monthGridWith(
-      nativeUnits({ weekStartsOn: MONDAY }),
+      temporalUnits({ weekStartsOn: MONDAY }),
       new Date("2024-01-01T00:00:00")
     );
 
@@ -62,7 +62,7 @@ describe("calendar units integration: yearGridWith()", () => {
   it("should create yearGrid with week periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const grid = yearGridWith(
-      nativeUnits({ weekStartsOn: MONDAY }),
+      temporalUnits({ weekStartsOn: MONDAY }),
       new Date("2024-06-15T00:00:00")
     );
 
@@ -74,7 +74,7 @@ describe("calendar units integration: yearGridWith()", () => {
   it("should create GitHub-style contribution grid", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const grid = yearGridWith(
-      nativeUnits({ weekStartsOn: MONDAY }),
+      temporalUnits({ weekStartsOn: MONDAY }),
       new Date("2024-06-15T00:00:00")
     );
 
@@ -99,7 +99,7 @@ describe("calendar units integration: yearGridWith() transitions", () => {
 
     for (const year of years) {
       const grid = yearGridWith(
-        nativeUnits({ weekStartsOn: MONDAY }),
+        temporalUnits({ weekStartsOn: MONDAY }),
         new Date(`${year}-01-01T00:00:00`)
       );
 
@@ -124,7 +124,7 @@ describe("calendar units integration: combined usage", () => {
 
       for (const month of Array.from({ length: MONTHS_PER_YEAR }).keys()) {
         const grid = monthGridWith(
-          nativeUnits({ weekStartsOn: MONDAY }),
+          temporalUnits({ weekStartsOn: MONDAY }),
           new Date(YEAR_2024, month, MID_MONTH_DAY)
         );
         expect(grid.periods).toHaveLength(MONTH_GRID_DAYS);
@@ -140,7 +140,7 @@ describe("calendar units integration: combined usage", () => {
 
     for (const month of months) {
       const grid = monthGridWith(
-        nativeUnits({ weekStartsOn: MONDAY }),
+        temporalUnits({ weekStartsOn: MONDAY }),
         month.start
       );
       expect(grid.periods).toHaveLength(MONTH_GRID_DAYS);
@@ -152,7 +152,7 @@ describe("calendar units integration: weekStartsOn configurations", () => {
   it("should adapt yearGrid to Sunday start", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const grid = yearGridWith(
-      nativeUnits({ weekStartsOn: SUNDAY }),
+      temporalUnits({ weekStartsOn: SUNDAY }),
       new Date("2024-01-01T00:00:00")
     );
     const days = daysOf(grid.periods);
@@ -164,7 +164,7 @@ describe("calendar units integration: weekStartsOn configurations", () => {
   it("should adapt monthGrid to Wednesday start", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const grid = monthGridWith(
-      nativeUnits({ weekStartsOn: WEDNESDAY }),
+      temporalUnits({ weekStartsOn: WEDNESDAY }),
       new Date("2024-06-15T00:00:00")
     );
 

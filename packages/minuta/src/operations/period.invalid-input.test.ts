@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
 import { MinutaError } from "#src/units";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
-const units = nativeUnits();
+const units = temporalUnits();
 
 describe("range() rejects invalid input", () => {
   it("throws on invalid dates", { timeout: 5000 }, () => {

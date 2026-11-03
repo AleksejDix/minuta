@@ -6,7 +6,7 @@ import { CalendarRoot } from "./CalendarRoot";
 import type { Period } from "@aleksejdix/minuta/core";
 import type { RenderResult } from "@testing-library/react";
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type Setup = Readonly<{
   date?: Readonly<Date>;
@@ -46,7 +46,7 @@ function selectedCells(container: HTMLElement): string[] {
 }
 
 function isWeekend(day: Period): boolean {
-  return isWeekendWith(nativeUnits(), day);
+  return isWeekendWith(temporalUnits(), day);
 }
 
 describe("calendar grid semantics", () => {

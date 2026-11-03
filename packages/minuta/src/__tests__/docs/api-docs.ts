@@ -16,12 +16,7 @@ const ENTRIES: readonly string[] = [
   "calendar",
   "intervals",
   "format",
-  "native",
-  "date-fns",
   "date-fns-tz",
-  "dayjs",
-  "luxon",
-  "moment",
   "temporal",
 ];
 

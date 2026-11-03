@@ -1,9 +1,9 @@
 import type { Period, UnitSpec, Units } from "#src/types";
 import { describe, expect, it } from "vitest";
 import { divideWith } from "#src/operations/divide";
-import { nativeUnits } from "#src/adapters/native/index";
 import { nextWith } from "#src/operations/shift";
 import { periodWith } from "#src/operations/period";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 /*
  * With the computer in America/Recife and V8's offset cache in a bad state,
@@ -60,7 +60,7 @@ const contradictoryDay: UnitSpec = {
   startOf: (date: Readonly<Date>): Date => new Date(dayStart(dayIndex(date))),
 };
 
-const units: Units = Object.assign(nativeUnits(), { day: contradictoryDay });
+const units: Units = Object.assign(temporalUnits(), { day: contradictoryDay });
 
 describe("an engine whose add does not move", () => {
   it("never ends a day before it starts", { timeout: 5000 }, () => {

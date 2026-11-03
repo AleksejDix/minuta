@@ -1,8 +1,6 @@
 import type { Period, Units } from "#src/types";
 import { describe, expect, it } from "vitest";
-import { dateFnsUnits } from "#src/adapters/date-fns/index";
-import { luxonUnits } from "#src/adapters/luxon/index";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 import { yearGridWith } from "./year-grid";
 
 const SUNDAY = 0;
@@ -19,9 +17,7 @@ const YEAR_2024 = 2024;
 const YEAR_2025 = 2025;
 
 const ADAPTERS = [
-  ["native", nativeUnits({ weekStartsOn: MONDAY })],
-  ["date-fns", dateFnsUnits({ weekStartsOn: MONDAY })],
-  ["luxon", luxonUnits({ weekStartsOn: MONDAY })],
+  ["temporal", temporalUnits({ weekStartsOn: MONDAY })],
 ] as const;
 
 function firstPeriod(periods: readonly Period[]): Period {

@@ -6,9 +6,9 @@
  * @example
  * import { withUnits } from "@aleksejdix/minuta/core";
  * import { intervals } from "@aleksejdix/minuta/intervals";
- * import { nativeUnits } from "@aleksejdix/minuta/native";
+ * import { temporalUnits } from "@aleksejdix/minuta/temporal";
  *
- * const time = withUnits(nativeUnits(), { plugins: [intervals] });
+ * const time = withUnits(temporalUnits(), { plugins: [intervals] });
  * time.merge(time.divide(time.period(new Date(), "month"), "day"), "month");
  * time.snap(new Date(), "minute", { step: 15 });
  *

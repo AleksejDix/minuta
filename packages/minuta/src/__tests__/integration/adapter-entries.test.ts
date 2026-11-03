@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AllUnits } from "#src/types";
 import { dateFnsTzUnits } from "#src/date-fns-tz";
-import { dateFnsUnits } from "#src/date-fns";
-import { dayjsUnits } from "#src/dayjs";
-import { luxonUnits } from "#src/luxon";
-import { momentUnits } from "#src/moment";
-import { nativeUnits } from "#src/native";
 import { temporalUnits } from "#src/temporal";
 
 const UNIT_NAMES: readonly string[] = [
@@ -22,13 +17,8 @@ const UNIT_NAMES: readonly string[] = [
 type AdapterEntry = readonly [string, string, () => AllUnits];
 
 const ADAPTER_ENTRIES: readonly AdapterEntry[] = [
-  ["native", "nativeUnits", nativeUnits],
   ["temporal", "temporalUnits", temporalUnits],
-  ["luxon", "luxonUnits", luxonUnits],
-  ["dayjs", "dayjsUnits", dayjsUnits],
-  ["date-fns", "dateFnsUnits", dateFnsUnits],
   ["date-fns-tz", "dateFnsTzUnits", dateFnsTzUnits],
-  ["moment", "momentUnits", momentUnits],
 ];
 
 // Exports an entry has besides its factory

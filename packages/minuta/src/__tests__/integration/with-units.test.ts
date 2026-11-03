@@ -2,14 +2,14 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import type { MonthGrid } from "#src/calendar";
 import type { Units } from "#src/types";
 import { calendar } from "#src/calendar";
-import { nativeUnits } from "#src/native";
+import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/core";
 
 const SUNDAY = 0;
 const WEEK_DAYS = 7;
 const FIRST = 0;
 
-const units = nativeUnits({ weekStartsOn: SUNDAY });
+const units = temporalUnits({ weekStartsOn: SUNDAY });
 const workdays = {
   workdaysIn: (_units: Units, date: Readonly<Date>): Readonly<Date> => date,
 };

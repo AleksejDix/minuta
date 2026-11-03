@@ -15,14 +15,9 @@ const ENTRY_FILES: Readonly<Record<string, string>> = {
   "@aleksejdix/minuta": "index",
   "@aleksejdix/minuta/calendar": "calendar",
   "@aleksejdix/minuta/core": "core",
-  "@aleksejdix/minuta/date-fns": "date-fns",
   "@aleksejdix/minuta/date-fns-tz": "date-fns-tz",
-  "@aleksejdix/minuta/dayjs": "dayjs",
   "@aleksejdix/minuta/format": "format",
   "@aleksejdix/minuta/intervals": "intervals",
-  "@aleksejdix/minuta/luxon": "luxon",
-  "@aleksejdix/minuta/moment": "moment",
-  "@aleksejdix/minuta/native": "native",
   "@aleksejdix/minuta/temporal": "temporal",
 };
 

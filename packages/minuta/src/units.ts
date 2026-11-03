@@ -76,7 +76,7 @@ function endingBeforeNext(spec: UnitSpec): UnitSpec {
  * next period starts, even where the clocks go back at midnight.
  *
  * @example
- * specFor(nativeUnits(), "week").startOf(new Date(2026, 2, 18)); // Monday Mar 16, 00:00
+ * specFor(temporalUnits(), "week").startOf(new Date(2026, 2, 18)); // Monday Mar 16, 00:00
  *
  * @param units - Available unit specs
  * @param unit - Unit to look up
@@ -92,7 +92,7 @@ function specFor(units: Units, unit: Unit): UnitSpec {
         .join(", ") || "none";
     throw new RangeError(
       `${MinutaError.UnitNotSupported}: no "${unit}" spec in the units passed (available: ${available}). ` +
-        `Pass a full set such as nativeUnits(), or add a "${unit}" spec to your units.`
+        `Pass a full set such as temporalUnits(), or add a "${unit}" spec to your units.`
     );
   }
   if (FIXED_LENGTH.has(unit)) {

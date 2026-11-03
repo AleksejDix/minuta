@@ -9,7 +9,7 @@ import {
 } from "./test/mount";
 import { MinutaRoot } from "#src/index";
 import type { MinutaState } from "./types";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
 import { useMinutaContext } from "./minuta-context";
 
@@ -70,7 +70,7 @@ describe("minutaRoot", () => {
     const options = {
       date: testDate,
       unit: "week",
-      units: nativeUnits({ weekStartsOn: SUNDAY }),
+      units: temporalUnits({ weekStartsOn: SUNDAY }),
     } as const;
     const { result } = probeInRoot(useMinutaContext, options);
 
@@ -82,7 +82,7 @@ describe("minutaRoot", () => {
 
   it("follows prop changes", { timeout: 5000 }, async () => {
     expect.hasAssertions();
-    const units = shallowRef(nativeUnits({ weekStartsOn: MONDAY }));
+    const units = shallowRef(temporalUnits({ weekStartsOn: MONDAY }));
     const part = recorder(useMinutaContext);
     mountRender(() =>
       h(
@@ -94,7 +94,7 @@ describe("minutaRoot", () => {
     const state = itemAt(part.results, FIRST);
     expect(state.browsing.value.start.getDay()).toBe(MONDAY);
 
-    units.value = nativeUnits({ weekStartsOn: SUNDAY });
+    units.value = temporalUnits({ weekStartsOn: SUNDAY });
     await nextTick();
 
     expect(state.browsing.value.start.getDay()).toBe(SUNDAY);

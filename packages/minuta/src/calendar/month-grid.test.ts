@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { firstOf, lastOf, spanDays, spanOf } from "./grid-test-helpers";
 import type { Period } from "#src/types";
-import { dateFnsUnits } from "#src/adapters/date-fns/index";
 import { divideWith } from "#src/operations/index";
-import { luxonUnits } from "#src/adapters/luxon/index";
 import { monthGridWith } from "./month-grid";
-import { nativeUnits } from "#src/adapters/native/index";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const SUNDAY = 0;
 const MONDAY = 1;
@@ -15,11 +13,7 @@ const SINGLE = 1;
 const YEAR_2023 = 2023;
 const YEAR_2024 = 2024;
 
-const adapters = [
-  { create: nativeUnits, name: "native" },
-  { create: dateFnsUnits, name: "date-fns" },
-  { create: luxonUnits, name: "luxon" },
-] as const;
+const adapters = [{ create: temporalUnits, name: "temporal" }] as const;
 
 describe.each(adapters)("monthGridWith() with $name adapter", ({ create }) => {
   it(
@@ -144,7 +138,7 @@ describe("monthGridWith() with hand-built units", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const sunday = nativeUnits({ weekStartsOn: "sunday" });
+      const sunday = temporalUnits({ weekStartsOn: "sunday" });
       const units = { day: sunday.day, month: sunday.month, week: sunday.week };
       const grid = monthGridWith(units, new Date("2026-03-15T12:00:00"));
       expect(grid.weekStartsOn).toBe(SUNDAY);

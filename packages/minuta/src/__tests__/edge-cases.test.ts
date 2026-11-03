@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { Period } from "#src/types";
 import { contains } from "#src/operations/contains";
 import { divideWith } from "#src/operations/divide";
-import { nativeUnits } from "#src/adapters/native/index";
 import { nextWith } from "#src/operations/shift";
 import { periodWith } from "#src/operations/period";
+import { temporalUnits } from "#src/adapters/temporal/index";
 
 const DAYS_IN_COMMON_YEAR = 365;
 const DAYS_IN_LEAP_YEAR = 366;
@@ -17,7 +17,7 @@ const LAST = -1;
 const SHORTEST_DAY_HOURS = 22;
 const LONGEST_DAY_HOURS = 25;
 
-const units = nativeUnits({ weekStartsOn: 1 });
+const units = temporalUnits({ weekStartsOn: 1 });
 
 /*
  * True of every day in every zone: 22 hours (Troll's +2 h jump) to 25
