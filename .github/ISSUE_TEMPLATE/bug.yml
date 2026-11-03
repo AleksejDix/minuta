@@ -33,7 +33,6 @@ body:
       label: Adapter
       options:
         - Temporal
-        - date-fns-tz
         - All adapters
     validations:
       required: true

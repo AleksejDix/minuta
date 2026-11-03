@@ -3,6 +3,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import README from "#readme?raw";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import ts from "typescript";
@@ -15,11 +16,26 @@ const ENTRY_FILES: Readonly<Record<string, string>> = {
   "@aleksejdix/minuta": "index",
   "@aleksejdix/minuta/calendar": "calendar",
   "@aleksejdix/minuta/core": "core",
-  "@aleksejdix/minuta/date-fns-tz": "date-fns-tz",
   "@aleksejdix/minuta/format": "format",
   "@aleksejdix/minuta/intervals": "intervals",
   "@aleksejdix/minuta/temporal": "temporal",
 };
+
+/*
+ * The examples use the global Temporal, as apps do; TypeScript has no type
+ * for it yet, so each example gets the polyfill's
+ */
+// The package root, one level above the `dist` file it resolves to
+const POLYFILL_ENTRY = createRequire(import.meta.url).resolve(
+  "@js-temporal/polyfill"
+);
+const POLYFILL_TYPES = path.join(
+  path.dirname(path.dirname(POLYFILL_ENTRY)),
+  "index"
+);
+const TEMPORAL_GLOBAL =
+  `import type { Temporal as TemporalApi } from "${POLYFILL_TYPES}";\n` +
+  "declare const Temporal: typeof TemporalApi;\n";
 
 const COMPILER_OPTIONS: ts.CompilerOptions = {
   allowImportingTsExtensions: true,
@@ -96,7 +112,7 @@ describe("readme examples", () => {
       BLOCKS.map(async (code, index) => {
         await writeFile(
           path.join(checked.directory, `example-${String(index)}.ts`),
-          `${toSourceImports(code)}\nexport {};\n`
+          `${TEMPORAL_GLOBAL}${toSourceImports(code)}\nexport {};\n`
         );
       })
     );

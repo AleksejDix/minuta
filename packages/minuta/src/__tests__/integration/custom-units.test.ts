@@ -1,4 +1,5 @@
-import type { UnitSpec, Units } from "#src/core";
+import type { DateSpec, Units } from "#src/core";
+import { date, text } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import {
   divideWith,
@@ -11,50 +12,43 @@ import { mergeWith, snapWith } from "#src/intervals";
 import { temporalUnits } from "#src/temporal";
 
 /*
- * A unit of your own: register its name, pass its spec next to an adapter's
- * units. Registering it here also type-checks the whole package with a
- * custom unit, so the adapters keep compiling when users add units.
+ * A unit of your own: register its name and kind, pass its spec next to
+ * the built-in units. Registering it here also type-checks the whole
+ * package with a custom unit, so the built-in units keep compiling when
+ * users add units.
  */
 declare module "#src/types" {
   // oxlint-disable-next-line typescript/consistent-type-definitions -- Module augmentation requires an interface
   interface UnitRegistry {
-    fortnight: true;
+    fortnight: "date";
   }
 }
 
-const native = temporalUnits();
-const DAYS = 14;
+const builtIn = temporalUnits();
 const WEEKS = 2;
-const ONE_MS = 1;
+const DAYS = 14;
 const ONE = 1;
 // Fortnights counted from Monday 5 January 2026
-const ANCHOR = new Date("2026-01-05T00:00");
+const ANCHOR = date("2026-01-05");
 
-function startOf(date: Readonly<Date>): Date {
-  const weeks = native.week.diff(ANCHOR, native.week.startOf(date));
-  return native.week.add(ANCHOR, Math.floor(weeks / WEEKS) * WEEKS);
-}
-
-const fortnight: UnitSpec = {
-  add: (date, amount) => native.week.add(date, amount * WEEKS),
-  diff: (from, to) => Math.trunc(native.week.diff(from, to) / WEEKS),
-  endOf: (date) =>
-    new Date(native.day.add(startOf(date), DAYS).getTime() - ONE_MS),
-  startOf,
+const fortnight: DateSpec = {
+  add: (value, amount) => builtIn.week.add(value, amount * WEEKS),
+  diff: (from, to) => Math.trunc(builtIn.week.diff(from, to) / WEEKS),
+  kind: "date",
+  startOf: (value) => {
+    const weeks = builtIn.week.diff(ANCHOR, builtIn.week.startOf(value));
+    return builtIn.week.add(ANCHOR, Math.floor(weeks / WEEKS) * WEEKS);
+  },
 };
 
 const own: Units = { fortnight };
-const units = Object.assign(own, native);
-const sprint = periodWith(units, new Date("2026-03-18T12:00"), "fortnight");
+const units = Object.assign(own, builtIn);
+const sprint = periodWith(units, date("2026-03-18"), "fortnight");
 
 describe("a custom unit", () => {
   it("makes periods aligned to its own boundaries", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    expect([sprint.start, sprint.end, sprint.unit]).toStrictEqual([
-      new Date("2026-03-16T00:00"),
-      new Date("2026-03-29T23:59:59.999"),
-      "fortnight",
-    ]);
+    expect(text(sprint)).toBe("2026-03-16/2026-03-30 fortnight");
   });
 
   it(
@@ -62,23 +56,20 @@ describe("a custom unit", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      expect([
-        nextWith(units, sprint).start,
-        divideWith(units, sprint, "day").length,
-        durationWith(units, sprint, "day"),
-        durationWith(units, sprint, "fortnight"),
-      ]).toStrictEqual([new Date("2026-03-30T00:00"), DAYS, DAYS, ONE]);
+      expect(nextWith(units, sprint).start.toString()).toBe("2026-03-30");
+      expect(divideWith(units, sprint, "day")).toHaveLength(DAYS);
+      expect(durationWith(units, sprint, "day")).toBe(DAYS);
+      expect(durationWith(units, sprint, "fortnight")).toBe(ONE);
     }
   );
 
   it("snaps and merges to its boundaries", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const days = divideWith(units, sprint, "day");
-    expect(
-      snapWith(units, new Date("2026-03-25T12:00"), "fortnight", {
-        mode: "floor",
-      })
-    ).toStrictEqual(new Date("2026-03-16T00:00"));
+    const snapped = snapWith(units, date("2026-03-25"), "fortnight", {
+      mode: "floor",
+    });
+    expect(snapped.toString()).toBe("2026-03-16");
     expect(mergeWith(units, days, "fortnight")).toHaveProperty(
       "unit",
       "fortnight"
@@ -88,8 +79,6 @@ describe("a custom unit", () => {
   it("works through withUnits", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const time = withUnits(units);
-    expect(
-      time.period(new Date("2026-03-18T12:00"), "fortnight")
-    ).toStrictEqual(sprint);
+    expect(time.period(date("2026-03-18"), "fortnight")).toStrictEqual(sprint);
   });
 });

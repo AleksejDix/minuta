@@ -1,13 +1,16 @@
+import type { TimeValue, Unit } from "#src/types";
 import {
   next as defaultNext,
   divide,
+  duration,
   period,
   previous,
   same,
   shift,
 } from "#src/index";
 import { describe, expect, it } from "vitest";
-import type { Unit } from "#src/types";
+import type { Minuta } from "#src/with-units";
+import { dateTime } from "#src/test/temporal";
 import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/core";
 
@@ -32,13 +35,13 @@ const DIVISIONS: readonly (readonly [Unit, Unit])[] = [
   ["hour", "minute"],
 ];
 
-const DATES: readonly Readonly<Date>[] = [
-  new Date("2024-01-01T00:00:00"),
-  new Date("2024-02-29T12:34:56.789"),
-  new Date("2024-03-31T02:30:00"),
-  new Date("2024-10-27T02:30:00"),
-  new Date("2024-12-31T23:59:59.999"),
-  new Date("2025-06-15T08:00:00"),
+const DATES: readonly TimeValue[] = [
+  dateTime("2024-01-01T00:00:00"),
+  dateTime("2024-02-29T12:34:56.789"),
+  dateTime("2024-03-31T02:30:00"),
+  dateTime("2024-10-27T02:30:00"),
+  dateTime("2024-12-31T23:59:59.999"),
+  dateTime("2025-06-15T08:00:00"),
 ];
 
 const BACK_A_YEAR_OF_MONTHS = -13;
@@ -170,8 +173,8 @@ describe("default entry vs withUnits(temporalUnits()): period()", () => {
   it("weeks start on Monday", { timeout: 5000 }, () => {
     expect.hasAssertions();
     for (const date of DATES) {
-      expect(period(date, "week").start.getDay()).toBe(MONDAY);
-      expect(explicit.period(date, "week").start.getDay()).toBe(MONDAY);
+      expect(period(date, "week").start.dayOfWeek).toBe(MONDAY);
+      expect(explicit.period(date, "week").start.dayOfWeek).toBe(MONDAY);
     }
   });
 });
@@ -234,5 +237,17 @@ describe("default entry vs withUnits(temporalUnits()): comparisons", () => {
         }
       }
     }
+  });
+});
+
+describe("export verification: index.ts against Minuta", () => {
+  it("has exactly the bound signatures of withUnits", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    // A type error here means the default entry drifted from withUnits
+    const bound: Pick<
+      Minuta,
+      "divide" | "duration" | "next" | "period" | "previous" | "same" | "shift"
+    > = { divide, duration, next: defaultNext, period, previous, same, shift };
+    expect(Object.keys(bound)).toStrictEqual([...BOUND_OPERATIONS]);
   });
 });

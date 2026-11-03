@@ -12,7 +12,6 @@ type FirstEntry = (name: string) => string | undefined;
 const PACKAGE_NAMES: Readonly<Record<string, string>> = {
   calendar: "@aleksejdix/minuta/calendar",
   core: "@aleksejdix/minuta/core",
-  "date-fns-tz": "@aleksejdix/minuta/date-fns-tz",
   format: "@aleksejdix/minuta/format",
   index: "@aleksejdix/minuta",
   intervals: "@aleksejdix/minuta/intervals",

@@ -9,6 +9,8 @@
  *
  * @module minuta
  */
+import type { Chunks, DivideOptions } from "#src/operations/divide";
+import type { Period, PeriodOf, TimeValue, Unit } from "#src/types";
 import {
   divideWith,
   durationWith,
@@ -18,13 +20,12 @@ import {
   sameWith,
   shiftWith,
 } from "#src/operations/index";
-import type { Minuta } from "#src/with-units";
 import { temporalUnits } from "#src/adapters/temporal/index";
 
 /*
  * Each function binds the units on its own, so bundlers drop the unused
- * ones. The types come from `Minuta`, so this entry and `withUnits` cannot
- * drift apart.
+ * ones. A test assigns them to `Minuta`, so this entry and `withUnits`
+ * cannot drift apart.
  */
 // oxlint-disable-next-line eslint/no-inline-comments -- The pure marker lets bundlers drop the units when no bound function is used
 const units = /* @__PURE__ */ temporalUnits();
@@ -34,16 +35,20 @@ const units = /* @__PURE__ */ temporalUnits();
  * weeks start on Monday; `divideWith` in `minuta/core` takes your own units.
  *
  * @example
- * divide(period(new Date(2026, 2, 1), "month"), "day"); // 31 day periods
- * divide(period(new Date(2026, 2, 1, 9), "hour"), "minute", { step: 15 }); // 4 periods
+ * divide(period(Temporal.PlainDate.from("2026-03-01"), "month"), "day"); // 31 day periods
+ * divide(period(Temporal.Now.zonedDateTimeISO(), "hour"), "minute", { step: 15 }); // 4 periods
  *
- * @param args - The arguments of `divideWith` after `units`
+ * @param source - Period to divide
+ * @param unit - Unit of the chunks
+ * @param options - `step` (units per chunk) and `maxPeriods` (safety limit)
  * @returns The chunks, clipped to the period
  */
-function divide(
-  ...args: Readonly<Parameters<Minuta["divide"]>>
-): ReturnType<Minuta["divide"]> {
-  return divideWith(units, ...args);
+function divide<Source extends Period, Name extends Unit>(
+  source: Source,
+  unit: Name,
+  options?: DivideOptions
+): Chunks<Source, Name> {
+  return divideWith(units, source, unit, options);
 }
 
 /**
@@ -51,100 +56,109 @@ function divide(
  * DST-aware; `durationWith` in `minuta/core` takes your own units.
  *
  * @example
- * duration(period(new Date(2026, 9, 8), "day"), "hour"); // 24
- * duration(period(new Date(2026, 1, 1), "month"), "day"); // 28
+ * duration(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour"); // 24
+ * duration(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // 28
  *
- * @param args - The arguments of `durationWith` after `units`
+ * @param source - The period to measure
+ * @param unit - The unit to count
  * @returns The number of complete units
  */
-function duration(
-  ...args: Readonly<Parameters<Minuta["duration"]>>
-): ReturnType<Minuta["duration"]> {
-  return durationWith(units, ...args);
+function duration(source: Period, unit: Unit): number {
+  return durationWith(units, source, unit);
 }
 
 /**
  * The next period of the same unit. Temporal units, weeks start on Monday.
  *
  * @example
- * next(period(new Date(2026, 2, 15), "month")); // April 2026
+ * next(period(Temporal.PlainDate.from("2026-03-15"), "month")); // April 2026
  *
- * @param args - The arguments of `nextWith` after `units`
+ * @param source - Current period
  * @returns The following period of the same unit
  */
-function next(
-  ...args: Readonly<Parameters<Minuta["next"]>>
-): ReturnType<Minuta["next"]> {
-  return nextWith(units, ...args);
+function next<Source extends Period>(source: Source): Source {
+  return nextWith(units, source);
 }
 
 /**
- * The period of `unit` that contains `date`. Temporal units, weeks start on
- * Monday; `periodWith` in `minuta/core` takes your own units.
+ * The period of `unit` that contains `value`. Temporal units, weeks start on
+ * Monday, moments in the runtime's zone; `periodWith` in `minuta/core` takes
+ * your own units.
  *
  * @example
- * period(new Date(2026, 2, 15), "month"); // { start: Mar 1, end: Mar 31 23:59:59.999, unit: "month" }
- * period(new Date(2026, 2, 18), "week"); // Monday Mar 16 to Sunday Mar 22
+ * period(Temporal.PlainDate.from("2026-03-15"), "month"); // { start: 2026-03-01, end: 2026-04-01, unit: "month" }
+ * period(Temporal.PlainDate.from("2026-03-18"), "week"); // Monday Mar 16 up to Monday Mar 23
  *
- * @param args - The arguments of `periodWith` after `units`
- * @returns The period of `unit` containing `date`
+ * @param value - Any value inside the period
+ * @param unit - Unit of the period
+ * @returns The period of `unit` containing `value`
  */
-function period(
-  ...args: Readonly<Parameters<Minuta["period"]>>
-): ReturnType<Minuta["period"]> {
-  return periodWith(units, ...args);
+function period<Name extends Unit>(
+  value: TimeValue,
+  unit: Name
+): PeriodOf<Name> {
+  return periodWith(units, value, unit);
 }
 
 /**
  * The previous period of the same unit. Temporal units, weeks start on Monday.
  *
  * @example
- * previous(period(new Date(2026, 2, 15), "month")); // February 2026
+ * previous(period(Temporal.PlainDate.from("2026-03-15"), "month")); // February 2026
  *
- * @param args - The arguments of `previousWith` after `units`
+ * @param source - Current period
  * @returns The preceding period of the same unit
  */
-function previous(
-  ...args: Readonly<Parameters<Minuta["previous"]>>
-): ReturnType<Minuta["previous"]> {
-  return previousWith(units, ...args);
+function previous<Source extends Period>(source: Source): Source {
+  return previousWith(units, source);
 }
 
 /**
  * Whether two periods fall into the same `unit`. Temporal units.
  *
  * @example
- * same(period(new Date(2026, 2, 16), "day"), period(new Date(2026, 2, 20), "day"), "week"); // true
+ * same(period(Temporal.PlainDate.from("2026-03-16"), "day"), period(Temporal.PlainDate.from("2026-03-20"), "day"), "week"); // true
  *
- * @param args - The arguments of `sameWith` after `units`
+ * @param first - One period
+ * @param second - The other period
+ * @param unit - Granularity of the comparison
  * @returns Whether both periods are in the same unit
  */
-function same(
-  ...args: Readonly<Parameters<Minuta["same"]>>
-): ReturnType<Minuta["same"]> {
-  return sameWith(units, ...args);
+function same(first: Period, second: Period, unit: Unit | "custom"): boolean {
+  return sameWith(units, first, second, unit);
 }
 
 /**
  * Move a period by `steps` of its own unit; negative moves back. Temporal units.
  *
  * @example
- * shift(period(new Date(2026, 2, 15), "month"), 3); // June 2026
+ * shift(period(Temporal.PlainDate.from("2026-03-15"), "month"), 3); // June 2026
  *
- * @param args - The arguments of `shiftWith` after `units`
+ * @param source - Period to move
+ * @param steps - How many periods to move
  * @returns The moved period
  */
-function shift(
-  ...args: Readonly<Parameters<Minuta["shift"]>>
-): ReturnType<Minuta["shift"]> {
-  return shiftWith(units, ...args);
+function shift<Source extends Period>(source: Source, steps: number): Source {
+  return shiftWith(units, source, steps);
 }
 
 export { divide, duration, next, period, previous, same, shift };
 export { contains, length, overlaps, range } from "#src/operations/index";
 export { MinutaError } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
-export type { DivideOptions } from "#src/operations/index";
+export type { Chunks, DivideOptions } from "#src/operations/divide";
 export type { Minuta } from "#src/with-units";
-export type { Period, Unit, Units } from "#src/types";
+export type {
+  DatePeriod,
+  DateUnit,
+  Period,
+  PeriodOf,
+  PlainDate,
+  TimePeriod,
+  TimeUnit,
+  TimeValue,
+  Unit,
+  Units,
+  ZonedDateTime,
+} from "#src/types";
 export type { Weekday } from "#src/weekday";

@@ -1,7 +1,7 @@
 # minuta
 
-Divide time into pieces. Pure functions over plain, readonly data, with the
-date engine of your choice plugged in as data.
+Divide time into pieces. Pure functions over plain, readonly data, computed
+with [Temporal](https://tc39.es/proposal-temporal/docs/).
 
 ```bash
 npm install @aleksejdix/minuta
@@ -12,39 +12,45 @@ npm install @aleksejdix/minuta
 | `minuta`: `period`, `next`, `divide`                            | 2.0 kB            |
 | `@aleksejdix/minuta/core` with only the `day` and `month` units | 1.6 kB            |
 | Calendar grids through `bind`                                   | 2.2 kB            |
-| An adapter (without its date library)                           | 0.6–1.4 kB        |
+| `temporalUnits` from `@aleksejdix/minuta/temporal`              | 1.4 kB            |
 
 Zero dependencies, ES modules only, `sideEffects: false`. Budgets are
-checked on every CI run.
+checked on every CI run. Where the runtime has no Temporal yet (Safari,
+Node 24), install `@js-temporal/polyfill` and `await temporalReady()` from
+`@aleksejdix/minuta/temporal` once, before anything computes; elsewhere
+nothing more is loaded.
 
 ## The model
 
-Every time range is a **Period**: `{ start, end, unit }`. `divide` splits any
-period into smaller ones. That is the whole model.
+Every time range is a **Period**: `{ start, end, unit }`, `start` included
+and `end` excluded. A year, quarter, month, week or day is made of calendar
+dates (`Temporal.PlainDate`), so no clock change can move it; an hour,
+minute or second is made of moments in a time zone
+(`Temporal.ZonedDateTime`). `divide` splits any period into smaller ones.
+That is the whole model.
 
 ```ts
 import { divide, period } from "@aleksejdix/minuta";
 
-const year = period(new Date(2026, 0, 1), "year");
+const year = period(Temporal.PlainDate.from("2026-01-01"), "year");
 const months = divide(year, "month"); // 12 periods
-const days = divide(months[2], "day"); // 31 periods (March)
-const quarters = divide(days[0], "minute", { step: 15 }); // 96 periods
+const march = months[2]; // { start: 2026-03-01, end: 2026-04-01, unit: "month" }
+const days = march === undefined ? [] : divide(march, "day"); // 31 periods
 ```
 
 The default entry is bound to the Temporal units with weeks starting on
-Monday (ISO 8601), so there is nothing to configure. Where the runtime has no
-Temporal (Safari, Node 24), `await temporalReady()` from
-`@aleksejdix/minuta/temporal` first.
+Monday (ISO 8601) and moments in the runtime's zone, so there is nothing to
+configure.
 
 ## Operations
 
-| Family   | Functions                                                                |
-| -------- | ------------------------------------------------------------------------ |
-| Create   | `period(date, unit)` · `range(start, end)`                               |
-| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`             |
-| Compose  | `divide(period, unit, { step })`                                         |
-| Compare  | `contains(period, dateOrPeriod)` · `overlaps(a, b)` · `same(a, b, unit)` |
-| Ask      | `duration(period, unit)` · `length(period)`                              |
+| Family   | Functions                                                         |
+| -------- | ----------------------------------------------------------------- |
+| Create   | `period(value, unit)` · `range(start, end)`                       |
+| Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`      |
+| Compose  | `divide(period, unit, { step })`                                  |
+| Compare  | `contains(period, value)` · `overlaps(a, b)` · `same(a, b, unit)` |
+| Ask      | `duration(period, unit)` · `length(period)`                       |
 
 Interval helpers and calendar functions are [plugins](#plugins) in their own
 entries, so they cost nothing until you import them.
@@ -60,42 +66,45 @@ import {
   shift,
 } from "@aleksejdix/minuta";
 
-const march = period(new Date(2026, 2, 15), "month");
+const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
 next(march); // April
 previous(march); // February
 shift(march, 3); // June
-contains(march, new Date(2026, 2, 20)); // true
+contains(march, Temporal.PlainDate.from("2026-03-20")); // true
+contains(march, Temporal.PlainDate.from("2026-04-01")); // false: the end is excluded
 
-range(new Date(2026, 0, 1), new Date(2026, 2, 31)); // { unit: "custom", … }
+range(
+  Temporal.PlainDate.from("2026-01-01"),
+  Temporal.PlainDate.from("2026-04-01")
+); // January to March
 
 duration(march, "day"); // 31
-duration(period(new Date(2026, 2, 29), "day"), "hour"); // 23 in Europe/Zurich (DST)
+duration(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // 23 in Europe/Zurich (DST)
 ```
 
-Invalid dates throw a `RangeError` whose message starts with a `MinutaError`
-code such as `INVALID_DATE`. No result is ever `null`; a missing one is
+Errors are a `RangeError` whose message starts with a `MinutaError` code such
+as `UNIT_NOT_SUPPORTED`. No result is ever `null`; a missing one is
 `undefined`.
 
-## Other week starts and date libraries
+## Other week starts and time zones
 
-Rules and data are separate. Units are plain data produced by an adapter; bind
-them once and you get the same operations:
+Rules and data are separate. Units are plain data made by `temporalUnits`;
+bind them once and you get the same operations:
 
 ```ts
 import { withUnits } from "@aleksejdix/minuta/core";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
-time.period(new Date(), "week"); // starts on Sunday
+const time = withUnits(
+  temporalUnits({ timeZone: "UTC", weekStartsOn: "sunday" })
+);
+time.period(Temporal.Now.plainDateISO(), "week"); // starts on Sunday
+time.divide(time.period(Temporal.Now.plainDateISO(), "day"), "hour"); // the day's hours in UTC
 ```
 
-Days are named (`"monday"`); the numbers of `Date#getDay()` (0 = Sunday) work
-too.
-
-| Adapter                  | Import                                                 |
-| ------------------------ | ------------------------------------------------------ |
-| Temporal                 | `temporalUnits` from `@aleksejdix/minuta/temporal`     |
-| date-fns-tz (time zones) | `dateFnsTzUnits` from `@aleksejdix/minuta/date-fns-tz` |
+Days are named (`"monday"`); the numbers 0 (Sunday) to 6 (Saturday) work
+too. `timeZone` is where dates become moments, as when a day is divided into
+hours; a `ZonedDateTime` passed in keeps its own zone.
 
 The bound object's members have exactly the types of the default entry, so
 the two cannot drift apart.
@@ -112,7 +121,7 @@ import { temporalUnits } from "@aleksejdix/minuta/temporal";
 const { day, month } = temporalUnits();
 const units = { day, month }; // only what you use ends up in the bundle
 
-nextWith(units, periodWith(units, new Date(), "month"));
+nextWith(units, periodWith(units, Temporal.Now.plainDateISO(), "month"));
 ```
 
 A unit missing from `units` throws a `RangeError` starting with
@@ -126,8 +135,8 @@ minuta:
 
 | Entry                          | Plugin      | Functions                                                                                                                                                                           |
 | ------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@aleksejdix/minuta/calendar`  | `calendar`  | `monthGrid(date)` · `yearGrid(date)` · `dayGrid(date)` · `isWeekday(period)` · `isWeekend(period)`                                                                                  |
-| `@aleksejdix/minuta/intervals` | `intervals` | `merge(periods, unit?)` · `split(period, date)` · `gap(a, b)` · `clamp(period, bounds)` · `move(period, start)` · `resize(period, edge, date)` · `snap(date, unit, { step, mode })` |
+| `@aleksejdix/minuta/calendar`  | `calendar`  | `monthGrid(value)` · `yearGrid(value)` · `dayGrid(value)` · `isWeekday(period)` · `isWeekend(period)`                                                                               |
+| `@aleksejdix/minuta/intervals` | `intervals` | `merge(periods, unit?)` · `split(period, at)` · `gap(a, b)` · `clamp(period, bounds)` · `move(period, start)` · `resize(period, edge, value)` · `snap(value, unit, { step, mode })` |
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
@@ -139,12 +148,13 @@ const time = withUnits(
   temporalUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
   { plugins: [calendar, intervals] }
 );
-time.monthGrid(new Date()).periods; // always 42 days: no layout jumps
-time.yearGrid(new Date()).periods; // whole weeks covering the year
-time.dayGrid(new Date()).periods; // the day's real hours: 23, 24 or 25
-time.isWeekend(time.period(new Date(2026, 2, 20), "day")); // true: a Friday
-time.snap(new Date(), "minute", { step: 15 }); // the nearest quarter hour
-time.next(time.period(new Date(), "week")); // the operations, same units
+const today = Temporal.Now.plainDateISO();
+time.monthGrid(today).periods; // always 42 days: no layout jumps
+time.yearGrid(today).periods; // whole weeks covering the year
+time.dayGrid(today).periods; // the day's real hours: 23, 24 or 25
+time.isWeekend(time.period(Temporal.PlainDate.from("2026-03-20"), "day")); // true: a Friday
+time.snap(Temporal.Now.zonedDateTimeISO(), "minute", { step: 15 }); // the nearest quarter hour
+time.next(time.period(today, "week")); // the operations, same units
 time.units; // the units it was built with
 ```
 
@@ -159,25 +169,23 @@ its own.
 Write your own the same way:
 
 ```ts
-import type { Period, Units } from "@aleksejdix/minuta/core";
+import type { DatePeriod, Units } from "@aleksejdix/minuta/core";
 import { bind, divideWith } from "@aleksejdix/minuta/core";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { period } from "@aleksejdix/minuta";
 
 const workdays = {
-  workdaysIn: (units: Units, month: Period) =>
-    divideWith(units, month, "day").filter(
-      (day) => day.start.getDay() % 6 !== 0
-    ),
+  workdaysIn: (units: Units, month: DatePeriod) =>
+    divideWith(units, month, "day").filter((day) => day.start.dayOfWeek < 6),
 };
 
-const march = period(new Date(2026, 2, 1), "month");
+const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
 bind(temporalUnits(), workdays).workdaysIn(march); // 22 day periods
 ```
 
-Custom units are data too: add the name to `UnitRegistry` through module
-augmentation and pass its `UnitSpec` (`startOf`, `endOf`, `add`, `diff`) in
-your units.
+Custom units are data too: add the name and its kind to `UnitRegistry`
+through module augmentation (`fortnight: "date"`) and pass its spec
+(`kind`, `startOf`, `add`, `diff`) in your units.
 
 ## Formatting
 
@@ -185,23 +193,24 @@ your units.
 import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
 import { period, range } from "@aleksejdix/minuta";
 
-formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH"); // "März 2026"
-formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH"); // "30. März – 5. Apr. 2026"
+formatPeriod(period(Temporal.PlainDate.from("2026-03-15"), "month"), "de-CH"); // "März 2026"
+formatRange(
+  range(
+    Temporal.PlainDate.from("2026-03-30"),
+    Temporal.PlainDate.from("2026-04-06")
+  ),
+  "de-CH"
+); // "30. März – 5. Apr. 2026"
+formatPeriod(period(Temporal.PlainDate.from("2026-03-15"), "day"), "en-US", {
+  weekday: "short",
+}); // "Sun"
 ```
 
-Options are `Intl.DateTimeFormat` options merged over the defaults for the
-period's unit. Pass the units' `timeZone` to format periods of a time-zone
-adapter in its zone:
-
-```ts
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
-import { formatPeriod } from "@aleksejdix/minuta/format";
-import { periodWith } from "@aleksejdix/minuta/core";
-
-const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
-const day = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
-formatPeriod(day, "en-US", { timeZone: tokyo.timeZone }); // "March 21, 2026"
-```
+A date period shows its first and last day; a time period its start and
+end, in its own zone. The text is the same with native Temporal and the
+polyfill, on a server and in the browser. Options that pick fields
+(`month`, `weekday`, `dateStyle` …) replace the unit's defaults; others are
+added to them.
 
 ## For coding agents
 
@@ -214,6 +223,8 @@ to fix the problem.
 ## Migrating
 
 See [MIGRATION.md](MIGRATION.md) for the changes from the adapter-based API.
+2.0 periods hold Temporal values with an exclusive end; the date-library
+adapters are gone.
 
 ## License
 

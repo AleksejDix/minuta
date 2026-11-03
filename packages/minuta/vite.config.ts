@@ -13,7 +13,6 @@ export default defineConfig({
       entry: {
         calendar: fromRoot("src/calendar.ts"),
         core: fromRoot("src/core.ts"),
-        "date-fns-tz": fromRoot("src/date-fns-tz.ts"),
         format: fromRoot("src/format.ts"),
         index: fromRoot("src/index.ts"),
         intervals: fromRoot("src/intervals.ts"),
@@ -22,7 +21,7 @@ export default defineConfig({
       formats: ["es"],
     },
     rollupOptions: {
-      external: ["date-fns", "@date-fns/tz", "@js-temporal/polyfill"],
+      external: ["@js-temporal/polyfill"],
       output: {
         preserveModules: false,
       },

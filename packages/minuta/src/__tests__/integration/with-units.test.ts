@@ -1,17 +1,18 @@
+import type { DatePeriod, PlainDate, Units } from "#src/types";
+import { date, zoned } from "#src/test/temporal";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { MonthGrid } from "#src/calendar";
-import type { Units } from "#src/types";
 import { calendar } from "#src/calendar";
 import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/core";
 
 const SUNDAY = 0;
 const WEEK_DAYS = 7;
-const FIRST = 0;
+const SEVEN = 7;
 
 const units = temporalUnits({ weekStartsOn: SUNDAY });
 const workdays = {
-  workdaysIn: (_units: Units, date: Readonly<Date>): Readonly<Date> => date,
+  workdaysIn: (_units: Units, value: PlainDate): PlainDate => value,
 };
 
 describe("withUnits()", () => {
@@ -20,16 +21,30 @@ describe("withUnits()", () => {
     expect(withUnits(units).units).toBe(units);
   });
 
+  it(
+    "keeps the kind of a period in the bound operations' types",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      const time = withUnits(units);
+      const day = time.period(date("2026-03-15"), "day");
+      const hour = time.period(zoned("2026-03-15T10:00[UTC]"), "hour");
+      expectTypeOf(day).toEqualTypeOf<DatePeriod>();
+      expectTypeOf(time.next(day)).toEqualTypeOf<DatePeriod>();
+      expectTypeOf(time.divide(hour, "minute")).items.toHaveProperty("start");
+      expect(time.next(day).start.toString()).toBe("2026-03-16");
+    }
+  );
+
   it("binds plugin functions to the same units", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const time = withUnits(units, { plugins: [calendar] });
-    const grid = time.monthGrid(new Date("2026-03-15T12:00"));
-    expectTypeOf(time.monthGrid).toEqualTypeOf<
-      (date: Readonly<Date>) => MonthGrid
-    >();
+    const grid = time.monthGrid(date("2026-03-15"));
+    expectTypeOf(time.monthGrid).returns.toEqualTypeOf<MonthGrid>();
     // The grid follows the units' Sunday week start
-    const weekdays = grid.periods.map((day) => day.start.getDay());
-    expect(weekdays.indexOf(SUNDAY)).toBe(FIRST);
+    expect(
+      grid.periods.map((day) => day.start.dayOfWeek % SEVEN).at(SUNDAY)
+    ).toBe(SUNDAY);
   });
 
   it("merges several plugins", { timeout: 5000 }, () => {

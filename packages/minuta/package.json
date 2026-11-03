@@ -45,11 +45,6 @@
       "@minuta/source": "./src/temporal.ts",
       "types": "./dist/temporal.d.ts",
       "import": "./dist/temporal.js"
-    },
-    "./date-fns-tz": {
-      "@minuta/source": "./src/date-fns-tz.ts",
-      "types": "./dist/date-fns-tz.d.ts",
-      "import": "./dist/date-fns-tz.js"
     }
   },
   "imports": {
@@ -121,16 +116,6 @@
       "limit": "5 kB"
     },
     {
-      "name": "adapter: date-fns-tz",
-      "path": "dist/date-fns-tz.js",
-      "import": "{ dateFnsTzUnits }",
-      "ignore": [
-        "date-fns",
-        "@date-fns/tz"
-      ],
-      "limit": "5 kB"
-    },
-    {
       "name": "adapter: temporal",
       "path": "dist/temporal.js",
       "import": "{ temporalUnits }",
@@ -157,10 +142,6 @@
     "@js-temporal/polyfill": {
       "optional": true
     }
-  },
-  "optionalDependencies": {
-    "@date-fns/tz": "^1.5.0",
-    "date-fns": "^4.1.0"
   },
   "keywords": [
     "time",
