@@ -93,13 +93,14 @@ adapter for that library:
 | Moment                   | `moment`                    | `@aleksejdix/minuta/moment`      |
 | Temporal                 | `@js-temporal/polyfill`     | `@aleksejdix/minuta/temporal`    |
 
-date-fns, @date-fns/tz, Luxon and the Temporal polyfill are optional
-dependencies of minuta: npm installs them with minuta unless you pass
-`--omit=optional`. Day.js and Moment are not, so install them yourself:
+date-fns, @date-fns/tz and Luxon are optional dependencies of minuta: npm
+installs them with minuta unless you pass `--omit=optional`. Day.js, Moment
+and the Temporal polyfill are not, so install them yourself:
 
 ```sh
 npm install @aleksejdix/minuta dayjs
 npm install @aleksejdix/minuta moment
+npm install @aleksejdix/minuta @js-temporal/polyfill
 ```
 
 :::caution
@@ -108,8 +109,9 @@ example `@aleksejdix/minuta/dayjs` without `dayjs`.
 :::
 
 :::note
-`@aleksejdix/minuta/temporal` uses the runtime's `Temporal` where there is one and
-`@js-temporal/polyfill` otherwise. It never sets a global `Temporal`.
+`@aleksejdix/minuta/temporal` uses the runtime's `Temporal` where there is one.
+Elsewhere, [`await temporalReady()`](../api/adapters/temporal-ready/) loads
+`@js-temporal/polyfill` and sets the global `Temporal`.
 :::
 
 How to choose: see [Date engines](../concepts/date-engines/).

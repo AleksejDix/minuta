@@ -6,6 +6,7 @@ import react from "@astrojs/react";
 import starlight from "@astrojs/starlight";
 import starlightSidebarTopics from "starlight-sidebar-topics";
 import tailwindcss from "@tailwindcss/vite";
+import { temporalReady } from "@aleksejdix/minuta/temporal";
 import vue from "@astrojs/vue";
 
 type VitePlugin = Extract<
@@ -50,6 +51,12 @@ const demoAlias: VitePlugin = {
     );
     return resolved;
   },
+};
+
+// The pages compute with temporalUnits while they render; Node 24 has no Temporal
+const temporal: AstroIntegration = {
+  hooks: { "astro:config:setup": temporalReady },
+  name: "temporal-ready",
 };
 
 const docs: AstroIntegration = starlight({
@@ -152,7 +159,7 @@ const docs: AstroIntegration = starlight({
 export default defineConfig({
   // Served by GitHub Pages under the account's domain: https://dix.consulting/minuta/
   base: "/minuta",
-  integrations: [docs, react(), vue()],
+  integrations: [temporal, docs, react(), vue()],
   site: "https://dix.consulting",
   vite: { plugins: [demoAlias, tailwindcss()] },
 });

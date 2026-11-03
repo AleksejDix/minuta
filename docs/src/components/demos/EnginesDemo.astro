@@ -37,6 +37,8 @@ import DemoFrame from "./DemoFrame.astro";
 
 <script>
   import { mountEnginesDemos } from "./engines-demo";
+  import { temporalReady } from "@aleksejdix/minuta/temporal";
 
+  await temporalReady();
   mountEnginesDemos();
 </script>

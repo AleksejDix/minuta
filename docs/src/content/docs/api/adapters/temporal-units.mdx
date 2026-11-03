@@ -1,6 +1,6 @@
 ---
 title: temporalUnits
-description: Units computed with the TC39 Temporal API, using the polyfill when the runtime has no Temporal — in the computer's time zone.
+description: Units computed with the TC39 Temporal API — native Temporal, or the polyfill temporalReady loads where it is missing — in the computer's time zone.
 ---
 
 import { divideWith, periodWith } from "@aleksejdix/minuta/core";
@@ -12,9 +12,9 @@ export const weeksOfMarch = (units) =>
   divideWith(units, periodWith(units, new Date(2026, 2, 1), "month"), "week");
 
 Units computed with [Temporal](https://tc39.es/proposal-temporal/docs/), the
-new date API for JavaScript. Where the runtime has no Temporal yet, minuta
-uses the `@js-temporal/polyfill`. Dates are read in the time zone of the
-computer the code runs on.
+new date API for JavaScript. Where the runtime has no Temporal yet,
+[`temporalReady`](../temporal-ready/) loads `@js-temporal/polyfill` first.
+Dates are read in the time zone of the computer the code runs on.
 
 ```ts
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
@@ -74,8 +74,9 @@ The weeks of March 2026, computed once by Temporal and once by the built-in
 npm install @aleksejdix/minuta @js-temporal/polyfill
 ```
 
-minuta is tested with `@js-temporal/polyfill` 0.5. It is listed as an
-optional dependency of minuta, so npm may install it already.
+The polyfill is only needed where the runtime has no Temporal (Safari, Node
+24). minuta is tested with `@js-temporal/polyfill` 0.5. It is an optional
+peer dependency of minuta, so install it yourself when you need it.
 
 ## Parameters
 
@@ -98,27 +99,23 @@ The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
 `hour`, `minute` and `second`, plus `timeZone` (the computer's zone, e.g.
 `"Europe/Zurich"`), `weekStartsOn` (a number) and `weekend` (numbers).
 
-## The polyfill and `globalThis.Temporal`
+## Native Temporal first, the polyfill only where it is missing
 
-Each call checks for `globalThis.Temporal`:
+minuta reads `globalThis.Temporal` when it computes, never at import:
 
-- If the runtime has Temporal, it is used.
-- If not, minuta uses the polyfill it imports itself.
+- If the runtime has Temporal (Chrome and Edge 144+, Firefox 139+, Node
+  26+), it is used and nothing else is loaded.
+- If not, `await temporalReady()` once, before anything renders. It loads the
+  polyfill in its own chunk and installs it on `globalThis`.
+- Computing with neither throws an error that names `temporalReady()`.
 
-`globalThis` is never changed, so importing `@aleksejdix/minuta/temporal` has no side
-effect on the rest of your app:
-
-```ts
-typeof Temporal; // → "undefined" (Node 24 without flags)
-await import("@aleksejdix/minuta/temporal");
-typeof Temporal; // → "undefined"
-```
-
-The polyfill is part of the import in both cases, so it is in your bundle
-even when the browser has Temporal.
+Importing `@aleksejdix/minuta/temporal` changes nothing, and the polyfill is
+not in your bundle unless you call `temporalReady()`. See
+[`temporalReady`](../temporal-ready/) for an app setup.
 
 ## Related
 
+- [`temporalReady`](../temporal-ready/) — load the polyfill where Temporal is missing.
 - [All date engines](../overview/) — compare the engines.
 - [`withUnits`](../../minuta-core/with-units/) — bind the units to all operations.
 - [Time zones](../../../concepts/time-zones/)

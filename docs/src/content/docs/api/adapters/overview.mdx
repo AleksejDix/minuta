@@ -52,8 +52,8 @@ time zone, or the date library your app already uses.
 | [`momentUnits`](../moment-units/)         | `@aleksejdix/minuta/moment`      | `moment`                   | the computer's                             | an existing app uses Moment.                   |
 | [`temporalUnits`](../temporal-units/)     | `@aleksejdix/minuta/temporal`    | `@js-temporal/polyfill`    | the computer's                             | you are moving to Temporal.                    |
 
-`date-fns`, `@date-fns/tz`, `luxon` and `@js-temporal/polyfill` are optional
-dependencies of minuta. `dayjs` and `moment` are not; install them yourself.
+`date-fns`, `@date-fns/tz` and `luxon` are optional dependencies of minuta.
+`dayjs`, `moment` and `@js-temporal/polyfill` are not; install them yourself.
 
 ## Same options everywhere
 
@@ -125,8 +125,9 @@ way, see [Date engines](../../../concepts/date-engines/).
 - **luxonUnits** follows Luxon's `Settings.defaultZone`. Do not change it,
   or the units' `timeZone` setting no longer matches.
 - **dayjsUnits** calls `dayjs.extend(quarterOfYear)` on your Day.js.
-- **temporalUnits** uses the runtime's `Temporal`, or the polyfill when there
-  is none, without setting a global. It does not use Temporal's time zones.
+- **temporalUnits** uses the runtime's `Temporal`. Where there is none,
+  `await temporalReady()` first: it loads the polyfill and sets the global.
+  It does not use Temporal's time zones.
 
 ## Learn more
 
