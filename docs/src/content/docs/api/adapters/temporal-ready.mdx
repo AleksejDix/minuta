@@ -1,0 +1,129 @@
+---
+title: temporalReady
+description: Make Temporal available before minuta computes — loads the polyfill only where the runtime has no Temporal.
+---
+
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+Makes sure `globalThis.Temporal` exists before minuta computes with it. Where
+the runtime has Temporal (Chrome and Edge 144+, Firefox 139+, Node 26+), it
+does nothing and loads nothing. Elsewhere (Safari, Node 24) it loads
+`@js-temporal/polyfill` in its own chunk and installs it on `globalThis`.
+
+```ts
+import { temporalReady } from "@aleksejdix/minuta/temporal";
+```
+
+```ts
+temporalReady(): Promise<void>
+```
+
+## Example
+
+Await it once, before anything renders:
+
+```ts
+import { temporalReady, temporalUnits } from "@aleksejdix/minuta/temporal";
+import { withUnits } from "@aleksejdix/minuta/core";
+
+await temporalReady();
+
+const time = withUnits(temporalUnits());
+time.period(new Date(2026, 2, 18), "month");
+```
+
+## What happens
+
+<Flow
+  steps={[
+    {
+      code: "await temporalReady()",
+      layer: "App",
+      text: "Awaits it once, before anything renders.",
+    },
+    {
+      code: '"Temporal" in globalThis',
+      layer: "Runtime has Temporal",
+      text: "Chrome, Edge, Firefox, Node 26+: resolves at once and loads nothing.",
+    },
+    {
+      code: 'import("@js-temporal/polyfill")',
+      layer: "Runtime has none",
+      text: "Safari, Node 24: loads the polyfill chunk and sets globalThis.Temporal.",
+    },
+    {
+      code: "temporalUnits().month.add(date, 1)",
+      layer: "minuta",
+      text: "Reads globalThis.Temporal each time it computes.",
+    },
+  ]}
+/>
+
+## In an app
+
+### Vite (React, Vue, Svelte)
+
+In the entry file, before the app mounts:
+
+```ts
+// main.ts
+import { temporalReady } from "@aleksejdix/minuta/temporal";
+
+await temporalReady();
+
+const { mount } = await import("./app");
+mount();
+```
+
+### Nuxt
+
+A plugin that runs first, on the server and in the browser. Nuxt waits for
+it before the app renders:
+
+```ts
+// plugins/temporal.ts
+import { temporalReady } from "@aleksejdix/minuta/temporal";
+
+export default defineNuxtPlugin({
+  enforce: "pre",
+  name: "temporal",
+  async setup() {
+    await temporalReady();
+  },
+});
+```
+
+The server and the browser compute with the same Temporal arithmetic, native
+or polyfilled, so they agree on every period.
+
+## Install
+
+```sh
+npm install @js-temporal/polyfill
+```
+
+The polyfill is an optional peer dependency of minuta. A bundle that never
+calls `temporalReady()` does not contain it; one that does gets it as a
+separate chunk, which only runtimes without Temporal download.
+
+## Returns
+
+A promise that resolves once `globalThis.Temporal` exists. Calling it again is
+free.
+
+## Without it
+
+Computing with Temporal in a runtime that has none, without awaiting
+`temporalReady()` first, throws:
+
+```
+minuta needs Temporal: await temporalReady() first, or run on Chrome 144+, Firefox 139+, Node 26+
+```
+
+Importing `@aleksejdix/minuta/temporal` never throws and never changes
+`globalThis`.
+
+## Related
+
+- [`temporalUnits`](../temporal-units/) — units computed with Temporal.
+- [Installation](../../../installation/)
