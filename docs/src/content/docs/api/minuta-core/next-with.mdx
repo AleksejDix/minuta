@@ -4,13 +4,13 @@ description: Get the period right after a period — the next day, week or month
 ---
 
 import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const sunday = nativeUnits({ weekStartsOn: "sunday" });
+export const sunday = temporalUnits({ weekStartsOn: "sunday" });
 export const week = periodWith(sunday, new Date(2026, 2, 18), "week");
 export const mondayWeek = periodWith(
-  nativeUnits(),
+  temporalUnits(),
   new Date(2026, 2, 18),
   "week"
 );
@@ -30,9 +30,9 @@ nextWith(units, period);
 
 ```ts
 import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const units = nativeUnits({ weekStartsOn: "sunday" });
+const units = temporalUnits({ weekStartsOn: "sunday" });
 const week = periodWith(units, new Date(2026, 2, 18), "week");
 // → Sun Mar 15 – Sat Mar 21
 
@@ -54,10 +54,10 @@ nextWith(units, week);
 
 ## Parameters
 
-| Name     | What it is                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compute with, e.g. `nativeUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `period` | The current period.                                                                                   |
+| Name     | What it is                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. `temporalUnits()`. See [Date engines](../../../concepts/date-engines/). |
+| `period` | The current period.                                                                                     |
 
 ## Returns
 
@@ -65,7 +65,7 @@ A new, whole period of the same unit that starts right after `period`.
 `nextWith(units, p)` is the same as [`shiftWith(units, p, 1)`](../shift-with/).
 
 It works exactly like [`next`](../../minuta/next/), which is `nextWith` with
-`nativeUnits()` bound. Read that page for daylight saving and for custom
+`temporalUnits()` bound. Read that page for daylight saving and for custom
 periods, which move by their own length.
 
 ## Use the same units as the period
@@ -76,12 +76,12 @@ with Sunday units comes out as a Sunday week:
 
 ```ts
 import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const mondayWeek = periodWith(nativeUnits(), new Date(2026, 2, 18), "week");
+const mondayWeek = periodWith(temporalUnits(), new Date(2026, 2, 18), "week");
 // → Mon Mar 16 – Sun Mar 22
 
-nextWith(nativeUnits({ weekStartsOn: "sunday" }), mondayWeek);
+nextWith(temporalUnits({ weekStartsOn: "sunday" }), mondayWeek);
 // → Sun Mar 22 – Sat Mar 28
 ```
 
@@ -91,7 +91,7 @@ nextWith(nativeUnits({ weekStartsOn: "sunday" }), mondayWeek);
     { label: "mondayWeek", periods: [mondayWeek], tone: "ink" },
     {
       label: "nextWith(monday, …)",
-      periods: [nextWith(nativeUnits(), mondayWeek)],
+      periods: [nextWith(temporalUnits(), mondayWeek)],
       tone: "muted",
     },
     {

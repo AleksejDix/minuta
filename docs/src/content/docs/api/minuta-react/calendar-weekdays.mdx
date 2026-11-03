@@ -26,9 +26,9 @@ import {
   CalendarGrid,
   CalendarRoot,
 } from "@aleksejdix/minuta-react/components";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
+const sundayFirst = temporalUnits({ weekStartsOn: "sunday" });
 
 export function Calendar() {
   return (

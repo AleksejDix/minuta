@@ -1,6 +1,6 @@
 ---
 title: minuta
-description: The main entry point — every operation, ready to use with the built-in Date and weeks that start on Monday.
+description: The main entry point — every operation, ready to use with Temporal and weeks that start on Monday.
 sidebar:
   order: 0
   label: Overview
@@ -12,7 +12,7 @@ import Timeline from "../../../../components/diagrams/Timeline.astro";
 export const march = period(new Date(2026, 2, 15), "month");
 
 `minuta` is the main entry point. It has every operation, ready to use: no
-setup, no configuration. It computes with the built-in `Date` in the local
+setup, no configuration. It computes with Temporal in the local
 time zone, and weeks start on Monday (ISO 8601).
 
 ```ts
@@ -75,14 +75,13 @@ picture.
 
 ## `minuta` or `@aleksejdix/minuta/core`?
 
-Use **`minuta`** when the built-in `Date`, the local time zone and weeks from
-Monday to Sunday are what you need. That is most apps.
+Use **`minuta`** when the local time zone and weeks from Monday to Sunday
+are what you need. That is most apps.
 
 Use **[`@aleksejdix/minuta/core`](../../minuta-core/overview/)** when you need any of:
 
 - weeks that start on another day, such as Sunday;
-- another date library (date-fns, Luxon, Day.js, Moment, Temporal) or a fixed
-  time zone;
+- a fixed time zone (`dateFnsTzUnits`);
 - your own weekend days, or your own units;
 - plugins such as calendar grids, bound to the same settings;
 - the smallest possible bundle, with only the units you use.
@@ -94,13 +93,13 @@ them. See [Date engines](../../../concepts/date-engines/).
 
 ```ts
 import { withUnits } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
 
 time.period(new Date(2026, 2, 18), "week");
 // → Sun Mar 15 – Sat Mar 21
 ```
 
-`minuta` works like `withUnits(nativeUnits())`, but as separate functions,
+`minuta` works like `withUnits(temporalUnits())`, but as separate functions,
 so your bundler keeps only the ones you import.

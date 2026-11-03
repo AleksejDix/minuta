@@ -118,12 +118,12 @@ root, so the click in one updates the other:
 
 The props are the options of [`useMinuta`](../use-minuta/#options).
 
-| Name    | What it is                                               | Default                       |
-| ------- | -------------------------------------------------------- | ----------------------------- |
-| `date`  | The date to browse first. Read only once.                | now                           |
-| `now`   | The moment that counts as "now".                         | the clock                     |
-| `unit`  | The size of the browsed period.                          | `"month"`                     |
-| `units` | The units every function uses, including the week start. | `nativeUnits()`, Monday weeks |
+| Name    | What it is                                               | Default                         |
+| ------- | -------------------------------------------------------- | ------------------------------- |
+| `date`  | The date to browse first. Read only once.                | now                             |
+| `now`   | The moment that counts as "now".                         | the clock                       |
+| `unit`  | The size of the browsed period.                          | `"month"`                       |
+| `units` | The units every function uses, including the week start. | `temporalUnits()`, Monday weeks |
 
 Props are reactive: a new `unit`, `units` or `now` updates every reader. A new
 `date` does nothing, because `date` is only the start.

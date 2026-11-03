@@ -8,7 +8,7 @@ import { contains, period, same } from "@aleksejdix/minuta";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
 import type { Weekday } from "@aleksejdix/minuta/core";
 import { formatPeriod } from "@aleksejdix/minuta/format";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type Props = Readonly<{
   /** First day of a highlighted range, as `YYYY-MM-DD` */
@@ -74,7 +74,7 @@ function isMarked(day: Readonly<{ start: Readonly<Date> }>): boolean {
   return marks.some((iso) => same(period(day.start, "day"), dayOf(iso), "day"));
 }
 
-const units = nativeUnits({ weekStartsOn });
+const units = temporalUnits({ weekStartsOn });
 const monthStart = new Date(`${month}-01T00:00:00`);
 const grid = monthGridWith(units, monthStart);
 const thisMonth = period(monthStart, "month");

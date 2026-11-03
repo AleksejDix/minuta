@@ -1,21 +1,42 @@
 ---
 title: Date engines
-description: What units and adapters are, and how to choose the date library, week start and time zone minuta computes with.
+description: What units and adapters are, and how to choose the week start and time zone minuta computes with.
 sidebar:
   order: 2
 ---
 
-import EnginesDemo from "../../../components/demos/EnginesDemo.astro";
+import { divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import Timeline from "../../../components/diagrams/Timeline.astro";
+
+export const weeksOfMarch = (units) =>
+  divideWith(units, periodWith(units, new Date(2026, 2, 1), "month"), "week");
 
 minuta does not do date math itself. It asks a **date engine**: a set of
-small rules for each unit of time. You can use the built-in `Date`, or plug
-in date-fns, Luxon, Day.js, Moment or Temporal.
+small rules for each unit of time. minuta computes with
+[Temporal](https://tc39.es/proposal-temporal/docs/), or with date-fns when
+you need a fixed time zone.
 
-## See the problem
+## See the idea
 
-Pick a date library. The top shows the code you would write in that library to get the weeks of a month; the bottom shows the minuta code — only its import changes — and checks the result against the built-in `Date`.
+The same code, the same month, two sets of units: one with weeks from
+Monday, one with weeks from Sunday. Only the units change, and every week
+moves with them:
 
-<EnginesDemo />
+<Timeline
+  caption='divideWith(units, march, "week") with Monday and Sunday weeks. The hatched pieces are the first and last weeks, cut at the edges of March.'
+  tracks={[
+    {
+      label: 'temporalUnits({ weekStartsOn: "monday" })',
+      periods: weeksOfMarch(temporalUnits({ weekStartsOn: "monday" })),
+      tone: "accent",
+    },
+    {
+      label: 'temporalUnits({ weekStartsOn: "sunday" })',
+      periods: weeksOfMarch(temporalUnits({ weekStartsOn: "sunday" })),
+    },
+  ]}
+/>
 
 ## Units are rules, as data
 
@@ -30,9 +51,9 @@ These four functions are a _unit spec_. A set of specs, one per unit, plus a
 few settings, is called **units**. It is a plain object:
 
 ```ts
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const units = nativeUnits();
+const units = temporalUnits();
 
 Object.keys(units);
 // → ["day", "hour", "minute", "month", "quarter", "second", "week", "year",
@@ -52,39 +73,33 @@ The settings travel with the specs:
 
 ## Adapters make units
 
-An **adapter** is a function that makes units for one date library, with your
-settings. Each lives in its own entry, so you only load the one you use:
+An **adapter** is a function that makes units with your settings. Each lives
+in its own entry, so you only load the one you use:
 
-| Date library                      | Adapter                                                   | Import                           |
-| --------------------------------- | --------------------------------------------------------- | -------------------------------- |
-| Built-in `Date` (no dependencies) | [`nativeUnits`](../../api/adapters/native-units/)         | `@aleksejdix/minuta/native`      |
-| date-fns                          | [`dateFnsUnits`](../../api/adapters/date-fns-units/)      | `@aleksejdix/minuta/date-fns`    |
-| date-fns-tz (any time zone)       | [`dateFnsTzUnits`](../../api/adapters/date-fns-tz-units/) | `@aleksejdix/minuta/date-fns-tz` |
-| Luxon                             | [`luxonUnits`](../../api/adapters/luxon-units/)           | `@aleksejdix/minuta/luxon`       |
-| Day.js                            | [`dayjsUnits`](../../api/adapters/dayjs-units/)           | `@aleksejdix/minuta/dayjs`       |
-| Moment                            | [`momentUnits`](../../api/adapters/moment-units/)         | `@aleksejdix/minuta/moment`      |
-| Temporal                          | [`temporalUnits`](../../api/adapters/temporal-units/)     | `@aleksejdix/minuta/temporal`    |
+| Engine                      | Adapter                                                   | Import                           |
+| --------------------------- | --------------------------------------------------------- | -------------------------------- |
+| Temporal                    | [`temporalUnits`](../../api/adapters/temporal-units/)     | `@aleksejdix/minuta/temporal`    |
+| date-fns-tz (any time zone) | [`dateFnsTzUnits`](../../api/adapters/date-fns-tz-units/) | `@aleksejdix/minuta/date-fns-tz` |
 
 Every adapter takes `weekStartsOn` and `weekend`. Days are named
 (`"sunday"`), and the numbers of `Date#getDay()` (0 = Sunday) work too:
 
 ```ts
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-nativeUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] });
+temporalUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] });
 ```
 
-All adapters except `dateFnsTzUnits` compute in the local time zone of the
-runtime. `dateFnsTzUnits` takes a `timeZone` and computes in it wherever the
+`temporalUnits` computes in the local time zone of the runtime. `dateFnsTzUnits` takes a `timeZone` and computes in it wherever the
 code runs (UTC when you leave it out).
 
-Whatever the adapter, periods are always plain objects with native `Date`s in
-`start` and `end`. The date library is only used inside the specs.
+Whatever the adapter, periods are always plain objects with `Date`s in
+`start` and `end`. The engine is only used inside the specs.
 
 ## `minuta`: ready to use
 
-The main entry, [`minuta`](../../api/minuta/overview/), has the native units
-built in, with weeks from Monday. There is nothing to set up:
+The main entry, [`minuta`](../../api/minuta/overview/), has the Temporal
+units built in, with weeks from Monday. There is nothing to set up:
 
 ```ts
 import { period } from "@aleksejdix/minuta";
@@ -93,8 +108,7 @@ period(new Date(2026, 2, 18), "week");
 // → Mon Mar 16 – Sun Mar 22
 ```
 
-Use it when the built-in `Date`, local time and Monday weeks are what you
-need.
+Use it when local time and Monday weeks are what you need.
 
 ## `@aleksejdix/minuta/core`: bring your own units
 
@@ -106,9 +120,9 @@ using your units. This is the usual way:
 
 ```ts
 import { withUnits } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
 
 time.period(new Date(2026, 2, 18), "week");
 // → Sun Mar 15 – Sat Mar 21
@@ -120,9 +134,9 @@ stay out of your bundle:
 
 ```ts
 import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const { day, month } = nativeUnits();
+const { day, month } = temporalUnits();
 const units = { day, month };
 
 nextWith(units, periodWith(units, new Date(2026, 2, 18), "month"));
@@ -135,7 +149,7 @@ periodWith(units, new Date(2026, 2, 18), "week");
 See [`withUnits`](../../api/minuta-core/with-units/) and
 [`periodWith`](../../api/minuta-core/period-with/).
 
-## Another library or time zone
+## Another time zone
 
 Swap the adapter; the code stays the same. Here a day is computed in
 New York, even on a server in Europe:
@@ -163,9 +177,9 @@ everything else:
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
 import { withUnits } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }), {
+const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }), {
   plugins: [calendar],
 });
 
@@ -182,9 +196,9 @@ it next to an adapter's units:
 
 ```ts
 import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const base = nativeUnits();
+const base = temporalUnits();
 const fortnight = {
   startOf: (date) => base.week.startOf(date),
   endOf: (date) =>
@@ -205,7 +219,7 @@ align to a fixed first week. In TypeScript, also add the name to
 
 :::note
 `diff` must count _complete_ units, rounded toward zero, the same way `add`
-steps. The built-in adapters guarantee this; your own units must follow it
+steps. The adapters guarantee this; your own units must follow it
 too, or `duration` gives wrong counts.
 :::
 

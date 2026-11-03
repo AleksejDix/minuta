@@ -103,13 +103,13 @@ root, so the click in one re-renders the other:
 The props are the options of [`useMinuta`](../use-minuta/#options), plus
 `children`.
 
-| Name       | What it is                                               | Default                       |
-| ---------- | -------------------------------------------------------- | ----------------------------- |
-| `date`     | The date to browse first. Read only once.                | now                           |
-| `now`      | The moment that counts as "now".                         | the clock                     |
-| `unit`     | The size of the browsed period.                          | `"month"`                     |
-| `units`    | The units every function uses, including the week start. | `nativeUnits()`, Monday weeks |
-| `children` | The components that read the state.                      | —                             |
+| Name       | What it is                                               | Default                         |
+| ---------- | -------------------------------------------------------- | ------------------------------- |
+| `date`     | The date to browse first. Read only once.                | now                             |
+| `now`      | The moment that counts as "now".                         | the clock                       |
+| `unit`     | The size of the browsed period.                          | `"month"`                       |
+| `units`    | The units every function uses, including the week start. | `temporalUnits()`, Monday weeks |
+| `children` | The components that read the state.                      | —                               |
 
 `MinutaRoot` renders no element of its own, only its children.
 

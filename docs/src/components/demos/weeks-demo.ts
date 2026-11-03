@@ -7,7 +7,7 @@ import { demoRoots, part } from "./dom";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
 import type { Period } from "@aleksejdix/minuta";
 import type { WeekdayNumber } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type Cell = Readonly<{ day: number; outside: boolean; weekend: boolean }>;
 type WeekInfo = Readonly<{ firstDay: number; weekend: readonly number[] }>;
@@ -120,7 +120,7 @@ function naiveCells(month: Readonly<Date>): Cell[] {
 }
 
 function minutaCells(
-  units: ReturnType<typeof nativeUnits>,
+  units: ReturnType<typeof temporalUnits>,
   month: Readonly<Date>
 ): Cell[] {
   return monthGridWith(units, month).periods.map((day: Period) => ({
@@ -131,7 +131,7 @@ function minutaCells(
 }
 
 function headersOf(
-  units: ReturnType<typeof nativeUnits>,
+  units: ReturnType<typeof temporalUnits>,
   month: Readonly<Date>,
   tag: string
 ): string[] {
@@ -192,7 +192,7 @@ function show(root: HTMLElement): void {
   const tag = part(root, "locale", HTMLSelectElement).value;
   const month = monthOf(part(root, "month", HTMLInputElement));
   const settings = settingsOf(root, tag);
-  const units = nativeUnits(settings);
+  const units = temporalUnits(settings);
   renderGrid(
     part(root, "naive", HTMLElement),
     NAIVE_HEADERS,
@@ -204,7 +204,7 @@ function show(root: HTMLElement): void {
     minutaCells(units, month)
   );
   part(root, "settings", HTMLElement).textContent =
-    `nativeUnits({ weekStartsOn: ${String(settings.weekStartsOn)}, weekend: [${settings.weekend.join(", ")}] })`;
+    `temporalUnits({ weekStartsOn: ${String(settings.weekStartsOn)}, weekend: [${settings.weekend.join(", ")}] })`;
 }
 
 /**

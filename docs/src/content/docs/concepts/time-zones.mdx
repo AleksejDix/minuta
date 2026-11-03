@@ -80,9 +80,9 @@ computer's:
 All units carry a `timeZone` setting with the zone name:
 
 ```ts
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-nativeUnits().timeZone; // → "Europe/Zurich" (on a computer in Zurich)
+temporalUnits().timeZone; // → "Europe/Zurich" (on a computer in Zurich)
 dateFnsTzUnits({ timeZone: "Asia/Tokyo" }).timeZone; // → "Asia/Tokyo"
 ```
 
@@ -176,15 +176,10 @@ clock, and `dayGridWith` can report wrong DST hours.
 
 ## Engines and their zones
 
-| Engine                                                                      | Computes in                                                               |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `nativeUnits`, `dateFnsUnits`, `dayjsUnits`, `momentUnits`, `temporalUnits` | the computer's zone                                                       |
-| `luxonUnits`                                                                | Luxon's `Settings.defaultZone` — the computer's zone unless you change it |
-| `dateFnsTzUnits`                                                            | the zone you pass (default UTC)                                           |
-
-If you change Luxon's default zone, `luxonUnits` computes in it but its
-`timeZone` setting still names the computer's zone. Use `dateFnsTzUnits`
-for a fixed zone instead.
+| Engine           | Computes in                     |
+| ---------------- | ------------------------------- |
+| `temporalUnits`  | the computer's zone             |
+| `dateFnsTzUnits` | the zone you pass (default UTC) |
 
 ## Related
 

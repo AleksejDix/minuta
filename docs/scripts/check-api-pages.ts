@@ -19,15 +19,7 @@ const FAILURE = 1;
 const PAGE = /\.mdx?$/u;
 const NONE = 0;
 
-const ADAPTERS = [
-  "native",
-  "date-fns",
-  "date-fns-tz",
-  "luxon",
-  "dayjs",
-  "moment",
-  "temporal",
-];
+const ADAPTERS = ["date-fns-tz", "temporal"];
 
 const ENTRIES: readonly Entry[] = [
   { docs: "minuta", file: "index", pkg: "minuta" },

@@ -19,7 +19,7 @@ minuta is in beta (`1.0.0-beta`); the date field packages and `fechita` are at
         children: [
           {
             name: "minuta",
-            note: "ready to use: the built-in Date, weeks from Monday",
+            note: "ready to use: Temporal, weeks from Monday",
           },
           {
             name: "minuta/core",
@@ -30,8 +30,8 @@ minuta is in beta (`1.0.0-beta`); the date field packages and `fechita` are at
             note: "grids and weekends · merge, split, snap · labels",
           },
           {
-            name: "minuta/native · /date-fns · /date-fns-tz · /luxon · /dayjs · /moment · /temporal",
-            note: "one adapter per date engine",
+            name: "minuta/temporal · minuta/date-fns-tz",
+            note: "the units: Temporal, or date-fns in a chosen time zone",
           },
         ],
       },
@@ -76,43 +76,32 @@ install does:
 npm install @aleksejdix/minuta
 ```
 
-That is all you need to work with periods on the built-in `Date`. No other
-dependency.
+minuta computes with [Temporal](https://tc39.es/proposal-temporal/docs/).
+Chrome and Edge 144+, Firefox 139+ and Node 26+ have it; nothing else to
+install there.
 
-## With another date engine
+## Where Temporal is missing
 
-If your app already uses a date library, minuta can run on it. Import the
-adapter for that library:
-
-| Engine                   | Library                     | Import the adapter from          |
-| ------------------------ | --------------------------- | -------------------------------- |
-| date-fns                 | `date-fns`                  | `@aleksejdix/minuta/date-fns`    |
-| date-fns with time zones | `date-fns` + `@date-fns/tz` | `@aleksejdix/minuta/date-fns-tz` |
-| Luxon                    | `luxon`                     | `@aleksejdix/minuta/luxon`       |
-| Day.js                   | `dayjs`                     | `@aleksejdix/minuta/dayjs`       |
-| Moment                   | `moment`                    | `@aleksejdix/minuta/moment`      |
-| Temporal                 | `@js-temporal/polyfill`     | `@aleksejdix/minuta/temporal`    |
-
-date-fns, @date-fns/tz and Luxon are optional dependencies of minuta: npm
-installs them with minuta unless you pass `--omit=optional`. Day.js, Moment
-and the Temporal polyfill are not, so install them yourself:
+Safari and Node 24 have no Temporal yet. Install the polyfill and
+[`await temporalReady()`](../api/adapters/temporal-ready/) once, before
+anything renders. It loads the polyfill only in runtimes without Temporal:
 
 ```sh
-npm install @aleksejdix/minuta dayjs
-npm install @aleksejdix/minuta moment
-npm install @aleksejdix/minuta @js-temporal/polyfill
+npm install @js-temporal/polyfill
 ```
 
-:::caution
-Importing an adapter without its library installed fails at import time, for
-example `@aleksejdix/minuta/dayjs` without `dayjs`.
-:::
+```ts
+import { temporalReady } from "@aleksejdix/minuta/temporal";
 
-:::note
-`@aleksejdix/minuta/temporal` uses the runtime's `Temporal` where there is one.
-Elsewhere, [`await temporalReady()`](../api/adapters/temporal-ready/) loads
-`@js-temporal/polyfill` and sets the global `Temporal`.
-:::
+await temporalReady();
+```
+
+## In a fixed time zone
+
+To compute in a zone you choose instead of the computer's, use
+[`dateFnsTzUnits`](../api/adapters/date-fns-tz-units/). It needs `date-fns`
+and `@date-fns/tz`, optional dependencies of minuta that npm installs with it
+unless you pass `--omit=optional`.
 
 How to choose: see [Date engines](../concepts/date-engines/).
 

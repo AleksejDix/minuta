@@ -7,7 +7,7 @@ sidebar:
 ---
 
 import { periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = new Date(2026, 2, 18);
@@ -18,9 +18,9 @@ library, the first day of the week, the weekend and the time zone.
 
 ```ts
 import { withUnits } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const time = withUnits(nativeUnits({ weekStartsOn: "sunday" }));
+const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
 
 time.period(new Date(2026, 2, 18), "week");
 // → Sun Mar 15 00:00:00.000 – Sat Mar 21 23:59:59.999
@@ -30,8 +30,8 @@ time.period(new Date(2026, 2, 18), "week");
 
 _Units_ are plain data: for each unit of time (day, week, month …) four small
 functions that find its start and end, add to it, and count it. An _adapter_
-such as `nativeUnits()` or `luxonUnits()` makes them for one date library,
-with your settings.
+such as `temporalUnits()` or `dateFnsTzUnits()` makes them with your
+settings.
 
 Every function here that needs to know what a week or a month is takes the
 units as its **first** argument and ends in `With`:
@@ -43,21 +43,21 @@ as `contains`, need no units and have no `With`.
   marks={[{ date, label: "Mar 18" }]}
   tracks={[
     {
-      label: "nativeUnits()",
-      periods: [periodWith(nativeUnits(), date, "week")],
+      label: "temporalUnits()",
+      periods: [periodWith(temporalUnits(), date, "week")],
       tone: "accent",
     },
     {
       label: 'weekStartsOn: "sunday"',
       periods: [
-        periodWith(nativeUnits({ weekStartsOn: "sunday" }), date, "week"),
+        periodWith(temporalUnits({ weekStartsOn: "sunday" }), date, "week"),
       ],
       tone: "accent",
     },
     {
       label: 'weekStartsOn: "saturday"',
       periods: [
-        periodWith(nativeUnits({ weekStartsOn: "saturday" }), date, "week"),
+        periodWith(temporalUnits({ weekStartsOn: "saturday" }), date, "week"),
       ],
       tone: "accent",
     },
@@ -102,8 +102,7 @@ here too so you can import everything from one place:
 Use `@aleksejdix/minuta/core` instead of `minuta` when you need:
 
 - weeks that start on another day, such as Sunday;
-- another date library (date-fns, Luxon, Day.js, Moment, Temporal) or a fixed
-  time zone;
+- a fixed time zone (`dateFnsTzUnits`);
 - your own weekend days, or a unit of your own;
 - plugins, such as calendar grids from `@aleksejdix/minuta/calendar`, bound to the same
   settings;
@@ -111,16 +110,16 @@ Use `@aleksejdix/minuta/core` instead of `minuta` when you need:
 
 ```ts
 import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const { day, month } = nativeUnits();
+const { day, month } = temporalUnits();
 const units = { day, month }; // only these two end up in the bundle
 
 nextWith(units, periodWith(units, new Date(2026, 2, 18), "month"));
 // → Wed Apr 1 – Thu Apr 30
 ```
 
-If the built-in `Date`, local time and Monday weeks are fine, `minuta` is
+If local time and Monday weeks are fine, `minuta` is
 simpler: no units to pass.
 
 ## Units must match

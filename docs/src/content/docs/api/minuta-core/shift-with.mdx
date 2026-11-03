@@ -4,10 +4,10 @@ description: Move a period forward or back by a number of its own unit, with the
 ---
 
 import { periodWith, range, shiftWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const units = nativeUnits({ weekStartsOn: "sunday" });
+export const units = temporalUnits({ weekStartsOn: "sunday" });
 export const week = periodWith(units, new Date(2026, 2, 18), "week");
 export const slot = range(
   new Date(2026, 2, 2, 9),
@@ -29,9 +29,9 @@ shiftWith(units, period, steps);
 
 ```ts
 import { periodWith, shiftWith } from "@aleksejdix/minuta/core";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
-const units = nativeUnits({ weekStartsOn: "sunday" });
+const units = temporalUnits({ weekStartsOn: "sunday" });
 const week = periodWith(units, new Date(2026, 2, 18), "week");
 // → Sun Mar 15 – Sat Mar 21
 
@@ -53,11 +53,11 @@ shiftWith(units, week, 2);
 
 ## Parameters
 
-| Name     | What it is                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compute with, e.g. `nativeUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `period` | The period to move.                                                                                   |
-| `steps`  | How many periods to move, as a whole number. Positive moves forward, negative back.                   |
+| Name     | What it is                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. `temporalUnits()`. See [Date engines](../../../concepts/date-engines/). |
+| `period` | The period to move.                                                                                     |
+| `steps`  | How many periods to move, as a whole number. Positive moves forward, negative back.                     |
 
 ## Returns
 
@@ -65,7 +65,7 @@ A new, whole period of the same unit, `steps` periods away. With `steps` of
 `0`, the very same `period` object comes back.
 
 It works exactly like [`shift`](../../minuta/shift/), which is `shiftWith`
-with `nativeUnits()` bound. Read that page for how the period's own unit is
+with `temporalUnits()` bound. Read that page for how the period's own unit is
 used and how custom periods move by their own length.
 
 ## Custom periods need no units
