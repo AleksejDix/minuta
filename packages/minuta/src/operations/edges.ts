@@ -39,4 +39,3 @@ function laterOf<Kind extends Value>(left: Kind, right: Kind): Kind {
 }
 
 export { earlierOf, laterOf };
-export type { Value };

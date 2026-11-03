@@ -163,14 +163,4 @@ const hour: TimeSpec = fixedSpec("hour");
 const minute: TimeSpec = fixedSpec("minute");
 const second: TimeSpec = fixedSpec("second");
 
-export {
-  completeDiff,
-  day,
-  hour,
-  minute,
-  month,
-  quarter,
-  second,
-  weekSpec,
-  year,
-};
+export { day, hour, minute, month, quarter, second, weekSpec, year };

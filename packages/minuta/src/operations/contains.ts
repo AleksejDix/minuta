@@ -68,4 +68,3 @@ function contains(period: Period, target: Target): boolean {
 }
 
 export { contains };
-export type { Target };
