@@ -3,6 +3,24 @@
  * label dates.
  */
 
+import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta";
+import type { Temporal } from "@js-temporal/polyfill";
+
+type TemporalApi = typeof Temporal;
+
+function hasTemporal(scope: object): scope is { Temporal: TemporalApi } {
+  return "Temporal" in scope && scope.Temporal !== undefined;
+}
+
+// The runtime's Temporal, or the polyfill temporalReady() installed
+function temporal(): TemporalApi {
+  const scope: object = globalThis;
+  if (!hasTemporal(scope)) {
+    throw new Error("Await temporalReady() before the demos compute");
+  }
+  return scope.Temporal;
+}
+
 const DAY_LABEL = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   month: "short",
@@ -10,7 +28,7 @@ const DAY_LABEL = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-const TIME_LABEL = new Intl.DateTimeFormat("en-US", {
+const TIME_OPTIONS: Intl.DateTimeFormatOptions = {
   day: "numeric",
   hour: "2-digit",
   hourCycle: "h23",
@@ -18,7 +36,16 @@ const TIME_LABEL = new Intl.DateTimeFormat("en-US", {
   month: "short",
   second: "2-digit",
   year: "numeric",
-});
+};
+
+const TIME_LABEL = new Intl.DateTimeFormat("en-US", TIME_OPTIONS);
+
+const DAY_OPTIONS: Intl.DateTimeFormatOptions = {
+  day: "numeric",
+  month: "short",
+  weekday: "short",
+  year: "numeric",
+};
 
 /**
  * Every element of the page that hosts the demo `name`.
@@ -87,6 +114,52 @@ function timeLabel(date: Readonly<Date>): string {
 }
 
 /**
+ * A calendar date.
+ *
+ * @param iso - e.g. `"2026-03-18"`
+ * @returns The PlainDate
+ */
+function plainDate(iso: string): PlainDate {
+  return temporal().PlainDate.from(iso);
+}
+
+/**
+ * Now, in the browser's zone.
+ *
+ * @returns The current moment
+ */
+function now(): ZonedDateTime {
+  return temporal().Now.zonedDateTimeISO();
+}
+
+/**
+ * A Temporal date as "Sat, Jan 31, 2026", a moment as "Jan 31, 2026, 23:59:59"
+ * in its own zone.
+ *
+ * @param value - A date or a moment
+ * @returns The label
+ */
+function valueLabel(value: PlainDate | ZonedDateTime): string {
+  if ("hour" in value) {
+    return value.toLocaleString("en-US", TIME_OPTIONS);
+  }
+  return value.toLocaleString("en-US", DAY_OPTIONS);
+}
+
+/**
+ * The calendar date an `<input type="date">` holds, or undefined while empty.
+ *
+ * @param input - The date input
+ * @returns Its date
+ */
+function inputPlainDate(input: HTMLInputElement): PlainDate | undefined {
+  if (input.value === "") {
+    return undefined;
+  }
+  return plainDate(input.value);
+}
+
+/**
  * The local date an `<input type="date">` holds, or undefined while empty.
  *
  * @param input - The date input
@@ -99,4 +172,15 @@ function inputDate(input: HTMLInputElement): Date | undefined {
   return new Date(`${input.value}T00:00:00`);
 }
 
-export { dayLabel, demoRoots, fillList, inputDate, part, timeLabel };
+export {
+  dayLabel,
+  demoRoots,
+  fillList,
+  inputDate,
+  inputPlainDate,
+  now,
+  part,
+  plainDate,
+  timeLabel,
+  valueLabel,
+};

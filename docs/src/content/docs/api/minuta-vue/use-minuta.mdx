@@ -3,12 +3,13 @@ title: useMinuta
 description: A Vue composable that binds every minuta function to your units and keeps the browsed period reactive.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { withUnits } from "@aleksejdix/minuta/core";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Flow from "../../../../components/diagrams/Flow.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const day = new Date(2026, 2, 18);
+export const day = plainDate("2026-03-18");
 export const mondayWeeks = withUnits(temporalUnits());
 export const sundayWeeks = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
 

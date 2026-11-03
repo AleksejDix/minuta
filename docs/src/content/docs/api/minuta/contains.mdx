@@ -3,11 +3,12 @@ title: contains
 description: Check whether a date, or a whole other period, lies inside a period.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(new Date(2026, 2, 1), "month");
-export const week = period(new Date(2026, 2, 31), "week");
+export const march = period(plainDate("2026-03-01"), "month");
+export const week = period(plainDate("2026-03-31"), "week");
 
 Check whether a date, or a whole other period, lies inside a period: is this
 appointment in March, is this day in this week.
@@ -37,8 +38,8 @@ contains(march, period(new Date(2026, 3, 1), "day"));
 <Timeline
   caption="March contains the pin at Mar 20, but not the one at Apr 1, the first millisecond after March ends."
   marks={[
-    { date: new Date(2026, 2, 20), label: "Mar 20" },
-    { date: new Date(2026, 3, 1), label: "Apr 1" },
+    { date: plainDate("2026-03-20"), label: "Mar 20" },
+    { date: plainDate("2026-04-01"), label: "Apr 1" },
   ]}
   tracks={[{ label: "march", periods: [march], tone: "accent" }]}
 />

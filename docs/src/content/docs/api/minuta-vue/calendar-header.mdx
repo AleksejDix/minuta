@@ -3,10 +3,11 @@ title: CalendarHeader
 description: A Vue component that shows the browsed month between "previous month" and "next month" buttons.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { next, period, previous } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(new Date(2024, 2, 13), "month");
+export const march = period(plainDate("2024-03-13"), "month");
 
 A component that shows the name of the browsed month between a "previous
 month" and a "next month" button.

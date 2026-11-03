@@ -3,10 +3,11 @@
  * Saturday–Sunday weekend; minuta's grid follows the week start and weekend
  * you choose, or the locale's.
  */
-import { demoRoots, part } from "./dom";
+import type { Period, PlainDate } from "@aleksejdix/minuta";
+import { demoRoots, part, plainDate } from "./dom";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
-import type { Period } from "@aleksejdix/minuta";
 import type { WeekdayNumber } from "@aleksejdix/minuta/core";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type Cell = Readonly<{ day: number; outside: boolean; weekend: boolean }>;
@@ -100,6 +101,11 @@ function monthOf(input: HTMLInputElement): Date {
   return new Date(`${input.value || "2026-03"}-01T00:00:00`);
 }
 
+// The same month's first day as a calendar date, for minuta
+function firstDayOf(input: HTMLInputElement): PlainDate {
+  return plainDate(`${input.value || "2026-03"}-01`);
+}
+
 // The usual hand-made grid: blanks for getDay(), then the days
 function naiveCells(month: Readonly<Date>): Cell[] {
   const blanks = new Date(month.getFullYear(), month.getMonth(), ONE).getDay();
@@ -121,24 +127,23 @@ function naiveCells(month: Readonly<Date>): Cell[] {
 
 function minutaCells(
   units: ReturnType<typeof temporalUnits>,
-  month: Readonly<Date>
+  month: PlainDate
 ): Cell[] {
   return monthGridWith(units, month).periods.map((day: Period) => ({
-    day: day.start.getDate(),
-    outside: day.start.getMonth() !== month.getMonth(),
+    day: day.start.day,
+    outside: day.start.month !== month.month,
     weekend: isWeekendWith(units, day),
   }));
 }
 
 function headersOf(
   units: ReturnType<typeof temporalUnits>,
-  month: Readonly<Date>,
+  month: PlainDate,
   tag: string
 ): string[] {
-  const weekday = new Intl.DateTimeFormat(tag, { weekday: "short" });
   return monthGridWith(units, month)
     .periods.slice(FIRST, DAYS_A_WEEK)
-    .map((day) => weekday.format(day.start));
+    .map((day) => formatPeriod(day, tag, { weekday: "short" }));
 }
 
 // The hand-made grid leaves the days before the 1st blank
@@ -191,6 +196,7 @@ function renderGrid(
 function show(root: HTMLElement): void {
   const tag = part(root, "locale", HTMLSelectElement).value;
   const month = monthOf(part(root, "month", HTMLInputElement));
+  const firstDay = firstDayOf(part(root, "month", HTMLInputElement));
   const settings = settingsOf(root, tag);
   const units = temporalUnits(settings);
   renderGrid(
@@ -200,8 +206,8 @@ function show(root: HTMLElement): void {
   );
   renderGrid(
     part(root, "grid", HTMLElement),
-    headersOf(units, month, tag),
-    minutaCells(units, month)
+    headersOf(units, firstDay, tag),
+    minutaCells(units, firstDay)
   );
   part(root, "settings", HTMLElement).textContent =
     `temporalUnits({ weekStartsOn: ${String(settings.weekStartsOn)}, weekend: [${settings.weekend.join(", ")}] })`;

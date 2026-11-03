@@ -4,7 +4,15 @@
  * periods, optional marked moments, ticks chosen from the span. Pages pass
  * real minuta results, so the picture always matches the code.
  */
-import { barOf, pinAlign, position, spanOf, ticksOf } from "./timeline";
+import {
+  barOf,
+  epochOf,
+  pinAlign,
+  position,
+  spanOf,
+  ticksOf,
+} from "./timeline";
+import type { Marked } from "./timeline";
 import type { Period } from "@aleksejdix/minuta";
 
 type Track = Readonly<{
@@ -15,7 +23,7 @@ type Track = Readonly<{
   tone?: "accent" | "ink" | "muted";
 }>;
 
-type Mark = Readonly<{ date: Readonly<Date>; label: string }>;
+type Mark = Readonly<{ date: Marked; label: string }>;
 
 type Props = Readonly<{
   /** One sentence under the picture */
@@ -36,7 +44,7 @@ const rows = tracks.map((track) => ({
   tone: track.tone ?? "ink",
 }));
 const pins = marks.map((mark) => {
-  const left = position(span, mark.date.getTime());
+  const left = position(span, epochOf(mark.date));
   return { align: pinAlign(left), label: mark.label, left };
 });
 ---

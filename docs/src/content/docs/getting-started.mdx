@@ -3,10 +3,11 @@ title: Quick start
 description: Your first periods in five minutes — create a month, split it into days, step to the next month and label it.
 ---
 
+import { plainDate, zonedDateTime } from "../../components/temporal";
 import { contains, divide, next, period, previous } from "@aleksejdix/minuta";
 import Timeline from "../../components/diagrams/Timeline.astro";
 
-export const today = new Date(2026, 9, 12, 14, 30);
+export const today = zonedDateTime("2026-10-12T14:30[Europe/Zurich]");
 export const month = period(today, "month");
 
 This page walks through the core idea in five small steps. Install minuta
@@ -124,7 +125,7 @@ same(period(today, "day"), period(new Date(2026, 9, 30), "day"), "month");
   caption={`contains(month, today) is ${String(contains(month, today))}: the pin is inside the bar. Nov 1 is just past its end, so the same question gives false.`}
   marks={[
     { date: today, label: "today" },
-    { date: new Date(2026, 10, 1), label: "Nov 1" },
+    { date: plainDate("2026-11-01"), label: "Nov 1" },
   ]}
   tracks={[{ label: "month", periods: [month], tone: "accent" }]}
 />

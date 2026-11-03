@@ -3,6 +3,7 @@ title: temporalReady
 description: Make Temporal available before minuta computes — loads the polyfill only where the runtime has no Temporal.
 ---
 
+import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
 Makes sure `globalThis.Temporal` exists before minuta computes with it. Where

@@ -3,21 +3,17 @@ title: isWeekdayWith
 description: Check whether a period lies completely on working days — no Saturday, no Sunday, or no day of the weekend you set.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { divide, period, range } from "@aleksejdix/minuta";
 import { isWeekdayWith } from "@aleksejdix/minuta/calendar";
 import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(new Date(2026, 2, 1), "month");
+export const march = period(plainDate("2026-03-01"), "month");
 export const days = divide(march, "day");
-export const week = period(new Date(2026, 2, 18), "week");
-export const iso = (day) =>
-  [
-    day.start.getFullYear(),
-    String(day.start.getMonth() + 1).padStart(2, "0"),
-    String(day.start.getDate()).padStart(2, "0"),
-  ].join("-");
+export const week = period(plainDate("2026-03-18"), "week");
+export const iso = (day) => day.start.toString();
 
 Check whether a period lies completely on working days, that is, days that
 are not part of the weekend. The weekend is Saturday and Sunday unless you
@@ -138,9 +134,7 @@ isWeekdayWith(units, period(new Date(2026, 2, 1), "month")); // → false
     },
     {
       label: "Mon – Fri: true",
-      periods: [
-        range(new Date(2026, 2, 16), new Date(2026, 2, 20, 23, 59, 59, 999)),
-      ],
+      periods: [range(plainDate("2026-03-16"), plainDate("2026-03-21"))],
       tone: "accent",
     },
     { label: "the week: false", periods: [week] },

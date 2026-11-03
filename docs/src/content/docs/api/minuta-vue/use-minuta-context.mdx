@@ -3,11 +3,12 @@ title: useMinutaContext
 description: A Vue composable that reads the minuta state of the nearest MinutaRoot.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { divide, period } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const february = period(new Date(2024, 1, 10), "month");
+export const february = period(plainDate("2024-02-10"), "month");
 
 A composable that reads the minuta state of the nearest
 [`MinutaRoot`](../minuta-root/) (or [`CalendarRoot`](../calendar-root/))
@@ -53,7 +54,7 @@ This renders "February has 29 days" (2024 is a leap year).
 
 <Timeline
   caption="What MonthInfo reads and computes: the browsed month from the root, and its 29 days from the bound divide."
-  marks={[{ date: new Date(2024, 1, 10), label: "date: Feb 10" }]}
+  marks={[{ date: plainDate("2024-02-10"), label: "date: Feb 10" }]}
   tracks={[
     { label: "minuta.browsing.value", periods: [february], tone: "ink" },
     {

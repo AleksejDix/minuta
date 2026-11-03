@@ -6,10 +6,11 @@ sidebar:
   label: Overview
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { divide, next, period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(new Date(2026, 2, 15), "month");
+export const march = period(plainDate("2026-03-15"), "month");
 
 `minuta` is the main entry point. It has every operation, ready to use: no
 setup, no configuration. It computes with Temporal in the local
@@ -37,7 +38,7 @@ nothing is changed in place.
 
 <Timeline
   caption="One date becomes a period, and the period becomes new periods: the month after it, and the weeks inside it."
-  marks={[{ date: new Date(2026, 2, 15), label: "Mar 15" }]}
+  marks={[{ date: plainDate("2026-03-15"), label: "Mar 15" }]}
   tracks={[
     { label: 'period(date, "month")', periods: [march], tone: "ink" },
     { label: "next(march)", periods: [next(march)], tone: "accent" },

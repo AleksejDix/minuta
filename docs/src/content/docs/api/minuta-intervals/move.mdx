@@ -3,11 +3,12 @@ title: move
 description: Move a period to a new start and keep its length — e.g. drag an appointment to another day.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { period, shift } from "@aleksejdix/minuta";
 import { move } from "@aleksejdix/minuta/intervals";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const february = period(new Date(2026, 1, 1), "month");
+export const february = period(plainDate("2026-02-01"), "month");
 
 Move a period so it starts at a new date, and keep its length. Use it to
 drag an appointment to another time.
@@ -64,12 +65,12 @@ move(period(new Date(2026, 1, 1), "month"), new Date(2026, 2, 1));
 
 <Timeline
   caption="February moved to Mar 1 (pin) keeps its 28 days and stops at Mar 28. shift moves by one calendar month instead and gives all of March."
-  marks={[{ date: new Date(2026, 2, 1), label: "Mar 1" }]}
+  marks={[{ date: plainDate("2026-03-01"), label: "Mar 1" }]}
   tracks={[
     { label: "february", periods: [february] },
     {
       label: "move(february, Mar 1)",
-      periods: [move(february, new Date(2026, 2, 1))],
+      periods: [move(february, plainDate("2026-03-01"))],
       tone: "accent",
     },
     {

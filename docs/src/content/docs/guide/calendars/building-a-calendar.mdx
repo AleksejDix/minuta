@@ -5,6 +5,7 @@ sidebar:
   order: 3
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 import { period, shift } from "@aleksejdix/minuta";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
@@ -13,18 +14,13 @@ import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 
-export const iso = (day) =>
-  [
-    day.start.getFullYear(),
-    String(day.start.getMonth() + 1).padStart(2, "0"),
-    String(day.start.getDate()).padStart(2, "0"),
-  ].join("-");
+export const iso = (day) => day.start.toString();
 export const fridaySaturday = temporalUnits({
   weekStartsOn: "sunday",
   weekend: ["friday", "saturday"],
 });
 export const sundayFirst = temporalUnits({ weekStartsOn: "sunday" });
-export const focused = period(new Date(2026, 2, 18), "day");
+export const focused = period(plainDate("2026-03-18"), "day");
 export const focusedWeek = periodWith(sundayFirst, focused.start, "week");
 
 This page builds a month calendar in six steps. The first three use plain
@@ -227,7 +223,7 @@ shaded columns in these pictures are always Saturday and Sunday.)
 <MonthGrid
   month="2026-03"
   weekStartsOn="sunday"
-  marks={monthGridWith(fridaySaturday, new Date(2026, 2, 15))
+  marks={monthGridWith(fridaySaturday, plainDate("2026-03-15"))
     .periods.filter((day) => isWeekendWith(fridaySaturday, day))
     .map(iso)}
 />
