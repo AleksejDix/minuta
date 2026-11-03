@@ -1,9 +1,13 @@
 import type { Period, Unit, Units } from "#src/types";
-import { specFor } from "#src/units";
+import { compare, toPlainDate, toZoned } from "#src/values";
+import { specFor, timeZoneOf } from "#src/units";
+
+const EQUAL = 0;
 
 /**
- * Whether two periods fall into the same `unit` (compared by their starts).
- * With `"custom"`, both edges must be identical.
+ * Whether two periods fall into the same `unit`, compared by their starts:
+ * the same calendar unit for date units, the same moment's unit for time
+ * units. With `"custom"`, both edges must be identical.
  *
  * @example
  * sameWith(units, mondayPeriod, fridayPeriod, "week") // true
@@ -23,13 +27,25 @@ function sameWith(
 ): boolean {
   if (unit === "custom") {
     return (
-      first.start.getTime() === second.start.getTime() &&
-      first.end.getTime() === second.end.getTime()
+      first.start.toString() === second.start.toString() &&
+      first.end.toString() === second.end.toString()
     );
   }
   const spec = specFor(units, unit);
+  const timeZone = timeZoneOf(units);
+  if (spec.kind === "date") {
+    return (
+      compare(
+        spec.startOf(toPlainDate(first.start, timeZone)),
+        spec.startOf(toPlainDate(second.start, timeZone))
+      ) === EQUAL
+    );
+  }
   return (
-    spec.startOf(first.start).getTime() === spec.startOf(second.start).getTime()
+    compare(
+      spec.startOf(toZoned(first.start, timeZone)),
+      spec.startOf(toZoned(second.start, timeZone))
+    ) === EQUAL
   );
 }
 

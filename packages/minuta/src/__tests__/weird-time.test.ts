@@ -1,10 +1,13 @@
 import type { Period, Units } from "#src/types";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { compare, isDatePeriod, zonedPeriod } from "#src/values";
+import { describe, expect, it } from "vitest";
 import { nextWith, previousWith } from "#src/operations/shift";
-import { dateFnsTzUnits } from "#src/adapters/date-fns-tz/index";
+import { Temporal } from "@js-temporal/polyfill";
+import { date } from "#src/test/temporal";
 import { divideWith } from "#src/operations/divide";
-import { getUnitsTestCases } from "#src/test/shared-adapter-tests";
+import { durationWith } from "#src/operations/duration";
 import { periodWith } from "#src/operations/period";
+import { temporalUnits } from "#src/temporal";
 
 /*
  * Days on which time does not run on a 24-hour grid. Every operation must
@@ -95,16 +98,33 @@ const WEIRD_DAYS: readonly WeirdDay[] = [
   },
 ];
 
-const MS_AN_HOUR = 3_600_000;
-const ONE_MS = 1;
+const NS_AN_HOUR = 3_600_000_000_000;
+const EQUAL = 0;
+const NONE = 0;
 const ONE = 1;
 const FIRST = 0;
 const LAST = -1;
 const DAYS_AROUND = 3;
 const HOURS_TO_WALK = 30;
+const SHOWN_HOURS = 4;
 
-function hoursOf(day: Period): number {
-  return (day.end.getTime() + ONE_MS - day.start.getTime()) / MS_AN_HOUR;
+// A date period as moments in the units' zone; a time period as it is
+function asMoments(units: Units, period: Period): Period {
+  if (isDatePeriod(period)) {
+    return zonedPeriod(period, units.timeZone ?? "UTC");
+  }
+  return period;
+}
+
+function hoursOf(units: Units, day: Period): number {
+  const zoned = asMoments(units, day);
+  if (isDatePeriod(zoned)) {
+    return Number.NaN;
+  }
+  return (
+    Number(zoned.end.epochNanoseconds - zoned.start.epochNanoseconds) /
+    NS_AN_HOUR
+  );
 }
 
 // Each place where consecutive `pieces` leave a gap or overlap
@@ -113,11 +133,11 @@ function seams(pieces: readonly Period[]): string[] {
     const previous = pieces[index];
     if (
       previous === undefined ||
-      piece.start.getTime() === previous.end.getTime() + ONE_MS
+      compare(piece.start, previous.end) === EQUAL
     ) {
       return [];
     }
-    return [`${previous.end.toISOString()} → ${piece.start.toISOString()}`];
+    return [`${previous.end.toString()} → ${piece.start.toString()}`];
   });
 }
 
@@ -129,14 +149,12 @@ function coverage(pieces: readonly Period[], span: Period): string[] {
     return ["no pieces"];
   }
   const edges = [
-    first.start.getTime() - span.start.getTime(),
-    last.end.getTime() - span.end.getTime(),
+    compare(first.start, span.start) === EQUAL,
+    compare(last.end, span.end) === EQUAL,
   ];
   return [
     ...seams(pieces),
-    ...edges
-      .filter((off) => off !== FIRST)
-      .map((off) => `edge off by ${off} ms`),
+    ...edges.filter((fits) => !fits).map(() => "an edge is off"),
   ];
 }
 
@@ -159,60 +177,23 @@ function walkBack(units: Units, period: Period, count: number): Period[] {
 }
 
 function dayOf(units: Units, weird: WeirdDay): Period {
-  return periodWith(units, new Date(weird.at), "day");
+  return periodWith(units, Temporal.Instant.from(weird.at), "day");
 }
 
-type Case = Readonly<{
-  computerZone: string;
-  label: string;
-  units: Units;
-  weird: WeirdDay;
-}>;
-
-/*
- * Every weird day with date-fns-tz from a computer in UTC, and with every
- * other engine from a computer in the day's own zone
- */
-function casesFor(weird: WeirdDay): Case[] {
-  const cases: Case[] = [
-    {
-      computerZone: "UTC",
-      label: `${weird.zone} ${weird.what}, date-fns-tz`,
-      units: dateFnsTzUnits({ timeZone: weird.zone }),
-      weird,
-    },
-  ];
-  for (const [name, units] of getUnitsTestCases()) {
-    cases.push({
-      computerZone: weird.zone,
-      label: `${weird.zone} ${weird.what}, ${name}`,
-      units,
-      weird,
-    });
-  }
-  return cases;
-}
-
-const CASES: readonly Case[] = WEIRD_DAYS.flatMap((weird) => casesFor(weird));
-
-describe.each(CASES)("weird time: $label", ({ computerZone, units, weird }) => {
-  beforeAll(() => {
-    vi.stubEnv("TZ", computerZone);
-  });
-
-  afterAll(() => {
-    vi.unstubAllEnvs();
-  });
+describe.each(WEIRD_DAYS)("weird time: $zone $what", (weird) => {
+  const units = temporalUnits({ timeZone: weird.zone });
 
   it("the day has its real length", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    expect(hoursOf(dayOf(units, weird))).toBe(weird.hours);
+    expect(hoursOf(units, dayOf(units, weird))).toBe(weird.hours);
   });
 
   it("its hours cover it exactly", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const day = dayOf(units, weird);
-    expect(coverage(divideWith(units, day, "hour"), day)).toStrictEqual([]);
+    expect(
+      coverage(divideWith(units, day, "hour"), asMoments(units, day))
+    ).toStrictEqual([]);
   });
 
   it("days before and after touch", { timeout: 5000 }, () => {
@@ -241,4 +222,69 @@ describe.each(CASES)("weird time: $label", ({ computerZone, units, weird }) => {
     expect(nextWith(units, previousWith(units, day))).toStrictEqual(day);
     expect(previousWith(units, nextWith(units, day))).toStrictEqual(day);
   });
+});
+
+describe("weird time: Pacific/Apia, the skipped day", () => {
+  const units = temporalUnits({ timeZone: "Pacific/Apia" });
+  const skipped = periodWith(units, date("2011-12-30"), "day");
+
+  it("is a date with no hours", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(skipped.start.toString()).toBe("2011-12-30");
+    expect(divideWith(units, skipped, "hour")).toStrictEqual([]);
+    expect(durationWith(units, skipped, "hour")).toBe(NONE);
+  });
+
+  it(
+    "sits between its neighbours like any other date",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      expect(previousWith(units, skipped).start.toString()).toBe("2011-12-29");
+      expect(nextWith(units, skipped).start.toString()).toBe("2011-12-31");
+    }
+  );
+});
+
+describe("weird time: Australia/Lord_Howe, hours around a 30-minute change", () => {
+  const units = temporalUnits({ timeZone: "Australia/Lord_Howe" });
+
+  function hoursAround(day: string): string[] {
+    const hours = divideWith(
+      units,
+      periodWith(units, date(day), "day"),
+      "hour"
+    );
+    return hours
+      .slice(ONE, SHOWN_HOURS)
+      .map(
+        (hour) => `${hour.start.toPlainTime().toString()}${hour.start.offset}`
+      );
+  }
+
+  it(
+    "splits wall hour 2 where the clocks jump from 1:59 to 2:30",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      expect(hoursAround("2026-10-04")).toStrictEqual([
+        "01:00:00+10:30",
+        "02:30:00+11:00",
+        "03:00:00+11:00",
+      ]);
+    }
+  );
+
+  it(
+    "makes the repeated half hour its own piece where they go back to 1:30",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      expect(hoursAround("2026-04-05")).toStrictEqual([
+        "01:00:00+11:00",
+        "01:30:00+10:30",
+        "02:00:00+10:30",
+      ]);
+    }
+  );
 });
