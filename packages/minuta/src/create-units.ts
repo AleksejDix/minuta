@@ -28,9 +28,9 @@ type UnitsOptions = WeekOptions &
 /**
  * Unit specs for every unit, computed with the TC39 Temporal API: date
  * units on `PlainDate`, time units on `ZonedDateTime`. Pass the result to
- * `withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
- * `bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
- * (`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+ * `withUnits`, `calendar`, `intervals` or any `…With` function. Weeks
+ * start on Monday unless `weekStartsOn` says otherwise (`"sunday"` …
+ * `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
  * the days `isWeekend` counts (Saturday and Sunday unless set); `timeZone`
  * is where dates become moments. Where the runtime has no Temporal,
  * `await temporalReady()` first.
