@@ -83,7 +83,7 @@ install there.
 ## Where Temporal is missing
 
 Safari and Node 24 have no Temporal yet. Install the polyfill and
-[`await temporalReady()`](../api/adapters/temporal-ready/) once, before
+[`await temporalReady()`](../api/minuta-temporal/temporal-ready/) once, before
 anything renders. It loads the polyfill only in runtimes without Temporal:
 
 ```sh
@@ -99,7 +99,7 @@ await temporalReady();
 ## In a fixed time zone
 
 To compute in a zone you choose instead of the computer's, use
-[`dateFnsTzUnits`](../api/adapters/temporal-units/). It needs `date-fns`
+[`dateFnsTzUnits`](../api/minuta-core/create-units/). It needs `date-fns`
 and `@date-fns/tz`, optional dependencies of minuta that npm installs with it
 unless you pass `--omit=optional`.
 

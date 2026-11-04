@@ -19,15 +19,13 @@ const FAILURE = 1;
 const PAGE = /\.mdx?$/u;
 const NONE = 0;
 
-const ADAPTERS = ["temporal"];
-
 const ENTRIES: readonly Entry[] = [
   { docs: "minuta", file: "index", pkg: "minuta" },
   { docs: "minuta-core", file: "core", pkg: "minuta" },
   { docs: "minuta-calendar", file: "calendar", pkg: "minuta" },
   { docs: "minuta-intervals", file: "intervals", pkg: "minuta" },
   { docs: "minuta-format", file: "format", pkg: "minuta" },
-  ...ADAPTERS.map((file) => ({ docs: "adapters", file, pkg: "minuta" })),
+  { docs: "minuta-temporal", file: "temporal", pkg: "minuta" },
   { docs: "minuta-react", file: "index", pkg: "minuta-react" },
   { docs: "minuta-react", file: "components/index", pkg: "minuta-react" },
   { docs: "minuta-vue", file: "index", pkg: "minuta-vue" },

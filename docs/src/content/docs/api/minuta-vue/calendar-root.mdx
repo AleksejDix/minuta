@@ -33,10 +33,10 @@ import {
   CalendarRoot,
 } from "@aleksejdix/minuta-vue/components";
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 import "@aleksejdix/minuta-vue/style.css";
 
-const sundayFirst = temporalUnits({ weekStartsOn: "sunday" });
+const sundayFirst = createUnits({ weekStartsOn: "sunday" });
 const isWeekend = (day) => isWeekendWith(sundayFirst, day);
 </script>
 
@@ -99,11 +99,11 @@ The parts of a calendar, and which sits inside which:
 
 ## Props
 
-| Name         | What it is                                                                                                          | Default                         |
-| ------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `units`      | The units of the calendar. The week start comes from here.                                                          | `temporalUnits()`, Monday weeks |
-| `date`       | The date whose month is shown first. Read only once.                                                                | today                           |
-| `isDisabled` | A function that gets a day and returns `true` when that day can't be selected. Written `:is-disabled` in templates. | no day is disabled              |
+| Name         | What it is                                                                                                          | Default                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `units`      | The units of the calendar. The week start comes from here.                                                          | `createUnits()`, Monday weeks |
+| `date`       | The date whose month is shown first. Read only once.                                                                | today                         |
+| `isDisabled` | A function that gets a day and returns `true` when that day can't be selected. Written `:is-disabled` in templates. | no day is disabled            |
 
 `units` is reactive: pass new units and the grid rebuilds with the new week
 start, keeping the browsed month and the selection.

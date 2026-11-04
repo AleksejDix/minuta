@@ -6,11 +6,11 @@ description: The intervals plugin — pass it to withUnits to get clamp, gap, me
 import { plainDate } from "../../../../components/temporal";
 import { withUnits } from "@aleksejdix/minuta/core";
 import { intervals } from "@aleksejdix/minuta/intervals";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const time = withUnits(temporalUnits(), { plugins: [intervals] });
+export const time = withUnits(createUnits(), { plugins: [intervals] });
 export const days = time.divide(
   time.period(plainDate("2026-03-01"), "month"),
   "day"
@@ -31,10 +31,9 @@ withUnits(units, { plugins: [intervals] });
 
 ```ts
 import { intervals } from "@aleksejdix/minuta/intervals";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(temporalUnits(), { plugins: [intervals] });
+const time = withUnits(createUnits(), { plugins: [intervals] });
 
 const days = time.divide(time.period(new Date(2026, 2, 1), "month"), "day");
 time.merge(days, "month"); // → March, unit "month"
@@ -111,7 +110,7 @@ operations:
 ```ts
 import { bind } from "@aleksejdix/minuta/core";
 
-const tools = bind(temporalUnits(), intervals);
+const tools = bind(createUnits(), intervals);
 tools.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
 ```
 

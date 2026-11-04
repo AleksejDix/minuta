@@ -6,10 +6,10 @@ description: Join periods into one that runs from the earliest start to the late
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
 import { divide, period, range } from "@aleksejdix/minuta";
 import { mergeWith } from "@aleksejdix/minuta/intervals";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const units = temporalUnits();
+export const units = createUnits();
 export const jan = period(plainDate("2026-01-01"), "month");
 export const mar = period(plainDate("2026-03-01"), "month");
 export const meetings = [
@@ -43,10 +43,10 @@ mergeWith(units, periods, unit?)
 
 ```ts
 import { mergeWith } from "@aleksejdix/minuta/intervals";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { divide, period } from "@aleksejdix/minuta";
 
-const units = temporalUnits();
+const units = createUnits();
 const days = divide(period(new Date(2026, 2, 1), "month"), "day"); // the 31 days of March
 
 mergeWith(units, days, "month");
@@ -60,7 +60,7 @@ mergeWith(units, days);
 
 | Name      | What it is                                                                                                                      |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `units`   | The units to compute with, e.g. `temporalUnits()`. Used to check whether the result is exactly one `unit`.                      |
+| `units`   | The units to compute with, e.g. `createUnits()`. Used to check whether the result is exactly one `unit`.                        |
 | `periods` | The periods to join, in any order.                                                                                              |
 | `unit`    | Optional. The unit the result should get if it fits exactly, e.g. `"month"`. Without it, the unit of the first period is tried. |
 
@@ -173,8 +173,8 @@ const days7 = divide(
   "day"
 );
 
-mergeWith(temporalUnits(), days7, "week"); // → unit "week"
-mergeWith(temporalUnits({ weekStartsOn: "sunday" }), days7, "week"); // → unit "custom"
+mergeWith(createUnits(), days7, "week"); // → unit "week"
+mergeWith(createUnits({ weekStartsOn: "sunday" }), days7, "week"); // → unit "custom"
 ```
 
 <Timeline
@@ -183,13 +183,13 @@ mergeWith(temporalUnits({ weekStartsOn: "sunday" }), days7, "week"); // → unit
     { label: "days7", periods: days7 },
     {
       label: "Monday weeks",
-      periods: [mergeWith(temporalUnits(), days7, "week")],
+      periods: [mergeWith(createUnits(), days7, "week")],
       tone: "accent",
     },
     {
       label: "Sunday weeks",
       periods: [
-        mergeWith(temporalUnits({ weekStartsOn: "sunday" }), days7, "week"),
+        mergeWith(createUnits({ weekStartsOn: "sunday" }), days7, "week"),
       ],
       tone: "accent",
     },

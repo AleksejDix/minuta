@@ -3,14 +3,14 @@ title: dayGridWith
 description: Get the real hours of a day — 24 on most days, 23 or 25 when the clocks change — each labelled with its clock hour.
 ---
 
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { instant } from "../../../../components/temporal";
 import { range } from "@aleksejdix/minuta";
 import { dayGridWith } from "@aleksejdix/minuta/calendar";
 import { divideWith } from "@aleksejdix/minuta/core";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const newYork = temporalUnits({ timeZone: "America/New_York" });
+export const newYork = createUnits({ timeZone: "America/New_York" });
 export const spring = dayGridWith(newYork, instant("2024-03-10T12:00:00Z"));
 export const autumn = dayGridWith(newYork, instant("2024-11-03T12:00:00Z"));
 export const fullDay = (grid) =>
@@ -36,10 +36,10 @@ dayGridWith(units, date);
 
 ```ts
 import { dayGridWith } from "@aleksejdix/minuta/calendar";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
 // On a computer in Europe/Zurich
-const grid = dayGridWith(temporalUnits(), new Date(2026, 5, 1));
+const grid = dayGridWith(createUnits(), new Date(2026, 5, 1));
 
 grid.periods.length; // → 24
 grid.periods[0]; // → { start: Jun 1 00:00, end: Jun 1 00:59:59.999, unit: "hour", hour: 0 }
@@ -49,10 +49,10 @@ grid.ambiguousHour; // → undefined
 
 ## Parameters
 
-| Name    | What it is                                                                                                   |
-| ------- | ------------------------------------------------------------------------------------------------------------ |
-| `units` | The units to compute with, e.g. `temporalUnits()` or `dateFnsTzUnits({ timeZone })`. Needs `day` and `hour`. |
-| `date`  | Any moment inside the day you want.                                                                          |
+| Name    | What it is                                                                                                 |
+| ------- | ---------------------------------------------------------------------------------------------------------- |
+| `units` | The units to compute with, e.g. `createUnits()` or `dateFnsTzUnits({ timeZone })`. Needs `day` and `hour`. |
+| `date`  | Any moment inside the day you want.                                                                        |
 
 ## Returns
 
@@ -74,7 +74,7 @@ from 01:59:59 straight to 03:00. The hour 2:00 never happens.
 
 ```ts
 // On a computer in Europe/Zurich
-const spring = dayGridWith(temporalUnits(), new Date(2026, 2, 29));
+const spring = dayGridWith(createUnits(), new Date(2026, 2, 29));
 
 spring.periods.length; // → 23
 spring.periods.map((slot) => slot.hour);
@@ -111,7 +111,7 @@ time and once more in winter time. Both are in the grid, as two different
 periods with `hour: 2`.
 
 ```ts
-const autumn = dayGridWith(temporalUnits(), new Date(2026, 9, 25));
+const autumn = dayGridWith(createUnits(), new Date(2026, 9, 25));
 
 autumn.periods.length; // → 25
 autumn.periods.map((slot) => slot.hour);
@@ -148,7 +148,7 @@ happens twice tonight".
 
 The hours are computed and labelled in the time zone of the `units`. Temporal
 units use the computer's time zone. To show a day in another zone, use units
-that have one, such as [`dateFnsTzUnits`](../../adapters/temporal-units/):
+that have one, such as [`dateFnsTzUnits`](../../minuta-core/create-units/):
 
 ```ts
 import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";

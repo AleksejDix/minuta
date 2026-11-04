@@ -1,11 +1,10 @@
 ---
-title: temporalUnits
-description: Units computed with the TC39 Temporal API — native Temporal, or the polyfill temporalReady loads where it is missing — in the computer's time zone.
+title: createUnits
+description: The units minuta computes with — the rules for each unit of time, the week start, the weekend and the time zone.
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { divideWith, periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, divideWith, periodWith } from "@aleksejdix/minuta/core";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) =>
@@ -15,115 +14,84 @@ export const weeksOfMarch = (units) =>
     "week"
   );
 
-Units computed with [Temporal](https://tc39.es/proposal-temporal/docs/), the
-new date API for JavaScript. Where the runtime has no Temporal yet,
-[`temporalReady`](../temporal-ready/) loads `@js-temporal/polyfill` first.
-Dates are read in the time zone of the computer the code runs on.
+Makes the **units**: one rule set per unit of time (`year`, `quarter`,
+`month`, `week`, `day`, `hour`, `minute`, `second`), computed with
+[Temporal](https://tc39.es/proposal-temporal/docs/), plus the week start, the
+weekend and the time zone. Pass them to [`withUnits`](../with-units/), to
+the `…With` functions of `@aleksejdix/minuta/core`, or to a plugin.
 
 ```ts
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 ```
 
 ```ts
-temporalUnits(options?)
+createUnits(options?)
 ```
+
+The default `minuta` entry is bound to `createUnits()`: weeks start on
+Monday, the time zone is the runtime's. Call it yourself for anything else.
 
 ## Example
 
 ```ts
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
-time.period(new Date(2026, 2, 18), "week");
-// → { start: Sun Mar 15 00:00, end: Sat Mar 21 23:59:59.999, unit: "week" }
+time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 ```
 
-minuta takes and returns plain `Date` objects, also here. Temporal does the
-calendar arithmetic for days, months, quarters and years inside the units.
-
-## When to choose it
-
-- It is the default: the `minuta` entry is bound to `temporalUnits()`. Call
-  it yourself for another week start or weekend.
-
-The units do **not** use Temporal's time zones yet: they work in the
-computer's zone. For a fixed zone, use
-[`dateFnsTzUnits`](../temporal-units/).
-
-The weeks of March 2026, computed once by Temporal and once by date-fns in
-the computer's zone. The bars are the same, down to the cut pieces at the
-month's edges:
+The weeks of March 2026, starting on Monday and on Sunday. The hatched
+pieces are cut at the month's edges:
 
 <Timeline
-  caption='divideWith(units, march, "week") with both engines. The hatched pieces are the first and last weeks, cut at the edges of March.'
+  caption='divideWith(units, march, "week") with two week starts.'
   tracks={[
     {
-      label: "temporalUnits()",
-      periods: weeksOfMarch(temporalUnits()),
+      label: "createUnits()",
+      periods: weeksOfMarch(createUnits()),
       tone: "accent",
     },
     {
-      label: "temporalUnits({ timeZone })",
-      periods: weeksOfMarch(
-        temporalUnits({
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        })
-      ),
+      label: 'createUnits({ weekStartsOn: "sunday" })',
+      periods: weeksOfMarch(createUnits({ weekStartsOn: "sunday" })),
       tone: "muted",
     },
   ]}
 />
 
-## Install
-
-```sh
-npm install @aleksejdix/minuta @js-temporal/polyfill
-```
-
-The polyfill is only needed where the runtime has no Temporal (Safari, Node
-24). minuta is tested with `@js-temporal/polyfill` 0.5. It is an optional
-peer dependency of minuta, so install it yourself when you need it.
-
 ## Parameters
 
-| Name      | What it is                                                 |
-| --------- | ---------------------------------------------------------- |
-| `options` | Optional. Week start and weekend, see [Options](#options). |
+| Name      | What it is                                                            |
+| --------- | --------------------------------------------------------------------- |
+| `options` | Optional. Week start, weekend and time zone, see [Options](#options). |
 
 ## Options
 
-| Option         | Default                  | What it does                                                                               |
-| -------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
-| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).        |
-| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend. |
+| Option         | Default                  | What it does                                                                                              |
+| -------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).                       |
+| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend.                |
+| `timeZone`     | the runtime's zone       | The IANA zone dates become moments in, e.g. when a day is divided into hours: `"UTC"`, `"Europe/Zurich"`. |
 
-There is no time zone option.
+Periods made from a `ZonedDateTime` keep its zone; `timeZone` only applies
+where a date has to become a moment.
 
 ## Returns
 
-The units: a spec for each of `year`, `quarter`, `month`, `week`, `day`,
-`hour`, `minute` and `second`, plus `timeZone` (the computer's zone, e.g.
-`"Europe/Zurich"`), `weekStartsOn` (a number) and `weekend` (numbers).
+The units: a spec for each unit, plus `timeZone`, `weekStartsOn` (a number,
+0 = Sunday) and `weekend` (numbers). Add your own units by spreading them:
+`{ ...createUnits(), fortnight }`.
 
-## Native Temporal first, the polyfill only where it is missing
+## Temporal
 
-minuta reads `globalThis.Temporal` when it computes, never at import:
-
-- If the runtime has Temporal (Chrome and Edge 144+, Firefox 139+, Node
-  26+), it is used and nothing else is loaded.
-- If not, `await temporalReady()` once, before anything renders. It loads the
-  polyfill in its own chunk and installs it on `globalThis`.
-- Computing with neither throws an error that names `temporalReady()`.
-
-Importing `@aleksejdix/minuta/temporal` changes nothing, and the polyfill is
-not in your bundle unless you call `temporalReady()`. See
-[`temporalReady`](../temporal-ready/) for an app setup.
+minuta reads `globalThis.Temporal` when it computes, never at import. Where
+the runtime has none (Safari, Node 24), `await temporalReady()` once before
+anything renders; see [`temporalReady`](../../minuta-temporal/temporal-ready/).
 
 ## Related
 
-- [`temporalReady`](../temporal-ready/) — load the polyfill where Temporal is missing.
-- [All date engines](../overview/) — compare the engines.
-- [`withUnits`](../../minuta-core/with-units/) — bind the units to all operations.
+- [`withUnits`](../with-units/) — bind the units to all operations.
+- [`temporalReady`](../../minuta-temporal/temporal-ready/) — load the polyfill where Temporal is missing.
 - [Time zones](../../../concepts/time-zones/)

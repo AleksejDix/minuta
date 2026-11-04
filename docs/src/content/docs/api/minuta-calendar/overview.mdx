@@ -34,7 +34,7 @@ import it.
 
 Every function takes **units** as its first argument. Units are the rules
 for each unit of time (year, month, week, day, hour, …), made by a date
-engine such as `temporalUnits()`. They also carry three settings:
+engine such as `createUnits()`. They also carry three settings:
 
 - the first day of the week (`weekStartsOn`, Monday unless set),
 - the weekend days (`weekend`, Saturday and Sunday unless set),
@@ -45,12 +45,12 @@ other units:
 
 ```ts
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-monthGridWith(temporalUnits(), new Date(2026, 2, 15)).periods[0];
+monthGridWith(createUnits(), new Date(2026, 2, 15)).periods[0];
 // → Mon Feb 23 2026
 
-monthGridWith(temporalUnits({ weekStartsOn: "sunday" }), new Date(2026, 2, 15))
+monthGridWith(createUnits({ weekStartsOn: "sunday" }), new Date(2026, 2, 15))
   .periods[0];
 // → Sun Mar 1 2026
 ```
@@ -71,7 +71,7 @@ Passing the units every time gets old. Give the `calendar` plugin to
 import { calendar } from "@aleksejdix/minuta/calendar";
 import { withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }), {
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }), {
   plugins: [calendar],
 });
 
@@ -95,4 +95,4 @@ time.isWeekend(time.period(new Date(2026, 2, 21), "day")); // → true
 
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/)
 - [Time zones](../../../concepts/time-zones/)
-- [Date engines](../../adapters/overview/)
+- [Date engines](../../minuta-core/create-units/)

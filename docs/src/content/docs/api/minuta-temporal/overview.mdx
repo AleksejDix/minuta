@@ -1,0 +1,51 @@
+---
+title: minuta/temporal
+description: Make Temporal available where the runtime has none — the polyfill loads only where it is needed.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+import Flow from "../../../../components/diagrams/Flow.astro";
+
+minuta computes with [Temporal](https://tc39.es/proposal-temporal/docs/).
+Chrome and Edge 144+, Firefox 139+ and Node 26+ have it built in; Safari and
+Node 24 do not yet. `@aleksejdix/minuta/temporal` closes that gap: await
+`temporalReady()` once, and it loads `@js-temporal/polyfill` only where
+Temporal is missing.
+
+```ts
+import { temporalReady } from "@aleksejdix/minuta/temporal";
+```
+
+It is a separate entry point, so the polyfill is never in a bundle that does
+not import it.
+
+<Flow
+  steps={[
+    {
+      code: "await temporalReady()",
+      layer: "App",
+      text: "Once, before anything renders.",
+    },
+    {
+      code: 'import("@js-temporal/polyfill")',
+      layer: "Only without Temporal",
+      text: "Loads the polyfill chunk and sets globalThis.Temporal.",
+    },
+    {
+      code: 'period(date, "month")',
+      layer: "minuta",
+      text: "Reads globalThis.Temporal each time it computes.",
+    },
+  ]}
+/>
+
+## Functions
+
+| Function                              | What it does                                 |
+| ------------------------------------- | -------------------------------------------- |
+| [`temporalReady`](../temporal-ready/) | Load the polyfill where Temporal is missing. |
+
+The units minuta computes with come from
+[`createUnits`](../../minuta-core/create-units/) in `@aleksejdix/minuta/core`.

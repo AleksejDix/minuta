@@ -20,9 +20,9 @@ monthGridWith(units, date);
 
 ```ts
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-const grid = monthGridWith(temporalUnits(), new Date(2026, 2, 15));
+const grid = monthGridWith(createUnits(), new Date(2026, 2, 15));
 
 grid.periods.length; // → 42
 grid.periods[0]; // → Mon Feb 23 2026, a whole day (unit "day")
@@ -40,10 +40,10 @@ first and the last rows. The shaded days are the weekend.
 
 ## Parameters
 
-| Name    | What it is                                                                                                                        |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `units` | The units to compute with, e.g. `temporalUnits()`. They decide the week start and the time zone. Needs `month`, `week` and `day`. |
-| `date`  | Any moment inside the month you want. Mar 15 and Mar 31 give the same grid.                                                       |
+| Name    | What it is                                                                                                                      |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `units` | The units to compute with, e.g. `createUnits()`. They decide the week start and the time zone. Needs `month`, `week` and `day`. |
+| `date`  | Any moment inside the month you want. Mar 15 and Mar 31 give the same grid.                                                     |
 
 ## Returns
 
@@ -73,7 +73,7 @@ February 2021 has 28 days and starts on a Monday. It fills exactly 4 rows,
 and the grid adds 2 more rows from March:
 
 ```ts
-const feb = monthGridWith(temporalUnits(), new Date(2021, 1, 10));
+const feb = monthGridWith(createUnits(), new Date(2021, 1, 10));
 
 feb.periods[0]; // → Mon Feb 1 2021 (no days from January)
 feb.periods[41]; // → Sun Mar 14 2021 (the last 2 rows are all March)
@@ -96,7 +96,7 @@ To find them, check each day against the month with `contains`:
 ```ts
 import { contains, periodWith } from "@aleksejdix/minuta/core";
 
-const units = temporalUnits();
+const units = createUnits();
 const grid = monthGridWith(units, new Date(2026, 2, 15));
 const month = periodWith(units, grid.monthStart, "month");
 
@@ -115,7 +115,7 @@ unless you choose another day:
 
 ```ts
 const sunday = monthGridWith(
-  temporalUnits({ weekStartsOn: "sunday" }),
+  createUnits({ weekStartsOn: "sunday" }),
   new Date(2026, 2, 15)
 );
 
@@ -148,7 +148,7 @@ Oct 25 2026 runs from 00:00 summer time to 23:59:59.999 winter time.
 | `UNIT_NOT_SUPPORTED` | `units` has no `month`, `week` or `day`.            |
 
 ```ts
-monthGridWith(temporalUnits(), new Date("nope"));
+monthGridWith(createUnits(), new Date("nope"));
 // RangeError: INVALID_DATE: date is an invalid Date. …
 ```
 

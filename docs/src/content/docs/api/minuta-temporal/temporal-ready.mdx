@@ -3,7 +3,6 @@ title: temporalReady
 description: Make Temporal available before minuta computes — loads the polyfill only where the runtime has no Temporal.
 ---
 
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
 Makes sure `globalThis.Temporal` exists before minuta computes with it. Where
@@ -24,13 +23,12 @@ temporalReady(): Promise<void>
 Await it once, before anything renders:
 
 ```ts
-import { temporalReady, temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { temporalReady } from "@aleksejdix/minuta/temporal";
+import { period } from "@aleksejdix/minuta";
 
 await temporalReady();
 
-const time = withUnits(temporalUnits());
-time.period(new Date(2026, 2, 18), "month");
+period(Temporal.PlainDate.from("2026-03-18"), "month");
 ```
 
 ## What happens
@@ -53,7 +51,7 @@ time.period(new Date(2026, 2, 18), "month");
       text: "Safari, Node 24: loads the polyfill chunk and sets globalThis.Temporal.",
     },
     {
-      code: "temporalUnits().month.add(date, 1)",
+      code: 'period(date, "month")',
       layer: "minuta",
       text: "Reads globalThis.Temporal each time it computes.",
     },
@@ -126,5 +124,5 @@ Importing `@aleksejdix/minuta/temporal` never throws and never changes
 
 ## Related
 
-- [`temporalUnits`](../temporal-units/) — units computed with Temporal.
+- [`createUnits`](../../minuta-core/create-units/) — the units minuta computes with.
 - [Installation](../../../installation/)

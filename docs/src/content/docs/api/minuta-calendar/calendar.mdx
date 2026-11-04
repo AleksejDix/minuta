@@ -22,11 +22,10 @@ withUnits(units, { plugins: [calendar] });
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(
-  temporalUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
+  createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
   { plugins: [calendar] }
 );
 
@@ -88,7 +87,7 @@ calendar functions:
 ```ts
 import { bind } from "@aleksejdix/minuta/core";
 
-const grids = bind(temporalUnits({ weekStartsOn: "sunday" }), calendar);
+const grids = bind(createUnits({ weekStartsOn: "sunday" }), calendar);
 
 grids.monthGrid(new Date(2026, 2, 15)).periods[0]; // → Sun Mar 1 2026
 ```
@@ -107,7 +106,7 @@ each other or with the operations; TypeScript reports a clash as an error.
 ```ts
 import { intervals } from "@aleksejdix/minuta/intervals";
 
-const time = withUnits(temporalUnits(), { plugins: [calendar, intervals] });
+const time = withUnits(createUnits(), { plugins: [calendar, intervals] });
 time.monthGrid(new Date());
 time.snap(new Date(), "minute", { step: 15 });
 ```

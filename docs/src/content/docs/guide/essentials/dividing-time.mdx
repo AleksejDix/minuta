@@ -285,9 +285,9 @@ and follows your week start:
 
 ```ts
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-const grid = monthGridWith(temporalUnits(), new Date(2026, 2, 18));
+const grid = monthGridWith(createUnits(), new Date(2026, 2, 18));
 
 grid.periods.length; // → 42
 grid.periods[0]; //     → Mon Feb 23 00:00:00.000 – 23:59:59.999, unit "day"

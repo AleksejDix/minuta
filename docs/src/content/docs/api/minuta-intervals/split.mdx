@@ -94,9 +94,9 @@ split(march, new Date(2026, 2, 31, 23, 59, 59, 999));
 
 ```ts
 import { mergeWith } from "@aleksejdix/minuta/intervals";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-mergeWith(temporalUnits(), split(march, new Date(2026, 2, 15)), "month");
+mergeWith(createUnits(), split(march, new Date(2026, 2, 15)), "month");
 // → March, unit "month"
 ```
 
