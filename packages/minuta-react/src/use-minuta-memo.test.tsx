@@ -1,7 +1,7 @@
 import type { Unit, Units, ZonedDateTime } from "@aleksejdix/minuta/core";
 import { describe, expect, it } from "vitest";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { renderHook } from "@testing-library/react";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
 import { zoned } from "./test-temporal";
 
@@ -32,7 +32,7 @@ describe("useMinuta() memoization", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const units = temporalUnits();
+      const units = createUnits();
       const { result, rerender } = renderWithProps({ unit: "month", units });
       const first = result.current;
 
@@ -49,10 +49,10 @@ describe("useMinuta() memoization", () => {
       expect.hasAssertions();
       const { result, rerender } = renderWithProps({
         unit: "week",
-        units: temporalUnits(),
+        units: createUnits(),
       });
       const initial = result.current;
-      const sundayUnits = temporalUnits({ weekStartsOn: SUNDAY });
+      const sundayUnits = createUnits({ weekStartsOn: SUNDAY });
 
       rerender({ unit: "week", units: sundayUnits });
 
@@ -64,7 +64,7 @@ describe("useMinuta() memoization", () => {
 
   it("should update browsing when the unit changes", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const units = temporalUnits();
+    const units = createUnits();
     const { result, rerender } = renderWithProps({ unit: "month", units });
 
     rerender({ unit: "year", units });

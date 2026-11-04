@@ -1,12 +1,12 @@
 import { date, text } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import type { Period } from "#src/types";
+import { createUnits } from "#src/create-units";
 import { monthGridWith } from "./month-grid";
-import { temporalUnits } from "#src/adapters/temporal/index";
 import { yearGridWith } from "./year-grid";
 
-const monday = temporalUnits({ timeZone: "UTC" });
-const sunday = temporalUnits({ timeZone: "UTC", weekStartsOn: "sunday" });
+const monday = createUnits({ timeZone: "UTC" });
+const sunday = createUnits({ timeZone: "UTC", weekStartsOn: "sunday" });
 
 const FIRST = 0;
 const LAST = -1;
@@ -46,7 +46,7 @@ describe("monthGridWith()", () => {
     { first: "2026-03-01", units: sunday, weekStartsOn: ZERO },
     {
       first: "2026-02-28",
-      units: temporalUnits({ weekStartsOn: "saturday" }),
+      units: createUnits({ weekStartsOn: "saturday" }),
       weekStartsOn: SIX,
     },
   ] as const)(

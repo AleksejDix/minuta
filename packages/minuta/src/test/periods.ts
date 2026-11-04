@@ -12,10 +12,10 @@ import type {
 } from "#src/types";
 import { date, text, zoned } from "./temporal";
 import { periodWith, range } from "#src/operations/period";
-import { temporalUnits } from "#src/adapters/temporal/index";
+import { createUnits } from "#src/create-units";
 
 /** Temporal units in Zurich. */
-const zurichUnits: AllUnits = temporalUnits({ timeZone: "Europe/Zurich" });
+const zurichUnits: AllUnits = createUnits({ timeZone: "Europe/Zurich" });
 
 /**
  * The period of `unit` holding a date.

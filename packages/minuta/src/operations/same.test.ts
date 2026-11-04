@@ -2,10 +2,10 @@ import type { DatePeriod, TimePeriod } from "#src/types";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
+import { createUnits } from "#src/create-units";
 import { sameWith } from "./same";
-import { temporalUnits } from "#src/adapters/temporal/index";
 
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
+const units = createUnits({ timeZone: "Europe/Zurich" });
 
 function dayPeriod(value: string): DatePeriod {
   return periodWith(units, date(value), "day");

@@ -5,7 +5,7 @@ import type {
   Units,
   ZonedDateTime,
 } from "#src/types";
-import { getTemporal } from "#src/adapters/temporal/temporal-api";
+import { getTemporal } from "#src/temporal-api";
 import { isDatePeriod } from "#src/values";
 import { periodWith } from "./period";
 import { specFor } from "#src/units";

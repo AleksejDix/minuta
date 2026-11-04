@@ -1,10 +1,10 @@
 import { date, text } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
+import { createUnits } from "#src/create-units";
 import { intervals } from "#src/intervals";
-import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/with-units";
 
-const time = withUnits(temporalUnits({ timeZone: "UTC" }), {
+const time = withUnits(createUnits({ timeZone: "UTC" }), {
   plugins: [intervals],
 });
 

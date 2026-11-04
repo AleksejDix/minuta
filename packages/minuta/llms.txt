@@ -4,8 +4,8 @@
 
 ## Rules
 
-- Every unit-aware function exists twice: `xWith(units, …)` in `@aleksejdix/minuta/core` takes the units first; `x(…)` in `@aleksejdix/minuta` is the same function bound to `temporalUnits()`: weeks starting on Monday, moments in the runtime's zone. Where the runtime has no Temporal, `await temporalReady()` from `@aleksejdix/minuta/temporal` first. Unit-free functions have one form and take no units.
-- `withUnits(units, { plugins })` (from `@aleksejdix/minuta/core`) binds every core operation, and the functions of plugins such as `calendar` (`@aleksejdix/minuta/calendar`: grids, `isWeekday`, `isWeekend`) and `intervals` (`@aleksejdix/minuta/intervals`: `gap`, `clamp`, `merge`, `split`, `resize`, `move`, `snap`), to your units, e.g. `withUnits(temporalUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
+- Every unit-aware function exists twice: `xWith(units, …)` in `@aleksejdix/minuta/core` takes the units first; `x(…)` in `@aleksejdix/minuta` is the same function bound to `createUnits()`: weeks starting on Monday, moments in the runtime's zone. Where the runtime has no Temporal, `await temporalReady()` from `@aleksejdix/minuta/temporal` first. Unit-free functions have one form and take no units.
+- `withUnits(units, { plugins })` (from `@aleksejdix/minuta/core`) binds every core operation, and the functions of plugins such as `calendar` (`@aleksejdix/minuta/calendar`: grids, `isWeekday`, `isWeekend`) and `intervals` (`@aleksejdix/minuta/intervals`: `gap`, `clamp`, `merge`, `split`, `resize`, `move`, `snap`), to your units, e.g. `withUnits(createUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
 - `Units` is a partial map of unit specs; pass only the units you use (`{ day, month }`) to keep the bundle small.
 - No result is `undefined`, never `null` (`clamp` without overlap, `merge([])`, …).
 - Invalid input throws `RangeError`; the message starts with one of the error codes below and says how to fix it.
@@ -346,7 +346,7 @@ type Units = Readonly<{ [Name in Unit]?: SpecOf<Name> }> & Settings;
 ```
 
 The unit specs available to unit-aware functions. Partial, so a bundle can
-carry only the units it uses; `temporalUnits()` returns all, plus the
+carry only the units it uses; `createUnits()` returns all, plus the
 settings.
 
 ### `ZonedDateTime`
@@ -502,7 +502,7 @@ Bind every function of `plugin` to `units`.
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
-const grids = bind(temporalUnits({ weekStartsOn: "sunday" }), calendar);
+const grids = bind(createUnits({ weekStartsOn: "sunday" }), calendar);
 grids.monthGrid(Temporal.Now.plainDateISO());
 ```
 
@@ -519,6 +519,43 @@ function is returned as it is.
 const snap = boundAs<typeof snapBound>()(snapWith);
 ```
 
+### `createUnits`
+
+```ts
+createUnits(options: UnitsOptions = {}): AllUnits
+```
+
+Unit specs for every unit, computed with the TC39 Temporal API: date
+units on `PlainDate`, time units on `ZonedDateTime`. Pass the result to
+`withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
+`bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
+(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
+the days `isWeekend` counts (Saturday and Sunday unless set); `timeZone`
+is where dates become moments. Where the runtime has no Temporal,
+`await temporalReady()` first.
+
+```ts
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+
+const time = withUnits(createUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
+time.period(Temporal.PlainDate.from("2026-03-18"), "week"); // [Mar 15, Mar 22)
+```
+
+### `UnitsOptions`
+
+```ts
+type UnitsOptions = WeekOptions &
+  Readonly<{
+    /**
+     * IANA time zone that dates become moments in, e.g. when a day is
+     * divided into hours: `"UTC"`, `"Europe/Zurich"`. Default: the runtime's.
+     */
+    timeZone?: string | undefined;
+  }>;
+```
+
+Options of `createUnits`: the week, the weekend and the time zone.
+
 ### `MinutaError`
 
 Same as `MinutaError` in `@aleksejdix/minuta`.
@@ -532,7 +569,7 @@ specFor(units: Units, unit: Name): SpecOf<Name>
 The spec for `unit`.
 
 ```ts
-specFor(temporalUnits(), "week").startOf(Temporal.PlainDate.from("2026-03-18")); // 2026-03-16, a Monday
+specFor(createUnits(), "week").startOf(Temporal.PlainDate.from("2026-03-18")); // 2026-03-16, a Monday
 ```
 
 ### `MinutaErrorCode`
@@ -546,14 +583,13 @@ withUnits(units: Units, options: WithUnitsOptions<Plugins> & NoClashes<Plugins> 
 ```
 
 Bind every operation, and the functions of any plugins, to `units`. Pass
-only the units you need, or the full set of `temporalUnits()`.
+only the units you need, or the full set of `createUnits()`.
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
 time.next(time.period(Temporal.Now.plainDateISO(), "week"));
 time.monthGrid(Temporal.Now.plainDateISO()); // from the plugin
 time.units; // the units passed in
@@ -644,7 +680,7 @@ type WeekOptions = Readonly<{
 }>;
 ```
 
-Week options of `temporalUnits`.
+Week options of `createUnits`.
 
 ### `Weekday`
 
@@ -673,8 +709,8 @@ type AllUnits = Readonly<{ [Name in BuiltInUnit]: SpecOf<Name> }> &
   Settings;
 ```
 
-A spec for every built-in unit, as `temporalUnits()` returns. Add specs of
-your own units next to them: `Object.assign({ fortnight }, temporalUnits())`.
+A spec for every built-in unit, as `createUnits()` returns. Add specs of
+your own units next to them: `Object.assign({ fortnight }, createUnits())`.
 
 ### `BuiltInUnit`
 
@@ -836,7 +872,7 @@ hour it starts in.
 ```ts
 import { dayGridWith } from "@aleksejdix/minuta/calendar";
 
-const units = temporalUnits({ timeZone: "America/New_York" });
+const units = createUnits({ timeZone: "America/New_York" });
 const { periods, gapHour } = dayGridWith(units, Temporal.PlainDate.from("2024-03-10"));
 periods.length; // 23
 gapHour; // 2
@@ -852,7 +888,7 @@ A stable month grid: 42 day periods (6 weeks) starting with the week that
 contains the first of the month. The week start comes from the `week` unit.
 
 ```ts
-const { periods } = monthGridWith(temporalUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-03-15"));
+const { periods } = monthGridWith(createUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-03-15"));
 ```
 
 ### `yearGridWith`
@@ -865,7 +901,7 @@ A stable year grid: whole weeks from the week containing January 1 to the
 week containing December 31. The week start comes from the `week` unit.
 
 ```ts
-yearGridWith(temporalUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-06-01")).periods; // 53 week periods
+yearGridWith(createUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-06-01")).periods; // 53 week periods
 ```
 
 ### `isWeekdayWith`
@@ -878,8 +914,8 @@ Whether every day the period touches is a working day: not in the units'
 `weekend` (Saturday and Sunday unless set).
 
 ```ts
-isWeekdayWith(temporalUnits(), period(Temporal.PlainDate.from("2026-03-18"), "day")); // true (a Wednesday)
-isWeekdayWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-22"), "day")); // true (a Sunday)
+isWeekdayWith(createUnits(), period(Temporal.PlainDate.from("2026-03-18"), "day")); // true (a Wednesday)
+isWeekdayWith(createUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-22"), "day")); // true (a Sunday)
 ```
 
 ### `isWeekendWith`
@@ -892,8 +928,8 @@ Whether every day the period touches is a weekend day, as configured by
 the units' `weekend` (Saturday and Sunday unless set).
 
 ```ts
-isWeekendWith(temporalUnits(), period(Temporal.PlainDate.from("2026-03-21"), "day")); // true (a Saturday)
-isWeekendWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-20"), "day")); // true (a Friday)
+isWeekendWith(createUnits(), period(Temporal.PlainDate.from("2026-03-21"), "day")); // true (a Saturday)
+isWeekendWith(createUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-20"), "day")); // true (a Friday)
 ```
 
 ### `DayGrid`
@@ -1162,44 +1198,6 @@ formatRange(hour, "en-US"); // "Mar 18, 10:00 – 11:00 AM"
 
 ## `@aleksejdix/minuta/temporal`
 
-### `temporalUnits`
-
-```ts
-temporalUnits(options: TemporalUnitsOptions = {}): AllUnits
-```
-
-Unit specs for every unit, computed with the TC39 Temporal API: date
-units on `PlainDate`, time units on `ZonedDateTime`. Pass the result to
-`withUnits`, to any `…With` function in `minuta/core`, or to a plugin via
-`bind`. Weeks start on Monday unless `weekStartsOn` says otherwise
-(`"sunday"` … `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
-the days `isWeekend` counts (Saturday and Sunday unless set); `timeZone`
-is where dates become moments. Where the runtime has no Temporal,
-`await temporalReady()` first.
-
-```ts
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
-
-const time = withUnits(temporalUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
-time.period(Temporal.PlainDate.from("2026-03-18"), "week"); // [Mar 15, Mar 22)
-```
-
-### `TemporalUnitsOptions`
-
-```ts
-type TemporalUnitsOptions = WeekOptions &
-  Readonly<{
-    /**
-     * IANA time zone that dates become moments in, e.g. when a day is
-     * divided into hours: `"UTC"`, `"Europe/Zurich"`. Default: the runtime's.
-     */
-    timeZone?: string | undefined;
-  }>;
-```
-
-Options of `temporalUnits`: the week, the weekend and the time zone.
-
 ### `temporalReady`
 
 ```ts
@@ -1212,8 +1210,9 @@ elsewhere it loads `@js-temporal/polyfill` in its own chunk and installs it
 on `globalThis`. Await it once, before anything renders.
 
 ```ts
-import { temporalReady, temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
+import { temporalReady } from "@aleksejdix/minuta/temporal";
 
 await temporalReady();
-const units = temporalUnits();
+const units = createUnits();
 ```

@@ -1,13 +1,12 @@
 import type { Minuta, Period, TimeValue, Units } from "@aleksejdix/minuta/core";
 import type { MinutaOptions, MinutaState, Source } from "#src/types";
 import { computed, shallowRef, toValue } from "vue";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 import type { ComputedRef } from "vue";
 import { currentMoment } from "#src/now";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useClock } from "#src/use-clock";
-import { withUnits } from "@aleksejdix/minuta/core";
 
-const DEFAULT_UNITS: Units = temporalUnits();
+const DEFAULT_UNITS: Units = createUnits();
 const DEFAULT_UNIT = "month";
 
 // The units' zone, else the runtime's
@@ -47,7 +46,7 @@ function followOperations(
  * `units`, `unit` and `now` stay reactive, `date` is only the initial date.
  *
  * @example
- * const minuta = useMinuta({ units: temporalUnits({ weekStartsOn: "sunday" }) });
+ * const minuta = useMinuta({ units: createUnits({ weekStartsOn: "sunday" }) });
  * minuta.browse(minuta.next(minuta.browsing.value));
  *
  * @param options - Units, initial date, today and the browsed unit

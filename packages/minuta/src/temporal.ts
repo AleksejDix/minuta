@@ -1,4 +1,4 @@
-// The Temporal units entry point
-// Allows: import { temporalUnits } from '@aleksejdix/minuta/temporal'
+// The Temporal entry point: makes Temporal available where the runtime has none
+// Allows: import { temporalReady } from '@aleksejdix/minuta/temporal'
 
-export * from "./adapters/temporal";
+export { temporalReady } from "#src/temporal-api";

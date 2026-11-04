@@ -12,7 +12,7 @@ npm install @aleksejdix/minuta
 | `minuta`: `period`, `next`, `divide`                            | 2.0 kB            |
 | `@aleksejdix/minuta/core` with only the `day` and `month` units | 1.6 kB            |
 | Calendar grids through `bind`                                   | 2.2 kB            |
-| `temporalUnits` from `@aleksejdix/minuta/temporal`              | 1.4 kB            |
+| `createUnits` from `@aleksejdix/minuta/temporal`                | 1.4 kB            |
 
 Zero dependencies, ES modules only, `sideEffects: false`. Budgets are
 checked on every CI run. Where the runtime has no Temporal yet (Safari,
@@ -88,15 +88,14 @@ as `UNIT_NOT_SUPPORTED`. No result is ever `null`; a missing one is
 
 ## Other week starts and time zones
 
-Rules and data are separate. Units are plain data made by `temporalUnits`;
+Rules and data are separate. Units are plain data made by `createUnits`;
 bind them once and you get the same operations:
 
 ```ts
-import { withUnits } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(
-  temporalUnits({ timeZone: "UTC", weekStartsOn: "sunday" })
+  createUnits({ timeZone: "UTC", weekStartsOn: "sunday" })
 );
 time.period(Temporal.Now.plainDateISO(), "week"); // starts on Sunday
 time.divide(time.period(Temporal.Now.plainDateISO(), "day"), "hour"); // the day's hours in UTC
@@ -115,10 +114,9 @@ the two cannot drift apart.
 units first; unit-free functions take none:
 
 ```ts
-import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
 
-const { day, month } = temporalUnits();
+const { day, month } = createUnits();
 const units = { day, month }; // only what you use ends up in the bundle
 
 nextWith(units, periodWith(units, Temporal.Now.plainDateISO(), "month"));
@@ -141,11 +139,10 @@ minuta:
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
 import { intervals } from "@aleksejdix/minuta/intervals";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(
-  temporalUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
+  createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
   { plugins: [calendar, intervals] }
 );
 const today = Temporal.Now.plainDateISO();
@@ -170,8 +167,7 @@ Write your own the same way:
 
 ```ts
 import type { DatePeriod, Units } from "@aleksejdix/minuta/core";
-import { bind, divideWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { bind, createUnits, divideWith } from "@aleksejdix/minuta/core";
 import { period } from "@aleksejdix/minuta";
 
 const workdays = {
@@ -180,7 +176,7 @@ const workdays = {
 };
 
 const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
-bind(temporalUnits(), workdays).workdaysIn(march); // 22 day periods
+bind(createUnits(), workdays).workdaysIn(march); // 22 day periods
 ```
 
 Custom units are data too: add the name and its kind to `UnitRegistry`

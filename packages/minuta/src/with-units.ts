@@ -103,14 +103,13 @@ function operationsFor(units: Units): Minuta {
 
 /**
  * Bind every operation, and the functions of any plugins, to `units`. Pass
- * only the units you need, or the full set of `temporalUnits()`.
+ * only the units you need, or the full set of `createUnits()`.
  *
  * @example
  * import { calendar } from "@aleksejdix/minuta/calendar";
- * import { temporalUnits } from "@aleksejdix/minuta/temporal";
- * import { withUnits } from "@aleksejdix/minuta/core";
+ * import { createUnits, withUnits } from "@aleksejdix/minuta/core";
  *
- * const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
+ * const time = withUnits(createUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
  * time.next(time.period(Temporal.Now.plainDateISO(), "week"));
  * time.monthGrid(Temporal.Now.plainDateISO()); // from the plugin
  * time.units; // the units passed in

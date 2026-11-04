@@ -21,6 +21,8 @@ export {
   shiftWith,
 } from "#src/operations/index";
 export { bind, boundAs } from "#src/bind";
+export { createUnits } from "#src/create-units";
+export type { UnitsOptions } from "#src/create-units";
 export { MinutaError, specFor } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
 export { withUnits } from "#src/with-units";

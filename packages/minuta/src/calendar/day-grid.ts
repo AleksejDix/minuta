@@ -76,7 +76,7 @@ function zoneOf(units: Units, value: TimeValue): string {
  * @example
  * import { dayGridWith } from "@aleksejdix/minuta/calendar";
  *
- * const units = temporalUnits({ timeZone: "America/New_York" });
+ * const units = createUnits({ timeZone: "America/New_York" });
  * const { periods, gapHour } = dayGridWith(units, Temporal.PlainDate.from("2024-03-10"));
  * periods.length; // 23
  * gapHour; // 2

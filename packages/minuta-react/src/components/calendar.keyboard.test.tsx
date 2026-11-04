@@ -5,8 +5,8 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { Period } from "@aleksejdix/minuta/core";
 import type { RenderResult } from "@testing-library/react";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { date } from "#src/test-temporal";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 type OnSelect = (day: Period) => void;
 
@@ -85,7 +85,7 @@ const KEY_CASES: readonly KeyCase[] = [
 ];
 
 function renderCalendar(
-  units = temporalUnits(),
+  units = createUnits(),
   onSelect?: OnSelect
 ): RenderResult {
   return render(
@@ -145,7 +145,7 @@ describe("calendar keyboard navigation", () => {
 
   it("should respect a Sunday week start", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    renderCalendar(temporalUnits({ weekStartsOn: "sunday" }));
+    renderCalendar(createUnits({ weekStartsOn: "sunday" }));
     focusDay(JANUARY_17);
 
     press("Home");
@@ -200,7 +200,7 @@ describe("calendar keyboard selection", () => {
     (key) => {
       expect.hasAssertions();
       const onSelect = vi.fn<OnSelect>();
-      renderCalendar(temporalUnits(), onSelect);
+      renderCalendar(createUnits(), onSelect);
       focusDay(JANUARY_17);
 
       expect(press(key)).toBe(false);
@@ -213,7 +213,7 @@ describe("calendar keyboard selection", () => {
   it("should not select while moving the focus", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const onSelect = vi.fn<OnSelect>();
-    renderCalendar(temporalUnits(), onSelect);
+    renderCalendar(createUnits(), onSelect);
     focusDay(JANUARY_17);
 
     press("ArrowRight");

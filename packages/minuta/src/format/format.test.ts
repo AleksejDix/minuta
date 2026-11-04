@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { formatPeriod, formatRange } from "./format";
 import { periodWith, range } from "#src/operations/period";
 import type { DateUnit } from "#src/types";
-import { temporalUnits } from "#src/adapters/temporal/index";
+import { createUnits } from "#src/create-units";
 
 // A zone far from UTC: a date that shifted with the zone would show it
-const units = temporalUnits({ timeZone: "Pacific/Kiritimati" });
+const units = createUnits({ timeZone: "Pacific/Kiritimati" });
 
 // Intl's thin and narrow no-break spaces as plain spaces, for readable assertions
 function plain(written: string): string {

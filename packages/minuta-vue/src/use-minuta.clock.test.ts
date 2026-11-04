@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { MinutaState } from "#src/types";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { effectScope } from "vue";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
 import { zoned } from "#src/test/temporal";
 
@@ -9,7 +9,7 @@ const BEFORE_MIDNIGHT = zoned("2026-03-18T23:59:59[Europe/Zurich]");
 const NEXT_DAY = zoned("2026-03-19T12:00[Europe/Zurich]");
 const TWO_SECONDS = 2000;
 const NO_TIMERS = 0;
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
+const units = createUnits({ timeZone: "Europe/Zurich" });
 
 /**
  * Run useMinuta() in an effect scope, like a component would.

@@ -7,8 +7,8 @@ import { daysTouched } from "./days-touched";
  * `weekend` (Saturday and Sunday unless set).
  *
  * @example
- * isWeekdayWith(temporalUnits(), period(Temporal.PlainDate.from("2026-03-18"), "day")); // true (a Wednesday)
- * isWeekdayWith(temporalUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-22"), "day")); // true (a Sunday)
+ * isWeekdayWith(createUnits(), period(Temporal.PlainDate.from("2026-03-18"), "day")); // true (a Wednesday)
+ * isWeekdayWith(createUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-22"), "day")); // true (a Sunday)
  *
  * @param units - Units whose `weekend` to use, with a `day` spec
  * @param period - The period to check

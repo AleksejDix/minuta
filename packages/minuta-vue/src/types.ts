@@ -19,7 +19,7 @@ type MinutaOptions = Readonly<{
   now?: ZonedDateTime | undefined;
   /** Unit of the browsed period, default "month" */
   unit?: Unit | undefined;
-  /** Unit specs, default `temporalUnits()`; the week start lives in the units */
+  /** Unit specs, default `createUnits()`; the week start lives in the units */
   units?: Units | undefined;
 }>;
 

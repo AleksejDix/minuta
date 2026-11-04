@@ -69,7 +69,7 @@ type BoundPlugin<Functions> = Readonly<{
  *
  * @example
  * import { calendar } from "@aleksejdix/minuta/calendar";
- * const grids = bind(temporalUnits({ weekStartsOn: "sunday" }), calendar);
+ * const grids = bind(createUnits({ weekStartsOn: "sunday" }), calendar);
  * grids.monthGrid(Temporal.Now.plainDateISO());
  *
  * @param units - Unit specs to bind

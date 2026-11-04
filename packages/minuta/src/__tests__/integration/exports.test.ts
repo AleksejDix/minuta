@@ -10,8 +10,8 @@ import {
 } from "#src/index";
 import { describe, expect, it } from "vitest";
 import type { Minuta } from "#src/with-units";
+import { createUnits } from "#src/create-units";
 import { dateTime } from "#src/test/temporal";
-import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/core";
 
 const UNITS: readonly Unit[] = [
@@ -86,13 +86,13 @@ const INTERNAL_DETAILS: readonly string[] = [
   "divideWith",
   "go",
   "isSame",
-  "temporalUnits",
+  "createUnits",
   "periodWith",
   "specFor",
   "withUnits",
 ];
 
-const explicit = withUnits(temporalUnits());
+const explicit = withUnits(createUnits());
 
 /**
  * Load a module namespace as a name → value map.
@@ -160,7 +160,7 @@ describe("export verification: index.ts and core.ts", () => {
   );
 });
 
-describe("default entry vs withUnits(temporalUnits()): period()", () => {
+describe("default entry vs withUnits(createUnits()): period()", () => {
   it("period() gives the same periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
     for (const date of DATES) {
@@ -179,7 +179,7 @@ describe("default entry vs withUnits(temporalUnits()): period()", () => {
   });
 });
 
-describe("default entry vs withUnits(temporalUnits()): navigation", () => {
+describe("default entry vs withUnits(createUnits()): navigation", () => {
   it("next() and previous() give the same periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
     for (const date of DATES) {
@@ -206,7 +206,7 @@ describe("default entry vs withUnits(temporalUnits()): navigation", () => {
   });
 });
 
-describe("default entry vs withUnits(temporalUnits()): divide()", () => {
+describe("default entry vs withUnits(createUnits()): divide()", () => {
   it("divide() gives the same periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
     for (const date of DATES) {
@@ -223,7 +223,7 @@ describe("default entry vs withUnits(temporalUnits()): divide()", () => {
   });
 });
 
-describe("default entry vs withUnits(temporalUnits()): comparisons", () => {
+describe("default entry vs withUnits(createUnits()): comparisons", () => {
   it("same() gives the same answers", { timeout: 5000 }, () => {
     expect.hasAssertions();
     for (const firstDate of DATES) {

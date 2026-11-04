@@ -23,7 +23,7 @@ const GRID_DAYS = 42;
  * contains the first of the month. The week start comes from the `week` unit.
  *
  * @example
- * const { periods } = monthGridWith(temporalUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-03-15"));
+ * const { periods } = monthGridWith(createUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-03-15"));
  *
  * @param units - Available unit specs (needs `month`, `week` and `day`)
  * @param value - Any value in the target month

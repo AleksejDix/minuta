@@ -7,7 +7,7 @@ import { MONDAY } from "./week-start";
 import type { Period } from "@aleksejdix/minuta/core";
 import type { WeekStart } from "./week-start";
 import { WeekStartToggle } from "./WeekStartToggle";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
 type CalendarExampleProps = Readonly<{
   /** Called with the clicked day */
@@ -26,7 +26,7 @@ const TITLE = "Minuta React Demo";
  */
 function CalendarExample({ onSelect }: CalendarExampleProps = {}): JSX.Element {
   const [weekStartsOn, setWeekStartsOn] = useState<WeekStart>(MONDAY);
-  const units = useMemo(() => temporalUnits({ weekStartsOn }), [weekStartsOn]);
+  const units = useMemo(() => createUnits({ weekStartsOn }), [weekStartsOn]);
 
   return (
     <CalendarRoot units={units} onSelect={onSelect}>

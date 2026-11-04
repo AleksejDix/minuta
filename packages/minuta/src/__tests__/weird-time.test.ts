@@ -3,9 +3,9 @@ import { compare, isDatePeriod, zonedPeriod } from "#src/values";
 import { describe, expect, it } from "vitest";
 import { nextWith, previousWith } from "#src/operations/shift";
 import { Temporal } from "@js-temporal/polyfill";
+import { createUnits } from "#src/create-units";
 import { divideWith } from "#src/operations/divide";
 import { periodWith } from "#src/operations/period";
-import { temporalUnits } from "#src/temporal";
 
 /*
  * Days on which time does not run on a 24-hour grid. Every operation must
@@ -195,7 +195,7 @@ function dayOf(units: Units, weird: WeirdDay): Period {
 }
 
 describe.each(WEIRD_DAYS)("weird time: $zone $what", (weird) => {
-  const units = temporalUnits({ timeZone: weird.zone });
+  const units = createUnits({ timeZone: weird.zone });
 
   it("the day has its real length", { timeout: 5000 }, () => {
     expect.hasAssertions();

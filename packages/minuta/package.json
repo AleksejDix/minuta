@@ -2,7 +2,7 @@
   "name": "@aleksejdix/minuta",
   "version": "1.0.0-beta.1",
   "type": "module",
-  "description": "Divide time into pieces. Pure functional calendar library with a 4-method adapter contract.",
+  "description": "Divide time into pieces. Pure functional calendar library on Temporal.",
   "license": "Apache-2.0",
   "author": "Aleksej Dix <git@aleksejdix.com>",
   "homepage": "https://github.com/AleksejDix/minuta",
@@ -88,17 +88,15 @@
     {
       "name": "minuta/core: periodWith + nextWith with two units",
       "import": {
-        "dist/core.js": "{ periodWith, nextWith }",
-        "dist/temporal.js": "{ temporalUnits }"
+        "dist/core.js": "{ createUnits, periodWith, nextWith }"
       },
       "limit": "5 kB"
     },
     {
       "name": "minuta/calendar: monthGrid via bind",
       "import": {
-        "dist/core.js": "{ bind }",
-        "dist/calendar.js": "{ calendar }",
-        "dist/temporal.js": "{ temporalUnits }"
+        "dist/core.js": "{ bind, createUnits }",
+        "dist/calendar.js": "{ calendar }"
       },
       "limit": "5 kB"
     },
@@ -116,9 +114,9 @@
       "limit": "5 kB"
     },
     {
-      "name": "adapter: temporal",
+      "name": "minuta/temporal: temporalReady",
       "path": "dist/temporal.js",
-      "import": "{ temporalUnits }",
+      "import": "{ temporalReady }",
       "limit": "5 kB"
     }
   ],

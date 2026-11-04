@@ -6,7 +6,7 @@ import type {
   ZonedDateTime,
 } from "#src/types";
 import { isDatePeriod, isPlainDate } from "#src/values";
-import { getTemporal } from "#src/adapters/temporal/temporal-api";
+import { getTemporal } from "#src/temporal-api";
 
 // The moment `nanoseconds` after `start`, in its zone
 function after(start: ZonedDateTime, nanoseconds: bigint): ZonedDateTime {

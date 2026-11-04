@@ -1,12 +1,12 @@
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "#src/operations/period";
+import { createUnits } from "#src/create-units";
 import { isWeekdayWith } from "./is-weekday";
 import { isWeekendWith } from "./is-weekend";
-import { temporalUnits } from "#src/adapters/temporal/index";
 
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
-const fridayWeekend = temporalUnits({ weekend: ["friday", "saturday"] });
+const units = createUnits({ timeZone: "Europe/Zurich" });
+const fridayWeekend = createUnits({ weekend: ["friday", "saturday"] });
 
 describe("isWeekdayWith() and isWeekendWith()", () => {
   it.each([

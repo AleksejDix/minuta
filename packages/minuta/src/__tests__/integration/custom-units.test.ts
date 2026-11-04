@@ -9,7 +9,7 @@ import {
   withUnits,
 } from "#src/core";
 import { mergeWith, snapWith } from "#src/intervals";
-import { temporalUnits } from "#src/temporal";
+import { createUnits } from "#src/create-units";
 
 /*
  * A unit of your own: register its name and kind, pass its spec next to
@@ -24,7 +24,7 @@ declare module "#src/types" {
   }
 }
 
-const builtIn = temporalUnits();
+const builtIn = createUnits();
 const WEEKS = 2;
 const DAYS = 14;
 const ONE = 1;

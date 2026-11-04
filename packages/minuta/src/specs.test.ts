@@ -1,8 +1,8 @@
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { temporalUnits } from "./adapter";
+import { createUnits } from "#src/create-units";
 
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
+const units = createUnits({ timeZone: "Europe/Zurich" });
 
 const MINUS_TWO = -2;
 const MINUS_ONE = -1;
@@ -43,7 +43,7 @@ describe("date specs: startOf", () => {
     { timeout: 5000 },
     ({ start, weekStartsOn }) => {
       expect.hasAssertions();
-      const { week } = temporalUnits({ weekStartsOn });
+      const { week } = createUnits({ weekStartsOn });
       expect(week.startOf(date("2026-03-18")).toString()).toBe(start);
     }
   );
@@ -170,10 +170,10 @@ describe("time specs: minutes and seconds", () => {
   );
 });
 
-describe("temporalUnits()", () => {
+describe("createUnits()", () => {
   it("carries its settings", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const custom = temporalUnits({
+    const custom = createUnits({
       timeZone: "UTC",
       weekStartsOn: "sunday",
       weekend: ["friday", "saturday"],
@@ -188,7 +188,7 @@ describe("temporalUnits()", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const defaults = temporalUnits();
+      const defaults = createUnits();
       expect(defaults.timeZone).toBe(
         new Intl.DateTimeFormat().resolvedOptions().timeZone
       );

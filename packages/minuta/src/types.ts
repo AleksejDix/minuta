@@ -157,14 +157,14 @@ type Settings = Readonly<{
 
 /**
  * The unit specs available to unit-aware functions. Partial, so a bundle can
- * carry only the units it uses; `temporalUnits()` returns all, plus the
+ * carry only the units it uses; `createUnits()` returns all, plus the
  * settings.
  */
 type Units = Readonly<{ [Name in Unit]?: SpecOf<Name> }> & Settings;
 
 /**
- * A spec for every built-in unit, as `temporalUnits()` returns. Add specs of
- * your own units next to them: `Object.assign({ fortnight }, temporalUnits())`.
+ * A spec for every built-in unit, as `createUnits()` returns. Add specs of
+ * your own units next to them: `Object.assign({ fortnight }, createUnits())`.
  */
 type AllUnits = Readonly<{ [Name in BuiltInUnit]: SpecOf<Name> }> &
   Readonly<{ timeZone: string }> &

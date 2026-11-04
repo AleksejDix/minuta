@@ -32,7 +32,7 @@ type WeekdayNumber =
   | typeof SATURDAY;
 
 /**
- * Week options of `temporalUnits`.
+ * Week options of `createUnits`.
  */
 type WeekOptions = Readonly<{
   /** First day of the week. Default: `"monday"` (ISO 8601). */
