@@ -147,6 +147,11 @@ function fixedSpec(smallestUnit: "hour" | "minute" | "second"): TimeSpec {
     kind: "time",
     startOf: (date) => {
       const wallStart = date.round({ roundingMode: "floor", smallestUnit });
+      // No clock change in between: same offset. Skipping the search matters:
+      // The polyfill scans decades back in zones that stopped changing
+      if (wallStart.offsetNanoseconds === date.offsetNanoseconds) {
+        return wallStart;
+      }
       // The last clock change at or before `date`
       const change = date
         .add({ nanoseconds: ONE })
