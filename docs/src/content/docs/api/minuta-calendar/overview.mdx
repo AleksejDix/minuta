@@ -33,8 +33,8 @@ import it.
 ## Units first
 
 Every function takes **units** as its first argument. Units are the rules
-for each unit of time (year, month, week, day, hour, …), made by a date
-engine such as `createUnits()`. They also carry three settings:
+for each unit of time (year, month, week, day, hour, …), made by
+`createUnits()`. They also carry three settings:
 
 - the first day of the week (`weekStartsOn`, Monday unless set),
 - the weekend days (`weekend`, Saturday and Sunday unless set),
@@ -47,12 +47,13 @@ other units:
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
 import { createUnits } from "@aleksejdix/minuta/core";
 
-monthGridWith(createUnits(), new Date(2026, 2, 15)).periods[0];
-// → Mon Feb 23 2026
+const march15 = Temporal.PlainDate.from("2026-03-15");
 
-monthGridWith(createUnits({ weekStartsOn: "sunday" }), new Date(2026, 2, 15))
-  .periods[0];
-// → Sun Mar 1 2026
+monthGridWith(createUnits(), march15).periods[0];
+// → { start: 2026-02-23, end: 2026-02-24, unit: "day" }, a Monday
+
+monthGridWith(createUnits({ weekStartsOn: "sunday" }), march15).periods[0];
+// → { start: 2026-03-01, end: 2026-03-02, unit: "day" }, a Sunday
 ```
 
 The same month with both units. Only the first column changes, and with it
@@ -86,12 +87,13 @@ grids.isWeekend(period(Temporal.PlainDate.from("2026-03-21"), "day")); // → tr
   (`{ start, end, unit }`), so all other functions work on them.
 - **Real time.** A day cell is a calendar day, even when it has 23 or 25
   hours. A day grid lists the hours that really happen.
-- **Time zones come from the units.** With zone-aware units such as
-  `dateFnsTzUnits({ timeZone: "Asia/Tokyo" })`, days, weekends and hours
-  are those of Tokyo.
+- **Time zones come from the units.** With
+  `createUnits({ timeZone: "Asia/Tokyo" })`, an `Instant` falls on Tokyo's
+  day and a day grid has Tokyo's hours. A day grid for a `ZonedDateTime` has
+  the hours of that moment's zone.
 
 ## Learn more
 
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/)
 - [Time zones](../../../concepts/time-zones/)
-- [Date engines](../../minuta-core/create-units/)
+- [`createUnits`](../../minuta-core/create-units/)

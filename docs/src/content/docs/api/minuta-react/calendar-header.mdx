@@ -31,7 +31,7 @@ import {
 
 export function Calendar() {
   return (
-    <CalendarRoot date={new Date(2024, 0, 15)}>
+    <CalendarRoot date={Temporal.PlainDate.from("2024-01-15")}>
       <CalendarHeader locale="de-CH" />
       <CalendarGrid locale="de-CH" />
     </CalendarRoot>
@@ -69,8 +69,8 @@ inside the same [`CalendarRoot`](../calendar-root/) moves with it.
 | -------- | -------------------------------------------- | --------- |
 | `locale` | The language of the month name, e.g. `"fr"`. | `"en-US"` |
 
-The month name is written in the time zone of the units
-(`units.timeZone`), so time-zone units show the month of that zone.
+The browsed month is a period of dates, so its name is the same in every
+time zone.
 
 The button texts ("← Previous", "Next →") are fixed and not translated by
 `locale`.

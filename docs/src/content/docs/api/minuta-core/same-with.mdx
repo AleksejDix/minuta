@@ -31,8 +31,16 @@ import { createUnits, periodWith, sameWith } from "@aleksejdix/minuta/core";
 const monday = createUnits();
 const sunday = createUnits({ weekStartsOn: "sunday" });
 
-const saturday = periodWith(monday, new Date(2026, 2, 21), "day");
-const nextDay = periodWith(monday, new Date(2026, 2, 22), "day");
+const saturday = periodWith(
+  monday,
+  Temporal.PlainDate.from("2026-03-21"),
+  "day"
+);
+const nextDay = periodWith(
+  monday,
+  Temporal.PlainDate.from("2026-03-22"),
+  "day"
+);
 
 sameWith(monday, saturday, nextDay, "week"); // → true, Mon–Sun weeks
 sameWith(sunday, saturday, nextDay, "week"); // → false, Sun–Sat weeks
@@ -64,18 +72,18 @@ sameWith(sunday, saturday, nextDay, "week"); // → false, Sun–Sat weeks
 
 ## Parameters
 
-| Name     | What it is                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compare with, e.g. `createUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `first`  | One period.                                                                                           |
-| `second` | The other period.                                                                                     |
-| `unit`   | How coarse to compare: `"year"`, `"month"`, `"week"`, `"day"`, …, or `"custom"`.                      |
+| Name     | What it is                                                                       |
+| -------- | -------------------------------------------------------------------------------- |
+| `units`  | The units to compare with, e.g. [`createUnits()`](../create-units/).             |
+| `first`  | One period.                                                                      |
+| `second` | The other period.                                                                |
+| `unit`   | How coarse to compare: `"year"`, `"month"`, `"week"`, `"day"`, …, or `"custom"`. |
 
 ## Returns
 
 `true` when both periods _start_ in the same `unit`, as the units see it.
-With `"custom"`, `true` only when both start and end are the same
-millisecond; `units` is not used then.
+With `"custom"`, `true` only when both starts and both ends are the same;
+`units` is not used then.
 
 It works exactly like [`same`](../../minuta/same/), which is `sameWith` with
 `createUnits()` bound. Read that page for why only the starts are compared.

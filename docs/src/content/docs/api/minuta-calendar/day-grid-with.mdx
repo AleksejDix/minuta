@@ -29,7 +29,7 @@ import { dayGridWith } from "@aleksejdix/minuta/calendar";
 ```
 
 ```ts
-dayGridWith(units, date);
+dayGridWith(units, value);
 ```
 
 ## Example
@@ -38,29 +38,29 @@ dayGridWith(units, date);
 import { dayGridWith } from "@aleksejdix/minuta/calendar";
 import { createUnits } from "@aleksejdix/minuta/core";
 
-// On a computer in Europe/Zurich
-const grid = dayGridWith(createUnits(), new Date(2026, 5, 1));
+// With the runtime in Europe/Zurich
+const grid = dayGridWith(createUnits(), Temporal.PlainDate.from("2026-06-01"));
 
 grid.periods.length; // → 24
-grid.periods[0]; // → { start: Jun 1 00:00, end: Jun 1 00:59:59.999, unit: "hour", hour: 0 }
+grid.periods[0]; // → { start: 2026-06-01T00:00, end: 2026-06-01T01:00, unit: "hour", hour: 0 }
 grid.gapHour; // → undefined
 grid.ambiguousHour; // → undefined
 ```
 
 ## Parameters
 
-| Name    | What it is                                                                                                 |
-| ------- | ---------------------------------------------------------------------------------------------------------- |
-| `units` | The units to compute with, e.g. `createUnits()` or `dateFnsTzUnits({ timeZone })`. Needs `day` and `hour`. |
-| `date`  | Any moment inside the day you want.                                                                        |
+| Name    | What it is                                                                                              |
+| ------- | ------------------------------------------------------------------------------------------------------- |
+| `units` | The units to compute with, e.g. `createUnits()` or `createUnits({ timeZone })`. Needs `day` and `hour`. |
+| `value` | The day you want: a `PlainDate`, or any `PlainDateTime`, `ZonedDateTime` or `Instant` inside it.        |
 
 ## Returns
 
 An object with three fields:
 
 - `periods` — one hour period per real hour of the day, in order. Each has
-  `start`, `end` and `unit` like any period, plus `hour`: the hour on the
-  clock, 0 to 23.
+  `start`, `end` (`ZonedDateTime`s) and `unit` like any period, plus `hour`:
+  the hour on the clock, 0 to 23.
 - `gapHour` — the clock hour that does not exist that day because the clocks
   jumped forward, or `undefined`.
 - `ambiguousHour` — the clock hour that happens twice that day because the
@@ -73,8 +73,11 @@ clocks jump forward one hour. In Europe/Zurich on Mar 29 2026 the clock goes
 from 01:59:59 straight to 03:00. The hour 2:00 never happens.
 
 ```ts
-// On a computer in Europe/Zurich
-const spring = dayGridWith(createUnits(), new Date(2026, 2, 29));
+// With the runtime in Europe/Zurich
+const spring = dayGridWith(
+  createUnits(),
+  Temporal.PlainDate.from("2026-03-29")
+);
 
 spring.periods.length; // → 23
 spring.periods.map((slot) => slot.hour);
@@ -111,14 +114,17 @@ time and once more in winter time. Both are in the grid, as two different
 periods with `hour: 2`.
 
 ```ts
-const autumn = dayGridWith(createUnits(), new Date(2026, 9, 25));
+const autumn = dayGridWith(
+  createUnits(),
+  Temporal.PlainDate.from("2026-10-25")
+);
 
 autumn.periods.length; // → 25
 autumn.periods.map((slot) => slot.hour);
 // → [0, 1, 2, 2, 3, 4, …, 23]
 autumn.ambiguousHour; // → 2
-autumn.periods[2]; // → 02:00–02:59:59.999 summer time (CEST), hour 2
-autumn.periods[3]; // → 02:00–02:59:59.999 winter time (CET),  hour 2
+autumn.periods[2]; // → 02:00+02:00 – 02:00+01:00, summer time (CEST), hour 2
+autumn.periods[3]; // → 02:00+01:00 – 03:00+01:00, winter time (CET),  hour 2
 ```
 
 In New York the clocks went back on Nov 3 2024, and the hour 1:00 came
@@ -146,23 +152,24 @@ happens twice tonight".
 
 ## Another time zone
 
-The hours are computed and labelled in the time zone of the `units`. Temporal
-units use the computer's time zone. To show a day in another zone, use units
-that have one, such as [`dateFnsTzUnits`](../../minuta-core/create-units/):
+The hours are computed and labelled in the zone of a `ZonedDateTime` you
+pass, else in the `timeZone` of the units. `createUnits()` uses the
+runtime's zone. To show a day in another zone, set one with
+[`createUnits`](../../minuta-core/create-units/):
 
 ```ts
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
-
-const newYork = dateFnsTzUnits({ timeZone: "America/New_York" });
-const grid = dayGridWith(newYork, new Date("2024-03-10T12:00:00Z"));
+const newYork = createUnits({ timeZone: "America/New_York" });
+const grid = dayGridWith(newYork, Temporal.PlainDate.from("2024-03-10"));
 
 grid.periods.length; // → 23
 grid.gapHour; // → 2
-grid.periods[0].start.toISOString(); // → "2024-03-10T05:00:00.000Z" (midnight in New York)
+grid.periods[0].start.toString(); // → "2024-03-10T00:00:00-05:00[America/New_York]"
 ```
 
-The labels come from the `timeZone` setting of the units. All adapters set
-it. If you build your own units without it, the computer's time zone is used.
+Or pass a moment in that zone:
+`dayGridWith(createUnits(), Temporal.ZonedDateTime.from("2024-03-10T12:00[America/New_York]"))`
+gives the same 23 hours. If you build your own units without a `timeZone`,
+the runtime's zone is used.
 
 :::caution
 A few zones move their clocks by 30 minutes, such as Australia/Lord_Howe.
@@ -173,17 +180,13 @@ there.
 
 ## Errors
 
-`dayGridWith` throws a `RangeError` whose message starts with a code:
-
-| Code                 | When                                                |
-| -------------------- | --------------------------------------------------- |
-| `INVALID_DATE`       | `date` is an invalid Date, e.g. `new Date("nope")`. |
-| `UNIT_NOT_SUPPORTED` | `units` has no `day` or `hour`.                     |
+`dayGridWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED` when
+`units` has no `day` or `hour`.
 
 ## Related
 
 - [`monthGridWith`](../month-grid-with/) — the days of a month view.
-- [`calendar`](../calendar/) — use it as `time.dayGrid(date)` with `withUnits`.
+- [`calendar`](../calendar/) — use it as `grids.dayGrid(value)` with `calendar(units)`.
 - [`duration`](../../minuta/duration/) — count the hours of a day without
   creating them.
 - [Time zones](../../../concepts/time-zones/) — DST and zone-aware units

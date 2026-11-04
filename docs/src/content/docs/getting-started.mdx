@@ -17,7 +17,17 @@ first:
 npm install @aleksejdix/minuta
 ```
 
-All examples run on Temporal, with weeks starting on Monday. The
+minuta computes with Temporal. Chrome and Edge 144+, Firefox 139+ and
+Node 26+ have it. Only where it is missing (Safari, Node 24), also install
+`@js-temporal/polyfill` and await `temporalReady()` once, before you compute:
+
+```ts
+import { temporalReady } from "@aleksejdix/minuta/temporal";
+
+await temporalReady();
+```
+
+All examples run in Europe/Zurich, with weeks starting on Monday. The
 results are shown as comments.
 
 ## 1. Create a period
@@ -28,16 +38,14 @@ around October 12:
 ```ts
 import { period } from "@aleksejdix/minuta";
 
-const today = new Date(2026, 9, 12, 14, 30);
+const today = Temporal.ZonedDateTime.from("2026-10-12T14:30[Europe/Zurich]");
 const month = period(today, "month");
-// → start: Thu Oct 1 2026, 00:00:00
-//   end:   Sat Oct 31 2026, 23:59:59.999
-//   unit:  "month"
+// → { start: 2026-10-01, end: 2026-11-01, unit: "month" }
 ```
 
-The time of day doesn't matter: any date in October gives the same month. The
-end is the **last millisecond** of the month, so a period covers its whole
-range and nothing more.
+The time of day doesn't matter: any date in October gives the same month. A
+month is made of `Temporal.PlainDate`s. The `start` belongs to it, the `end`
+does not: the month ends where November starts.
 
 <Timeline
   caption="The pin is the date you passed; the bar is the month around it."
@@ -55,7 +63,7 @@ range and nothing more.
 import { divide } from "@aleksejdix/minuta";
 
 const days = divide(month, "day");
-// → 31 periods: Oct 1, Oct 2, … Oct 31
+// → 31 day periods: Oct 1, Oct 2, … Oct 31
 ```
 
 Split into weeks and the edges are cut to fit the month. Those pieces get the
@@ -90,7 +98,7 @@ divide(month, "week");
 ```ts
 import { next, previous } from "@aleksejdix/minuta";
 
-next(month); //     → November 2026 (Nov 1 – Nov 30)
+next(month); //     → November 2026: { start: 2026-11-01, end: 2026-12-01 }
 previous(month); // → September 2026
 ```
 
@@ -111,18 +119,22 @@ clock changes are handled for you.
 ```ts
 import { contains, duration, same } from "@aleksejdix/minuta";
 
-contains(month, today); //                  → true
-contains(month, new Date(2026, 10, 1)); //  → false
+contains(month, today); //                                    → true
+contains(month, Temporal.PlainDate.from("2026-11-01")); //    → false, the end
 
-duration(month, "day"); //                  → 31
-duration(period(today, "day"), "hour"); //  → 24
+duration(month, "day"); //                                    → 31
+duration(period(today, "day"), "hour"); //                    → 24
 
-same(period(today, "day"), period(new Date(2026, 9, 30), "day"), "month");
+same(
+  period(today, "day"),
+  period(Temporal.PlainDate.from("2026-10-30"), "day"),
+  "month"
+);
 // → true: both days are in October
 ```
 
 <Timeline
-  caption={`contains(month, today) is ${String(contains(month, today))}: the pin is inside the bar. Nov 1 is just past its end, so the same question gives false.`}
+  caption={`contains(month, today) is ${String(contains(month, today))}: the pin is inside the bar. Nov 1 is its end, which is not part of it, so the same question gives false.`}
   marks={[
     { date: today, label: "today" },
     { date: plainDate("2026-11-01"), label: "Nov 1" },
@@ -147,6 +159,6 @@ formatPeriod(period(today, "day"), "en-US"); // → "October 12, 2026"
 
 - [Periods and units](../concepts/periods-and-units/) — the model behind all of this.
 - [Weeks and calendars](../concepts/weeks-and-calendars/) — month grids, week start, weekends.
-- [Date engines](../concepts/date-engines/) — week starts, time zones and your own units.
+- [Units](../concepts/date-engines/) — week starts, time zones and your own units.
 - The [reference](../api/minuta/overview/) — every function, explained.
 - The [live demo](../demo/) — a date field and calendar built on minuta.

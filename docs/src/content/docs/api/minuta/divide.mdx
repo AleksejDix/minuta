@@ -25,7 +25,7 @@ divide(period, unit, options?)
 ```ts
 import { divide, period } from "@aleksejdix/minuta";
 
-const march = period(new Date(2026, 2, 1), "month");
+const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
 
 divide(march, "day");
 // → 31 periods: Mar 1, Mar 2, … Mar 31
@@ -42,7 +42,21 @@ divide(march, "day");
 ## Returns
 
 An array of periods, in order, that together cover `period` exactly — no gaps,
-no overlaps. Each piece ends one millisecond before the next one starts.
+no overlaps. Each piece ends exactly where the next one starts.
+
+A period of dates divided into a date unit (a month into days) gives periods
+of dates. Divided into a time unit (a day into hours), its days become moments
+in the units' time zone, the runtime's by default. So a day the clocks change
+on has 23 or 25 hours:
+
+```ts
+divide(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour").length;
+// → 23 in Europe/Zurich
+```
+
+For a fixed zone, use `divideWith` with `createUnits({ timeZone: "UTC" })`,
+or divide a range of two `ZonedDateTime`s, which keeps their zone. A day
+made from a `ZonedDateTime` is a date, so it uses the units' zone.
 
 ## Options
 
@@ -52,10 +66,13 @@ no overlaps. Each piece ends one millisecond before the next one starts.
 | `maxPeriods` | `100_000` | A safety limit. `divide` throws instead of creating more pieces than this.             |
 
 ```ts
-const nine = period(new Date(2026, 2, 1, 9), "hour");
+const nine = period(
+  Temporal.ZonedDateTime.from("2026-03-01T09:00[Europe/Zurich]"),
+  "hour"
+);
 
 divide(nine, "minute", { step: 15 });
-// → 4 periods: 9:00–9:14, 9:15–9:29, 9:30–9:44, 9:45–9:59
+// → 4 periods: 9:00–9:15, 9:15–9:30, 9:30–9:45, 9:45–10:00
 ```
 
 ## Pieces at the edges are cut to fit
@@ -78,19 +95,19 @@ because they are no longer a whole week or day.
 
 ```ts
 divide(march, "week");
-// → Sun Mar 1          "custom"  (the week started in February)
-//   Mon Mar 2 – Sun 8  "week"
-//   Mon Mar 9 – Sun 15 "week"
-//   Mon Mar 16 – Sun 22 "week"
-//   Mon Mar 23 – Sun 29 "week"
-//   Mon Mar 30 – Tue 31 "custom"  (the week ends in April)
+// → 2026-03-01 – 2026-03-02  "custom"  (the week started in February)
+//   2026-03-02 – 2026-03-09  "week"
+//   2026-03-09 – 2026-03-16  "week"
+//   2026-03-16 – 2026-03-23  "week"
+//   2026-03-23 – 2026-03-30  "week"
+//   2026-03-30 – 2026-04-01  "custom"  (the week ends in April)
 ```
 
 Pieces made with a `step` larger than 1 are always `"custom"` too: 15 minutes
 is not one whole unit.
 
-Weeks start on Monday here. To start them on Sunday, or to use another date
-library, use `divideWith` from `@aleksejdix/minuta/core` with your own units.
+Weeks start on Monday here. To start them on Sunday, use `divideWith` from
+`@aleksejdix/minuta/core` with `createUnits({ weekStartsOn: "sunday" })`.
 
 ## Errors
 
@@ -102,7 +119,7 @@ library, use `divideWith` from `@aleksejdix/minuta/core` with your own units.
 | `INVALID_OPTION`   | `step` or `maxPeriods` is not a positive whole number.          |
 
 ```ts
-divide(period(new Date(2026, 0, 1), "year"), "second");
+divide(period(Temporal.PlainDate.from("2026-01-01"), "year"), "second");
 // RangeError: TOO_MANY_PERIODS: divideWith() generated over 100000 periods. …
 ```
 

@@ -1,6 +1,6 @@
 ---
 title: Comparing and measuring
-description: Answer everyday questions with same, contains, overlaps, duration and length — is this today, do these bookings clash, how many days are in this month?
+description: Answer everyday questions with same, contains, overlaps and duration — is this today, do these bookings clash, how many days are in this month?
 sidebar:
   order: 4
 ---
@@ -40,23 +40,24 @@ All examples run in Europe/Zurich, with weeks from Monday to Sunday.
 
 ## Is this today?
 
-Make the period for today, then ask whether it contains the date:
+Make the period for today, then ask whether it contains the date or moment:
 
 ```ts
 import { contains, next, period } from "@aleksejdix/minuta";
 
-const today = period(new Date(2026, 2, 18, 14, 30), "day");
+const today = period(Temporal.PlainDate.from("2026-03-18"), "day");
 
-contains(today, new Date(2026, 2, 18, 9)); // → true
-contains(today, new Date(2026, 2, 19)); //     → false, that is tomorrow at 0:00
+contains(today, Temporal.ZonedDateTime.from("2026-03-18T09:00[Europe/Zurich]")); // → true
+contains(today, Temporal.PlainDate.from("2026-03-19")); //                          → false, that is tomorrow
 ```
 
-Both ends of a period are included. The last millisecond of today counts, the
-first millisecond of tomorrow does not:
+A period includes its `start` but not its `end`. The `end` of today is
+already tomorrow:
 
 ```ts
-contains(today, today.end); //       → true, Wed Mar 18 23:59:59.999
-contains(today, next(today).start); // → false, Thu Mar 19 00:00:00.000
+today.end; //                        → 2026-03-19
+contains(today, today.end); //       → false
+contains(today, next(today).start); // → false, the same date
 ```
 
 ## Same day, same week, same month
@@ -67,15 +68,18 @@ choose. The periods can have any units of their own:
 ```ts
 import { period, same } from "@aleksejdix/minuta";
 
-const today = period(new Date(2026, 2, 18), "day"); // a Wednesday
-const meeting = period(new Date(2026, 2, 18, 9), "hour");
+const today = period(Temporal.PlainDate.from("2026-03-18"), "day"); // a Wednesday
+const meeting = period(
+  Temporal.ZonedDateTime.from("2026-03-18T09:00[Europe/Zurich]"),
+  "hour"
+);
 
 same(meeting, today, "day"); // → true
 
-same(today, period(new Date(2026, 2, 17), "day"), "week"); // → true, Tuesday
-same(today, period(new Date(2026, 2, 23), "day"), "week"); // → false, next Monday
+same(today, period(Temporal.PlainDate.from("2026-03-17"), "day"), "week"); // → true, Tuesday
+same(today, period(Temporal.PlainDate.from("2026-03-23"), "day"), "week"); // → false, next Monday
 
-same(today, period(new Date(2025, 2, 18), "day"), "month"); // → false, March 2025
+same(today, period(Temporal.PlainDate.from("2025-03-18"), "day"), "month"); // → false, March 2025
 ```
 
 That last line shows that "same month" means the same month _of the same
@@ -88,10 +92,10 @@ This is how a calendar highlights today's cell: `same(cell, today, "day")`.
 Apr 5 counts as March, even though most of it is in April:
 
 ```ts
-const week = period(new Date(2026, 2, 31), "week");
+const week = period(Temporal.PlainDate.from("2026-03-31"), "week");
 
-same(week, period(new Date(2026, 2, 1), "month"), "month"); // → true
-same(week, period(new Date(2026, 3, 1), "month"), "month"); // → false
+same(week, period(Temporal.PlainDate.from("2026-03-01"), "month"), "month"); // → true
+same(week, period(Temporal.PlainDate.from("2026-04-01"), "month"), "month"); // → false
 ```
 
 To ask whether the whole week lies in a month, use `contains`.
@@ -105,12 +109,12 @@ inside:
 ```ts
 import { contains, overlaps, period, range } from "@aleksejdix/minuta";
 
-const week = period(new Date(2026, 2, 18), "week");
-// → Mon Mar 16 00:00:00.000 – Sun Mar 22 23:59:59.999
+const week = period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-16, end: 2026-03-23, unit: "week" }
 
 const meeting = range(
-  new Date(2026, 2, 20, 9),
-  new Date(2026, 2, 20, 9, 59, 59, 999)
+  Temporal.ZonedDateTime.from("2026-03-20T09:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-20T10:00[Europe/Zurich]")
 );
 contains(week, meeting); // → true
 ```
@@ -120,7 +124,10 @@ week. `contains` says no; [`overlaps`](../../../api/minuta/overlaps/) says
 they share time:
 
 ```ts
-const party = range(new Date(2026, 2, 22, 23), new Date(2026, 2, 23, 1));
+const party = range(
+  Temporal.ZonedDateTime.from("2026-03-22T23:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-23T01:00[Europe/Zurich]")
+);
 
 contains(week, party); // → false
 overlaps(week, party); // → true
@@ -140,26 +147,20 @@ sticks out on one side still belongs on the screen.
 
 ## Do these bookings clash?
 
-Two bookings clash when they share at least one millisecond:
+Two bookings clash when they share any time:
 
 ```ts
 import { overlaps, range } from "@aleksejdix/minuta";
 
-const first = range(
-  new Date(2026, 2, 18, 9),
-  new Date(2026, 2, 18, 10, 59, 59, 999)
-); // 9:00 – 11:00
-const second = range(
-  new Date(2026, 2, 18, 10, 30),
-  new Date(2026, 2, 18, 11, 59, 59, 999)
-); // 10:30 – 12:00
-const third = range(
-  new Date(2026, 2, 18, 11),
-  new Date(2026, 2, 18, 11, 59, 59, 999)
-); // 11:00 – 12:00
+const at = (time) =>
+  Temporal.ZonedDateTime.from(`2026-03-18T${time}[Europe/Zurich]`);
+
+const first = range(at("09:00"), at("11:00"));
+const second = range(at("10:30"), at("12:00"));
+const third = range(at("11:00"), at("12:00"));
 
 overlaps(first, second); // → true
-overlaps(first, third); //  → false, third starts right after first ends
+overlaps(first, third); //  → false, third starts when first ends
 ```
 
 <Timeline
@@ -199,26 +200,9 @@ overlaps(first, third); //  → false, third starts right after first ends
 />
 
 The order does not matter: `overlaps(a, b)` is the same as `overlaps(b, a)`.
-Periods from `period`, `next` and `divide` never overlap their neighbours,
-because each ends one millisecond before the next begins.
-
-:::caution
-Look at how the bookings above end: at 10:59:59.999, not at 11:00. That is on
-purpose. A [`range`](../../../api/minuta/range/) includes its end, so a range
-up to 11:00:00.000 shares that one millisecond with a range that starts at
-11:00. Back-to-back bookings would then clash:
-
-```ts
-overlaps(
-  range(new Date(2026, 2, 18, 9), new Date(2026, 2, 18, 10)),
-  range(new Date(2026, 2, 18, 10), new Date(2026, 2, 18, 11))
-);
-// → true
-```
-
-End each range one millisecond early, or make the slots with
-[`divide`](../dividing-time/#slots-with-step), which does it for you.
-:::
+A period's `end` is not part of it, so back-to-back bookings like `first`
+and `third` do not clash. Periods from `period`, `next` and `divide` never
+overlap their neighbours either: each ends where the next begins.
 
 ## How many days are in this month?
 
@@ -228,27 +212,33 @@ into a period:
 ```ts
 import { duration, period, range } from "@aleksejdix/minuta";
 
-duration(period(new Date(2026, 2, 18), "month"), "day"); // → 31
-duration(period(new Date(2026, 1, 1), "month"), "day"); //  → 28
-duration(period(new Date(2028, 1, 1), "month"), "day"); //  → 29, a leap year
+duration(period(Temporal.PlainDate.from("2026-03-18"), "month"), "day"); // → 31
+duration(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // → 28
+duration(period(Temporal.PlainDate.from("2028-02-01"), "month"), "day"); // → 29, a leap year
 
-duration(period(new Date(2026, 0, 1), "year"), "day"); //   → 365
-duration(period(new Date(2026, 0, 1), "year"), "week"); //  → 52
+duration(period(Temporal.PlainDate.from("2026-01-01"), "year"), "day"); //  → 365
+duration(period(Temporal.PlainDate.from("2026-01-01"), "year"), "week"); // → 52
 ```
 
 It counts on the calendar, so a day is not always 24 hours:
 
 ```ts
-duration(period(new Date(2026, 2, 18), "day"), "hour"); // → 24
-duration(period(new Date(2026, 2, 29), "day"), "hour"); // → 23, clocks go forward
+duration(period(Temporal.PlainDate.from("2026-03-18"), "day"), "hour"); // → 24
+duration(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23, clocks go forward
 ```
 
 Only **whole** units count. A 90-minute meeting is one hour, and March is four
 weeks (31 days is not five):
 
 ```ts
-duration(range(new Date(2026, 2, 1, 9), new Date(2026, 2, 1, 10, 30)), "hour"); // → 1
-duration(period(new Date(2026, 2, 18), "month"), "week"); // → 4
+duration(
+  range(
+    Temporal.ZonedDateTime.from("2026-03-01T09:00[Europe/Zurich]"),
+    Temporal.ZonedDateTime.from("2026-03-01T10:30[Europe/Zurich]")
+  ),
+  "hour"
+); // → 1
+duration(period(Temporal.PlainDate.from("2026-03-18"), "month"), "week"); // → 4
 ```
 
 Counting starts at the period's start, not at a unit border: from 14:00 one
@@ -260,7 +250,7 @@ Temporal gives the plain elapsed time: `until` from the start to the end, a
 `Temporal.Duration`.
 
 ```ts
-import { period, range } from "@aleksejdix/minuta";
+import { range } from "@aleksejdix/minuta";
 
 const meeting = range(
   Temporal.ZonedDateTime.from("2026-03-18T09:00[Europe/Zurich]"),
@@ -269,49 +259,51 @@ const meeting = range(
 
 meeting.start.until(meeting.end).total("minutes"); // → 120
 
-const day = period(
-  Temporal.ZonedDateTime.from("2026-03-29T12:00[Europe/Zurich]"),
-  "day"
+const night = range(
+  Temporal.ZonedDateTime.from("2026-03-28T12:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-29T12:00[Europe/Zurich]")
 );
-day.start.until(day.end, { largestUnit: "hour" }).hours; // → 23, the clocks go forward
+night.start.until(night.end, { largestUnit: "hour" }).hours; // → 23, the clocks go forward
 ```
 
 Use `until` for "how much time passes" (a timer, a progress bar). Use
 `duration` for "how many days or hours on the calendar" (a label like "31
 days").
 
-## The surprise: range includes its end
+## The surprise: range excludes its end
 
-A range ends exactly at the `Date` you pass, and that moment belongs to it.
-`new Date(2026, 2, 25)` is midnight at the **start** of Mar 25, so a trip
-"from the 18th to the 25th" made like this leaves out the 25th:
+A range stops at the value you pass, and that value is not part of it. A
+trip "from the 18th to the 25th" made like this leaves out the 25th:
 
 ```ts
 import { contains, duration, period, range } from "@aleksejdix/minuta";
 
-const trip = range(new Date(2026, 2, 18), new Date(2026, 2, 25));
-// → Wed Mar 18 00:00:00.000 – Wed Mar 25 00:00:00.000, unit "custom"
+const trip = range(
+  Temporal.PlainDate.from("2026-03-18"),
+  Temporal.PlainDate.from("2026-03-25")
+);
+// → { start: 2026-03-18, end: 2026-03-25, unit: "custom" }
 
-contains(trip, new Date(2026, 2, 25, 12)); // → false
+contains(trip, Temporal.PlainDate.from("2026-03-25")); // → false
 duration(trip, "day"); // → 7
 ```
 
-To include the whole last day, end the range at the end of that day. The
-`end` of a day period is exactly its last millisecond:
+To include the whole last day, end the range where that day ends. The `end`
+of a day period is the next date:
 
 ```ts
 const wholeTrip = range(
-  period(new Date(2026, 2, 18), "day").start,
-  period(new Date(2026, 2, 25), "day").end
+  period(Temporal.PlainDate.from("2026-03-18"), "day").start,
+  period(Temporal.PlainDate.from("2026-03-25"), "day").end
 );
-// → Wed Mar 18 00:00:00.000 – Wed Mar 25 23:59:59.999
+// → { start: 2026-03-18, end: 2026-03-26, unit: "custom" }
 
-contains(wholeTrip, new Date(2026, 2, 25, 12)); // → true
+contains(wholeTrip, Temporal.PlainDate.from("2026-03-25")); // → true
 duration(wholeTrip, "day"); // → 8
 ```
 
 <Timeline
-  caption="trip stops at midnight at the start of Mar 25, so noon that day (the pin) is outside. wholeTrip ends with the day and takes it in."
+  caption="trip stops where Mar 25 starts, so noon that day (the pin) is outside. wholeTrip ends with the day and takes it in."
   marks={[
     {
       date: zonedDateTime("2026-03-25T12:00[Europe/Zurich]"),
@@ -331,9 +323,8 @@ duration(wholeTrip, "day"); // → 8
 
 :::tip
 For a whole day, week or month, don't build a range at all: use `period`. It
-always ends at the right millisecond. Use `range` for spans that are not one
-whole unit, and end them at `…:59.999` when they should stop before a round
-time.
+always ends in the right place. Use `range` for spans that are not one whole
+unit, and end them at the first date or moment that should be left out.
 :::
 
 `range` is forgiving about order: if the start is after the end, it swaps

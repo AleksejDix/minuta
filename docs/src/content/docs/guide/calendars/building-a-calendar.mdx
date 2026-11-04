@@ -34,8 +34,7 @@ You need `minuta`. For steps 4 to 6 you also need `minuta-react` or
 npm install @aleksejdix/minuta
 ```
 
-All results on this page are for March 2026, with the computer in the time
-zone Europe/Zurich. Why weeks and weekends work the way they do is explained
+All results on this page are for March 2026. Why weeks and weekends work the way they do is explained
 in [Weeks and calendars](../../../concepts/weeks-and-calendars/); this page
 only shows how to use them.
 
@@ -44,24 +43,28 @@ only shows how to use them.
 A month view needs more days than the month has: the first row starts in the
 previous month and the last rows end in the next one.
 [`monthGridWith`](../../../api/minuta-calendar/month-grid-with/) gives you
-exactly those days. It takes the units (here Temporal, through
-`createUnits()`) and any date in the month you want:
+exactly those days. It takes the units (here `createUnits()`) and any date
+in the month you want:
 
 ```ts
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
 import { createUnits } from "@aleksejdix/minuta/core";
 
-const grid = monthGridWith(createUnits(), new Date(2026, 2, 15));
+const grid = monthGridWith(
+  createUnits(),
+  Temporal.PlainDate.from("2026-03-15")
+);
 
 grid.periods.length; //   → 42
-grid.periods[0]; //       → Mon Feb 23 2026, a whole day
-grid.periods[41]; //      → Sun Apr 5 2026
-grid.monthStart; //       → Sun Mar 1 2026 00:00
+grid.periods[0]; //       → { start: 2026-02-23, end: 2026-02-24, unit: "day" }, a Monday
+grid.periods[41]; //      → { start: 2026-04-05, end: 2026-04-06, unit: "day" }, a Sunday
+grid.monthStart; //       → 2026-03-01
 ```
 
 There are always 42 days: 6 weeks of 7. Every day is a
 [period](../../../api/minuta/period/) with a `start`, an `end` and the unit
-`"day"`.
+`"day"`. `start` is a `Temporal.PlainDate`, so `day.start.day` is the day of
+the month.
 
 To show them, cut the list into rows of 7. Start with an empty table:
 
@@ -74,7 +77,7 @@ import { monthGridWith } from "@aleksejdix/minuta/calendar";
 import { createUnits } from "@aleksejdix/minuta/core";
 
 const units = createUnits();
-const grid = monthGridWith(units, new Date(2026, 2, 15));
+const grid = monthGridWith(units, Temporal.PlainDate.from("2026-03-15"));
 
 // Cut the 42 days into 6 weeks of 7
 const weeks = [];
@@ -83,7 +86,7 @@ for (let i = 0; i < grid.periods.length; i += 7) {
 }
 
 const rows = weeks.map((week) => {
-  const cells = week.map((day) => `<td>${day.start.getDate()}</td>`);
+  const cells = week.map((day) => `<td>${day.start.day}</td>`);
   return `<tr>${cells.join("")}</tr>`;
 });
 
@@ -105,8 +108,9 @@ Two things are missing: the names above the columns, and a way to tell the
 days of March from the grey days around it.
 
 - The names come from the first row. Its 7 days are in the order of the
-  grid, so format each one with `Intl.DateTimeFormat`. You never write a
-  list of names that could fall out of step with the week start.
+  grid, so format each one with
+  [`formatPeriod`](../../../api/minuta-format/format-period/). You never
+  write a list of names that could fall out of step with the week start.
 - A day is outside the month when the month does not
   [`contain`](../../../api/minuta/contains/) it.
 
@@ -114,11 +118,12 @@ days of March from the grey days around it.
 import { contains, period } from "@aleksejdix/minuta";
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
 import { createUnits } from "@aleksejdix/minuta/core";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 
 const units = createUnits();
-const grid = monthGridWith(units, new Date(2026, 2, 15));
+const grid = monthGridWith(units, Temporal.PlainDate.from("2026-03-15"));
 const month = period(grid.monthStart, "month");
-const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+const weekday = { weekday: "short" };
 
 const weeks = [];
 for (let i = 0; i < grid.periods.length; i += 7) {
@@ -126,12 +131,14 @@ for (let i = 0; i < grid.periods.length; i += 7) {
 }
 
 // The first week gives the weekday names, in the order of the grid
-const names = weeks[0].map((day) => `<th>${weekday.format(day.start)}</th>`);
+const names = weeks[0].map(
+  (day) => `<th>${formatPeriod(day, "en-US", weekday)}</th>`
+);
 
 const rows = weeks.map((week) => {
   const cells = week.map((day) => {
     const outside = contains(month, day) ? "" : ` class="outside"`;
-    return `<td${outside}>${day.start.getDate()}</td>`;
+    return `<td${outside}>${day.start.day}</td>`;
   });
   return `<tr>${cells.join("")}</tr>`;
 });
@@ -148,10 +155,9 @@ class `outside`: Feb 23–28 and Apr 1–5.
 Those 11 cells are the grey ones in the picture of step 1.
 
 :::tip
-Use `contains`, not `day.start.getMonth()`. `getMonth()` reads the month in
-the computer's time zone. With units of another zone, such as
-`dateFnsTzUnits({ timeZone: "Asia/Tokyo" })`, it gives the wrong answer for
-some days. `contains` always works in the zone of the units. See
+Use `contains`, not `day.start.month === 3`. A month number alone also
+matches March of other years; `contains` compares the whole month. Days are
+`PlainDate`s, so neither depends on a time zone. See
 [Time zones](../../../concepts/time-zones/).
 :::
 
@@ -180,28 +186,31 @@ code from step 1 with the new units and a `weekend` class:
 import { contains, period } from "@aleksejdix/minuta";
 import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
 import { createUnits } from "@aleksejdix/minuta/core";
+import { formatPeriod } from "@aleksejdix/minuta/format";
 
 const units = createUnits({
   weekStartsOn: "sunday",
   weekend: ["friday", "saturday"],
 });
-const grid = monthGridWith(units, new Date(2026, 2, 15));
+const grid = monthGridWith(units, Temporal.PlainDate.from("2026-03-15"));
 const month = period(grid.monthStart, "month");
-const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+const weekday = { weekday: "short" };
 
 const weeks = [];
 for (let i = 0; i < grid.periods.length; i += 7) {
   weeks.push(grid.periods.slice(i, i + 7));
 }
 
-const names = weeks[0].map((day) => `<th>${weekday.format(day.start)}</th>`);
+const names = weeks[0].map(
+  (day) => `<th>${formatPeriod(day, "en-US", weekday)}</th>`
+);
 
 const rows = weeks.map((week) => {
   const cells = week.map((day) => {
     const classes = [];
     if (!contains(month, day)) classes.push("outside");
     if (isWeekendWith(units, day)) classes.push("weekend");
-    return `<td class="${classes.join(" ")}">${day.start.getDate()}</td>`;
+    return `<td class="${classes.join(" ")}">${day.start.day}</td>`;
   });
   return `<tr>${cells.join("")}</tr>`;
 });
@@ -243,11 +252,11 @@ a period, and step it with [`next`](../../../api/minuta/next/) and
 ```ts
 import { next, period, previous } from "@aleksejdix/minuta";
 
-const march = period(new Date(2026, 2, 15), "month");
+const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
 
 next(march); //     → April 2026
 previous(march); // → February 2026
-next(period(new Date(2026, 11, 1), "month")); // → January 2027
+next(period(Temporal.PlainDate.from("2026-12-01"), "month")); // → January 2027
 ```
 
 Now put it together. The month is the only state; `render` draws the label
@@ -270,10 +279,10 @@ import { createUnits } from "@aleksejdix/minuta/core";
 
 const locale = "en-US";
 const units = createUnits({ weekStartsOn: "sunday" });
-const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" });
+const weekday = { weekday: "short" };
 
 // The month on screen: the only state of the calendar
-let month = period(new Date(2026, 2, 15), "month");
+let month = period(Temporal.PlainDate.from("2026-03-15"), "month");
 
 function render() {
   const grid = monthGridWith(units, month.start);
@@ -283,13 +292,15 @@ function render() {
     weeks.push(grid.periods.slice(i, i + 7));
   }
 
-  const names = weeks[0].map((day) => `<th>${weekday.format(day.start)}</th>`);
+  const names = weeks[0].map(
+    (day) => `<th>${formatPeriod(day, locale, weekday)}</th>`
+  );
   const rows = weeks.map((week) => {
     const cells = week.map((day) => {
       const classes = [];
       if (!contains(month, day)) classes.push("outside");
       if (isWeekendWith(units, day)) classes.push("weekend");
-      return `<td class="${classes.join(" ")}">${day.start.getDate()}</td>`;
+      return `<td class="${classes.join(" ")}">${day.start.day}</td>`;
     });
     return `<tr>${cells.join("")}</tr>`;
   });
@@ -325,8 +336,8 @@ Mar 29 to Sat May 9.
 <MonthGrid month="2026-04" weekStartsOn="sunday" />
 
 :::tip
-`period`, `next` and `previous` from `@aleksejdix/minuta` use the Temporal units with
-Monday weeks. With another week start or a time zone, bind your units once with
+`period`, `next` and `previous` from `@aleksejdix/minuta` use `createUnits()`,
+with Monday weeks. With another week start or a time zone, bind your units once with
 [`withUnits`](../../../api/minuta-core/with-units/) and
 [`calendar`](../../../api/minuta-calendar/calendar/), and call
 `time.next(month)`, `grids.monthGrid(date)` and so on.
@@ -396,7 +407,7 @@ npm install @aleksejdix/minuta @aleksejdix/minuta-vue
 
 Here is the calendar from step 3 with Sunday weeks, plus selecting a day. A
 click on a day, or Enter or Space while it has the focus, selects it and
-reports the day period. `day.start` is midnight at the start of that day.
+reports the day period. `day.start` is that day's `Temporal.PlainDate`.
 
 <Tabs syncKey="framework">
 <TabItem label="React">
@@ -419,12 +430,12 @@ export function DatePicker() {
   return (
     <CalendarRoot
       units={units}
-      date={new Date(2026, 2, 15)}
+      date={Temporal.PlainDate.from("2026-03-15")}
       onSelect={(day) => setPicked(day.start)}
     >
       <CalendarHeader />
       <CalendarGrid />
-      <p>{picked ? picked.toDateString() : "Pick a day"}</p>
+      <p>{picked ? picked.toString() : "Pick a day"}</p>
     </CalendarRoot>
   );
 }
@@ -452,7 +463,7 @@ import { createUnits } from "@aleksejdix/minuta/core";
 import "@aleksejdix/minuta-vue/style.css";
 
 const units = createUnits({ weekStartsOn: "sunday" });
-const start = new Date(2026, 2, 15);
+const start = Temporal.PlainDate.from("2026-03-15");
 const picked = shallowRef();
 </script>
 
@@ -465,7 +476,7 @@ const picked = shallowRef();
     <CalendarHeader />
     <CalendarGrid />
   </CalendarRoot>
-  <p>{{ picked ? picked.toDateString() : "Pick a day" }}</p>
+  <p>{{ picked ? picked.toString() : "Pick a day" }}</p>
 </template>
 ```
 
@@ -680,7 +691,7 @@ Sat Mar 21 with End.
     shift(focused, -7),
     shift(focused, 7),
     period(focusedWeek.start, "day"),
-    period(focusedWeek.end, "day"),
+    period(focusedWeek.end.subtract({ days: 1 }), "day"),
   ].map(iso)}
 />
 

@@ -60,13 +60,13 @@ import { createUnits } from "@aleksejdix/minuta/core";
 import { range } from "@aleksejdix/minuta";
 
 const meeting = range(
-  new Date(2026, 2, 16, 9, 0),
-  new Date(2026, 2, 16, 10, 0)
+  Temporal.ZonedDateTime.from("2026-03-16T09:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-16T10:00[Europe/Zurich]")
 );
-const dropped = new Date(2026, 2, 17, 14, 8);
+const dropped = Temporal.ZonedDateTime.from("2026-03-17T14:08[Europe/Zurich]");
 
 move(meeting, snapWith(createUnits(), dropped, "minute", { step: 15 }));
-// → { start: Tue Mar 17 14:15, end: 15:15, unit: "custom" }
+// → { start: 2026-03-17T14:15, end: 2026-03-17T15:15, unit: "custom" }
 ```
 
 <Timeline
@@ -94,10 +94,11 @@ move(meeting, snapWith(createUnits(), dropped, "minute", { step: 15 }));
 - **A missing result is `undefined`.** No overlap for `clamp`, no time between for
   `gap`, a date outside the period for `split`, crossing edges for `resize`,
   an empty list for `mergeWith`. These cases do not throw; check for
-  `undefined`. Only invalid dates and options throw.
-- **Ends are included.** A period's `end` is its last millisecond
-  (23:59:59.999 for a day). Two neighbouring days touch: there is no gap
-  between them.
+  `undefined`. Only invalid options and mixed kinds (a date where a moment
+  is needed) throw.
+- **Ends are excluded.** A period runs from `start` up to, not including,
+  `end`: a day ends where the next day starts. Two neighbouring days touch:
+  there is no gap between them.
 - **Units only where needed.** `mergeWith` and `snapWith` need units to know
   what a month or a week is. The other five work on the dates alone and take
   no units.

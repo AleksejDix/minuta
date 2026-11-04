@@ -40,7 +40,7 @@ export function BookingCalendar() {
   return (
     <CalendarRoot
       units={sundayFirst}
-      date={new Date(2024, 0, 15)}
+      date={Temporal.PlainDate.from("2024-01-15")}
       isDisabled={(day) => isWeekendWith(sundayFirst, day)}
       onSelect={(day) => console.log(day.start)}
     >
@@ -53,7 +53,7 @@ export function BookingCalendar() {
 
 It shows January 2024 with Sunday as the first column. Saturdays and Sundays
 get the class `is-disabled` and can't be selected. Clicking a weekday logs the
-`Date` at midnight of that day.
+`Temporal.PlainDate` of that day, e.g. `2024-01-17`.
 
 <MonthGrid month="2024-01" weekStartsOn="sunday" />
 
@@ -96,13 +96,13 @@ The parts of a calendar, and which sits inside which:
 
 ## Props
 
-| Name         | What it is                                                                      | Default                       |
-| ------------ | ------------------------------------------------------------------------------- | ----------------------------- |
-| `units`      | The units of the calendar. The week start comes from here.                      | `createUnits()`, Monday weeks |
-| `date`       | The date whose month is shown first. Read only once, on the first render.       | today                         |
-| `isDisabled` | A function that gets a day and returns `true` when that day can't be selected.  | no day is disabled            |
-| `onSelect`   | Called with the day [period](../../minuta/period/) when the user selects a day. | —                             |
-| `children`   | The calendar parts and anything else you want inside the calendar.              | —                             |
+| Name         | What it is                                                                                                           | Default                       |
+| ------------ | -------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `units`      | The units of the calendar. The week start comes from here.                                                           | `createUnits()`, Monday weeks |
+| `date`       | The date or moment whose month is shown first, any Temporal value minuta takes. Read only once, on the first render. | today                         |
+| `isDisabled` | A function that gets a day and returns `true` when that day can't be selected.                                       | no day is disabled            |
+| `onSelect`   | Called with the day [period](../../minuta/period/) when the user selects a day.                                      | —                             |
+| `children`   | The calendar parts and anything else you want inside the calendar.                                                   | —                             |
 
 Create `units` once, outside the component or with `useMemo`. A new units
 object on every render rebinds every function on every render.
@@ -142,7 +142,7 @@ Enter or Space while it has focus. Selecting a day:
     {
       code: "onSelect(day)",
       layer: "your code",
-      text: "Gets the day period, Fri Feb 2 2024 00:00 to 23:59:59.999.",
+      text: 'Gets the day period, { start: 2024-02-02, end: 2024-02-03, unit: "day" }.',
     },
   ]}
 />

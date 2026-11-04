@@ -20,8 +20,8 @@ import SiteLink from "../../components/SiteLink.astro";
     <span class="almanac-numeral">01</span>
     <h2>Periods, not timestamps</h2>
     <p>
-      A month is a month — from its first millisecond to its last. Split it with{" "}
-      <code>divide</code>, step it with <code>next</code>, compare it with{" "}
+      A month is a month — from its first day up to the next month. Split it
+      with <code>divide</code>, step it with <code>next</code>, compare it with{" "}
       <code>same</code>. Pure functions over plain data.
     </p>
   </article>
@@ -30,7 +30,7 @@ import SiteLink from "../../components/SiteLink.astro";
     <h2>Temporal inside</h2>
     <p>
       Calendar arithmetic by Temporal, with the polyfill loaded only where the
-      runtime has none. Swap in a fixed time zone; your code stays the same.
+      runtime has none. Pick a time zone once; your code stays the same.
     </p>
   </article>
   <article>
@@ -60,7 +60,7 @@ import SiteLink from "../../components/SiteLink.astro";
 ```ts
 import { divide, period } from "@aleksejdix/minuta";
 
-const march = period(new Date(2026, 2, 1), "month");
+const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
 divide(march, "week");
 
 // → Mar 1          custom

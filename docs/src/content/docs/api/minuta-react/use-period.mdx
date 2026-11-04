@@ -35,22 +35,21 @@ function Context() {
 
   return (
     <p>
-      Year {year.start.getFullYear()}, first week starts{" "}
-      {week.start.toDateString()}
+      Year {year.start.year}, first week starts {week.start.toString()}
     </p>
   );
 }
 
 export function App() {
   return (
-    <MinutaRoot unit="month" date={new Date(2024, 2, 13)}>
+    <MinutaRoot unit="month" date={Temporal.PlainDate.from("2024-03-13")}>
       <Context />
     </MinutaRoot>
   );
 }
 ```
 
-This renders "Year 2024, first week starts Mon Feb 26 2024": March 1, 2024 is
+This renders "Year 2024, first week starts 2024-02-26": March 1, 2024 is
 a Friday, and its week starts on the Monday before.
 
 <Timeline

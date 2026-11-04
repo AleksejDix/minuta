@@ -30,21 +30,22 @@ import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 const monday = withUnits(createUnits());
 const sunday = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
-monday.period(new Date(2026, 2, 18), "week"); // → Mon Mar 16 – Sun Mar 22
-sunday.period(new Date(2026, 2, 18), "week"); // → Sun Mar 15 – Sat Mar 21
+monday.period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-16, end: 2026-03-23, unit: "week" }, Monday to Sunday
+sunday.period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }, Sunday to Saturday
 ```
 
 - The default is **Monday**, as in the ISO 8601 standard.
-- Name the day in lowercase English (`"sunday"` … `"saturday"`), or use the
-  numbers of `Date#getDay()`: 0 = Sunday, 1 = Monday … 6 = Saturday.
+- Name the day in lowercase English (`"sunday"` … `"saturday"`), or use a
+  number: 0 = Sunday, 1 = Monday … 6 = Saturday.
 - The units store it as a number: `createUnits({ weekStartsOn: "sunday" }).weekStartsOn`
   is `0`.
 - The default `minuta` entry (`import { period } from "@aleksejdix/minuta"`) always
   starts weeks on Monday. For another start, use `withUnits` from
   `@aleksejdix/minuta/core`.
 
-Every engine takes the option the same way. None of them reads the week
-start from a date library's locale.
+minuta never reads the week start from a locale on its own.
 
 Everything that deals with weeks follows it: `period(date, "week")`,
 `divide(month, "week")`, `next` and `previous` of a week, month and year
@@ -60,11 +61,12 @@ functions, [`isWeekendWith`](../../api/minuta-calendar/is-weekend-with/) and
 ```ts
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
 import { period } from "@aleksejdix/minuta";
+import { createUnits } from "@aleksejdix/minuta/core";
 
 const units = createUnits({ weekend: ["friday", "saturday"] });
 
-isWeekendWith(units, period(new Date(2026, 2, 20), "day")); // → true  (Friday)
-isWeekendWith(units, period(new Date(2026, 2, 22), "day")); // → false (Sunday)
+isWeekendWith(units, period(Temporal.PlainDate.from("2026-03-20"), "day")); // → true  (Friday)
+isWeekendWith(units, period(Temporal.PlainDate.from("2026-03-22"), "day")); // → false (Sunday)
 ```
 
 - The default is Saturday and Sunday.
@@ -98,7 +100,8 @@ minuta does not compute week numbers. In particular, the position of a week
 in [`yearGridWith`](../../api/minuta-calendar/year-grid-with/) is not the
 ISO week number: the grid starts with the week that contains January 1,
 while ISO week 1 is the week that contains the first Thursday. For 2021,
-the grid's first week (Mon Dec 28 2020) is ISO week 53 of 2020.
+the grid's first week (Mon Dec 28 2020) is ISO week 53 of 2020. For the
+ISO week number of a date, Temporal has it: `date.weekOfYear`.
 
 ## Calendar grids
 
@@ -118,21 +121,23 @@ nothing jumps when the user pages through months.
 ```ts
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
 
-monthGridWith(createUnits(), new Date(2026, 2, 15)).periods[0];
-// → Mon Feb 23 (the week of Mar 1 starts on Monday)
+const march = Temporal.PlainDate.from("2026-03-15");
 
-monthGridWith(createUnits({ weekStartsOn: "sunday" }), new Date(2026, 2, 15))
-  .periods[0];
-// → Sun Mar 1 (March 2026 starts on a Sunday)
+monthGridWith(createUnits(), march).periods[0].start;
+// → 2026-02-23, a Monday (the week of Mar 1 starts on Monday)
+
+monthGridWith(createUnits({ weekStartsOn: "sunday" }), march).periods[0].start;
+// → 2026-03-01, a Sunday (March 2026 starts on a Sunday)
 ```
 
-Grids and weekends are computed in the time zone of the units, see
+Month and year grids are made of dates, so they have no time zone. The day
+grid's hours are moments in the units' time zone, see
 [Time zones](../time-zones/).
 
 ## Calendar systems
 
 minuta computes with the **Gregorian calendar** only: months are January to
-December, years are Gregorian years. All engines work this way.
+December, years are Gregorian years (the ISO 8601 calendar of Temporal).
 
 Other calendar systems are available for **labels**, through the locale of
 [`formatPeriod`](../../api/minuta-format/format-period/) and
@@ -141,7 +146,10 @@ Other calendar systems are available for **labels**, through the locale of
 ```ts
 import { formatPeriod } from "@aleksejdix/minuta/format";
 
-formatPeriod(period(new Date(2026, 2, 15), "month"), "en-US-u-ca-buddhist");
+formatPeriod(
+  period(Temporal.PlainDate.from("2026-03-15"), "month"),
+  "en-US-u-ca-buddhist"
+);
 // → "March 2569 BE"
 ```
 
@@ -153,5 +161,5 @@ although March 21–31 already fall in the next Persian month, Farvardin 1405.
 ## Related
 
 - [Time zones](../time-zones/)
-- [Date engines](../../api/minuta-core/create-units/) — the options every engine takes.
+- [Units](../date-engines/) — `createUnits` and its options.
 - [`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)

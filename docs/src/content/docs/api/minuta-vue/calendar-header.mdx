@@ -29,10 +29,12 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-vue/components";
+
+const start = Temporal.PlainDate.from("2024-03-13");
 </script>
 
 <template>
-  <CalendarRoot :date="new Date(2024, 2, 13)">
+  <CalendarRoot :date="start">
     <CalendarHeader locale="de-CH" />
     <CalendarGrid locale="de-CH" />
   </CalendarRoot>
@@ -67,8 +69,8 @@ every part inside the same [`CalendarRoot`](../calendar-root/) moves with it.
 
 It has no slots and emits no events.
 
-The month name is written in the time zone of the units
-(`units.timeZone`), so time-zone units show the month of that zone.
+The browsed month is a period of dates, so its name is the same in every
+time zone.
 
 The button texts ("← Previous", "Next →") are fixed and not translated by
 `locale`.

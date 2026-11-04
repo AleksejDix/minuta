@@ -46,7 +46,7 @@ const { busyDays } = defineProps(["busyDays"]);
     <CalendarGrid>
       <template #day="{ day }">
         <CalendarDay :day="day" />
-        <span v-if="busyDays.has(day.start.toDateString())" class="dot" />
+        <span v-if="busyDays.has(day.start.toString())" class="dot" />
       </template>
     </CalendarGrid>
   </CalendarRoot>
@@ -54,7 +54,7 @@ const { busyDays } = defineProps(["busyDays"]);
 ```
 
 Both show the current month. The second adds a dot under every day whose date
-is in the `busyDays` set.
+is in the `busyDays` set of ISO dates, such as `"2026-03-04"`.
 
 <MonthGrid month="2026-03" marks={["2026-03-04", "2026-03-12", "2026-03-20"]} />
 
