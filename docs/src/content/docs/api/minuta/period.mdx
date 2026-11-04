@@ -17,7 +17,7 @@ import { period } from "@aleksejdix/minuta";
 ```
 
 ```ts
-period(date, unit);
+period(value, unit);
 ```
 
 ## Example
@@ -25,17 +25,15 @@ period(date, unit);
 ```ts
 import { period } from "@aleksejdix/minuta";
 
-period(new Date(2026, 2, 18, 14, 35), "month");
-// → { start: Sun Mar 1 2026 00:00:00.000,
-//     end:   Tue Mar 31 2026 23:59:59.999,
-//     unit:  "month" }
+period(Temporal.PlainDate.from("2026-03-18"), "month");
+// → { start: 2026-03-01, end: 2026-04-01, unit: "month" }
 
-period(new Date(2026, 2, 18, 14, 35), "week");
-// → Mon Mar 16 00:00:00.000 – Sun Mar 22 23:59:59.999, unit "week"
+period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-16, end: 2026-03-23, unit: "week" }
 ```
 
-The date can be any moment inside the unit. Mar 1, Mar 18 at 14:35 and
-Mar 31 at 23:59 all give the same month.
+The value can be any date or moment inside the unit. Mar 1, Mar 18 at 14:35
+and Mar 31 at 23:59 all give the same month.
 
 <Timeline
   caption="One date, three units: each period is the whole unit around the pin."
@@ -59,69 +57,81 @@ Mar 31 at 23:59 all give the same month.
   ]}
 />
 
-The pin is the date you pass. Each bar starts at the first millisecond of its
-unit and ends at the last one, wherever the pin sits inside it.
+The pin is the value you pass. Each bar starts where its unit starts and ends
+where the next one starts, wherever the pin sits inside it.
 
 ## Parameters
 
-| Name   | What it is                                                                                                       |
-| ------ | ---------------------------------------------------------------------------------------------------------------- |
-| `date` | Any `Date` inside the period you want.                                                                           |
-| `unit` | The size of the period: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`, `"minute"` or `"second"`. |
+| Name    | What it is                                                                                                       |
+| ------- | ---------------------------------------------------------------------------------------------------------------- |
+| `value` | Any `PlainDate`, `PlainDateTime`, `ZonedDateTime` or `Instant` inside the period you want.                       |
+| `unit`  | The size of the period: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`, `"minute"` or `"second"`. |
 
 ## Returns
 
 A period: a plain object with three fields.
 
-- `start` — the first millisecond of the unit.
-- `end` — the last millisecond of the unit. The end is _inclusive_: it is part
-  of the period, so a day ends at 23:59:59.999, not at midnight.
+- `start` — the first day (or moment) of the unit. It is part of the period.
+- `end` — where the next unit starts. The end is _exclusive_: it is not part
+  of the period, so March ends at Apr 1, and the next period starts there.
 - `unit` — the unit you asked for.
 
-`start` and `end` are new `Date` objects. Changing your `date` later does not
-change the period. See [Periods and units](../../../concepts/periods-and-units/)
-for the idea behind this shape.
+For `"year"` to `"day"`, `start` and `end` are `Temporal.PlainDate`s: a day is
+a date, with no time zone. For `"hour"`, `"minute"` and `"second"` they are
+`Temporal.ZonedDateTime`s. See
+[Periods and units](../../../concepts/periods-and-units/) for the idea behind
+this shape.
 
 ## Every unit
 
-For the date Wed Mar 18 2026, 14:35:20.500:
+For the moment Wed Mar 18 2026, 14:35:20.500 in Europe/Zurich:
 
-| Unit        | `start`             | `end`                   |
-| ----------- | ------------------- | ----------------------- |
-| `"year"`    | Thu Jan 1 00:00:00  | Thu Dec 31 23:59:59.999 |
-| `"quarter"` | Thu Jan 1 00:00:00  | Tue Mar 31 23:59:59.999 |
-| `"month"`   | Sun Mar 1 00:00:00  | Tue Mar 31 23:59:59.999 |
-| `"week"`    | Mon Mar 16 00:00:00 | Sun Mar 22 23:59:59.999 |
-| `"day"`     | Wed Mar 18 00:00:00 | Wed Mar 18 23:59:59.999 |
-| `"hour"`    | Wed Mar 18 14:00:00 | Wed Mar 18 14:59:59.999 |
-| `"minute"`  | Wed Mar 18 14:35:00 | Wed Mar 18 14:35:59.999 |
-| `"second"`  | Wed Mar 18 14:35:20 | Wed Mar 18 14:35:20.999 |
+| Unit        | `start`          | `end`            |
+| ----------- | ---------------- | ---------------- |
+| `"year"`    | 2026-01-01       | 2027-01-01       |
+| `"quarter"` | 2026-01-01       | 2026-04-01       |
+| `"month"`   | 2026-03-01       | 2026-04-01       |
+| `"week"`    | 2026-03-16       | 2026-03-23       |
+| `"day"`     | 2026-03-18       | 2026-03-19       |
+| `"hour"`    | 2026-03-18 14:00 | 2026-03-18 15:00 |
+| `"minute"`  | 2026-03-18 14:35 | 2026-03-18 14:36 |
+| `"second"`  | 14:35:20         | 14:35:21         |
 
 Weeks start on Monday here (ISO 8601). To start them on Sunday, use
-`periodWith` from `@aleksejdix/minuta/core` with your own units.
+`withUnits(createUnits({ weekStartsOn: "sunday" }))` from `@aleksejdix/minuta/core`.
 
-## Local time and daylight saving
+## Time zones and daylight saving
 
-`period` works in the local time zone of the runtime, like `new Date(2026, 2, 1)`
-does. A day is the local calendar day, even when it is not 24 hours long. In
-Europe/Zurich the clocks jump from 2:00 to 3:00 on Mar 29 2026:
+A day period holds dates, so clock changes cannot move it. Mar 29 2026, the
+day the clocks jump from 2:00 to 3:00 in Europe/Zurich, is still one date:
 
 ```ts
-period(new Date(2026, 2, 29, 12), "day");
-// → Sun Mar 29 00:00:00.000 – Sun Mar 29 23:59:59.999, only 23 hours long
+period(Temporal.PlainDate.from("2026-03-29"), "day");
+// → { start: 2026-03-29, end: 2026-03-30, unit: "day" }
 ```
 
-To compute in a fixed time zone instead, use an adapter with a `timeZone`
-(see [Date engines](../../../concepts/date-engines/)).
+Time units need a zone. A `ZonedDateTime` keeps its own. A `PlainDateTime` or
+an `Instant` is placed in the units' time zone, which is the runtime's by
+default. An `Instant` is also read in that zone for date units, so its day
+depends on it:
+
+```ts
+period(Temporal.Instant.from("2026-03-18T23:35:00Z"), "day");
+// → { start: 2026-03-19, end: 2026-03-20, unit: "day" } (in Europe/Zurich)
+```
+
+To compute in a fixed time zone instead, use
+`withUnits(createUnits({ timeZone: "UTC" }))`, or pass `ZonedDateTime`s in
+that zone (see [`createUnits`](../../minuta-core/create-units/)).
 
 ## There is no `"custom"` unit here
 
 `"custom"` is the unit of periods that do not match one whole unit. You cannot
 ask `period` for one; use [`range`](../range/) to make a period from any two
-dates.
+dates or moments.
 
 ```ts
-period(new Date(), "custom");
+period(Temporal.Now.plainDateISO(), "custom");
 // RangeError: UNIT_NOT_SUPPORTED: no "custom" spec in the units passed …
 ```
 
@@ -131,17 +141,11 @@ period(new Date(), "custom");
 
 | Code                 | When                                                             |
 | -------------------- | ---------------------------------------------------------------- |
-| `INVALID_DATE`       | `date` is an invalid `Date`, e.g. `new Date("nope")`.            |
 | `UNIT_NOT_SUPPORTED` | `unit` is not one of the units listed above, e.g. `"fortnight"`. |
-
-```ts
-period(new Date("nope"), "day");
-// RangeError: INVALID_DATE: date is an invalid Date. …
-```
 
 ## Related
 
-- [`range`](../range/) — a period between any two dates.
+- [`range`](../range/) — a period between any two dates or moments.
 - [`next`](../next/) and [`previous`](../previous/) — the period after or before.
 - [`divide`](../divide/) — split the period into smaller ones.
 - [`periodWith`](../../minuta-core/period-with/) (`@aleksejdix/minuta/core`) — the same, with your own units and week start.

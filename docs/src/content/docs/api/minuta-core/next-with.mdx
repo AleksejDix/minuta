@@ -32,15 +32,15 @@ nextWith(units, period);
 import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
 
 const units = createUnits({ weekStartsOn: "sunday" });
-const week = periodWith(units, new Date(2026, 2, 18), "week");
-// → Sun Mar 15 – Sat Mar 21
+const week = periodWith(units, Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 
 nextWith(units, week);
-// → Sun Mar 22 00:00:00.000 – Sat Mar 28 23:59:59.999, unit "week"
+// → { start: 2026-03-22, end: 2026-03-29, unit: "week" }
 ```
 
 <Timeline
-  caption="A Sunday week and the week nextWith gives with the same Sunday units: it starts right after the first one ends."
+  caption="A Sunday week and the week nextWith gives with the same Sunday units: it starts where the first one ends."
   tracks={[
     { label: "week", periods: [week], tone: "ink" },
     {
@@ -53,14 +53,14 @@ nextWith(units, week);
 
 ## Parameters
 
-| Name     | What it is                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compute with, e.g. `createUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `period` | The current period.                                                                                   |
+| Name     | What it is                                                           |
+| -------- | -------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. [`createUnits()`](../create-units/). |
+| `period` | The current period.                                                  |
 
 ## Returns
 
-A new, whole period of the same unit that starts right after `period`.
+A new, whole period of the same unit that starts where `period` ends.
 `nextWith(units, p)` is the same as [`shiftWith(units, p, 1)`](../shift-with/).
 
 It works exactly like [`next`](../../minuta/next/), which is `nextWith` with
@@ -76,11 +76,15 @@ with Sunday units comes out as a Sunday week:
 ```ts
 import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
 
-const mondayWeek = periodWith(createUnits(), new Date(2026, 2, 18), "week");
-// → Mon Mar 16 – Sun Mar 22
+const mondayWeek = periodWith(
+  createUnits(),
+  Temporal.PlainDate.from("2026-03-18"),
+  "week"
+);
+// → { start: 2026-03-16, end: 2026-03-23, unit: "week" }
 
 nextWith(createUnits({ weekStartsOn: "sunday" }), mondayWeek);
-// → Sun Mar 22 – Sat Mar 28
+// → { start: 2026-03-22, end: 2026-03-29, unit: "week" }
 ```
 
 <Timeline
@@ -105,12 +109,8 @@ bound object uses one set of units.
 
 ## Errors
 
-`nextWith` throws a `RangeError` whose message starts with a code:
-
-| Code                 | When                                   |
-| -------------------- | -------------------------------------- |
-| `INVALID_DATE`       | `period.start` is an invalid `Date`.   |
-| `UNIT_NOT_SUPPORTED` | `units` has no spec for `period.unit`. |
+`nextWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED` when
+`units` has no spec for `period.unit`.
 
 ## Related
 

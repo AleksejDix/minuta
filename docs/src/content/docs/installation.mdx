@@ -23,15 +23,15 @@ minuta is in beta (`1.0.0-beta`); the date field packages and `fechita` are at
           },
           {
             name: "minuta/core",
-            note: "the same functions with your own units: withUnits, bind",
+            note: "the same functions with your own units: createUnits, withUnits",
           },
           {
             name: "minuta/calendar · minuta/intervals · minuta/format",
             note: "grids and weekends · merge, split, snap · labels",
           },
           {
-            name: "minuta/temporal · minuta/date-fns-tz",
-            note: "the units: Temporal, or date-fns in a chosen time zone",
+            name: "minuta/temporal",
+            note: "temporalReady: the Temporal polyfill, only where it is missing",
           },
         ],
       },
@@ -82,9 +82,10 @@ install there.
 
 ## Where Temporal is missing
 
-Safari and Node 24 have no Temporal yet. Install the polyfill and
-[`await temporalReady()`](../api/minuta-temporal/temporal-ready/) once, before
-anything renders. It loads the polyfill only in runtimes without Temporal:
+Safari and Node 24 have no Temporal yet. Only for those, install the
+polyfill and [`await temporalReady()`](../api/minuta-temporal/temporal-ready/)
+once, before anything computes. It loads the polyfill only in runtimes
+without Temporal, and does nothing elsewhere:
 
 ```sh
 npm install @js-temporal/polyfill
@@ -98,12 +99,11 @@ await temporalReady();
 
 ## In a fixed time zone
 
-To compute in a zone you choose instead of the computer's, use
-[`dateFnsTzUnits`](../api/minuta-core/create-units/). It needs `date-fns`
-and `@date-fns/tz`, optional dependencies of minuta that npm installs with it
-unless you pass `--omit=optional`.
-
-How to choose: see [Date engines](../concepts/date-engines/).
+Nothing to install. To turn dates into moments in a zone you choose instead
+of the computer's, pass it to
+[`createUnits`](../api/minuta-core/create-units/):
+`createUnits({ timeZone: "UTC" })`. See [Units](../concepts/date-engines/)
+and [Time zones](../concepts/time-zones/).
 
 ## React
 

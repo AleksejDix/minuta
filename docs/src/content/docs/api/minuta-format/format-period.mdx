@@ -35,7 +35,7 @@ formatPeriod(period, locale, options?)
 import { formatPeriod } from "@aleksejdix/minuta/format";
 import { period } from "@aleksejdix/minuta";
 
-const date = new Date(2026, 2, 15, 14, 5, 9);
+const date = Temporal.ZonedDateTime.from("2026-03-15T14:05:09[Europe/Zurich]");
 
 formatPeriod(period(date, "month"), "en-US"); // → "March 2026"
 formatPeriod(period(date, "month"), "de-CH"); // → "März 2026"
@@ -89,11 +89,18 @@ And the smaller ones, on the scale of one week:
 
 Weeks and `"custom"` periods are shown as a range from start to end, the
 same as [`formatRange`](../format-range/). All other units show their start.
+A period of dates shows its last day, the day before its excluded `end`:
 
 ```ts
 import { range } from "@aleksejdix/minuta";
 
-formatPeriod(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "en-US");
+formatPeriod(
+  range(
+    Temporal.PlainDate.from("2026-03-30"),
+    Temporal.PlainDate.from("2026-04-06")
+  ),
+  "en-US"
+);
 // → "Mar 30 – Apr 5, 2026"
 ```
 
@@ -106,7 +113,7 @@ months:
 ```ts
 import { formatRange } from "@aleksejdix/minuta/format";
 
-const q2 = period(new Date(2026, 4, 1), "quarter");
+const q2 = period(Temporal.PlainDate.from("2026-05-01"), "quarter");
 
 formatPeriod(q2, "en-US"); // → "Apr 2026"
 formatRange(q2, "en-US"); // → "Apr – Jun 2026"
@@ -133,38 +140,47 @@ formatRange(q2, "en-US"); // → "Apr – Jun 2026"
 
 `options` are the options of
 [`Intl.DateTimeFormat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options).
-They are merged over the defaults of the period's unit: what you pass wins,
-the rest stays.
+Options that pick fields (`year`, `month`, `day`, `weekday`, `hour`,
+`dateStyle`, `timeStyle` …) replace the defaults of the period's unit: list
+every field you want. Other options, such as `hourCycle` or `timeZone`, are
+added to the defaults.
 
 ```ts
 formatPeriod(period(date, "month"), "en-US", { month: "short" });
+// → "Mar"
+
+formatPeriod(period(date, "month"), "en-US", {
+  month: "short",
+  year: "numeric",
+});
 // → "Mar 2026"
 
 formatPeriod(period(date, "day"), "en-US", { weekday: "long" });
+// → "Sunday"
+
+formatPeriod(period(date, "day"), "en-US", { dateStyle: "full" });
 // → "Sunday, March 15, 2026"
 ```
 
-:::caution
-`dateStyle` and `timeStyle` cannot be mixed with the default fields such as
-`month` or `day`. `formatPeriod(day, "en-US", { dateStyle: "full" })` throws
-a `TypeError` from `Intl.DateTimeFormat`. Use the single fields instead.
-:::
-
 ## Time zones
 
-The label is written in the time zone of the computer unless you say
-otherwise. Periods made with zone-aware units, such as `dateFnsTzUnits`,
-must be formatted in that zone. Pass the units' `timeZone`:
+A period of moments is written in its own time zone, the zone of its
+`ZonedDateTime`s, wherever the code runs. A period of dates has no zone: it
+shows the same day everywhere.
 
 ```ts
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
-import { periodWith } from "@aleksejdix/minuta/core";
+const tokyo = Temporal.ZonedDateTime.from("2026-03-21T05:00[Asia/Tokyo]");
 
-const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
-const day = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
+formatPeriod(period(tokyo, "day"), "en-US"); // → "March 21, 2026"
+formatPeriod(period(tokyo, "hour"), "en-US"); // → "Mar 21, 5:00 AM"
+```
 
-formatPeriod(day, "en-US", { timeZone: tokyo.timeZone }); // → "March 21, 2026"
-formatPeriod(day, "en-US"); // → "March 20, 2026" on a computer in Zurich (wrong)
+To show moments in another zone, pass `timeZone`. It has no effect on a
+period of dates.
+
+```ts
+formatPeriod(period(tokyo, "hour"), "en-US", { timeZone: "Europe/Zurich" });
+// → "Mar 20, 9:00 PM"
 ```
 
 ## Other calendars
@@ -190,13 +206,13 @@ labelled like a `"custom"` date, but only with its start:
 
 `formatPeriod` throws the errors of `Intl.DateTimeFormat`:
 
-| Error        | When                                                              |
-| ------------ | ----------------------------------------------------------------- |
-| `RangeError` | `locale` is not a valid tag, or the period holds an invalid Date. |
-| `TypeError`  | `options` conflict with the defaults, e.g. `dateStyle`.           |
+| Error        | When                                                            |
+| ------------ | --------------------------------------------------------------- |
+| `RangeError` | `locale` is not a valid tag, or an option has an invalid value. |
+| `TypeError`  | `options` conflict, e.g. `dateStyle` together with `month`.     |
 
 ## Related
 
 - [`formatRange`](../format-range/) — always show the period as start – end.
 - [`period`](../../minuta/period/) — make the period to label.
-- [Time zones](../../../concepts/time-zones/) — format zone-aware periods correctly.
+- [Time zones](../../../concepts/time-zones/) — periods of dates and of moments.

@@ -1,6 +1,6 @@
 ---
 title: snapWith
-description: Round a date to a neat boundary — the nearest quarter hour, the next midnight, the start of the week.
+description: Round a date or moment to a neat boundary — the nearest quarter hour, the next midnight, the start of the week.
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
@@ -13,15 +13,15 @@ export const units = createUnits();
 export const date = zonedDateTime("2026-03-15T10:37[Europe/Zurich]");
 export const march = period(plainDate("2026-03-01"), "month");
 
-Round a date to a neat boundary: the nearest quarter hour, the next
-midnight, the start of the week.
+Round a date or a moment to a neat boundary: the nearest quarter hour, the
+next midnight, the start of the week.
 
 ```ts
 import { snapWith } from "@aleksejdix/minuta/intervals";
 ```
 
 ```ts
-snapWith(units, date, unit, options?)
+snapWith(units, value, unit, options?)
 ```
 
 ## Example
@@ -31,12 +31,14 @@ import { snapWith } from "@aleksejdix/minuta/intervals";
 import { createUnits } from "@aleksejdix/minuta/core";
 
 const units = createUnits();
-const date = new Date(2026, 2, 15, 10, 37); // Sun Mar 15, 10:37
+const date = Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"); // Sun Mar 15, 10:37
 
 snapWith(units, date, "minute", { step: 15 }); // → 10:30
 snapWith(units, date, "minute", { step: 15, mode: "ceil" }); // → 10:45
-snapWith(units, date, "day", { mode: "ceil" }); // → Mon Mar 16 00:00
-snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // → Mon Mar 16 00:00
+snapWith(units, date, "day", { mode: "ceil" }); // → 2026-03-16T00:00
+snapWith(units, Temporal.PlainDate.from("2026-03-18"), "week", {
+  mode: "floor",
+}); // → 2026-03-16
 ```
 
 <Timeline
@@ -60,12 +62,12 @@ snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // → Mon Ma
 
 ## Parameters
 
-| Name      | What it is                                                                                     |
-| --------- | ---------------------------------------------------------------------------------------------- |
-| `units`   | The units to compute with, e.g. `createUnits()`. They decide the week start and the time zone. |
-| `date`    | The date to round.                                                                             |
-| `unit`    | Whose boundaries to round to: `"minute"`, `"hour"`, `"day"`, `"week"`, …                       |
-| `options` | Optional. `step` and `mode`, see [Options](#options) below.                                    |
+| Name      | What it is                                                                   |
+| --------- | ---------------------------------------------------------------------------- |
+| `units`   | The units to compute with, e.g. `createUnits()`. They decide the week start. |
+| `value`   | The date (`PlainDate`) or moment (`ZonedDateTime`) to round.                 |
+| `unit`    | Whose boundaries to round to: `"minute"`, `"hour"`, `"day"`, `"week"`, …     |
+| `options` | Optional. `step` and `mode`, see [Options](#options) below.                  |
 
 ## Options
 
@@ -76,17 +78,31 @@ snapWith(units, new Date(2026, 2, 18), "week", { mode: "floor" }); // → Mon Ma
 
 ## Returns
 
-A new date on a boundary. When `date` already is a boundary, you get the
-same moment back, whatever the mode.
+A boundary of the same kind as `value`. A date snaps to dates, so only to
+date units (`"day"` and larger). A moment snaps to moments in its own zone;
+for date units, to the start of a day. When `value` already is a boundary,
+you get it back, whatever the mode.
 
 ## Nearest, and ties
 
 `"nearest"` picks the closer boundary. Exactly in the middle, it rounds up:
 
 ```ts
-snapWith(units, new Date(2026, 2, 15, 10, 30), "hour"); // → 11:00
-snapWith(units, new Date(2026, 2, 15, 12, 0), "day"); // → Mon Mar 16 00:00
-snapWith(units, new Date(2026, 2, 15, 10, 37, 30), "minute"); // → 10:38
+snapWith(
+  units,
+  Temporal.ZonedDateTime.from("2026-03-15T10:30[Europe/Zurich]"),
+  "hour"
+); // → 11:00
+snapWith(
+  units,
+  Temporal.ZonedDateTime.from("2026-03-15T12:00[Europe/Zurich]"),
+  "day"
+); // → 2026-03-16T00:00
+snapWith(
+  units,
+  Temporal.ZonedDateTime.from("2026-03-15T10:37:30[Europe/Zurich]"),
+  "minute"
+); // → 10:38
 ```
 
 ## Where steps are counted from
@@ -104,20 +120,34 @@ calendar:
 | `week`, `year`     | 1970                    |
 
 ```ts
-snapWith(units, new Date(2026, 2, 15, 10, 37), "hour", {
-  step: 6,
-  mode: "floor",
-});
+snapWith(
+  units,
+  Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"),
+  "hour",
+  {
+    step: 6,
+    mode: "floor",
+  }
+);
 // → 06:00 (boundaries at 0:00, 6:00, 12:00, 18:00)
 
-snapWith(units, new Date(2026, 4, 20), "month", { step: 3, mode: "floor" });
-// → Apr 1 (boundaries at Jan, Apr, Jul, Oct)
+snapWith(units, Temporal.PlainDate.from("2026-05-20"), "month", {
+  step: 3,
+  mode: "floor",
+});
+// → 2026-04-01 (boundaries at Jan, Apr, Jul, Oct)
 
-snapWith(units, new Date(2026, 4, 20), "year", { step: 10, mode: "floor" });
-// → Jan 1 2020 (decades)
+snapWith(units, Temporal.PlainDate.from("2026-05-20"), "year", {
+  step: 10,
+  mode: "floor",
+});
+// → 2020-01-01 (decades)
 
-snapWith(units, new Date(2026, 2, 18), "week", { step: 2, mode: "floor" });
-// → Mon Mar 9 2026 (every second week, counted from 1970)
+snapWith(units, Temporal.PlainDate.from("2026-03-18"), "week", {
+  step: 2,
+  mode: "floor",
+});
+// → 2026-03-09, a Monday (every second week, counted from 1970)
 ```
 
 ## The last step is cut short
@@ -127,8 +157,11 @@ the larger unit ends. Days in steps of 7 from the start of March are Mar 1,
 8, 15, 22 and 29. The next one would be Apr 5, but April 1 comes first:
 
 ```ts
-snapWith(units, new Date(2026, 2, 30), "day", { step: 7, mode: "ceil" });
-// → Wed Apr 1 00:00
+snapWith(units, Temporal.PlainDate.from("2026-03-30"), "day", {
+  step: 7,
+  mode: "ceil",
+});
+// → 2026-04-01
 ```
 
 <Timeline
@@ -154,11 +187,16 @@ snapWith(units, new Date(2026, 2, 30), "day", { step: 7, mode: "ceil" });
 />
 
 ```ts
-snapWith(units, new Date(2026, 2, 15, 22, 37), "hour", {
-  step: 5,
-  mode: "ceil",
-});
-// → Mon Mar 16 00:00 (not 25:00)
+snapWith(
+  units,
+  Temporal.ZonedDateTime.from("2026-03-15T22:37[Europe/Zurich]"),
+  "hour",
+  {
+    step: 5,
+    mode: "ceil",
+  }
+);
+// → 2026-03-16T00:00 (not 25:00)
 ```
 
 ## Clock changes
@@ -167,7 +205,11 @@ Hours are real hours. On Mar 29 2026 in Europe/Zurich the clock skips 2:00,
 so rounding to the hour around it lands on 3:00:
 
 ```ts
-snapWith(units, new Date(2026, 2, 29, 1, 40), "hour"); // → 03:00 summer time
+snapWith(
+  units,
+  Temporal.ZonedDateTime.from("2026-03-29T01:40[Europe/Zurich]"),
+  "hour"
+); // → 03:00 summer time
 ```
 
 Steps of hours count real hours since midnight. On that day 3:00 is only 2
@@ -175,15 +217,17 @@ hours after midnight, so with `{ step: 3 }` the boundaries are 0:00, 4:00,
 7:00 … instead of 0:00, 3:00, 6:00:
 
 ```ts
-snapWith(units, new Date(2026, 2, 29, 5, 10), "hour", {
-  step: 3,
-  mode: "floor",
-});
+snapWith(
+  units,
+  Temporal.ZonedDateTime.from("2026-03-29T05:10[Europe/Zurich]"),
+  "hour",
+  {
+    step: 3,
+    mode: "floor",
+  }
+);
 // → 04:00
 ```
-
-`"nearest"` for days compares real time too. Mar 29 2026 has 23 hours, so
-its middle is 12:30, not 12:00.
 
 ## Week start
 
@@ -192,11 +236,11 @@ Week boundaries follow the week start of the units:
 ```ts
 snapWith(
   createUnits({ weekStartsOn: "sunday" }),
-  new Date(2026, 2, 18),
+  Temporal.PlainDate.from("2026-03-18"),
   "week",
   { mode: "floor" }
 );
-// → Sun Mar 15 00:00
+// → 2026-03-15, a Sunday
 ```
 
 ## Errors
@@ -205,7 +249,6 @@ snapWith(
 
 | Code                 | When                                                                              |
 | -------------------- | --------------------------------------------------------------------------------- |
-| `INVALID_DATE`       | `date` is an invalid Date.                                                        |
 | `INVALID_OPTION`     | `step` is not a positive whole number (0, 1.5, -1).                               |
 | `UNIT_NOT_SUPPORTED` | `units` has no spec for `unit` or for the larger unit the steps are counted from. |
 
@@ -214,9 +257,16 @@ snapWith(units, date, "minute", { step: 0 });
 // RangeError: INVALID_OPTION: snapWith() step must be a positive whole number, got 0. …
 ```
 
+A date with a time unit throws a `TypeError`: dates have no hours.
+
+```ts
+snapWith(units, Temporal.PlainDate.from("2026-03-18"), "hour");
+// TypeError: A date snaps to date units, not to "hour": snap a ZonedDateTime instead.
+```
+
 ## Related
 
 - [`period`](../../minuta/period/) — the whole unit around a date, start and end.
 - [`move`](../move/) — move a period to the snapped date.
 - [`resize`](../resize/) — move an edge to the snapped date.
-- [`intervals`](../intervals/) — use it as `time.snap(date, unit, options)` with `withUnits`.
+- [`intervals`](../intervals/) — use it as `edit.snap(value, unit, options)` with `intervals(units)`.

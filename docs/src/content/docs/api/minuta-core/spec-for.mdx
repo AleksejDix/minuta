@@ -1,6 +1,6 @@
 ---
 title: specFor
-description: Look up the rules for one unit (start, end, add, count) in a set of units.
+description: Look up the rules for one unit (start, add, count) in a set of units.
 ---
 
 import { plainDate } from "../../../../components/temporal";
@@ -29,8 +29,8 @@ import { createUnits, specFor } from "@aleksejdix/minuta/core";
 
 const week = specFor(createUnits(), "week");
 
-week.startOf(new Date(2026, 2, 18));
-// → Mon Mar 16 2026 00:00:00.000
+week.startOf(Temporal.PlainDate.from("2026-03-18"));
+// → 2026-03-16, a Monday
 ```
 
 <Timeline
@@ -53,29 +53,35 @@ week.startOf(new Date(2026, 2, 18));
 
 ## Parameters
 
-| Name    | What it is                                                       |
-| ------- | ---------------------------------------------------------------- |
-| `units` | A set of units, usually from an adapter such as `createUnits()`. |
-| `unit`  | The unit to look up: `"day"`, `"week"`, `"month"`, …             |
+| Name    | What it is                                                        |
+| ------- | ----------------------------------------------------------------- |
+| `units` | A set of units, usually from [`createUnits()`](../create-units/). |
+| `unit`  | The unit to look up: `"day"`, `"week"`, `"month"`, …              |
 
 ## Returns
 
-The _spec_ of that unit: an object with four functions. Every unit-aware
-operation in minuta is built from these four.
+The _spec_ of that unit: its `kind` and three functions. Every unit-aware
+operation in minuta is built from these three.
 
-| Function            | What it does                                                       |
-| ------------------- | ------------------------------------------------------------------ |
-| `startOf(date)`     | The first millisecond of the unit that contains `date`.            |
-| `endOf(date)`       | The last millisecond of the unit that contains `date`.             |
-| `add(date, amount)` | `date` moved by `amount` units; negative moves back.               |
-| `diff(from, to)`    | How many whole units fit from `from` to `to`, rounded toward zero. |
+| Member               | What it is                                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `kind`               | `"date"` for `"day"` and larger (works on `PlainDate`), `"time"` for `"hour"` and smaller (`ZonedDateTime`). |
+| `startOf(value)`     | The start of the unit that contains `value`.                                                                 |
+| `add(value, amount)` | `value` moved by `amount` units; negative moves back.                                                        |
+| `diff(from, to)`     | How many whole units fit from `from` to `to`, rounded toward zero.                                           |
+
+There is no `endOf`: a unit ends where the next one starts, at
+`add(startOf(value), 1)`.
 
 ```ts
 const month = specFor(createUnits(), "month");
 
-month.endOf(new Date(2026, 1, 10)); // → Sat Feb 28 2026 23:59:59.999
-month.add(new Date(2026, 0, 31), 1); // → Sat Feb 28 2026 00:00:00.000
-month.diff(new Date(2026, 0, 31), new Date(2026, 1, 28)); // → 1
+month.startOf(Temporal.PlainDate.from("2026-02-10")); // → 2026-02-01
+month.add(Temporal.PlainDate.from("2026-01-31"), 1); // → 2026-02-28
+month.diff(
+  Temporal.PlainDate.from("2026-01-31"),
+  Temporal.PlainDate.from("2026-02-28")
+); // → 1
 ```
 
 Adding a month to Jan 31 gives Feb 28: the day is cut to fit the shorter
@@ -126,5 +132,5 @@ specFor({ day, month }, "hour");
 ## Related
 
 - [`periodWith`](../period-with/) — the period of a unit that contains a date.
-- [Date engines](../../../concepts/date-engines/) — where units come from, and how to add your own.
+- [`createUnits`](../create-units/) — where units come from, and how to add your own.
 - [`MinutaError`](../../minuta/minuta-error/) — all error codes.

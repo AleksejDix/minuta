@@ -34,7 +34,7 @@ import { useMinutaContext } from "@aleksejdix/minuta-vue";
 
 const minuta = useMinutaContext();
 const name = computed(() =>
-  minuta.browsing.value.start.toLocaleDateString("en-US", { month: "long" })
+  minuta.browsing.value.start.toLocaleString("en-US", { month: "long" })
 );
 const days = computed(() => minuta.divide(minuta.browsing.value, "day").length);
 </script>
@@ -45,7 +45,8 @@ const days = computed(() => minuta.divide(minuta.browsing.value, "day").length);
 ```
 
 ```vue
-<MinutaRoot :date="new Date(2024, 1, 10)">
+<!-- inside a component with const start = Temporal.PlainDate.from("2024-02-10") -->
+<MinutaRoot :date="start">
   <MonthInfo />
 </MinutaRoot>
 ```
@@ -66,7 +67,7 @@ This renders "February has 29 days" (2024 is a leap year).
 />
 
 The `date` prop only picks the month: the root browses the whole of
-February, from Feb 1 00:00, not from Feb 10.
+February, from Feb 1, not from Feb 10.
 
 ## Returns
 

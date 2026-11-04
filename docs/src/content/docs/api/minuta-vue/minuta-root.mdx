@@ -36,7 +36,7 @@ const year = usePeriod("year");
 </script>
 
 <template>
-  <h2>{{ year.start.getFullYear() }}</h2>
+  <h2>{{ year.start.year }}</h2>
 </template>
 ```
 
@@ -121,8 +121,8 @@ The props are the options of [`useMinuta`](../use-minuta/#options).
 
 | Name    | What it is                                               | Default                       |
 | ------- | -------------------------------------------------------- | ----------------------------- |
-| `date`  | The date to browse first. Read only once.                | now                           |
-| `now`   | The moment that counts as "now".                         | the clock                     |
+| `date`  | The date or moment to browse first. Read only once.      | now                           |
+| `now`   | The moment that counts as "now", a `ZonedDateTime`.      | the clock                     |
 | `unit`  | The size of the browsed period.                          | `"month"`                     |
 | `units` | The units every function uses, including the week start. | `createUnits()`, Monday weeks |
 
@@ -136,7 +136,7 @@ child component:
 
 ```vue
 <MinutaRoot v-slot="{ minuta }">
-  <p>{{ minuta.browsing.value.start.toDateString() }}</p>
+  <p>{{ minuta.browsing.value.start.toString() }}</p>
 </MinutaRoot>
 ```
 

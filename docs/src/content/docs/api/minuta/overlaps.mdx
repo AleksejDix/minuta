@@ -28,15 +28,21 @@ overlaps(first, second);
 ```ts
 import { overlaps, range } from "@aleksejdix/minuta";
 
-const booking = range(new Date(2026, 2, 1), new Date(2026, 2, 10));
-const other = range(new Date(2026, 2, 5), new Date(2026, 2, 20));
+const booking = range(
+  Temporal.PlainDate.from("2026-03-01"),
+  Temporal.PlainDate.from("2026-03-10")
+);
+const other = range(
+  Temporal.PlainDate.from("2026-03-05"),
+  Temporal.PlainDate.from("2026-03-20")
+);
 
 overlaps(booking, other);
-// → true, both include Mar 5 to Mar 10
+// → true, both include Mar 5 to Mar 9
 ```
 
 <Timeline
-  caption="The two bookings share the days from Mar 5 to Mar 10, so they overlap."
+  caption="The two bookings share the days from Mar 5 to Mar 9, so they overlap."
   tracks={[
     { label: "booking", periods: [booking], tone: "accent" },
     { label: "other", periods: [other], tone: "accent" },
@@ -52,7 +58,7 @@ overlaps(booking, other);
 
 ## Returns
 
-`true` when at least one millisecond is in both periods, otherwise `false`.
+`true` when some time is in both periods, otherwise `false`.
 The order does not matter: `overlaps(a, b)` equals `overlaps(b, a)`.
 
 A period that lies fully inside the other also overlaps it. To ask whether
@@ -60,15 +66,15 @@ one period is _completely_ inside another, use [`contains`](../contains/).
 
 ## Neighbours do not overlap
 
-Periods from [`period`](../period/), [`next`](../next/) and
-[`divide`](../divide/) end one millisecond before the next one starts, so
-neighbours never overlap:
+A period's `end` is not part of it. Periods from [`period`](../period/),
+[`next`](../next/) and [`divide`](../divide/) end exactly where the next one
+starts, so neighbors touch but never overlap:
 
 ```ts
 import { overlaps, period } from "@aleksejdix/minuta";
 
-const march = period(new Date(2026, 2, 1), "month");
-const april = period(new Date(2026, 3, 1), "month");
+const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const april = period(Temporal.PlainDate.from("2026-04-01"), "month");
 
 overlaps(march, april); // → false
 ```
@@ -76,12 +82,12 @@ overlaps(march, april); // → false
 A period that crosses the border does overlap both sides:
 
 ```ts
-overlaps(period(new Date(2026, 2, 31), "week"), april);
+overlaps(period(Temporal.PlainDate.from("2026-03-31"), "week"), april);
 // → true, the week Mon Mar 30 – Sun Apr 5
 ```
 
 <Timeline
-  caption="March and April touch but share no millisecond. The week from Mar 30 to Apr 5 crosses the border and overlaps both."
+  caption="March and April touch but share no time. The week from Mar 30 to Apr 5 crosses the border and overlaps both."
   tracks={[
     { label: "march", periods: [march], tone: "ink" },
     { label: "april", periods: [april], tone: "ink" },
@@ -93,27 +99,30 @@ overlaps(period(new Date(2026, 2, 31), "week"), april);
   ]}
 />
 
-## Touching ranges do overlap
+## Touching ranges do not overlap
 
-Both ends of a period are included. A [`range`](../range/) from 9:00 to 10:00
-contains 10:00:00.000, and so does a range from 10:00 to 11:00. They share
-that one millisecond:
+The same holds for any [`range`](../range/). A range from 9:00 to 10:00 stops
+right before 10:00, so it does not clash with a range from 10:00 to 11:00:
 
 ```ts
-const nineToTen = range(new Date(2026, 2, 2, 9), new Date(2026, 2, 2, 10));
-const tenToEleven = range(new Date(2026, 2, 2, 10), new Date(2026, 2, 2, 11));
+const at = (time) =>
+  Temporal.ZonedDateTime.from(`2026-03-02T${time}[Europe/Zurich]`);
 
-overlaps(nineToTen, tenToEleven); // → true
+overlaps(range(at("09:00"), at("10:00")), range(at("10:00"), at("11:00")));
+// → false
 ```
 
-To treat back-to-back bookings as free of clashes, end each range one
-millisecond earlier (at 9:59:59.999), or build the slots with
-[`divide`](../divide/).
+Back-to-back bookings are free of clashes without any adjustment.
+
+## Dates and moments
+
+`overlaps` can compare a period of dates with a period of moments. The
+dates then become moments in the other period's time zone: the day Mar 18
+runs from its start to the start of Mar 19.
 
 ## The unit does not matter
 
-`overlaps` only compares times. It needs no units, so it works the same with
-every date engine.
+`overlaps` only compares values. It needs no units.
 
 ## Related
 

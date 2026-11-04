@@ -28,8 +28,8 @@ same(first, second, unit);
 ```ts
 import { period, same } from "@aleksejdix/minuta";
 
-const monday = period(new Date(2026, 2, 16), "day");
-const friday = period(new Date(2026, 2, 20), "day");
+const monday = period(Temporal.PlainDate.from("2026-03-16"), "day");
+const friday = period(Temporal.PlainDate.from("2026-03-20"), "day");
 
 same(monday, friday, "week"); // → true
 same(monday, friday, "day"); // → false
@@ -65,8 +65,8 @@ compared by day; a day and a year by year:
 
 ```ts
 same(
-  period(new Date(2026, 5, 1), "year"),
-  period(new Date(2026, 11, 31), "day"),
+  period(Temporal.PlainDate.from("2026-06-01"), "year"),
+  period(Temporal.PlainDate.from("2026-12-31"), "day"),
   "year"
 );
 // → true
@@ -79,10 +79,10 @@ from Mon Mar 30 to Sun Apr 5 starts in March, so it counts as March, even
 though most of it is in April:
 
 ```ts
-const week = period(new Date(2026, 2, 31), "week");
+const week = period(Temporal.PlainDate.from("2026-03-31"), "week");
 
-same(week, period(new Date(2026, 2, 1), "month"), "month"); // → true
-same(week, period(new Date(2026, 3, 1), "month"), "month"); // → false
+same(week, period(Temporal.PlainDate.from("2026-03-01"), "month"), "month"); // → true
+same(week, period(Temporal.PlainDate.from("2026-04-01"), "month"), "month"); // → false
 ```
 
 <Timeline
@@ -113,24 +113,29 @@ Sunday. Sunday and the Monday after are not:
 
 ```ts
 same(
-  period(new Date(2026, 2, 22), "day"),
-  period(new Date(2026, 2, 23), "day"),
+  period(Temporal.PlainDate.from("2026-03-22"), "day"),
+  period(Temporal.PlainDate.from("2026-03-23"), "day"),
   "week"
 );
 // → false, Sun Mar 22 and Mon Mar 23
 ```
 
 With weeks that start on Sunday, Saturday and Sunday are in different weeks.
-Use `sameWith` from `@aleksejdix/minuta/core` with your own units for that.
+Use `sameWith` from `@aleksejdix/minuta/core` with
+`createUnits({ weekStartsOn: "sunday" })` for that.
 
 ## `"custom"` means "exactly equal"
 
 With the unit `"custom"`, two periods are the same only when both their start
-and their end are the same millisecond:
+and their end are equal values: the same date, or the same moment in the same
+zone.
 
 ```ts
-const wholeDay = period(new Date(2026, 2, 16), "day");
-const firstHour = period(new Date(2026, 2, 16, 0), "hour");
+const wholeDay = period(Temporal.PlainDate.from("2026-03-16"), "day");
+const firstHour = period(
+  Temporal.ZonedDateTime.from("2026-03-16T00:00[Europe/Zurich]"),
+  "hour"
+);
 
 same(wholeDay, firstHour, "day"); // → true, same day
 same(wholeDay, firstHour, "custom"); // → false, different ends

@@ -21,6 +21,10 @@ npm install @aleksejdix/minuta @aleksejdix/minuta-react
 
 `minuta-react` needs React 18 or 19 (`react` is a peer dependency).
 
+Where the runtime has no Temporal yet (Safari, Node 24), call
+[`await temporalReady()`](../../minuta-temporal/temporal-ready/) from
+`@aleksejdix/minuta/temporal` once, before the first render.
+
 ## How it is built
 
 There are three layers, each one small:
@@ -90,7 +94,7 @@ export function DatePicker() {
     <CalendarRoot onSelect={(day) => setPicked(day.start)}>
       <CalendarHeader />
       <CalendarGrid />
-      <p>{picked ? picked.toDateString() : "Pick a day"}</p>
+      <p>{picked ? picked.toString() : "Pick a day"}</p>
     </CalendarRoot>
   );
 }
@@ -98,8 +102,8 @@ export function DatePicker() {
 
 This renders the current month with "← Previous" and "Next →" buttons, a row
 of weekday names starting on Monday, and 6 weeks of days. `day` is a
-[period](../../minuta/period/): `day.start` is midnight at the start of the
-chosen day.
+[period](../../minuta/period/) of dates: `day.start` is the chosen day, a
+`Temporal.PlainDate`, so the text reads e.g. "2026-03-18".
 
 <div class="anatomy-figure not-content">
   <Anatomy

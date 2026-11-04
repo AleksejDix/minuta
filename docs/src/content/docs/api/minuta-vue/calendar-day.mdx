@@ -30,10 +30,12 @@ import {
   CalendarGrid,
   CalendarRoot,
 } from "@aleksejdix/minuta-vue/components";
+
+const start = Temporal.PlainDate.from("2024-01-15");
 </script>
 
 <template>
-  <CalendarRoot :date="new Date(2024, 0, 15)">
+  <CalendarRoot :date="start">
     <CalendarGrid locale="fr">
       <template #day="{ day }">
         <CalendarDay :day="day" locale="fr" />
@@ -85,8 +87,8 @@ Where the day sits in the calendar, and what is inside its button:
 | `locale` | The language of the day number and of the full date label.                   | `"en-US"` |
 
 It has no slots and emits no events; selection is reported by `select` on
-[`CalendarRoot`](../calendar-root/). All labels use the time zone of the units
-(`units.timeZone`).
+[`CalendarRoot`](../calendar-root/). The day is a period of dates, so its
+labels are the same in every time zone.
 
 ## CSS classes
 

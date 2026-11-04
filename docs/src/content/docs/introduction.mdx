@@ -17,21 +17,20 @@ think about them: as **this month**, **next week**, **the 15-minute slot at
 
 Most date libraries give you a point in time and a pile of helpers. minuta
 gives you a **period**: a stretch of time with a start, an end and a unit.
+The start is included, the end is not: October ends where November starts.
 
 ```ts
 import { period } from "@aleksejdix/minuta";
 
-const october = period(new Date(2026, 9, 12), "month");
-// → start: Oct 1 2026, 00:00:00.000
-//   end:   Oct 31 2026, 23:59:59.999
-//   unit:  "month"
+const october = period(Temporal.PlainDate.from("2026-10-12"), "month");
+// → { start: 2026-10-01, end: 2026-11-01, unit: "month" }
 ```
 
 Every moment sits inside a period of every unit — here, Monday Oct 12 2026 at
 9:30:
 
 <Timeline
-  caption="One moment (the pin), and the periods around it: its year, quarter, month, week and day. Each period runs from its first to its last millisecond."
+  caption="One moment (the pin), and the periods around it: its year, quarter, month, week and day. Each period runs from its start up to where the next one starts."
   marks={[{ date: moment, label: "Oct 12, 9:30" }]}
   tracks={[
     {
@@ -58,9 +57,9 @@ Read [Periods and units](../concepts/periods-and-units/) for the full picture.
 - **Pure functions over plain data.** A period is a plain object. Nothing is
   mutated, nothing hides state, everything is easy to test.
 - **Temporal inside.** minuta does its calendar arithmetic with Temporal; the
-  polyfill loads only where the runtime has none. For a fixed time zone, swap
-  in the date-fns-tz units; your code stays the same. See
-  [Date engines](../concepts/date-engines/).
+  polyfill loads only where the runtime has none. Days are `PlainDate`s with
+  no time zone; for hours, pick the zone once in the units and your code
+  stays the same. See [Units](../concepts/date-engines/).
 - **Calendars.** Month, year and day grids with the right week start, weekends
   and outside days, ready to render.
 - **A date field people can type in.** A segmented input that accepts typed
@@ -80,8 +79,8 @@ Read [Periods and units](../concepts/periods-and-units/) for the full picture.
 | Build a segmented date input                      | `datefield` + `input-dom` (+ `fechita` for pasting) |
 
 `minuta` itself has several entry points — `minuta`, `@aleksejdix/minuta/core`,
-`@aleksejdix/minuta/calendar`, `@aleksejdix/minuta/intervals`, `@aleksejdix/minuta/format` and one per date
-engine — so you only load what you use. [Installation](../installation/) shows
+`@aleksejdix/minuta/calendar`, `@aleksejdix/minuta/intervals`, `@aleksejdix/minuta/format` and
+`@aleksejdix/minuta/temporal` — so you only load what you use. [Installation](../installation/) shows
 the details.
 
 ## Next

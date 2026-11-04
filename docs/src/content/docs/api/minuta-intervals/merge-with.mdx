@@ -47,10 +47,13 @@ import { createUnits } from "@aleksejdix/minuta/core";
 import { divide, period } from "@aleksejdix/minuta";
 
 const units = createUnits();
-const days = divide(period(new Date(2026, 2, 1), "month"), "day"); // the 31 days of March
+const days = divide(
+  period(Temporal.PlainDate.from("2026-03-01"), "month"),
+  "day"
+); // the 31 days of March
 
 mergeWith(units, days, "month");
-// → { start: Mar 1 00:00, end: Mar 31 23:59:59.999, unit: "month" }
+// → { start: 2026-03-01, end: 2026-04-01, unit: "month" }
 
 mergeWith(units, days);
 // → the same start and end, unit "custom"
@@ -61,7 +64,7 @@ mergeWith(units, days);
 | Name      | What it is                                                                                                                      |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `units`   | The units to compute with, e.g. `createUnits()`. Used to check whether the result is exactly one `unit`.                        |
-| `periods` | The periods to join, in any order.                                                                                              |
+| `periods` | The periods to join, in any order: all dates or all moments.                                                                    |
 | `unit`    | Optional. The unit the result should get if it fits exactly, e.g. `"month"`. Without it, the unit of the first period is tried. |
 
 ## Returns
@@ -81,14 +84,14 @@ the first start to the last end, so anything in between is included:
 
 ```ts
 mergeWith(units, [
-  period(new Date(2026, 0, 1), "month"),
-  period(new Date(2026, 2, 1), "month"),
+  period(Temporal.PlainDate.from("2026-01-01"), "month"),
+  period(Temporal.PlainDate.from("2026-03-01"), "month"),
 ]);
-// → Jan 1 – Mar 31 23:59:59.999, unit "custom" (February is included)
+// → { start: 2026-01-01, end: 2026-04-01, unit: "custom" } (February is included)
 ```
 
 <Timeline
-  caption="January and March go in; the merged period (accent) runs from Jan 1 to Mar 31 and covers February too. It is hatched: three months are not one month."
+  caption="January and March go in; the merged period (accent) runs from Jan 1 to Apr 1 and covers February too. It is hatched: three months are not one month."
   tracks={[
     { label: "jan, mar", periods: [jan, mar] },
     {
@@ -106,8 +109,14 @@ double counting.
 import { range } from "@aleksejdix/minuta";
 
 mergeWith(units, [
-  range(new Date(2026, 0, 1, 9), new Date(2026, 0, 1, 11)),
-  range(new Date(2026, 0, 1, 10), new Date(2026, 0, 1, 12)),
+  range(
+    Temporal.ZonedDateTime.from("2026-01-01T09:00[Europe/Zurich]"),
+    Temporal.ZonedDateTime.from("2026-01-01T11:00[Europe/Zurich]")
+  ),
+  range(
+    Temporal.ZonedDateTime.from("2026-01-01T10:00[Europe/Zurich]"),
+    Temporal.ZonedDateTime.from("2026-01-01T12:00[Europe/Zurich]")
+  ),
 ]);
 // → 09:00 – 12:00, unit "custom"
 ```
@@ -134,28 +143,29 @@ group.
 The unit is checked against the `units`, not guessed from the input:
 
 ```ts
-const jan = period(new Date(2026, 0, 1), "month");
-const feb = period(new Date(2026, 1, 1), "month");
-const mar = period(new Date(2026, 2, 1), "month");
+const jan = period(Temporal.PlainDate.from("2026-01-01"), "month");
+const feb = period(Temporal.PlainDate.from("2026-02-01"), "month");
+const mar = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const mar3 = period(Temporal.PlainDate.from("2026-03-03"), "day");
 
-mergeWith(units, [jan, feb]); // → Jan 1 – Feb 28, "custom" (two months are not a month)
+mergeWith(units, [jan, feb]); // → 2026-01-01 – 2026-03-01, "custom" (two months are not a month)
 mergeWith(units, [jan, feb], "quarter"); // → "custom" (only part of a quarter)
-mergeWith(units, [jan, feb, mar], "quarter"); // → Jan 1 – Mar 31, "quarter"
+mergeWith(units, [jan, feb, mar], "quarter"); // → 2026-01-01 – 2026-04-01, "quarter"
 
-mergeWith(units, [period(new Date(2026, 2, 3), "day")]); // → Mar 3, "day"
-mergeWith(units, [period(new Date(2026, 2, 3), "day")], "week"); // → Mar 3, "custom"
+mergeWith(units, [mar3]); // → 2026-03-03 – 2026-03-04, "day"
+mergeWith(units, [mar3], "week"); // → 2026-03-03 – 2026-03-04, "custom"
 ```
 
 Two halves of a custom split come back as the month:
 
 ```ts
 const firstHalf = range(
-  new Date(2026, 0, 1),
-  new Date(2026, 0, 15, 23, 59, 59, 999)
+  Temporal.PlainDate.from("2026-01-01"),
+  Temporal.PlainDate.from("2026-01-16")
 );
 const secondHalf = range(
-  new Date(2026, 0, 16),
-  new Date(2026, 0, 31, 23, 59, 59, 999)
+  Temporal.PlainDate.from("2026-01-16"),
+  Temporal.PlainDate.from("2026-02-01")
 );
 
 mergeWith(units, [firstHalf, secondHalf], "month"); // → January, unit "month"
@@ -169,7 +179,10 @@ Mon Mar 16 to Sun Mar 22 2026:
 
 ```ts
 const days7 = divide(
-  range(new Date(2026, 2, 16), new Date(2026, 2, 22, 23, 59, 59, 999)),
+  range(
+    Temporal.PlainDate.from("2026-03-16"),
+    Temporal.PlainDate.from("2026-03-23")
+  ),
   "day"
 );
 
@@ -199,11 +212,12 @@ mergeWith(createUnits({ weekStartsOn: "sunday" }), days7, "week"); // → unit "
 ## Errors
 
 `mergeWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED` when
-`units` has no spec for the unit it has to check.
+`units` has no spec for the unit it has to check, and a `TypeError` when
+`periods` mixes dates and moments.
 
 ## Related
 
 - [`split`](../split/) — the opposite: cut one period in two.
 - [`clamp`](../clamp/) — keep only the overlap of two periods.
 - [`divide`](../../minuta/divide/) — split a period into units.
-- [`intervals`](../intervals/) — use it as `time.merge(periods, unit)` with `withUnits`.
+- [`intervals`](../intervals/) — use it as `edit.merge(periods, unit)` with `intervals(units)`.

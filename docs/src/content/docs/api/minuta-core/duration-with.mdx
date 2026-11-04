@@ -28,10 +28,18 @@ import { createUnits, durationWith, periodWith } from "@aleksejdix/minuta/core";
 
 const units = createUnits();
 
-durationWith(units, periodWith(units, new Date(2026, 1, 1), "month"), "day");
+durationWith(
+  units,
+  periodWith(units, Temporal.PlainDate.from("2026-02-01"), "month"),
+  "day"
+);
 // → 28
 
-durationWith(units, periodWith(units, new Date(2026, 2, 29), "day"), "hour");
+durationWith(
+  units,
+  periodWith(units, Temporal.PlainDate.from("2026-03-29"), "day"),
+  "hour"
+);
 // → 23 in Europe/Zurich, the clocks go forward that night
 ```
 
@@ -49,32 +57,32 @@ durationWith(units, periodWith(units, new Date(2026, 2, 29), "day"), "hour");
 
 ## Parameters
 
-| Name     | What it is                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compute with, e.g. `createUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `period` | The period to measure.                                                                                |
-| `unit`   | What to count: `"day"`, `"hour"`, `"week"`, `"month"`, …                                              |
+| Name     | What it is                                                           |
+| -------- | -------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. [`createUnits()`](../create-units/). |
+| `period` | The period to measure.                                               |
+| `unit`   | What to count: `"day"`, `"hour"`, `"week"`, `"month"`, …             |
 
 ## Returns
 
 A whole number: how many complete `unit`s fit from the start of `period` to
-one millisecond after its end. Units that only partly fit are not counted.
+its end. Units that only partly fit are not counted.
 
 It works exactly like [`duration`](../../minuta/duration/), which is
-`durationWith` with `createUnits()` bound. Read that page for partial units,
-month ends and ranges that end at midnight.
+`durationWith` with `createUnits()` bound. Read that page for partial units
+and month ends.
 
 ## The time zone comes from the units
 
-Whether a day has 23, 24 or 25 hours depends on the time zone the units
-compute in. A time-zone adapter counts in its zone, wherever the code runs:
+Whether a day has 23, 24 or 25 hours depends on the time zone. A date period
+counted in hours becomes moments in the units' `timeZone`, wherever the code
+runs:
 
 ```ts
-import { durationWith, periodWith } from "@aleksejdix/minuta/core";
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { createUnits, durationWith, periodWith } from "@aleksejdix/minuta/core";
 
-const newYork = dateFnsTzUnits({ timeZone: "America/New_York" });
-const day = periodWith(newYork, new Date("2026-03-08T12:00:00Z"), "day");
+const newYork = createUnits({ timeZone: "America/New_York" });
+const day = periodWith(newYork, Temporal.PlainDate.from("2026-03-08"), "day");
 
 durationWith(newYork, day, "hour");
 // → 23, the clocks go forward in New York on Mar 8 2026

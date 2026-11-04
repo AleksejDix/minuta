@@ -36,11 +36,11 @@ shiftWith(units, period, steps);
 import { createUnits, periodWith, shiftWith } from "@aleksejdix/minuta/core";
 
 const units = createUnits({ weekStartsOn: "sunday" });
-const week = periodWith(units, new Date(2026, 2, 18), "week");
-// → Sun Mar 15 – Sat Mar 21
+const week = periodWith(units, Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 
 shiftWith(units, week, 2);
-// → Sun Mar 29 00:00:00.000 – Sat Apr 4 23:59:59.999, unit "week"
+// → { start: 2026-03-29, end: 2026-04-05, unit: "week" }
 ```
 
 <Timeline
@@ -57,11 +57,11 @@ shiftWith(units, week, 2);
 
 ## Parameters
 
-| Name     | What it is                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compute with, e.g. `createUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `period` | The period to move.                                                                                   |
-| `steps`  | How many periods to move, as a whole number. Positive moves forward, negative back.                   |
+| Name     | What it is                                                                          |
+| -------- | ----------------------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. [`createUnits()`](../create-units/).                |
+| `period` | The period to move.                                                                 |
+| `steps`  | How many periods to move, as a whole number. Positive moves forward, negative back. |
 
 ## Returns
 
@@ -74,20 +74,20 @@ used and how custom periods move by their own length.
 
 ## Custom periods need no units
 
-A period with the unit `"custom"` moves by its length in milliseconds, so
-`units` is not used for it at all. Any set of units, even an empty one,
+A period with the unit `"custom"` moves by its own length (days for a date
+period, exact time for a time period), so `units` is not used for it at all. Any set of units, even an empty one,
 gives the same result:
 
 ```ts
 import { range, shiftWith } from "@aleksejdix/minuta/core";
 
 const slot = range(
-  new Date(2026, 2, 2, 9),
-  new Date(2026, 2, 2, 9, 59, 59, 999)
+  Temporal.ZonedDateTime.from("2026-03-02T09:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-02T10:00[Europe/Zurich]")
 );
 
 shiftWith({}, slot, 2);
-// → Mon Mar 2 11:00:00.000 – 11:59:59.999, unit "custom"
+// → { start: 2026-03-02T11:00, end: 2026-03-02T12:00, unit: "custom" }
 ```
 
 <Timeline
@@ -107,12 +107,8 @@ Pass the units the period was made with for every other period; see
 
 ## Errors
 
-`shiftWith` throws a `RangeError` whose message starts with a code:
-
-| Code                 | When                                                      |
-| -------------------- | --------------------------------------------------------- |
-| `INVALID_DATE`       | `period.start` is an invalid `Date`, or `steps` is `NaN`. |
-| `UNIT_NOT_SUPPORTED` | `units` has no spec for `period.unit`.                    |
+`shiftWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED` when
+`units` has no spec for `period.unit`.
 
 ## Related
 

@@ -116,7 +116,7 @@ const docs: AstroIntegration = starlight({
             ],
             label: "Calendars",
           },
-          { items: ["concepts/date-engines"], label: "Date engines" },
+          { items: ["concepts/date-engines"], label: "Units" },
           {
             items: [
               "concepts/the-input-stack",

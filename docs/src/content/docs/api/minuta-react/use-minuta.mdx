@@ -35,14 +35,14 @@ function MonthPager() {
 
   return (
     <button onClick={() => minuta.browse(minuta.next(minuta.browsing))}>
-      {minuta.browsing.start.toDateString()}
+      {minuta.browsing.start.toString()}
     </button>
   );
 }
 ```
 
 The first render shows the first day of the current month, for example
-"Sun Mar 01 2026". Each click shows the first day of the next month.
+"2026-03-01". Each click shows the first day of the next month.
 
 What one click does to the state:
 
@@ -66,7 +66,7 @@ What one click does to the state:
     {
       code: "browsing → April 2026",
       layer: "next render",
-      text: 'The button reads "Wed Apr 01 2026".',
+      text: 'The button reads "2026-04-01".',
     },
   ]}
 />
@@ -75,12 +75,12 @@ What one click does to the state:
 
 All options are optional. You can call `useMinuta()` with nothing.
 
-| Name    | What it is                                                                | Default                       |
-| ------- | ------------------------------------------------------------------------- | ----------------------------- |
-| `date`  | The date to browse first. Read only once, on the first render.            | now                           |
-| `now`   | The moment that counts as "now". Pass it to fix "today", e.g. in tests.   | the clock                     |
-| `unit`  | The size of the browsed period: `"month"`, `"week"`, `"day"`, `"year"`, … | `"month"`                     |
-| `units` | The units every function uses. The week start lives here.                 | `createUnits()`, Monday weeks |
+| Name    | What it is                                                                                                | Default                       |
+| ------- | --------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `date`  | The date or moment to browse first, any Temporal value minuta takes. Read only once, on the first render. | now                           |
+| `now`   | The moment that counts as "now", a `ZonedDateTime`. Pass it to fix "today", e.g. in tests.                | the clock, in the units' zone |
+| `unit`  | The size of the browsed period: `"month"`, `"week"`, `"day"`, `"year"`, …                                 | `"month"`                     |
+| `units` | The units every function uses. The week start lives here.                                                 | `createUnits()`, Monday weeks |
 
 ```js
 import { createUnits } from "@aleksejdix/minuta/core";
@@ -98,18 +98,18 @@ An object with the state and every bound function.
 | ---------- | ---------------------------------------------------------------------------------------------- |
 | `browsing` | The browsed period, in `unit`. Starts as the period that contains `date`.                      |
 | `browse`   | `browse(period)` moves to the period of `unit` that contains `period.start`.                   |
-| `now`      | "Now" as a one-second period. `now.start` is the current moment.                               |
+| `now`      | "Now" as a one-second period. `now.start` is the current moment, a `ZonedDateTime`.            |
 | `units`    | The units the functions are bound to.                                                          |
-| `period`   | `period(date, unit)` — the period of `unit` that contains `date`.                              |
+| `period`   | `period(value, unit)` — the period of `unit` that contains `value`.                            |
 | `next`     | `next(period)` — the period right after it, same unit.                                         |
 | `previous` | `previous(period)` — the period right before it, same unit.                                    |
 | `shift`    | `shift(period, steps)` — move a period by whole units, back with a negative number.            |
 | `divide`   | `divide(period, unit)` — split a period into smaller ones. See [divide](../../minuta/divide/). |
 | `duration` | `duration(period, unit)` — how many whole units fit into a period.                             |
-| `contains` | `contains(period, dateOrPeriod)` — whether it lies fully inside the period.                    |
+| `contains` | `contains(period, target)` — whether a date, moment or period lies fully inside the period.    |
 | `same`     | `same(a, b, unit)` — whether two periods fall into the same `unit`.                            |
 | `overlaps` | `overlaps(a, b)` — whether two periods share any time.                                         |
-| `range`    | `range(start, end)` — a custom period between two dates.                                       |
+| `range`    | `range(start, end)` — a custom period between two dates or two moments.                        |
 
 These are the same functions as in the core, without the units argument.
 
@@ -160,8 +160,8 @@ Switching the unit from `"month"` to `"week"` after `browse(march)`:
 
 ## "Today" stays correct
 
-Without a `now` option, the hook reads the clock once and sets a timer for the
-start of the next day (in the units' days). When it fires, `now` moves to the
+Without a `now` option, the hook reads the clock once, in the units' time
+zone, and sets a timer for the start of the next day there. When it fires, `now` moves to the
 new day, so a calendar left open overnight marks the right day as today. The
 timer is cleared when the component unmounts.
 

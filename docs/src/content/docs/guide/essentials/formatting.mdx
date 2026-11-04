@@ -33,7 +33,7 @@ import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
 
 Both functions use the `Intl.DateTimeFormat` built into browsers and Node, so
 minuta ships no language data. They only read `start`, `end` and `unit`, so
-they work with periods from any date engine.
+they work with periods from any units.
 
 All examples run in Europe/Zurich.
 
@@ -46,7 +46,7 @@ Pass the period and a locale to
 import { next, period } from "@aleksejdix/minuta";
 import { formatPeriod } from "@aleksejdix/minuta/format";
 
-const shown = period(new Date(2026, 2, 18), "month");
+const shown = period(Temporal.PlainDate.from("2026-03-18"), "month");
 
 formatPeriod(shown, "en-US"); //       → "March 2026"
 formatPeriod(next(shown), "en-US"); // → "April 2026"
@@ -92,7 +92,7 @@ A quarter is labelled by its **first month**: Q2 2026 shows as "Apr 2026",
 not as a quarter. To show all three months, use `formatRange`:
 
 ```ts
-const q2 = period(new Date(2026, 4, 1), "quarter");
+const q2 = period(Temporal.PlainDate.from("2026-05-01"), "quarter");
 
 formatPeriod(q2, "en-US"); // → "Apr 2026"
 formatRange(q2, "en-US"); //  → "Apr – Jun 2026"
@@ -102,23 +102,24 @@ formatRange(q2, "en-US"); //  → "Apr – Jun 2026"
 
 ## Day labels
 
-A day period shows the full date. Add or remove fields with `Intl` options.
-What you pass is merged over the defaults, so you only name what changes:
+A day period shows the full date. Pick other fields with `Intl` options.
+Options that pick fields (`weekday`, `day`, `month`, `year` …) **replace** the
+defaults, so name every field you want:
 
 ```ts
-const day = period(new Date(2026, 2, 18), "day");
+const day = period(Temporal.PlainDate.from("2026-03-18"), "day");
 
 formatPeriod(day, "en-US"); // → "March 18, 2026"
-formatPeriod(day, "en-US", { weekday: "long" }); // → "Wednesday, March 18, 2026"
-formatPeriod(day, "en-US", { weekday: "long", year: undefined });
+formatPeriod(day, "en-US", { weekday: "long" }); // → "Wednesday"
+formatPeriod(day, "en-US", { weekday: "long", month: "long", day: "numeric" });
 // → "Wednesday, March 18"
 ```
 
-Setting a field to `undefined` removes it from the defaults. That is how you
-get the short labels of a calendar grid, still in the reader's language:
+That is how you get the short labels of a calendar grid, still in the
+reader's language:
 
 ```ts
-const cell = { month: undefined, year: undefined };
+const cell = { day: "numeric" } as const;
 
 formatPeriod(day, "en-US", cell); // → "18"
 formatPeriod(day, "ja-JP", cell); // → "18日"
@@ -127,12 +128,7 @@ formatPeriod(day, "ja-JP", cell); // → "18日"
 The same works for the weekday names above the grid:
 
 ```ts
-const weekday = {
-  day: undefined,
-  month: undefined,
-  year: undefined,
-  weekday: "short",
-} as const;
+const weekday = { weekday: "short" } as const;
 
 formatPeriod(day, "en-US", weekday); // → "Wed"
 formatPeriod(day, "de-CH", weekday); // → "Mi"
@@ -140,16 +136,16 @@ formatPeriod(day, "de-CH", weekday); // → "Mi"
 
 ## Weeks and other ranges
 
-A week is shown as a range. Shared parts, such as the month and year, are
-written only once:
+A week is shown as a range from its first to its last day (the day before
+`end`). Shared parts, such as the month and year, are written only once:
 
 ```ts
-const week = period(new Date(2026, 2, 2), "week");
+const week = period(Temporal.PlainDate.from("2026-03-02"), "week");
 
 formatPeriod(week, "en-US"); // → "Mar 2 – 8, 2026"
-formatPeriod(period(new Date(2026, 2, 31), "week"), "en-US");
+formatPeriod(period(Temporal.PlainDate.from("2026-03-31"), "week"), "en-US");
 // → "Mar 30 – Apr 5, 2026"
-formatPeriod(period(new Date(2025, 11, 31), "week"), "en-US");
+formatPeriod(period(Temporal.PlainDate.from("2025-12-31"), "week"), "en-US");
 // → "Dec 29, 2025 – Jan 4, 2026"
 ```
 
@@ -170,8 +166,14 @@ Custom periods from `range` are shown as a range too:
 ```ts
 import { range } from "@aleksejdix/minuta";
 
-formatPeriod(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "en-US");
-// → "Mar 30 – Apr 5, 2026"
+formatPeriod(
+  range(
+    Temporal.PlainDate.from("2026-03-30"),
+    Temporal.PlainDate.from("2026-04-06")
+  ),
+  "en-US"
+);
+// → "Mar 30 – Apr 5, 2026", the last day before the end
 ```
 
 [`formatRange`](../../../api/minuta-format/format-range/) always shows a
@@ -181,31 +183,45 @@ in the shown fields, it collapses to one:
 ```ts
 import { formatRange } from "@aleksejdix/minuta/format";
 
-formatRange(period(new Date(2026, 2, 18, 14), "hour"), "en-US");
-// → "Mar 18, 2:00 – 2:59 PM"
+formatRange(
+  period(
+    Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
+    "hour"
+  ),
+  "en-US"
+);
+// → "Mar 18, 2:00 – 3:00 PM"
 
-formatRange(period(new Date(2026, 2, 18), "day"), "en-US");
+formatRange(period(Temporal.PlainDate.from("2026-03-18"), "day"), "en-US");
 // → "March 18, 2026"
 ```
 
-The hour ends at 2:59, because a period ends at its last millisecond.
+A time period shows its `end` as it is: the hour from 2:00 ends at 3:00. A
+date period shows its last day, so a day collapses to one date.
 
 ## Times in a range
 
 A custom range shows only dates by default, so the times of a meeting are not
-shown. Add the time fields you want:
+shown. Name the fields you want, dates and times:
 
 ```ts
 const meeting = range(
-  new Date(2026, 2, 18, 9),
-  new Date(2026, 2, 18, 10, 29, 59, 999)
+  Temporal.ZonedDateTime.from("2026-03-18T09:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-18T10:30[Europe/Zurich]")
 );
+const dateAndTime = {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+} as const;
 
 formatRange(meeting, "en-US"); // → "Mar 18, 2026"
+formatRange(meeting, "en-US", dateAndTime);
+// → "Mar 18, 2026, 9:00 – 10:30 AM"
 formatRange(meeting, "en-US", { hour: "numeric", minute: "2-digit" });
-// → "Mar 18, 2026, 9:00 – 10:29 AM"
-formatRange(meeting, "de-CH", { hour: "numeric", minute: "2-digit" });
-// → "18. März 2026, 09:00–10:29 Uhr"
+// → "9:00 – 10:30 AM"
 ```
 
 ## Locales
@@ -214,7 +230,7 @@ The locale is a BCP 47 tag. The order of the parts, the month names and the
 punctuation all follow it:
 
 ```ts
-const march = period(new Date(2026, 2, 18), "month");
+const march = period(Temporal.PlainDate.from("2026-03-18"), "month");
 
 formatPeriod(march, "en-US"); // → "March 2026"
 formatPeriod(march, "de-CH"); // → "März 2026"
@@ -238,58 +254,64 @@ Any [`Intl.DateTimeFormat` option](https://developer.mozilla.org/en-US/docs/Web/
 works. A few that come up often:
 
 ```ts
-formatPeriod(march, "en-US", { month: "short" }); // → "Mar 2026"
-formatPeriod(day, "en-US", { month: "2-digit", day: "2-digit" }); // → "03/18/2026"
-formatPeriod(period(new Date(2026, 2, 18, 14), "hour"), "en-US", {
-  hourCycle: "h23",
+formatPeriod(march, "en-US", { month: "short", year: "numeric" }); // → "Mar 2026"
+formatPeriod(day, "en-US", {
+  month: "2-digit",
+  day: "2-digit",
+  year: "numeric",
 });
+// → "03/18/2026"
+formatPeriod(day, "en-US", { dateStyle: "full" }); // → "Wednesday, March 18, 2026"
+formatPeriod(
+  period(
+    Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
+    "hour"
+  ),
+  "en-US",
+  { hourCycle: "h23" }
+);
 // → "Mar 18, 14:00"
 ```
 
-:::caution
-`dateStyle` and `timeStyle` cannot be mixed with single fields such as
-`month` or `day`, and the defaults always contain those. So this throws:
-
-```ts
-formatPeriod(day, "en-US", { dateStyle: "full" });
-// TypeError (from Intl.DateTimeFormat)
-```
-
-Use the single fields instead, such as `{ weekday: "long" }`.
-:::
+Options that do not pick fields, such as `hourCycle`, are added to the
+defaults instead of replacing them.
 
 An invalid locale tag throws a `RangeError`, also from `Intl.DateTimeFormat`.
 
 ## Time zones
 
-Labels are written in the computer's time zone, unless you pass `timeZone`.
-That is right for periods from `@aleksejdix/minuta`, which also use the computer's zone.
-
-Periods made with zone-aware units, such as `dateFnsTzUnits`, belong to their
-zone. Format them in it, by passing the units' `timeZone`:
+A date period has no zone, so its label is the same everywhere, and
+`timeZone` does not change it. A time period is shown in the zone of its
+`ZonedDateTime`s, not the computer's:
 
 ```ts
-import { periodWith } from "@aleksejdix/minuta/core";
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 import { formatPeriod } from "@aleksejdix/minuta/format";
 
-const tokyo = dateFnsTzUnits({ timeZone: "Asia/Tokyo" });
-const tokyoDay = periodWith(tokyo, new Date("2026-03-20T20:00:00Z"), "day");
+const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
+const tokyoHour = tokyo.period(
+  Temporal.Instant.from("2026-03-20T20:00:00Z"),
+  "hour"
+);
 
-formatPeriod(tokyoDay, "en-US", { timeZone: tokyo.timeZone }); // → "March 21, 2026"
-formatPeriod(tokyoDay, "en-US"); // → "March 20, 2026" (wrong: Zurich time)
+formatPeriod(tokyoHour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
 ```
 
-It is 21 March in Tokyo but still 20 March in Zurich. Without `timeZone`, the
-label shows the wrong day.
+It is already 21 March in Tokyo, but still 20 March in Zurich. The label
+follows the period's zone.
 
-You can also show any period in another zone, for example the same hour for a
-colleague in New York:
+To show a time period in another zone, pass `timeZone`, for example the same
+hour for a colleague in New York:
 
 ```ts
-formatPeriod(period(new Date(2026, 2, 18, 14), "hour"), "en-US", {
-  timeZone: "America/New_York",
-});
+formatPeriod(
+  period(
+    Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
+    "hour"
+  ),
+  "en-US",
+  { timeZone: "America/New_York" }
+);
 // → "Mar 18, 9:00 AM"
 ```
 

@@ -10,15 +10,15 @@ import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const february = period(plainDate("2026-02-01"), "month");
 
-Move a period so it starts at a new date, and keep its length. Use it to
-drag an appointment to another time.
+Move a period so it starts at a new date or moment, and keep its length.
+Use it to drag an appointment to another time.
 
 ```ts
 import { move } from "@aleksejdix/minuta/intervals";
 ```
 
 ```ts
-move(period, targetDate);
+move(period, target);
 ```
 
 ## Example
@@ -28,43 +28,49 @@ import { move } from "@aleksejdix/minuta/intervals";
 import { range } from "@aleksejdix/minuta";
 
 const appointment = range(
-  new Date(2026, 2, 29, 9, 0),
-  new Date(2026, 2, 29, 10, 0)
+  Temporal.ZonedDateTime.from("2026-03-29T09:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-29T10:00[Europe/Zurich]")
 );
 
-move(appointment, new Date(2026, 3, 2, 14, 0));
-// → { start: Thu Apr 2 14:00, end: Thu Apr 2 15:00, unit: "custom" }
+move(
+  appointment,
+  Temporal.ZonedDateTime.from("2026-04-02T14:00[Europe/Zurich]")
+);
+// → { start: 2026-04-02T14:00, end: 2026-04-02T15:00, unit: "custom" }
 ```
 
 ## Parameters
 
-| Name         | What it is                     |
-| ------------ | ------------------------------ |
-| `period`     | The period to move.            |
-| `targetDate` | Where the moved period starts. |
+| Name     | What it is                                                                                           |
+| -------- | ---------------------------------------------------------------------------------------------------- |
+| `period` | The period to move.                                                                                  |
+| `target` | Where the moved period starts: a `PlainDate` for a date period, a `ZonedDateTime` for a time period. |
 
 ## Returns
 
-A new period that starts at `targetDate` and lasts exactly as many
-milliseconds as `period`. Its unit is always `"custom"`. The original period
-is not changed.
+A new period that starts at `target` and is as long as `period`: as many
+days for a date period, as much exact time for a time period. Its unit is
+always `"custom"`. The original period is not changed.
 
-## The length is kept in milliseconds
+## The length is kept, not the calendar meaning
 
-`move` keeps the exact length, not the calendar meaning. That makes a
-difference for months and for days when the clocks change.
+`move` keeps the length, not the unit. That makes a difference for months,
+and for moments when the clocks change.
 
 February 2026 has 28 days. Moved to March 1, it still lasts 28 days:
 
 ```ts
 import { period } from "@aleksejdix/minuta";
 
-move(period(new Date(2026, 1, 1), "month"), new Date(2026, 2, 1));
-// → Mar 1 00:00 – Mar 28 23:59:59.999, unit "custom" (not all of March)
+move(
+  period(Temporal.PlainDate.from("2026-02-01"), "month"),
+  Temporal.PlainDate.from("2026-03-01")
+);
+// → { start: 2026-03-01, end: 2026-03-29, unit: "custom" } (not all of March)
 ```
 
 <Timeline
-  caption="February moved to Mar 1 (pin) keeps its 28 days and stops at Mar 28. shift moves by one calendar month instead and gives all of March."
+  caption="February moved to Mar 1 (pin) keeps its 28 days and stops at Mar 29. shift moves by one calendar month instead and gives all of March."
   marks={[{ date: plainDate("2026-03-01"), label: "Mar 1" }]}
   tracks={[
     { label: "february", periods: [february] },
@@ -81,26 +87,34 @@ move(period(new Date(2026, 1, 1), "month"), new Date(2026, 2, 1));
   ]}
 />
 
-Mar 28 2026 is a normal 24-hour day. Moved to Mar 29, when the clocks in
-Europe/Zurich go forward, it still lasts 24 hours and ends one hour into the
-next day:
+A time period keeps its exact time. The 24 hours from Mar 28 00:00, moved
+to Mar 29, when the clocks in Europe/Zurich go forward, still last 24 hours
+and end one hour into the next day:
 
 ```ts
-move(period(new Date(2026, 2, 28), "day"), new Date(2026, 2, 29));
-// → Mar 29 00:00 – Mar 30 00:59:59.999 (in Europe/Zurich)
+const saturday = range(
+  Temporal.ZonedDateTime.from("2026-03-28T00:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-29T00:00[Europe/Zurich]")
+);
+
+move(saturday, Temporal.ZonedDateTime.from("2026-03-29T00:00[Europe/Zurich]"));
+// → { start: 2026-03-29T00:00, end: 2026-03-30T01:00, unit: "custom" }
 ```
+
+A date period has no clock: `move(period(mar28, "day"), mar29)` is simply
+Mar 29, one day.
 
 To move by whole calendar units instead, use
 [`shift`](../../minuta/shift/), e.g. `shift(february, 1)` gives all of March.
 
 ## Errors
 
-`move` throws a `RangeError` starting with `INVALID_DATE` when `targetDate`
-is an invalid Date.
+`move` throws a `TypeError` when `target` is not of the period's kind, such
+as a `ZonedDateTime` for a date period.
 
 ## Related
 
 - [`shift`](../../minuta/shift/) — move by whole units of the period's own kind.
 - [`resize`](../resize/) — move only one edge.
 - [`snapWith`](../snap-with/) — round the target to a neat time first.
-- [`intervals`](../intervals/) — use it as `time.move(period, date)` with `withUnits`.
+- [`intervals`](../intervals/) — use it as `edit.move(period, target)` with `intervals(units)`.

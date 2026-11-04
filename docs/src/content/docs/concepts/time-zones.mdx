@@ -1,19 +1,20 @@
 ---
 title: Time zones
-description: Which zone minuta computes in, how clock changes affect days and hours, and how to work in a zone that is not the computer's.
+description: Which periods have a time zone, where dates become moments, and how clock changes affect days and hours.
 sidebar:
   order: 3
 ---
 
 import TimeZonesDemo from "../../../components/demos/TimeZonesDemo.astro";
 
-A JavaScript `Date` is one moment in time, the same everywhere in the
-world. Which **day** or **hour** that moment belongs to depends on the time
-zone. 20:00 UTC on Mar 20 2026 is still Mar 20 in Zurich, but already Mar 21
-in Tokyo.
+minuta works with two kinds of values. A `Temporal.PlainDate` is a day on
+the calendar, like Mar 20 2026. It has no time zone. A
+`Temporal.ZonedDateTime` is a moment in a zone, like 21:00 on Mar 20 2026 in
+Zurich. The same moment is already Mar 21 in Tokyo.
 
-So every period minuta makes — a day, a week, a month — is computed in some
-time zone. This page explains which one, and how to choose.
+So days, weeks, months and years are plain dates, and need no zone. Hours,
+minutes and seconds are moments, and always carry one. This page explains
+which zone, and how to choose.
 
 ## See the problem
 
@@ -21,26 +22,44 @@ Pick a day and a zone. **Mar 29 2026** is the night the clocks go forward in Eur
 
 <TimeZonesDemo />
 
-## The units decide the zone
+## Dates have no zone
 
-Periods come from **units**, made by a [date engine](../../api/minuta-core/create-units/).
-The engine decides the zone:
-
-- `dateFnsTzUnits({ timeZone })` computes in the zone you pass.
-- All other engines, and the default `minuta` entry, compute in the zone of
-  the computer the code runs on.
-
-The same code gives different days on different computers:
+A day made from a `PlainDate` is the same day on every computer:
 
 ```ts
 import { period } from "@aleksejdix/minuta";
 
-const day = period(new Date("2026-03-20T20:00:00Z"), "day");
+period(Temporal.PlainDate.from("2026-03-20"), "day");
+// → { start: 2026-03-20, end: 2026-03-21, unit: "day" }, everywhere
+```
 
-day.start.toISOString();
-// → "2026-03-19T23:00:00.000Z" on a computer in Europe/Zurich (Mar 20 00:00 there)
-// → "2026-03-20T15:00:00.000Z" on a computer in Asia/Tokyo    (Mar 21 00:00 there)
-// → "2026-03-20T00:00:00.000Z" on a computer in UTC
+A `ZonedDateTime` brings its own zone. Its period is computed in that zone,
+whatever the computer's zone is:
+
+```ts
+period(Temporal.ZonedDateTime.from("2026-03-21T05:00[Asia/Tokyo]"), "day");
+// → { start: 2026-03-21, end: 2026-03-22, unit: "day" }
+```
+
+## The units decide where dates become moments
+
+Sometimes minuta has to turn a date into moments, or a moment without a
+zone into a date:
+
+- dividing a day into hours, or making an hour period from a `PlainDate`,
+- reading a `Temporal.Instant` or a `Temporal.PlainDateTime`.
+
+Then it uses the units' `timeZone`. The default `minuta` entry and
+`createUnits()` use the zone of the computer the code runs on, so an
+`Instant` can give different days on different computers:
+
+```ts
+import { period } from "@aleksejdix/minuta";
+
+period(Temporal.Instant.from("2026-03-20T20:00:00Z"), "day").start;
+// → 2026-03-20 on a computer in Europe/Zurich (21:00 there)
+// → 2026-03-21 on a computer in Asia/Tokyo    (05:00 there)
+// → 2026-03-20 on a computer in UTC
 ```
 
 In a browser that is usually what you want: users see their own days. On a
@@ -49,68 +68,70 @@ mean by "today".
 
 ## Choosing a zone
 
-Use [`dateFnsTzUnits`](../../api/minuta-core/create-units/) with an IANA
-zone name. Then every function computes in that zone, wherever it runs:
+Pass an IANA zone name to
+[`createUnits`](../../api/minuta-core/create-units/). Then every function
+turns dates into moments in that zone, wherever it runs:
 
 ```ts
-import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const tokyo = withUnits(dateFnsTzUnits({ timeZone: "Asia/Tokyo" }));
+const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
 
-tokyo.period(new Date("2026-03-20T20:00:00Z"), "day").start.toISOString();
-// → "2026-03-20T15:00:00.000Z" (Mar 21 00:00 in Tokyo), on any computer
+tokyo.period(Temporal.Instant.from("2026-03-20T20:00:00Z"), "day").start;
+// → 2026-03-21, on any computer
 ```
 
+For a fixed zone everywhere, `createUnits({ timeZone: "UTC" })`. Or pass
+`ZonedDateTime`s in the zone you want: their periods keep it.
+
 :::caution
-`dateFnsTzUnits()` without `timeZone` uses **UTC**, not the computer's
-zone. A misspelled zone name gives invalid dates instead of an error.
+A misspelled zone name is not checked by `createUnits`. It throws a
+`RangeError` from Temporal the first time a date becomes a moment.
 :::
 
-Everything that depends on the day follows the zone of the units, not the
-computer's:
+Everything that turns dates into moments follows the zone of the units, not
+the computer's:
 
-- periods, `next`, `divide`, `duration`, …
-- month, year and day grids ([`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)),
-- weekend checks — 22:00 UTC on Friday is Saturday in Tokyo,
-- `snapWith`, e.g. snapping to midnight or to a decade.
+- `period`, `divide`, `duration`, … with hour, minute and second units,
+- day grids of a date ([`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)),
+- periods of an `Instant` — 22:00 UTC on Friday is a Saturday in Tokyo.
 
 ## The `timeZone` setting
 
-All units carry a `timeZone` setting with the zone name:
+All units from `createUnits` carry the zone name:
 
 ```ts
 import { createUnits } from "@aleksejdix/minuta/core";
 
 createUnits().timeZone; // → "Europe/Zurich" (on a computer in Zurich)
-dateFnsTzUnits({ timeZone: "Asia/Tokyo" }).timeZone; // → "Asia/Tokyo"
+createUnits({ timeZone: "Asia/Tokyo" }).timeZone; // → "Asia/Tokyo"
 ```
 
-It is a label. Changing it does not change how the units compute. It is
-read by functions that need the zone's name: `dayGridWith` uses it to label
-hours, and you pass it to the formatters.
+Periods made from a `ZonedDateTime` do not use it: they stay in their own
+zone.
 
 ## Showing dates in the right zone
 
-A period's `start` and `end` are plain `Date` objects. Their methods —
-`getDate()`, `getMonth()`, `getDay()`, `toString()` — always read the
-computer's zone. For periods of `dateFnsTzUnits` in another zone, they show
-the wrong day.
+A date period's `start` and `end` are `PlainDate`s. Their fields — `day`,
+`month`, `dayOfWeek`, `toString()` — are the same everywhere. A time
+period's `ZonedDateTime`s read in their own zone, not the computer's.
 
-- **To display**, use [`formatPeriod`](../../api/minuta-format/format-period/)
-  or `Intl.DateTimeFormat` with the units' `timeZone`:
+- **To display**, use [`formatPeriod`](../../api/minuta-format/format-period/).
+  A moment is shown in its own zone:
 
   ```ts
   import { formatPeriod } from "@aleksejdix/minuta/format";
 
-  const day = tokyo.period(new Date("2026-03-20T20:00:00Z"), "day");
+  const hour = tokyo.period(
+    Temporal.Instant.from("2026-03-20T20:00:00Z"),
+    "hour"
+  );
 
-  formatPeriod(day, "en-US", { timeZone: tokyo.units.timeZone }); // → "March 21, 2026"
-  formatPeriod(day, "en-US"); // → "March 20, 2026" on a computer in Zurich (wrong)
+  formatPeriod(hour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
   ```
 
 - **To compare**, use minuta: `contains(month, day)` or
-  `same(a, b, "month")` instead of comparing `getMonth()`.
+  `same(a, b, "month")`.
 
 ## Clock changes (DST)
 
@@ -127,43 +148,26 @@ minuta follows the real clock:
 import { duration, period } from "@aleksejdix/minuta";
 
 // On a computer in Europe/Zurich
-duration(period(new Date(2026, 2, 29), "day"), "hour"); // → 23
-duration(period(new Date(2026, 9, 25), "day"), "hour"); // → 25
-duration(period(new Date(2026, 5, 1), "day"), "hour"); // → 24
+duration(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23
+duration(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour"); // → 25
+duration(period(Temporal.PlainDate.from("2026-06-01"), "day"), "hour"); // → 24
 ```
 
 The rules behind it:
 
 - **Days, weeks, months and years follow the calendar.** A day is
-  midnight to midnight, however long that is. Adding one day keeps the time
-  on the clock: Mar 28 10:00 plus one day is Mar 29 10:00, only 23 real
-  hours later.
+  one date, however long it is on the clock. Clock changes cannot move it.
 - **Hours, minutes and seconds follow real time.** One hour is always 60
   real minutes. On Oct 25 there are two different hour periods that both
-  show 02:00 on the clock.
+  start at 02:00 on the clock, one at +02:00 and one at +01:00.
 
 [`dayGridWith`](../../api/minuta-calendar/day-grid-with/) lists the real
 hours of a day and tells you which clock hour was skipped (`gapHour`) or
 repeated (`ambiguousHour`).
 
-Functions that work on milliseconds keep milliseconds. `move` keeps a
-24-hour day 24 hours long, so moved onto Mar 29 it ends at 00:59:59.999 on
-Mar 30. Use `shift` to move by calendar units.
-
-### Clock changes days apart
-
-V8, the JavaScript engine in Node and Chrome, caches zone offsets and
-assumes two clock changes are never close together. When they are, `Date`
-can give wrong offsets, and the answer depends on which moment was asked
-about first. In America/Recife daylight saving time lasted one week in
-October 2000; with the computer in Recife, the year 2000 can come out with
-more than 366 days.
-
-Every engine that computes through `Date` can be affected, including
-`createUnits` and `dateFnsTzUnits`. minuta never stalls on such
-answers: periods still touch and `next` still moves on, but their
-boundaries are only as right as the engine's. The Temporal API itself reads offsets
-from the zone data and is not affected.
+[`move`](../../api/minuta-intervals/move/) keeps a period's length: days for a
+date period, exact time for a time period. A range of 24 real hours moved
+onto Mar 29 00:00 ends at 01:00 on Mar 30.
 
 ## Zones with unusual offsets
 
@@ -171,18 +175,13 @@ Zones that are offset by 30 or 45 minutes from UTC, such as Asia/Kolkata or
 Asia/Kathmandu, work: hours start at full hours on their clock.
 
 A few zones change their clocks by 30 minutes instead of an hour, such as
-Australia/Lord_Howe. On those days hour periods do not line up with the
-clock, and `dayGridWith` can report wrong DST hours.
-
-## Engines and their zones
-
-| Engine           | Computes in                     |
-| ---------------- | ------------------------------- |
-| `createUnits`    | the computer's zone             |
-| `dateFnsTzUnits` | the zone you pass (default UTC) |
+Australia/Lord_Howe. On those days one hour is cut in two at the clock
+change, so a day has 25 or 24 hour pieces. `gapHour` and `ambiguousHour`
+count whole clock hours, so `dayGridWith` may not report the half hour that
+was skipped or repeated.
 
 ## Related
 
-- [Date engines](../../api/minuta-core/create-units/) — all engines compared.
+- [Units](../date-engines/) — `createUnits` and its options.
 - [Weeks and calendars](../weeks-and-calendars/) — week start, weekend, grids.
 - [`dayGridWith`](../../api/minuta-calendar/day-grid-with/) — the hours of a day.
