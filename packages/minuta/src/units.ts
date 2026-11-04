@@ -159,6 +159,10 @@ function timeSpecFor(units: Units, unit: Unit): TimeSpec {
  */
 function nextStart(spec: TimeSpec, start: ZonedDateTime): ZonedDateTime {
   const next = spec.startOf(spec.add(start, ONE));
+  // No clock change in between: same offset, no search needed
+  if (next.offsetNanoseconds === start.offsetNanoseconds) {
+    return next;
+  }
   const change = start.getTimeZoneTransition("next");
   if (change !== null && compare(change, next) < EQUAL) {
     return change;
