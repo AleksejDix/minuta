@@ -168,27 +168,22 @@ const day = newYork.period(new Date("2026-03-08T12:00:00Z"), "day");
 newYork.duration(day, "hour"); // → 23, the clocks go forward in New York that day
 ```
 
-## Plugins use the same units
+## Calendar and intervals use the same units
 
 Calendar grids ([`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)) and interval helpers
 ([`@aleksejdix/minuta/intervals`](../../api/minuta-intervals/overview/))
-come as **plugins**: objects of functions that take the units first. Pass them
-to `withUnits`, and they use the same week start, weekend and time zone as
-everything else:
+bind to the same units, with `calendar(units)` and `intervals(units)`, so
+they use the same week start, weekend and time zone as everything else:
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(createUnits({ weekStartsOn: "sunday" }), {
-  plugins: [calendar],
-});
+const grids = calendar(createUnits({ weekStartsOn: "sunday" }));
 
-time.monthGrid(new Date(2026, 2, 18)).periods[0].start;
-// → Sun Mar 1 2026, the grid starts on a Sunday
+grids.monthGrid(Temporal.PlainDate.from("2026-03-18")).periods[0].start;
+// → 2026-03-01, the grid starts on a Sunday
 ```
-
-To bind one plugin on its own, use [`bind`](../../api/minuta-core/bind/).
 
 ## Your own units
 

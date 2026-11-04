@@ -13,15 +13,15 @@ export const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 export const week = time.period(date, "week");
 
 Bind every operation to one set of units once, and get them all back ready to
-use. This is how you get weeks from Sunday, another date library or a time
-zone, with the same easy calls as `minuta`.
+use. This is how you get weeks from Sunday or a fixed time zone, with the
+same easy calls as `minuta`.
 
 ```ts
 import { withUnits } from "@aleksejdix/minuta/core";
 ```
 
 ```ts
-withUnits(units, options?)
+withUnits(units);
 ```
 
 ## Example
@@ -31,11 +31,11 @@ import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
-const week = time.period(new Date(2026, 2, 18), "week");
-// → Sun Mar 15 00:00:00.000 – Sat Mar 21 23:59:59.999, unit "week"
+const week = time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 
 time.next(week);
-// → Sun Mar 22 – Sat Mar 28
+// → { start: 2026-03-22, end: 2026-03-29, unit: "week" }
 ```
 
 Do this once, for example in a module of its own, and import `time` wherever
@@ -60,54 +60,34 @@ The calls read the same; the bound units shift every week one day earlier.
 
 ## Parameters
 
-| Name      | What it is                                                                                        |
-| --------- | ------------------------------------------------------------------------------------------------- |
-| `units`   | The units to compute with, usually from an adapter such as `createUnits()` or `dateFnsTzUnits()`. |
-| `options` | Optional. `plugins`, see [Options](#options) below.                                               |
+| Name    | What it is                                                              |
+| ------- | ----------------------------------------------------------------------- |
+| `units` | The units to compute with, usually [`createUnits()`](../create-units/). |
 
 _Units_ are the rules for each unit of time: where a week starts, how to add a
-month. An adapter makes them for one date library. See
-[Date engines](../../../concepts/date-engines/).
-
-## Options
-
-| Option    | Default | What it does                                                                            |
-| --------- | ------- | --------------------------------------------------------------------------------------- |
-| `plugins` | none    | A list of plugins. Their functions are bound to the same units and added to the result. |
-
-```ts
-import { calendar } from "@aleksejdix/minuta/calendar";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
-
-const time = withUnits(createUnits({ weekStartsOn: "sunday" }), {
-  plugins: [calendar],
-});
-
-time.monthGrid(new Date(2026, 2, 18)).periods;
-// → 42 days, starting Sun Mar 1
-time.isWeekend(time.period(new Date(2026, 2, 21), "day"));
-// → true, a Saturday
-```
+month, the time zone dates become moments in.
 
 ## Returns
 
 An object with every operation of `minuta`, already bound to `units`:
 
 `period`, `range`, `next`, `previous`, `shift`, `divide`, `contains`,
-`overlaps`, `same`, `duration`, `length`.
+`overlaps`, `same`, `duration`.
 
 They take the same arguments as the functions of [`minuta`](../../minuta/overview/).
 `time.period(date, "week")` is `periodWith(units, date, "week")`.
 
-The object also has:
-
-- `units` — the very units you passed in, so other code can reuse them.
-- every function of every plugin, without its `units` argument.
+The object also has `units`: the very units you passed in, so other code can
+reuse them.
 
 ```ts
 const units = createUnits();
 withUnits(units).units === units; // → true
 ```
+
+The calendar and interval functions bind the same way, from their own
+entries: [`calendar(units)`](../../minuta-calendar/calendar/) and
+[`intervals(units)`](../../minuta-intervals/intervals/).
 
 ## Pass only the units you need
 
@@ -120,21 +100,14 @@ import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 const { day, month } = createUnits();
 const time = withUnits({ day, month });
 
-time.period(new Date(2026, 2, 18), "month"); // works
-time.period(new Date(2026, 2, 18), "week");
+time.period(Temporal.PlainDate.from("2026-03-18"), "month"); // works
+time.period(Temporal.PlainDate.from("2026-03-18"), "week");
 // RangeError: UNIT_NOT_SUPPORTED: no "week" spec in the units passed (available: day, month). …
 ```
 
-Taking `{ day, month }` out of the adapter drops its settings (`weekStartsOn`,
-`weekend`, `timeZone`), which some plugin functions read. Keep the full set
-when you use plugins.
-
-## Names must be unique
-
-A plugin function may not have the name of an operation or of another plugin's
-function. TypeScript reports this as a type error. Without TypeScript nothing
-stops you, and the later one silently wins: a plugin function named `next`
-replaces the built-in `next`.
+Taking `{ day, month }` out of `createUnits()` drops its settings
+(`weekStartsOn`, `weekend`, `timeZone`), which the calendar functions read.
+Keep the full set for those.
 
 ## Errors
 
@@ -144,8 +117,6 @@ their [`minuta`](../../minuta/overview/) counterparts; a unit missing from
 
 ## Related
 
-- [`bind`](../bind/) — bind one plugin on its own.
-- [`calendar`](../../minuta-calendar/calendar/) and [`intervals`](../../minuta-intervals/intervals/) — the plugins that ship with minuta.
+- [`createUnits`](../create-units/) — make the units.
+- [`calendar`](../../minuta-calendar/calendar/) and [`intervals`](../../minuta-intervals/intervals/) — bind the other entries.
 - [`periodWith`](../period-with/) and the other `…With` functions — the same operations, unbound.
-- [Date engines](../../../concepts/date-engines/) — where units come from.
-- [`createUnits`](../../minuta-core/create-units/) — units computed with Temporal.

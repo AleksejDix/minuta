@@ -98,7 +98,7 @@ duration(period(new Date(2026, 9, 25), "day"), "hour"); // → 25 (clocks go bac
 duration(period(new Date(2028, 0, 1), "year"), "day"); // → 366 (leap year)
 ```
 
-For a plain length in milliseconds, use [`length`](../length/).
+For the plain elapsed time, use Temporal: `period.start.until(period.end)`.
 
 ## Counting starts at the start
 
@@ -165,6 +165,5 @@ duration(
 
 ## Related
 
-- [`length`](../length/) — the length in milliseconds.
 - [`divide`](../divide/) — create the pieces instead of counting them.
 - [`durationWith`](../../minuta-core/duration-with/) (`@aleksejdix/minuta/core`) — the same, with your own units and week start.

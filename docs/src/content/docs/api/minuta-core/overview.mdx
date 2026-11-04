@@ -72,18 +72,17 @@ You can pass the units on every call, or bind them once with
 
 ## Functions
 
-| Function                            | What it does                                                |
-| ----------------------------------- | ----------------------------------------------------------- |
-| [`withUnits`](../with-units/)       | Bind every operation, and any plugins, to one set of units. |
-| [`bind`](../bind/)                  | Bind the functions of one plugin to one set of units.       |
-| [`periodWith`](../period-with/)     | The whole day, week, month … that a date falls in.          |
-| [`nextWith`](../next-with/)         | The period right after a period.                            |
-| [`previousWith`](../previous-with/) | The period right before a period.                           |
-| [`shiftWith`](../shift-with/)       | Move a period forward or back by a number of its own unit.  |
-| [`divideWith`](../divide-with/)     | Split a period into smaller periods: a month into weeks.    |
-| [`sameWith`](../same-with/)         | Do two periods fall in the same day, week, month …?         |
-| [`durationWith`](../duration-with/) | How many whole units fit into a period.                     |
-| [`specFor`](../spec-for/)           | Look up the rules of one unit in a set of units.            |
+| Function                            | What it does                                               |
+| ----------------------------------- | ---------------------------------------------------------- |
+| [`withUnits`](../with-units/)       | Bind every operation to one set of units.                  |
+| [`periodWith`](../period-with/)     | The whole day, week, month … that a date falls in.         |
+| [`nextWith`](../next-with/)         | The period right after a period.                           |
+| [`previousWith`](../previous-with/) | The period right before a period.                          |
+| [`shiftWith`](../shift-with/)       | Move a period forward or back by a number of its own unit. |
+| [`divideWith`](../divide-with/)     | Split a period into smaller periods: a month into weeks.   |
+| [`sameWith`](../same-with/)         | Do two periods fall in the same day, week, month …?        |
+| [`durationWith`](../duration-with/) | How many whole units fit into a period.                    |
+| [`specFor`](../spec-for/)           | Look up the rules of one unit in a set of units.           |
 
 These need no units. They are the same functions as in `minuta`, exported
 here too so you can import everything from one place:
@@ -93,7 +92,6 @@ here too so you can import everything from one place:
 | [`range`](../../minuta/range/)              | A period between any two dates.                |
 | [`contains`](../../minuta/contains/)        | Is a date or another period inside a period?   |
 | [`overlaps`](../../minuta/overlaps/)        | Do two periods share any time?                 |
-| [`length`](../../minuta/length/)            | How long a period is, in milliseconds.         |
 | [`MinutaError`](../../minuta/minuta-error/) | The codes at the start of every error message. |
 
 ## When to use `@aleksejdix/minuta/core`
@@ -103,8 +101,7 @@ Use `@aleksejdix/minuta/core` instead of `minuta` when you need:
 - weeks that start on another day, such as Sunday;
 - a fixed time zone (`dateFnsTzUnits`);
 - your own weekend days, or a unit of your own;
-- plugins, such as calendar grids from `@aleksejdix/minuta/calendar`, bound to the same
-  settings;
+- calendar grids from `@aleksejdix/minuta/calendar` with the same settings;
 - the smallest bundle: pass only the units you use.
 
 ```ts
