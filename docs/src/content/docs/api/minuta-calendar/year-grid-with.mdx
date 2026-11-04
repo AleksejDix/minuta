@@ -20,7 +20,7 @@ import { yearGridWith } from "@aleksejdix/minuta/calendar";
 ```
 
 ```ts
-yearGridWith(units, date);
+yearGridWith(units, value);
 ```
 
 ## Example
@@ -29,12 +29,12 @@ yearGridWith(units, date);
 import { yearGridWith } from "@aleksejdix/minuta/calendar";
 import { createUnits } from "@aleksejdix/minuta/core";
 
-const grid = yearGridWith(createUnits(), new Date(2026, 5, 1));
+const grid = yearGridWith(createUnits(), Temporal.PlainDate.from("2026-06-01"));
 
 grid.periods.length; // → 53
-grid.periods[0]; // → Mon Dec 29 2025 – Sun Jan 4 2026 (unit "week")
-grid.periods[52]; // → Mon Dec 28 2026 – Sun Jan 3 2027
-grid.yearStart; // → Thu Jan 1 2026 00:00
+grid.periods[0]; // → { start: 2025-12-29, end: 2026-01-05, unit: "week" }
+grid.periods[52]; // → { start: 2026-12-28, end: 2027-01-04, unit: "week" }
+grid.yearStart; // → 2026-01-01
 grid.weekStartsOn; // → 1 (Monday)
 ```
 
@@ -43,16 +43,15 @@ grid.weekStartsOn; // → 1 (Monday)
 | Name    | What it is                                                                                            |
 | ------- | ----------------------------------------------------------------------------------------------------- |
 | `units` | The units to compute with, e.g. `createUnits()`. They decide the week start. Needs `year` and `week`. |
-| `date`  | Any moment inside the year you want.                                                                  |
+| `value` | Any date or moment inside the year you want.                                                          |
 
 ## Returns
 
 An object with three fields:
 
 - `periods` — the weeks, in order. Each one is a whole week with the unit
-  `"week"`, from the first millisecond of its first day to the last
-  millisecond of its seventh day.
-- `yearStart` — the first moment of the year, Jan 1 00:00.
+  `"week"`: `start` is its first day, `end` the first day of the next week.
+- `yearStart` — the first day of the year as a `PlainDate`, e.g. 2026-01-01.
 - `weekStartsOn` — the first day of the week as a number: 0 = Sunday,
   1 = Monday … 6 = Saturday.
 
@@ -82,11 +81,12 @@ always has at least 53 weeks. A leap year that starts on the last day of the
 week needs 54:
 
 ```ts
-yearGridWith(createUnits(), new Date(2012, 0, 1)).periods.length;
+const jan1 = Temporal.PlainDate.from("2012-01-01");
+
+yearGridWith(createUnits(), jan1).periods.length;
 // → 54 (2012 starts on a Sunday, weeks start on Monday)
 
-yearGridWith(createUnits({ weekStartsOn: "sunday" }), new Date(2012, 0, 1))
-  .periods.length;
+yearGridWith(createUnits({ weekStartsOn: "sunday" }), jan1).periods.length;
 // → 53
 ```
 
@@ -127,26 +127,22 @@ you choose another day:
 ```ts
 const grid = yearGridWith(
   createUnits({ weekStartsOn: "sunday" }),
-  new Date(2026, 5, 1)
+  Temporal.PlainDate.from("2026-06-01")
 );
 
-grid.periods[0]; // → Sun Dec 28 2025 – Sat Jan 3 2026
-grid.periods[52]; // → Sun Dec 27 2026 – Sat Jan 2 2027
+grid.periods[0]; // → { start: 2025-12-28, end: 2026-01-04, unit: "week" }
+grid.periods[52]; // → { start: 2026-12-27, end: 2027-01-03, unit: "week" }
 ```
 
 ## Errors
 
-`yearGridWith` throws a `RangeError` whose message starts with a code:
-
-| Code                 | When                                                |
-| -------------------- | --------------------------------------------------- |
-| `INVALID_DATE`       | `date` is an invalid Date, e.g. `new Date("nope")`. |
-| `UNIT_NOT_SUPPORTED` | `units` has no `year` or `week`.                    |
+`yearGridWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED` when
+`units` has no `year` or `week`.
 
 ## Related
 
 - [`monthGridWith`](../month-grid-with/) — the 42 days of a month view.
 - [`dayGridWith`](../day-grid-with/) — the hours of a day.
-- [`calendar`](../calendar/) — use it as `time.yearGrid(date)` with `withUnits`.
+- [`calendar`](../calendar/) — use it as `grids.yearGrid(value)` with `calendar(units)`.
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start
   and grids explained.

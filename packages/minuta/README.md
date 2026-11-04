@@ -103,7 +103,7 @@ time.divide(time.period(Temporal.Now.plainDateISO(), "day"), "hour"); // the day
 
 Days are named (`"monday"`); the numbers 0 (Sunday) to 6 (Saturday) work
 too. `timeZone` is where dates become moments, as when a day is divided into
-hours; a `ZonedDateTime` passed in keeps its own zone.
+hours. Hours, minutes and seconds made from a `ZonedDateTime` keep its zone.
 
 The bound object's members have exactly the types of the default entry, so
 the two cannot drift apart.

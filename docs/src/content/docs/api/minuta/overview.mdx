@@ -13,13 +13,14 @@ import Timeline from "../../../../components/diagrams/Timeline.astro";
 export const march = period(plainDate("2026-03-15"), "month");
 
 `minuta` is the main entry point. It has every operation, ready to use: no
-setup, no configuration. It computes with Temporal in the local
+setup, no configuration. It computes with Temporal in the runtime's
 time zone, and weeks start on Monday (ISO 8601).
 
 ```ts
 import { divide, next, period } from "@aleksejdix/minuta";
 
-const march = period(new Date(2026, 2, 15), "month");
+const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+// → { start: 2026-03-01, end: 2026-04-01, unit: "month" }
 
 next(march); // → April 2026
 divide(march, "day"); // → 31 day periods
@@ -28,11 +29,13 @@ divide(march, "day"); // → 31 day periods
 ## The core idea
 
 Every span of time is a **period**: a plain object with a `start`, an `end`
-and a `unit`, like `{ start: Mar 1 00:00, end: Mar 31 23:59:59.999, unit:
-"month" }`. Both ends are part of the period.
+and a `unit`, like `{ start: 2026-03-01, end: 2026-04-01, unit: "month" }`.
+The start is part of the period, the end is not: neighboring periods share
+a boundary. Days and larger units hold `Temporal.PlainDate`s; hours, minutes
+and seconds hold `Temporal.ZonedDateTime`s.
 
 You make a period with [`period`](../period/) (a whole day, week, month …) or
-[`range`](../range/) (any two dates). Then you move it, split it, measure it
+[`range`](../range/) (any two dates or moments). Then you move it, split it, measure it
 or compare it. Every function takes plain data and returns new plain data;
 nothing is changed in place.
 
@@ -62,12 +65,12 @@ picture.
 | Function                          | What it does                                                 |
 | --------------------------------- | ------------------------------------------------------------ |
 | [`period`](../period/)            | The whole day, week, month … that a date falls in.           |
-| [`range`](../range/)              | A period between any two dates.                              |
+| [`range`](../range/)              | A period between any two dates or moments.                   |
 | [`next`](../next/)                | The period right after a period.                             |
 | [`previous`](../previous/)        | The period right before a period.                            |
 | [`shift`](../shift/)              | Move a period forward or back by a number of its own unit.   |
 | [`divide`](../divide/)            | Split a period into smaller periods: a month into days.      |
-| [`contains`](../contains/)        | Is a date or another period inside a period?                 |
+| [`contains`](../contains/)        | Is a date, a moment or another period inside a period?       |
 | [`overlaps`](../overlaps/)        | Do two periods share any time?                               |
 | [`same`](../same/)                | Do two periods fall in the same day, week, month …?          |
 | [`duration`](../duration/)        | How many whole units fit into a period: the days in a month. |
@@ -75,13 +78,13 @@ picture.
 
 ## `minuta` or `@aleksejdix/minuta/core`?
 
-Use **`minuta`** when the local time zone and weeks from Monday to Sunday
+Use **`minuta`** when the runtime's time zone and weeks from Monday to Sunday
 are what you need. That is most apps.
 
 Use **[`@aleksejdix/minuta/core`](../../minuta-core/overview/)** when you need any of:
 
 - weeks that start on another day, such as Sunday;
-- a fixed time zone (`dateFnsTzUnits`);
+- a fixed time zone (`createUnits({ timeZone: "UTC" })`);
 - your own weekend days, or your own units;
 - calendar grids with the same settings;
 - the smallest possible bundle, with only the units you use.
@@ -89,16 +92,20 @@ Use **[`@aleksejdix/minuta/core`](../../minuta-core/overview/)** when you need a
 `@aleksejdix/minuta/core` has the same operations. They take the units as their first
 argument (`periodWith(units, date, "week")`), or you bind them once with
 `withUnits`. Periods from both are the same plain objects, so you can mix
-them. See [Date engines](../../../concepts/date-engines/).
+them. See [`createUnits`](../../minuta-core/create-units/).
 
 ```ts
 import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
-time.period(new Date(2026, 2, 18), "week");
-// → Sun Mar 15 – Sat Mar 21
+time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 ```
 
 `minuta` works like `withUnits(createUnits())`, but as separate functions,
 so your bundler keeps only the ones you import.
+
+Where the runtime has no Temporal yet (Safari, Node 24), call
+[`await temporalReady()`](../../minuta-temporal/temporal-ready/) from
+`@aleksejdix/minuta/temporal` once, before you compute.

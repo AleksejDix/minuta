@@ -14,7 +14,7 @@ import Timeline from "../../../../components/diagrams/Timeline.astro";
 export const march = period(plainDate("2026-03-15"), "month");
 export const marchToApril = range(
   plainDate("2026-03-30"),
-  plainDate("2026-04-05")
+  plainDate("2026-04-06")
 );
 
 `@aleksejdix/minuta/format` turns periods into text for people: "March 2026", "Mar 9 –
@@ -39,11 +39,13 @@ import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
 import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
 import { period, range } from "@aleksejdix/minuta";
 
-formatPeriod(period(new Date(2026, 2, 15), "month"), "de-CH");
+const day = (iso) => Temporal.PlainDate.from(iso);
+
+formatPeriod(period(day("2026-03-15"), "month"), "de-CH");
 // → "März 2026"
 
-formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH");
-// → "30. März – 5. Apr. 2026"
+formatRange(range(day("2026-03-30"), day("2026-04-06")), "de-CH");
+// → "30. März – 5. Apr. 2026", the end (Apr 6) is excluded
 ```
 
 <Timeline
@@ -63,10 +65,13 @@ formatRange(range(new Date(2026, 2, 30), new Date(2026, 3, 5)), "de-CH");
 - **The unit picks the format.** A `"month"` period shows month and year, a
   `"day"` period the full date, an `"hour"` period the date and time. See
   the [table](../format-period/#one-format-per-unit).
-- **Options override.** Pass any `Intl.DateTimeFormat` option to change one
-  field, e.g. `{ month: "short" }`. The rest of the defaults stay.
-- **Time zone.** Text is written in the computer's time zone unless you pass
-  `{ timeZone }`. For periods of zone-aware units, pass `units.timeZone`.
+- **Options override.** Options that pick fields, e.g.
+  `{ month: "short", year: "numeric" }`, replace the unit's defaults. Others,
+  such as `hourCycle`, are added to them.
+- **Time zone.** Moments are written in their own zone unless you pass
+  `{ timeZone }`. Dates have no zone: a day shows the same everywhere.
+- **The end is excluded.** A period of dates is shown up to its last day,
+  the day before `end`.
 - **No units needed.** The format functions only read `start`, `end` and
   `unit` of the period.
 

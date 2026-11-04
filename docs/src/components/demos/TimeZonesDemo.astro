@@ -30,7 +30,7 @@ import DemoFrame from "./DemoFrame.astro";
   </div>
 
   <div class="grid gap-2" slot="solution">
-    <pre class="demo-code">const time = withUnits(dateFnsTzUnits({"{"} timeZone {"}"}));
+    <pre class="demo-code">const time = withUnits(createUnits({"{"} timeZone {"}"}));
 const day = time.period(date, "day");</pre>
     <p>
       <span class="text-muted-foreground">day →</span>

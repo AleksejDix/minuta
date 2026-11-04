@@ -27,7 +27,7 @@ import { CalendarExample } from "@aleksejdix/minuta-vue";
 import "@aleksejdix/minuta-vue/style.css";
 
 function onSelect(day) {
-  alert(day.start.toDateString());
+  alert(day.start.toString());
 }
 </script>
 
@@ -39,7 +39,7 @@ function onSelect(day) {
 It renders a title ("minuta-vue calendar"), a "Week starts on" toggle with
 "Sunday" and "Monday" buttons, a [`CalendarHeader`](../calendar-header/) and a
 [`CalendarGrid`](../calendar-grid/) for the current month. Clicking a day
-shows its date.
+shows its date, e.g. "2026-03-18".
 
 <div class="anatomy-figure not-content">
   <Anatomy

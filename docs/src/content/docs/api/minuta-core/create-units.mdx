@@ -75,8 +75,9 @@ pieces are cut at the month's edges:
 | `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend.                |
 | `timeZone`     | the runtime's zone       | The IANA zone dates become moments in, e.g. when a day is divided into hours: `"UTC"`, `"Europe/Zurich"`. |
 
-Periods made from a `ZonedDateTime` keep its zone; `timeZone` only applies
-where a date has to become a moment.
+Hours, minutes and seconds made from a `ZonedDateTime` keep its zone; a day
+or longer is made of dates, which have none. `timeZone` applies where a date
+has to become a moment, as when a day is divided into hours.
 
 ## Returns
 

@@ -27,15 +27,15 @@ previousWith(units, period);
 import { createUnits, periodWith, previousWith } from "@aleksejdix/minuta/core";
 
 const units = createUnits({ weekStartsOn: "sunday" });
-const week = periodWith(units, new Date(2026, 2, 18), "week");
-// → Sun Mar 15 – Sat Mar 21
+const week = periodWith(units, Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 
 previousWith(units, week);
-// → Sun Mar 8 00:00:00.000 – Sat Mar 14 23:59:59.999, unit "week"
+// → { start: 2026-03-08, end: 2026-03-15, unit: "week" }
 ```
 
 <Timeline
-  caption="previousWith with Sunday units gives the whole Sunday-to-Saturday week that ends right before week starts."
+  caption="previousWith with Sunday units gives the whole Sunday-to-Saturday week that ends where week starts."
   tracks={[
     {
       label: "previousWith(units, week)",
@@ -48,14 +48,14 @@ previousWith(units, week);
 
 ## Parameters
 
-| Name     | What it is                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compute with, e.g. `createUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `period` | The current period.                                                                                   |
+| Name     | What it is                                                           |
+| -------- | -------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. [`createUnits()`](../create-units/). |
+| `period` | The current period.                                                  |
 
 ## Returns
 
-A new, whole period of the same unit that ends right before `period` starts.
+A new, whole period of the same unit that ends where `period` starts.
 `previousWith(units, p)` is the same as
 [`shiftWith(units, p, -1)`](../shift-with/).
 
@@ -68,12 +68,8 @@ Pass the units the period was made with; see
 
 ## Errors
 
-`previousWith` throws a `RangeError` whose message starts with a code:
-
-| Code                 | When                                   |
-| -------------------- | -------------------------------------- |
-| `INVALID_DATE`       | `period.start` is an invalid `Date`.   |
-| `UNIT_NOT_SUPPORTED` | `units` has no spec for `period.unit`. |
+`previousWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED` when
+`units` has no spec for `period.unit`.
 
 ## Related
 

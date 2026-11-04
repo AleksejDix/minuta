@@ -33,14 +33,14 @@ divideWith(units, period, unit, options?)
 import { createUnits, divideWith, periodWith } from "@aleksejdix/minuta/core";
 
 const units = createUnits({ weekStartsOn: "sunday" });
-const march = periodWith(units, new Date(2026, 2, 1), "month");
+const march = periodWith(units, Temporal.PlainDate.from("2026-03-01"), "month");
 
 divideWith(units, march, "week");
-// → Sun Mar 1 – Sat Mar 7    "week"
-//   Sun Mar 8 – Sat Mar 14   "week"
-//   Sun Mar 15 – Sat Mar 21  "week"
-//   Sun Mar 22 – Sat Mar 28  "week"
-//   Sun Mar 29 – Tue Mar 31  "custom"  (the week ends in April)
+// → 2026-03-01 – 2026-03-08  "week"
+//   2026-03-08 – 2026-03-15  "week"
+//   2026-03-15 – 2026-03-22  "week"
+//   2026-03-22 – 2026-03-29  "week"
+//   2026-03-29 – 2026-04-01  "custom"  (the week ends in April)
 ```
 
 With weeks from Sunday, March 2026 starts on a whole week. With the default
@@ -68,12 +68,12 @@ last one is cut; with Monday units the 1st is a piece of its own.
 
 ## Parameters
 
-| Name      | What it is                                                                                            |
-| --------- | ----------------------------------------------------------------------------------------------------- |
-| `units`   | The units to compute with, e.g. `createUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `period`  | The period to split, e.g. a month from `periodWith()`.                                                |
-| `unit`    | The size of each piece: `"day"`, `"hour"`, `"week"`, …                                                |
-| `options` | Optional. `step` and `maxPeriods`, see [Options](#options) below.                                     |
+| Name      | What it is                                                           |
+| --------- | -------------------------------------------------------------------- |
+| `units`   | The units to compute with, e.g. [`createUnits()`](../create-units/). |
+| `period`  | The period to split, e.g. a month from `periodWith()`.               |
+| `unit`    | The size of each piece: `"day"`, `"hour"`, `"week"`, …               |
+| `options` | Optional. `step` and `maxPeriods`, see [Options](#options) below.    |
 
 ## Options
 
@@ -85,8 +85,13 @@ last one is cut; with Monday units the 1st is a piece of its own.
 ## Returns
 
 An array of periods, in order, that together cover `period` exactly: no gaps,
-no overlaps. Pieces cut at the edges of `period`, and all pieces made with a
-`step` above 1, get the unit `"custom"`.
+no overlaps: each piece starts where the one before ends. Pieces cut at the
+edges of `period`, and all pieces made with a `step` above 1, get the unit
+`"custom"`.
+
+A date period divided by `"day"` or a larger unit gives date periods. Divided
+by `"hour"`, `"minute"` or `"second"`, its days become moments in the units'
+`timeZone` first.
 
 It works exactly like [`divide`](../../minuta/divide/), which is `divideWith`
 with `createUnits()` bound. Read that page for the details on cut pieces and
@@ -104,11 +109,14 @@ const units = createUnits();
 
 divideWith(
   units,
-  range(new Date(2026, 2, 1, 9, 7), new Date(2026, 2, 1, 10)),
+  range(
+    Temporal.ZonedDateTime.from("2026-03-01T09:07[Europe/Zurich]"),
+    Temporal.ZonedDateTime.from("2026-03-01T10:00[Europe/Zurich]")
+  ),
   "minute",
   { step: 15 }
 );
-// → 9:07–9:21:59.999, 9:22–9:36:59.999, 9:37–9:51:59.999, 9:52–10:00:00.000
+// → 9:07–9:22, 9:22–9:37, 9:37–9:52, 9:52–10:00
 ```
 
 <Timeline
@@ -143,17 +151,22 @@ divideWith(
 ## Hours follow the clock change
 
 Hours are real elapsed hours, so a day with a clock change has fewer or more
-of them. In Europe/Zurich:
+of them. With `createUnits()` in Europe/Zurich:
 
 ```ts
 import { createUnits, divideWith, periodWith } from "@aleksejdix/minuta/core";
 
 const units = createUnits();
 
-divideWith(units, periodWith(units, new Date(2026, 2, 29), "day"), "hour")
-  .length; // → 23
-divideWith(units, periodWith(units, new Date(2026, 9, 25), "day"), "hour")
-  .length; // → 25
+const march29 = periodWith(units, Temporal.PlainDate.from("2026-03-29"), "day");
+const october25 = periodWith(
+  units,
+  Temporal.PlainDate.from("2026-10-25"),
+  "day"
+);
+
+divideWith(units, march29, "hour").length; // → 23
+divideWith(units, october25, "hour").length; // → 25
 ```
 
 On Oct 25 the hour from 2:00 to 3:00 comes twice, once in summer time and

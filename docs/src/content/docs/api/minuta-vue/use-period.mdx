@@ -37,14 +37,15 @@ const week = usePeriod("week");
 
 <template>
   <p>
-    Year {{ year.start.getFullYear() }}, first week starts
-    {{ week.start.toDateString() }}
+    Year {{ year.start.year }}, first week starts
+    {{ week.start.toString() }}
   </p>
 </template>
 ```
 
 ```vue
-<MinutaRoot unit="month" :date="new Date(2024, 2, 13)">
+<!-- inside a component with const start = Temporal.PlainDate.from("2024-03-13") -->
+<MinutaRoot unit="month" :date="start">
   <Context />
 </MinutaRoot>
 ```

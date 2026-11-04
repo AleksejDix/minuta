@@ -33,10 +33,10 @@ duration(period, unit);
 ```ts
 import { duration, period } from "@aleksejdix/minuta";
 
-duration(period(new Date(2026, 1, 1), "month"), "day");
+duration(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day");
 // → 28
 
-duration(period(new Date(2026, 9, 8), "day"), "hour");
+duration(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour");
 // → 24
 ```
 
@@ -67,9 +67,16 @@ its end. Units that only partly fit are not counted.
 ```ts
 import { duration, period, range } from "@aleksejdix/minuta";
 
-duration(period(new Date(2026, 2, 1), "month"), "week"); // → 4  (31 days)
-duration(period(new Date(2026, 2, 1), "month"), "year"); // → 0
-duration(range(new Date(2026, 2, 1, 9), new Date(2026, 2, 1, 10, 30)), "hour"); // → 1
+const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+
+duration(march, "week"); // → 4  (31 days)
+duration(march, "year"); // → 0
+
+const meeting = range(
+  Temporal.ZonedDateTime.from("2026-03-01T09:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-01T10:30[Europe/Zurich]")
+);
+duration(meeting, "hour"); // → 1
 ```
 
 <Timeline
@@ -90,12 +97,13 @@ duration(range(new Date(2026, 2, 1, 9), new Date(2026, 2, 1, 10, 30)), "hour"); 
 ## Calendar units, not fixed lengths
 
 Units are counted on the calendar, so a day is not always 24 hours and a year
-is not always 365 days. In Europe/Zurich:
+is not always 365 days. A day counted in hours becomes moments in the units'
+time zone first (the runtime's by default). In Europe/Zurich:
 
 ```ts
-duration(period(new Date(2026, 2, 29), "day"), "hour"); // → 23 (clocks go forward)
-duration(period(new Date(2026, 9, 25), "day"), "hour"); // → 25 (clocks go back)
-duration(period(new Date(2028, 0, 1), "year"), "day"); // → 366 (leap year)
+duration(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23 (clocks go forward)
+duration(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour"); // → 25 (clocks go back)
+duration(period(Temporal.PlainDate.from("2028-01-01"), "year"), "day"); // → 366 (leap year)
 ```
 
 For the plain elapsed time, use Temporal: `period.start.until(period.end)`.
@@ -107,7 +115,13 @@ period from 14:00 one day to 13:00 the next is 23 hours, so it holds zero
 whole days:
 
 ```ts
-duration(range(new Date(2026, 2, 15, 14), new Date(2026, 2, 16, 13)), "day");
+duration(
+  range(
+    Temporal.ZonedDateTime.from("2026-03-15T14:00[Europe/Zurich]"),
+    Temporal.ZonedDateTime.from("2026-03-16T13:00[Europe/Zurich]")
+  ),
+  "day"
+);
 // → 0
 ```
 
@@ -131,27 +145,28 @@ day is cut to the shorter month), so this period already holds one month:
 
 ```ts
 duration(
-  range(new Date(2026, 0, 31), new Date(2026, 1, 27, 23, 59, 59, 999)),
+  range(
+    Temporal.PlainDate.from("2026-01-31"),
+    Temporal.PlainDate.from("2026-02-28")
+  ),
   "month"
 );
 // → 1
 ```
 
-## The end is included
+## The end is excluded
 
-The period's `end` is its last millisecond, so `duration` measures up to one
-millisecond after it. That is why a whole day counts as one day and not
-"almost one". It also means a [`range`](../range/) that ends at midnight stops
-at the start of its last day:
+The period's `end` is where it stops, so `duration` measures up to `end`
+itself. A whole day counts as one day. A [`range`](../range/) that ends on
+Mar 31 stops where Mar 31 begins:
 
 ```ts
-duration(range(new Date(2026, 0, 1), new Date(2026, 2, 31)), "day");
+const jan1 = Temporal.PlainDate.from("2026-01-01");
+
+duration(range(jan1, Temporal.PlainDate.from("2026-03-31")), "day");
 // → 89, Mar 31 itself is not included
 
-duration(
-  range(new Date(2026, 0, 1), new Date(2026, 2, 31, 23, 59, 59, 999)),
-  "day"
-);
+duration(range(jan1, Temporal.PlainDate.from("2026-04-01")), "day");
 // → 90
 ```
 
