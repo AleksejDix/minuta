@@ -62,6 +62,17 @@ describe("snapWith(): moments", () => {
 });
 
 describe("snapWith(): days and enclosing units", () => {
+  it("snaps to midnights on a day the clocks change", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    // The 23-hour day's middle is 12:30
+    expect(snapWith(units, at("2026-03-29T12:15"), "day").toString()).toBe(
+      `2026-03-29T00:00:00+01:00${ZURICH}`
+    );
+    expect(snapWith(units, at("2026-03-29T12:45"), "day").toString()).toBe(
+      `2026-03-30T00:00:00+02:00${ZURICH}`
+    );
+  });
+
   it(
     "snaps to the start of a day, which is 01:00 where midnight is skipped",
     { timeout: 5000 },
