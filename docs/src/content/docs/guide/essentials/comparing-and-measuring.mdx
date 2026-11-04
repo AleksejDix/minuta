@@ -34,7 +34,7 @@ this month have? Each question has one function.
 | Are these two in the same day, week, …?   | [`same`](../../../api/minuta/same/)         |
 | Do these two share any time?              | [`overlaps`](../../../api/minuta/overlaps/) |
 | How many whole days, hours, … fit inside? | [`duration`](../../../api/minuta/duration/) |
-| How long is it, in milliseconds?          | [`length`](../../../api/minuta/length/)     |
+| How long is it, in exact time?            | `period.start.until(period.end)`            |
 
 All examples run in Europe/Zurich, with weeks from Monday to Sunday.
 
@@ -256,28 +256,27 @@ day to 13:00 the next is 23 hours, so zero whole days.
 
 ## How long is this range?
 
-[`length`](../../../api/minuta/length/) gives the plain elapsed time in
-milliseconds. Divide it to get minutes or hours:
+Temporal gives the plain elapsed time: `until` from the start to the end, a
+`Temporal.Duration`.
 
 ```ts
-import { length, period, range } from "@aleksejdix/minuta";
+import { period, range } from "@aleksejdix/minuta";
 
 const meeting = range(
-  new Date(2026, 2, 18, 9),
-  new Date(2026, 2, 18, 10, 59, 59, 999)
+  Temporal.ZonedDateTime.from("2026-03-18T09:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-18T11:00[Europe/Zurich]")
 );
 
-length(meeting); //          → 7200000
-length(meeting) / 60_000; // → 120 minutes
+meeting.start.until(meeting.end).total("minutes"); // → 120
 
-length(period(new Date(2026, 2, 18), "day")); // → 86400000 (24 hours)
-length(period(new Date(2026, 2, 29), "day")); // → 82800000 (23 hours)
+const day = period(
+  Temporal.ZonedDateTime.from("2026-03-29T12:00[Europe/Zurich]"),
+  "day"
+);
+day.start.until(day.end, { largestUnit: "hour" }).hours; // → 23, the clocks go forward
 ```
 
-`length` adds the last millisecond back, so a whole day is exactly
-86 400 000 ms, not one less.
-
-Use `length` for "how much time passes" (a timer, a progress bar). Use
+Use `until` for "how much time passes" (a timer, a progress bar). Use
 `duration` for "how many days or hours on the calendar" (a label like "31
 days").
 
@@ -288,7 +287,7 @@ A range ends exactly at the `Date` you pass, and that moment belongs to it.
 "from the 18th to the 25th" made like this leaves out the 25th:
 
 ```ts
-import { contains, duration, length, period, range } from "@aleksejdix/minuta";
+import { contains, duration, period, range } from "@aleksejdix/minuta";
 
 const trip = range(new Date(2026, 2, 18), new Date(2026, 2, 25));
 // → Wed Mar 18 00:00:00.000 – Wed Mar 25 00:00:00.000, unit "custom"
@@ -330,12 +329,6 @@ duration(wholeTrip, "day"); // → 8
   ]}
 />
 
-And a range that ends on a round time is one millisecond longer than it looks:
-
-```ts
-length(range(new Date(2026, 2, 18, 9), new Date(2026, 2, 18, 10))); // → 3600001
-```
-
 :::tip
 For a whole day, week or month, don't build a range at all: use `period`. It
 always ends at the right millisecond. Use `range` for spans that are not one
@@ -354,5 +347,4 @@ them.
   [`same`](../../../api/minuta/same/),
   [`overlaps`](../../../api/minuta/overlaps/),
   [`duration`](../../../api/minuta/duration/),
-  [`length`](../../../api/minuta/length/),
   [`range`](../../../api/minuta/range/).

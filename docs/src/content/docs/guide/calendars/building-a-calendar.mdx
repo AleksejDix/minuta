@@ -326,10 +326,10 @@ Mar 29 to Sat May 9.
 
 :::tip
 `period`, `next` and `previous` from `@aleksejdix/minuta` use the Temporal units with
-Monday weeks. With another week start or a time zone, bind everything to your units once with
-[`withUnits`](../../../api/minuta-core/with-units/) and the
-[`calendar`](../../../api/minuta-calendar/calendar/) plugin, and call
-`time.monthGrid(date)`, `time.next(month)` and so on.
+Monday weeks. With another week start or a time zone, bind your units once with
+[`withUnits`](../../../api/minuta-core/with-units/) and
+[`calendar`](../../../api/minuta-calendar/calendar/), and call
+`time.next(month)`, `grids.monthGrid(date)` and so on.
 :::
 
 This is a working calendar, but it is not a date picker yet. Selecting a day,

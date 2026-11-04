@@ -71,7 +71,6 @@ picture.
 | [`overlaps`](../overlaps/)        | Do two periods share any time?                               |
 | [`same`](../same/)                | Do two periods fall in the same day, week, month …?          |
 | [`duration`](../duration/)        | How many whole units fit into a period: the days in a month. |
-| [`length`](../length/)            | How long a period is, in milliseconds.                       |
 | [`MinutaError`](../minuta-error/) | The codes at the start of every error message.               |
 
 ## `minuta` or `@aleksejdix/minuta/core`?
@@ -84,7 +83,7 @@ Use **[`@aleksejdix/minuta/core`](../../minuta-core/overview/)** when you need a
 - weeks that start on another day, such as Sunday;
 - a fixed time zone (`dateFnsTzUnits`);
 - your own weekend days, or your own units;
-- plugins such as calendar grids, bound to the same settings;
+- calendar grids with the same settings;
 - the smallest possible bundle, with only the units you use.
 
 `@aleksejdix/minuta/core` has the same operations. They take the units as their first

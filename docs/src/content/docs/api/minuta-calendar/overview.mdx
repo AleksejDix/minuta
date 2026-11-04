@@ -28,7 +28,7 @@ import it.
 | [`dayGridWith`](../day-grid-with/)     | The real hours of a day: 23, 24 or 25, with the DST hours marked. |
 | [`isWeekdayWith`](../is-weekday-with/) | Whether a period touches only working days.                       |
 | [`isWeekendWith`](../is-weekend-with/) | Whether a period touches only weekend days.                       |
-| [`calendar`](../calendar/)             | The plugin: all five, ready for `withUnits` or `bind`.            |
+| [`calendar`](../calendar/)             | All five, bound to your units: `calendar(units)`.                 |
 
 ## Units first
 
@@ -64,19 +64,18 @@ which days the 6 rows hold:
 
 ## Or bind the units once
 
-Passing the units every time gets old. Give the `calendar` plugin to
-`withUnits` and call the functions without them:
+Passing the units every time gets old. Bind them once with `calendar` and
+call the functions without them:
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta/core";
+import { period } from "@aleksejdix/minuta";
 
-const time = withUnits(createUnits({ weekStartsOn: "sunday" }), {
-  plugins: [calendar],
-});
+const grids = calendar(createUnits({ weekStartsOn: "sunday" }));
 
-time.monthGrid(new Date(2026, 2, 15)); // same as monthGridWith(units, date)
-time.isWeekend(time.period(new Date(2026, 2, 21), "day")); // → true
+grids.monthGrid(Temporal.PlainDate.from("2026-03-15")); // same as monthGridWith(units, date)
+grids.isWeekend(period(Temporal.PlainDate.from("2026-03-21"), "day")); // → true
 ```
 
 ## Key ideas

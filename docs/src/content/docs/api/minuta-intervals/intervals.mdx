@@ -1,52 +1,58 @@
 ---
 title: intervals
-description: The intervals plugin — pass it to withUnits to get clamp, gap, merge, move, resize, snap and split on the bound object.
+description: Bind the interval functions to your units once — clamp, gap, merge, move, resize, snap and split on one object.
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
-import { intervals } from "@aleksejdix/minuta/intervals";
+import { divide, period } from "@aleksejdix/minuta";
 import { createUnits } from "@aleksejdix/minuta/core";
+import { intervals } from "@aleksejdix/minuta/intervals";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const time = withUnits(createUnits(), { plugins: [intervals] });
-export const days = time.divide(
-  time.period(plainDate("2026-03-01"), "month"),
-  "day"
-);
+export const edit = intervals(createUnits());
+export const days = divide(period(plainDate("2026-03-01"), "month"), "day");
 
-The intervals plugin. Pass it to `withUnits` and the interval functions
-join the operations on the bound object.
+Binds the interval functions to your units: `merge` and `snap` get the
+units filled in, and the five that need none come along unchanged, so all
+of them are on one object.
 
 ```ts
 import { intervals } from "@aleksejdix/minuta/intervals";
 ```
 
 ```ts
-withUnits(units, { plugins: [intervals] });
+intervals(units);
 ```
 
 ## Example
 
 ```ts
+import { createUnits } from "@aleksejdix/minuta/core";
 import { intervals } from "@aleksejdix/minuta/intervals";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { divide, period } from "@aleksejdix/minuta";
 
-const time = withUnits(createUnits(), { plugins: [intervals] });
+const edit = intervals(createUnits());
 
-const days = time.divide(time.period(new Date(2026, 2, 1), "month"), "day");
-time.merge(days, "month"); // → March, unit "month"
-time.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
+const days = divide(
+  period(Temporal.PlainDate.from("2026-03-01"), "month"),
+  "day"
+);
+edit.merge(days, "month"); // → March, unit "month"
+edit.snap(
+  Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"),
+  "minute",
+  { step: 15 }
+); // → 10:30
 ```
 
 <Timeline
-  caption="An operation and a plugin function on the same object: time.divide cuts March into 31 days, time.merge joins them back into one period with the unit month (solid, not hatched)."
+  caption="divide cuts March into 31 days; edit.merge joins them back into one period with the unit month (solid, not hatched)."
   tracks={[
-    { label: 'time.divide(march, "day")', periods: days },
+    { label: 'divide(march, "day")', periods: days },
     {
-      label: 'time.merge(days, "month")',
-      periods: [time.merge(days, "month")],
+      label: 'edit.merge(days, "month")',
+      periods: [edit.merge(days, "month")],
       tone: "accent",
     },
   ]}
@@ -58,27 +64,17 @@ time.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
   <Anatomy
     parts={[
       {
-        name: "time = withUnits(units, { plugins: [intervals] })",
-        note: "one object, every function bound to the same units",
+        name: "edit = intervals(units)",
+        note: "seven functions on one object",
         children: [
+          { name: "merge(periods, unit?)", note: "needs units: filled in" },
           {
-            name: "period, next, divide, duration, …",
-            note: "the operations of minuta/core",
+            name: "snap(value, unit, options?)",
+            note: "needs units: filled in",
           },
           {
-            name: "intervals",
-            note: "the plugin's seven functions",
-            children: [
-              { name: "merge(periods, unit?)", note: "needs units: filled in" },
-              {
-                name: "snap(date, unit, options?)",
-                note: "needs units: filled in",
-              },
-              {
-                name: "clamp, gap, move, resize, split",
-                note: "work on the dates alone",
-              },
-            ],
+            name: "clamp, gap, move, resize, split",
+            note: "work on the values alone",
           },
         ],
       },
@@ -86,36 +82,31 @@ time.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
   />
 </div>
 
-`intervals` is a plain object of seven functions:
+| Member   | Bound call                         | The same as                                               |
+| -------- | ---------------------------------- | --------------------------------------------------------- |
+| `clamp`  | `edit.clamp(period, bounds)`       | [`clamp(period, bounds)`](../clamp/)                      |
+| `gap`    | `edit.gap(from, to)`               | [`gap(from, to)`](../gap/)                                |
+| `merge`  | `edit.merge(periods, unit?)`       | [`mergeWith(units, periods, unit?)`](../merge-with/)      |
+| `move`   | `edit.move(period, start)`         | [`move(period, start)`](../move/)                         |
+| `resize` | `edit.resize(period, edge, value)` | [`resize(period, edge, value)`](../resize/)               |
+| `snap`   | `edit.snap(value, unit, options?)` | [`snapWith(units, value, unit, options?)`](../snap-with/) |
+| `split`  | `edit.split(period, at)`           | [`split(period, at)`](../split/)                          |
 
-| Member   | Bound call                        | The same as                                              |
-| -------- | --------------------------------- | -------------------------------------------------------- |
-| `clamp`  | `time.clamp(period, bounds)`      | [`clamp(period, bounds)`](../clamp/)                     |
-| `gap`    | `time.gap(from, to)`              | [`gap(from, to)`](../gap/)                               |
-| `merge`  | `time.merge(periods, unit?)`      | [`mergeWith(units, periods, unit?)`](../merge-with/)     |
-| `move`   | `time.move(period, targetDate)`   | [`move(period, targetDate)`](../move/)                   |
-| `resize` | `time.resize(period, edge, date)` | [`resize(period, edge, date)`](../resize/)               |
-| `snap`   | `time.snap(date, unit, options?)` | [`snapWith(units, date, unit, options?)`](../snap-with/) |
-| `split`  | `time.split(period, splitDate)`   | [`split(period, splitDate)`](../split/)                  |
+`snap` keeps its types bound: a `PlainDate` snaps to date units and gives a
+`PlainDate`, a `ZonedDateTime` gives a `ZonedDateTime`.
 
-Only `merge` and `snap` need units. The others work on milliseconds alone.
-They are in the plugin anyway, so all interval functions are on the same
-object.
+## Parameters
 
-## Only the plugin
+| Name    | What it is                                                                             |
+| ------- | -------------------------------------------------------------------------------------- |
+| `units` | The units to compute with, usually [`createUnits()`](../../minuta-core/create-units/). |
 
-`bind` from `@aleksejdix/minuta/core` binds the plugin on its own, without the
-operations:
+## Returns
 
-```ts
-import { bind } from "@aleksejdix/minuta/core";
-
-const tools = bind(createUnits(), intervals);
-tools.snap(new Date(2026, 2, 15, 10, 37), "minute", { step: 15 }); // → 10:30
-```
+An object of the seven functions above, without a `units` argument.
 
 ## Related
 
-- [`withUnits`](../../minuta-core/with-units/) — bind the operations and plugins to units.
-- [`calendar`](../../minuta-calendar/calendar/) — the other plugin; the two can be combined.
+- [`withUnits`](../../minuta-core/with-units/) — bind the operations to units.
+- [`calendar`](../../minuta-calendar/calendar/) — bind the calendar functions.
 - [Overview](../overview/) — everything in `@aleksejdix/minuta/intervals`.

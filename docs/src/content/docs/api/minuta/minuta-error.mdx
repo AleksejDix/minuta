@@ -91,11 +91,11 @@ class. Check `error instanceof RangeError` and the start of `error.message`.
 | [`next`](../next/), [`previous`](../previous/), [`shift`](../shift/) | `INVALID_DATE`, `UNIT_NOT_SUPPORTED`                       |
 | [`divide`](../divide/)                                               | `INVALID_OPTION`, `TOO_MANY_PERIODS`, `UNIT_NOT_SUPPORTED` |
 | [`duration`](../duration/), [`same`](../same/)                       | `UNIT_NOT_SUPPORTED`                                       |
-| [`length`](../length/), [`overlaps`](../overlaps/)                   | never throw                                                |
+| [`overlaps`](../overlaps/)                                           | never throw                                                |
 
 Dates are checked where they come in: in `period` and `range`. Most other
 functions trust the periods they get. A period you build by hand with an
-invalid date gives `[]` from `divide`, `NaN` from `duration` and `length`, and
+invalid date gives `[]` from `divide`, `NaN` from `duration`, and
 `false` from `overlaps`, `contains` and `same`; only `next`, `previous` and
 `shift` (with steps other than `0`) throw `INVALID_DATE` for it.
 
