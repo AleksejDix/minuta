@@ -1,10 +1,10 @@
 # minuta
 
-> Divide time into pieces: pure functions over plain, deeply readonly `Period` data (`{ start, end, unit }`, `end` inclusive), with the date engine plugged in as data ("units").
+> Divide time into pieces: pure functions over plain, deeply readonly `Period` data (`{ start, end, unit }`, `start` included and `end` excluded) of Temporal values: `PlainDate` for year to day, `ZonedDateTime` for hour to second. The unit rules are plain data ("units").
 
 ## Rules
 
-- Every unit-aware function exists twice: `xWith(units, …)` in `@aleksejdix/minuta/core` takes the units first; `x(…)` in `@aleksejdix/minuta` is the same function bound to the native `Date` units with weeks starting on Monday. Unit-free functions have one form and take no units.
+- Every unit-aware function exists twice: `xWith(units, …)` in `@aleksejdix/minuta/core` takes the units first; `x(…)` in `@aleksejdix/minuta` is the same function bound to `temporalUnits()`: weeks starting on Monday, moments in the runtime's zone. Where the runtime has no Temporal, `await temporalReady()` from `@aleksejdix/minuta/temporal` first. Unit-free functions have one form and take no units.
 - `withUnits(units, { plugins })` (from `@aleksejdix/minuta/core`) binds every core operation, and the functions of plugins such as `calendar` (`@aleksejdix/minuta/calendar`: grids, `isWeekday`, `isWeekend`) and `intervals` (`@aleksejdix/minuta/intervals`: `gap`, `clamp`, `merge`, `split`, `resize`, `move`, `snap`), to your units, e.g. `withUnits(temporalUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
 - `Units` is a partial map of unit specs; pass only the units you use (`{ day, month }`) to keep the bundle small.
 - No result is `undefined`, never `null` (`clamp` without overlap, `merge([])`, …).
@@ -503,7 +503,7 @@ Bind every function of `plugin` to `units`.
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
 const grids = bind(temporalUnits({ weekStartsOn: "sunday" }), calendar);
-grids.monthGrid(new Date());
+grids.monthGrid(Temporal.Now.plainDateISO());
 ```
 
 ### `boundAs`
@@ -546,7 +546,7 @@ withUnits(units: Units, options: WithUnitsOptions<Plugins> & NoClashes<Plugins> 
 ```
 
 Bind every operation, and the functions of any plugins, to `units`. Pass
-only the units you need, or an adapter's full set.
+only the units you need, or the full set of `temporalUnits()`.
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
@@ -554,8 +554,8 @@ import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
-time.next(time.period(new Date(), "week"));
-time.monthGrid(new Date()); // from the plugin
+time.next(time.period(Temporal.Now.plainDateISO(), "week"));
+time.monthGrid(Temporal.Now.plainDateISO()); // from the plugin
 time.units; // the units passed in
 ```
 
@@ -644,7 +644,7 @@ type WeekOptions = Readonly<{
 }>;
 ```
 
-Week options every adapter factory accepts.
+Week options of `temporalUnits`.
 
 ### `Weekday`
 
@@ -663,7 +663,7 @@ type WeekdayNumber =
   | typeof SATURDAY;
 ```
 
-A day of the week as `Date#getDay()` numbers it: 0 = Sunday … 6 = Saturday.
+A day of the week as a number: 0 = Sunday … 6 = Saturday.
 
 ### `AllUnits`
 
