@@ -9,8 +9,8 @@
  * import { temporalUnits } from "@aleksejdix/minuta/temporal";
  *
  * const time = withUnits(temporalUnits(), { plugins: [intervals] });
- * time.merge(time.divide(time.period(new Date(), "month"), "day"), "month");
- * time.snap(new Date(), "minute", { step: 15 });
+ * time.merge(time.divide(time.period(Temporal.Now.plainDateISO(), "month"), "day"), "month");
+ * time.snap(Temporal.Now.zonedDateTimeISO(), "minute", { step: 15 });
  *
  * @module minuta/intervals
  */

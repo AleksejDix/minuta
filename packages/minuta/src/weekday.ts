@@ -21,7 +21,7 @@ type Weekday =
   | "tuesday"
   | "wednesday";
 
-/** A day of the week as `Date#getDay()` numbers it: 0 = Sunday … 6 = Saturday. */
+/** A day of the week as a number: 0 = Sunday … 6 = Saturday. */
 type WeekdayNumber =
   | typeof SUNDAY
   | typeof MONDAY
@@ -32,7 +32,7 @@ type WeekdayNumber =
   | typeof SATURDAY;
 
 /**
- * Week options every adapter factory accepts.
+ * Week options of `temporalUnits`.
  */
 type WeekOptions = Readonly<{
   /** First day of the week. Default: `"monday"` (ISO 8601). */
@@ -62,20 +62,20 @@ function weekdayNumber(day: Weekday | WeekdayNumber): WeekdayNumber {
 }
 
 /**
- * The first day of the week from adapter options.
+ * The first day of the week from the options.
  *
- * @param options - Adapter options
- * @returns The week start as a `Date#getDay()` number, Monday by default
+ * @param options - Week options
+ * @returns The week start, 0 = Sunday … 6 = Saturday, Monday by default
  */
 function weekStartOf(options: WeekOptions): WeekdayNumber {
   return weekdayNumber(options.weekStartsOn ?? DEFAULT_WEEK_START);
 }
 
 /**
- * The weekend days from adapter options.
+ * The weekend days from the options.
  *
- * @param options - Adapter options
- * @returns The weekend as `Date#getDay()` numbers, Saturday and Sunday by default
+ * @param options - Week options
+ * @returns The weekend, 0 = Sunday … 6 = Saturday, Saturday and Sunday by default
  */
 function weekendOf(options: WeekOptions): readonly WeekdayNumber[] {
   if (options.weekend === undefined) {

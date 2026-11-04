@@ -61,7 +61,12 @@ const FIELDS: readonly (keyof Intl.DateTimeFormatOptions)[] = [
   "year",
 ];
 
-/** A value as `Intl` takes it everywhere: a Date and the zone to read it in. */
+/**
+ * A value as `Intl` takes it everywhere: a Date and the zone to read it in.
+ * The one Date in minuta: native `Intl.DateTimeFormat` cannot format the
+ * polyfill's Temporal objects, and `formatRange` takes no Temporal values
+ * from a polyfill at all, so formatting goes through the instant as a Date.
+ */
 type IntlValue = Readonly<{ date: Date; timeZone: string }>;
 
 /**
