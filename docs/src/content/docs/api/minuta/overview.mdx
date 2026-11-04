@@ -93,14 +93,13 @@ argument (`periodWith(units, date, "week")`), or you bind them once with
 them. See [Date engines](../../../concepts/date-engines/).
 
 ```ts
-import { withUnits } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
 time.period(new Date(2026, 2, 18), "week");
 // → Sun Mar 15 – Sat Mar 21
 ```
 
-`minuta` works like `withUnits(temporalUnits())`, but as separate functions,
+`minuta` works like `withUnits(createUnits())`, but as separate functions,
 so your bundler keeps only the ones you import.

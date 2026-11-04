@@ -23,7 +23,7 @@ Pick a day and a zone. **Mar 29 2026** is the night the clocks go forward in Eur
 
 ## The units decide the zone
 
-Periods come from **units**, made by a [date engine](../../api/adapters/overview/).
+Periods come from **units**, made by a [date engine](../../api/minuta-core/create-units/).
 The engine decides the zone:
 
 - `dateFnsTzUnits({ timeZone })` computes in the zone you pass.
@@ -49,7 +49,7 @@ mean by "today".
 
 ## Choosing a zone
 
-Use [`dateFnsTzUnits`](../../api/adapters/temporal-units/) with an IANA
+Use [`dateFnsTzUnits`](../../api/minuta-core/create-units/) with an IANA
 zone name. Then every function computes in that zone, wherever it runs:
 
 ```ts
@@ -80,9 +80,9 @@ computer's:
 All units carry a `timeZone` setting with the zone name:
 
 ```ts
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-temporalUnits().timeZone; // → "Europe/Zurich" (on a computer in Zurich)
+createUnits().timeZone; // → "Europe/Zurich" (on a computer in Zurich)
 dateFnsTzUnits({ timeZone: "Asia/Tokyo" }).timeZone; // → "Asia/Tokyo"
 ```
 
@@ -160,7 +160,7 @@ October 2000; with the computer in Recife, the year 2000 can come out with
 more than 366 days.
 
 Every engine that computes through `Date` can be affected, including
-`temporalUnits` and `dateFnsTzUnits`. minuta never stalls on such
+`createUnits` and `dateFnsTzUnits`. minuta never stalls on such
 answers: periods still touch and `next` still moves on, but their
 boundaries are only as right as the engine's. The Temporal API itself reads offsets
 from the zone data and is not affected.
@@ -178,11 +178,11 @@ clock, and `dayGridWith` can report wrong DST hours.
 
 | Engine           | Computes in                     |
 | ---------------- | ------------------------------- |
-| `temporalUnits`  | the computer's zone             |
+| `createUnits`    | the computer's zone             |
 | `dateFnsTzUnits` | the zone you pass (default UTC) |
 
 ## Related
 
-- [Date engines](../../api/adapters/overview/) — all engines compared.
+- [Date engines](../../api/minuta-core/create-units/) — all engines compared.
 - [Weeks and calendars](../weeks-and-calendars/) — week start, weekend, grids.
 - [`dayGridWith`](../../api/minuta-calendar/day-grid-with/) — the hours of a day.

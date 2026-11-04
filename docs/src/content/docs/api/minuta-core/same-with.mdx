@@ -4,12 +4,11 @@ description: Check whether two periods fall in the same day, week, month or year
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, periodWith } from "@aleksejdix/minuta/core";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const monday = temporalUnits();
-export const sunday = temporalUnits({ weekStartsOn: "sunday" });
+export const monday = createUnits();
+export const sunday = createUnits({ weekStartsOn: "sunday" });
 export const saturday = periodWith(monday, plainDate("2026-03-21"), "day");
 export const nextDay = periodWith(monday, plainDate("2026-03-22"), "day");
 
@@ -27,11 +26,10 @@ sameWith(units, first, second, unit);
 ## Example
 
 ```ts
-import { periodWith, sameWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, periodWith, sameWith } from "@aleksejdix/minuta/core";
 
-const monday = temporalUnits();
-const sunday = temporalUnits({ weekStartsOn: "sunday" });
+const monday = createUnits();
+const sunday = createUnits({ weekStartsOn: "sunday" });
 
 const saturday = periodWith(monday, new Date(2026, 2, 21), "day");
 const nextDay = periodWith(monday, new Date(2026, 2, 22), "day");
@@ -66,12 +64,12 @@ sameWith(sunday, saturday, nextDay, "week"); // → false, Sun–Sat weeks
 
 ## Parameters
 
-| Name     | What it is                                                                                              |
-| -------- | ------------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compare with, e.g. `temporalUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `first`  | One period.                                                                                             |
-| `second` | The other period.                                                                                       |
-| `unit`   | How coarse to compare: `"year"`, `"month"`, `"week"`, `"day"`, …, or `"custom"`.                        |
+| Name     | What it is                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| `units`  | The units to compare with, e.g. `createUnits()`. See [Date engines](../../../concepts/date-engines/). |
+| `first`  | One period.                                                                                           |
+| `second` | The other period.                                                                                     |
+| `unit`   | How coarse to compare: `"year"`, `"month"`, `"week"`, `"day"`, …, or `"custom"`.                      |
 
 ## Returns
 
@@ -80,7 +78,7 @@ With `"custom"`, `true` only when both start and end are the same
 millisecond; `units` is not used then.
 
 It works exactly like [`same`](../../minuta/same/), which is `sameWith` with
-`temporalUnits()` bound. Read that page for why only the starts are compared.
+`createUnits()` bound. Read that page for why only the starts are compared.
 
 ## Errors
 

@@ -24,8 +24,7 @@ boundAs<Shape>(): (fn) => fn
 
 ```ts
 import type { Period, Units } from "@aleksejdix/minuta/core";
-import { boundAs, withUnits } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { boundAs, createUnits, withUnits } from "@aleksejdix/minuta/core";
 
 // Once bound: a period of one kind in, the same kind out
 type FirstBound = <Source extends Period>(
@@ -38,7 +37,7 @@ const first = <Source extends Period>(
 ) => periods[0];
 
 const plugin = { first: boundAs<FirstBound>()(first) };
-const time = withUnits(temporalUnits(), { plugins: [plugin] });
+const time = withUnits(createUnits(), { plugins: [plugin] });
 time.first([time.period(Temporal.PlainDate.from("2026-03-18"), "day")]); // a DatePeriod
 ```
 

@@ -8,7 +8,7 @@ const API_GROUPS: readonly (readonly [string, string])[] = [
   ["minuta-calendar", "minuta/calendar"],
   ["minuta-intervals", "minuta/intervals"],
   ["minuta-format", "minuta/format"],
-  ["adapters", "Date engines"],
+  ["minuta-temporal", "minuta/temporal"],
   ["minuta-react", "minuta-react"],
   ["minuta-vue", "minuta-vue"],
   ["datefield", "datefield"],

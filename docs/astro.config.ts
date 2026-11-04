@@ -53,7 +53,7 @@ const demoAlias: VitePlugin = {
   },
 };
 
-// The pages compute with temporalUnits while they render; Node 24 has no Temporal
+// The pages compute with createUnits while they render; Node 24 has no Temporal
 const temporal: AstroIntegration = {
   hooks: { "astro:config:setup": temporalReady },
   name: "temporal-ready",

@@ -6,8 +6,7 @@ sidebar:
 ---
 
 import { plainDate } from "../../../components/temporal";
-import { divideWith, periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, divideWith, periodWith } from "@aleksejdix/minuta/core";
 import Timeline from "../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) =>
@@ -32,13 +31,13 @@ moves with them:
   caption='divideWith(units, march, "week") with Monday and Sunday weeks. The hatched pieces are the first and last weeks, cut at the edges of March.'
   tracks={[
     {
-      label: 'temporalUnits({ weekStartsOn: "monday" })',
-      periods: weeksOfMarch(temporalUnits({ weekStartsOn: "monday" })),
+      label: 'createUnits({ weekStartsOn: "monday" })',
+      periods: weeksOfMarch(createUnits({ weekStartsOn: "monday" })),
       tone: "accent",
     },
     {
-      label: 'temporalUnits({ weekStartsOn: "sunday" })',
-      periods: weeksOfMarch(temporalUnits({ weekStartsOn: "sunday" })),
+      label: 'createUnits({ weekStartsOn: "sunday" })',
+      periods: weeksOfMarch(createUnits({ weekStartsOn: "sunday" })),
     },
   ]}
 />
@@ -56,9 +55,9 @@ These four functions are a _unit spec_. A set of specs, one per unit, plus a
 few settings, is called **units**. It is a plain object:
 
 ```ts
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-const units = temporalUnits();
+const units = createUnits();
 
 Object.keys(units);
 // → ["day", "hour", "minute", "month", "quarter", "second", "week", "year",
@@ -81,21 +80,21 @@ The settings travel with the specs:
 An **adapter** is a function that makes units with your settings. Each lives
 in its own entry, so you only load the one you use:
 
-| Engine                      | Adapter                                                | Import                           |
-| --------------------------- | ------------------------------------------------------ | -------------------------------- |
-| Temporal                    | [`temporalUnits`](../../api/adapters/temporal-units/)  | `@aleksejdix/minuta/temporal`    |
-| date-fns-tz (any time zone) | [`dateFnsTzUnits`](../../api/adapters/temporal-units/) | `@aleksejdix/minuta/date-fns-tz` |
+| Engine                      | Adapter                                                 | Import                           |
+| --------------------------- | ------------------------------------------------------- | -------------------------------- |
+| Temporal                    | [`createUnits`](../../api/minuta-core/create-units/)    | `@aleksejdix/minuta/temporal`    |
+| date-fns-tz (any time zone) | [`dateFnsTzUnits`](../../api/minuta-core/create-units/) | `@aleksejdix/minuta/date-fns-tz` |
 
 Every adapter takes `weekStartsOn` and `weekend`. Days are named
 (`"sunday"`), and the numbers of `Date#getDay()` (0 = Sunday) work too:
 
 ```ts
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-temporalUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] });
+createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] });
 ```
 
-`temporalUnits` computes in the local time zone of the runtime. `dateFnsTzUnits` takes a `timeZone` and computes in it wherever the
+`createUnits` computes in the local time zone of the runtime. `dateFnsTzUnits` takes a `timeZone` and computes in it wherever the
 code runs (UTC when you leave it out).
 
 Whatever the adapter, periods are always plain objects with `Date`s in
@@ -124,10 +123,9 @@ without units built in. There are two ways to use it.
 using your units. This is the usual way:
 
 ```ts
-import { withUnits } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
 time.period(new Date(2026, 2, 18), "week");
 // → Sun Mar 15 – Sat Mar 21
@@ -138,10 +136,9 @@ form that takes the units first. Pass only the units you use, and the rest
 stay out of your bundle:
 
 ```ts
-import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
 
-const { day, month } = temporalUnits();
+const { day, month } = createUnits();
 const units = { day, month };
 
 nextWith(units, periodWith(units, new Date(2026, 2, 18), "month"));
@@ -181,10 +178,9 @@ everything else:
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
-import { withUnits } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(temporalUnits({ weekStartsOn: "sunday" }), {
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }), {
   plugins: [calendar],
 });
 
@@ -200,10 +196,9 @@ Units are plain data, so you can add one. Give it the four functions and put
 it next to an adapter's units:
 
 ```ts
-import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
 
-const base = temporalUnits();
+const base = createUnits();
 const fortnight = {
   startOf: (date) => base.week.startOf(date),
   endOf: (date) =>

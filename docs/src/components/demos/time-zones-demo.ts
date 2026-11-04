@@ -3,9 +3,8 @@
  * days and in other zones; units in a zone get the real day.
  */
 import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 import { demoRoots, part, plainDate } from "./dom";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
 
 const HOUR_MS = 3_600_000;
 const HOURS_A_DAY = 24;
@@ -79,7 +78,7 @@ function showProblem(
 
 function show(root: HTMLElement): void {
   const timeZone = part(root, "zone", HTMLSelectElement).value;
-  const time = withUnits(temporalUnits({ timeZone }));
+  const time = withUnits(createUnits({ timeZone }));
   const day = time.period(dateOf(part(root, "date", HTMLInputElement)), "day");
   const hours = time.duration(day, "hour");
   // The day as moments in the zone: from its start to the next day's

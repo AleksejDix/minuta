@@ -25,11 +25,10 @@ The week start decides where every `"week"` period begins. It is a setting
 of the **units**, chosen when you create them:
 
 ```ts
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const monday = withUnits(temporalUnits());
-const sunday = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
+const monday = withUnits(createUnits());
+const sunday = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
 monday.period(new Date(2026, 2, 18), "week"); // → Mon Mar 16 – Sun Mar 22
 sunday.period(new Date(2026, 2, 18), "week"); // → Sun Mar 15 – Sat Mar 21
@@ -38,7 +37,7 @@ sunday.period(new Date(2026, 2, 18), "week"); // → Sun Mar 15 – Sat Mar 21
 - The default is **Monday**, as in the ISO 8601 standard.
 - Name the day in lowercase English (`"sunday"` … `"saturday"`), or use the
   numbers of `Date#getDay()`: 0 = Sunday, 1 = Monday … 6 = Saturday.
-- The units store it as a number: `temporalUnits({ weekStartsOn: "sunday" }).weekStartsOn`
+- The units store it as a number: `createUnits({ weekStartsOn: "sunday" }).weekStartsOn`
   is `0`.
 - The default `minuta` entry (`import { period } from "@aleksejdix/minuta"`) always
   starts weeks on Monday. For another start, use `withUnits` from
@@ -62,7 +61,7 @@ functions, [`isWeekendWith`](../../api/minuta-calendar/is-weekend-with/) and
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
 import { period } from "@aleksejdix/minuta";
 
-const units = temporalUnits({ weekend: ["friday", "saturday"] });
+const units = createUnits({ weekend: ["friday", "saturday"] });
 
 isWeekendWith(units, period(new Date(2026, 2, 20), "day")); // → true  (Friday)
 isWeekendWith(units, period(new Date(2026, 2, 22), "day")); // → false (Sunday)
@@ -84,7 +83,7 @@ runtime supports it, `Intl.Locale#getWeekInfo()` tells you. It numbers days
 const info = new Intl.Locale("en-US").getWeekInfo();
 // → { firstDay: 7, weekend: [6, 7] }
 
-const units = temporalUnits({
+const units = createUnits({
   weekStartsOn: info.firstDay % 7, // → 0, Sunday
   weekend: info.weekend.map((day) => day % 7), // → [6, 0]
 });
@@ -119,10 +118,10 @@ nothing jumps when the user pages through months.
 ```ts
 import { monthGridWith } from "@aleksejdix/minuta/calendar";
 
-monthGridWith(temporalUnits(), new Date(2026, 2, 15)).periods[0];
+monthGridWith(createUnits(), new Date(2026, 2, 15)).periods[0];
 // → Mon Feb 23 (the week of Mar 1 starts on Monday)
 
-monthGridWith(temporalUnits({ weekStartsOn: "sunday" }), new Date(2026, 2, 15))
+monthGridWith(createUnits({ weekStartsOn: "sunday" }), new Date(2026, 2, 15))
   .periods[0];
 // → Sun Mar 1 (March 2026 starts on a Sunday)
 ```
@@ -154,5 +153,5 @@ although March 21–31 already fall in the next Persian month, Farvardin 1405.
 ## Related
 
 - [Time zones](../time-zones/)
-- [Date engines](../../api/adapters/overview/) — the options every engine takes.
+- [Date engines](../../api/minuta-core/create-units/) — the options every engine takes.
 - [`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)

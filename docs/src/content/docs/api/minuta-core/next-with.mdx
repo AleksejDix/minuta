@@ -4,14 +4,13 @@ description: Get the period right after a period — the next day, week or month
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const sunday = temporalUnits({ weekStartsOn: "sunday" });
+export const sunday = createUnits({ weekStartsOn: "sunday" });
 export const week = periodWith(sunday, plainDate("2026-03-18"), "week");
 export const mondayWeek = periodWith(
-  temporalUnits(),
+  createUnits(),
   plainDate("2026-03-18"),
   "week"
 );
@@ -30,10 +29,9 @@ nextWith(units, period);
 ## Example
 
 ```ts
-import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
 
-const units = temporalUnits({ weekStartsOn: "sunday" });
+const units = createUnits({ weekStartsOn: "sunday" });
 const week = periodWith(units, new Date(2026, 2, 18), "week");
 // → Sun Mar 15 – Sat Mar 21
 
@@ -55,10 +53,10 @@ nextWith(units, week);
 
 ## Parameters
 
-| Name     | What it is                                                                                              |
-| -------- | ------------------------------------------------------------------------------------------------------- |
-| `units`  | The units to compute with, e.g. `temporalUnits()`. See [Date engines](../../../concepts/date-engines/). |
-| `period` | The current period.                                                                                     |
+| Name     | What it is                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| `units`  | The units to compute with, e.g. `createUnits()`. See [Date engines](../../../concepts/date-engines/). |
+| `period` | The current period.                                                                                   |
 
 ## Returns
 
@@ -66,7 +64,7 @@ A new, whole period of the same unit that starts right after `period`.
 `nextWith(units, p)` is the same as [`shiftWith(units, p, 1)`](../shift-with/).
 
 It works exactly like [`next`](../../minuta/next/), which is `nextWith` with
-`temporalUnits()` bound. Read that page for daylight saving and for custom
+`createUnits()` bound. Read that page for daylight saving and for custom
 periods, which move by their own length.
 
 ## Use the same units as the period
@@ -76,13 +74,12 @@ start and then rounds to a whole unit with _these_ units. A Monday week moved
 with Sunday units comes out as a Sunday week:
 
 ```ts
-import { nextWith, periodWith } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
 
-const mondayWeek = periodWith(temporalUnits(), new Date(2026, 2, 18), "week");
+const mondayWeek = periodWith(createUnits(), new Date(2026, 2, 18), "week");
 // → Mon Mar 16 – Sun Mar 22
 
-nextWith(temporalUnits({ weekStartsOn: "sunday" }), mondayWeek);
+nextWith(createUnits({ weekStartsOn: "sunday" }), mondayWeek);
 // → Sun Mar 22 – Sat Mar 28
 ```
 
@@ -92,7 +89,7 @@ nextWith(temporalUnits({ weekStartsOn: "sunday" }), mondayWeek);
     { label: "mondayWeek", periods: [mondayWeek], tone: "ink" },
     {
       label: "nextWith(monday, …)",
-      periods: [nextWith(temporalUnits(), mondayWeek)],
+      periods: [nextWith(createUnits(), mondayWeek)],
       tone: "muted",
     },
     {

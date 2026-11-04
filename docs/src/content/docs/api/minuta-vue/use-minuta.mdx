@@ -4,14 +4,13 @@ description: A Vue composable that binds every minuta function to your units and
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { withUnits } from "@aleksejdix/minuta/core";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 import Flow from "../../../../components/diagrams/Flow.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const day = plainDate("2026-03-18");
-export const mondayWeeks = withUnits(temporalUnits());
-export const sundayWeeks = withUnits(temporalUnits({ weekStartsOn: "sunday" }));
+export const mondayWeeks = withUnits(createUnits());
+export const sundayWeeks = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
 A composable that gives you every minuta function bound to your units, plus a
 _browsed period_ — the month (or week, day, …) the user is looking at — as
@@ -80,12 +79,12 @@ What one click does to the state:
 
 All options are optional. You can call `useMinuta()` with nothing.
 
-| Name    | What it is                                                                | Default                         |
-| ------- | ------------------------------------------------------------------------- | ------------------------------- |
-| `date`  | The date to browse first. Read only once.                                 | now                             |
-| `now`   | The moment that counts as "now". Pass it to fix "today", e.g. in tests.   | the clock                       |
-| `unit`  | The size of the browsed period: `"month"`, `"week"`, `"day"`, `"year"`, … | `"month"`                       |
-| `units` | The units every function uses. The week start lives here.                 | `temporalUnits()`, Monday weeks |
+| Name    | What it is                                                                | Default                       |
+| ------- | ------------------------------------------------------------------------- | ----------------------------- |
+| `date`  | The date to browse first. Read only once.                                 | now                           |
+| `now`   | The moment that counts as "now". Pass it to fix "today", e.g. in tests.   | the clock                     |
+| `unit`  | The size of the browsed period: `"month"`, `"week"`, `"day"`, `"year"`, … | `"month"`                     |
+| `units` | The units every function uses. The week start lives here.                 | `createUnits()`, Monday weeks |
 
 You can pass the options in three ways:
 
@@ -99,12 +98,12 @@ changing it later does not move the browsed period. Call `browse()` for that.
 
 ```js
 import { shallowRef } from "vue";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-const units = shallowRef(temporalUnits());
+const units = shallowRef(createUnits());
 const minuta = useMinuta(() => ({ units: units.value }));
 
-units.value = temporalUnits({ weekStartsOn: "sunday" }); // weeks now start on Sunday
+units.value = createUnits({ weekStartsOn: "sunday" }); // weeks now start on Sunday
 ```
 
 ## Returns

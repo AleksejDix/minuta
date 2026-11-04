@@ -24,9 +24,9 @@ includes it and passes its own `locale`.
 ```vue
 <script setup>
 import { CalendarGrid, CalendarRoot } from "@aleksejdix/minuta-vue/components";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-const sundayFirst = temporalUnits({ weekStartsOn: "sunday" });
+const sundayFirst = createUnits({ weekStartsOn: "sunday" });
 </script>
 
 <template>

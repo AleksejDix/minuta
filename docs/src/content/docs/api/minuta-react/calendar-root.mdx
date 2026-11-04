@@ -32,9 +32,9 @@ import {
   CalendarRoot,
 } from "@aleksejdix/minuta-react/components";
 import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
-const sundayFirst = temporalUnits({ weekStartsOn: "sunday" });
+const sundayFirst = createUnits({ weekStartsOn: "sunday" });
 
 export function BookingCalendar() {
   return (
@@ -96,13 +96,13 @@ The parts of a calendar, and which sits inside which:
 
 ## Props
 
-| Name         | What it is                                                                      | Default                         |
-| ------------ | ------------------------------------------------------------------------------- | ------------------------------- |
-| `units`      | The units of the calendar. The week start comes from here.                      | `temporalUnits()`, Monday weeks |
-| `date`       | The date whose month is shown first. Read only once, on the first render.       | today                           |
-| `isDisabled` | A function that gets a day and returns `true` when that day can't be selected.  | no day is disabled              |
-| `onSelect`   | Called with the day [period](../../minuta/period/) when the user selects a day. | —                               |
-| `children`   | The calendar parts and anything else you want inside the calendar.              | —                               |
+| Name         | What it is                                                                      | Default                       |
+| ------------ | ------------------------------------------------------------------------------- | ----------------------------- |
+| `units`      | The units of the calendar. The week start comes from here.                      | `createUnits()`, Monday weeks |
+| `date`       | The date whose month is shown first. Read only once, on the first render.       | today                         |
+| `isDisabled` | A function that gets a day and returns `true` when that day can't be selected.  | no day is disabled            |
+| `onSelect`   | Called with the day [period](../../minuta/period/) when the user selects a day. | —                             |
+| `children`   | The calendar parts and anything else you want inside the calendar.              | —                             |
 
 Create `units` once, outside the component or with `useMemo`. A new units
 object on every render rebinds every function on every render.
