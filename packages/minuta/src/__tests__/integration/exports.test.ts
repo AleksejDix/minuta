@@ -63,7 +63,6 @@ const MONDAY = 1;
 
 const UNIT_FREE_OPERATIONS: readonly string[] = [
   "contains",
-  "length",
   "overlaps",
   "range",
 ];

@@ -143,7 +143,7 @@ function shift<Source extends Period>(source: Source, steps: number): Source {
 }
 
 export { divide, duration, next, period, previous, same, shift };
-export { contains, length, overlaps, range } from "#src/operations/index";
+export { contains, overlaps, range } from "#src/operations/index";
 export { MinutaError } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
 export type { Chunks, DivideOptions } from "#src/operations/divide";

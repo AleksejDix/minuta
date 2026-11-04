@@ -1,9 +1,9 @@
 import type { DatePeriod, DateUnit, TimePeriod } from "#src/types";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { durationWith, length } from "./duration";
 import { periodWith, range } from "./period";
 import { createUnits } from "#src/create-units";
+import { durationWith } from "./duration";
 
 const units = createUnits({ timeZone: "Europe/Zurich" });
 
@@ -29,26 +29,6 @@ function periodOf(value: string, unit: DateUnit): DatePeriod {
 function zurich(from: string, to: string): TimePeriod {
   return range(zoned(`${from}[Europe/Zurich]`), zoned(`${to}[Europe/Zurich]`));
 }
-
-describe("length()", () => {
-  it("measures a date period in days", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    expect(length(periodOf("2026-03-18", "month")).toString()).toBe("P31D");
-  });
-
-  it("measures a time period in exact time", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const hour = periodWith(
-      units,
-      zoned("2026-03-29T12:00[Europe/Zurich]"),
-      "hour"
-    );
-    expect(length(hour).toString()).toBe("PT1H");
-    expect(
-      length(zurich("2026-03-29T00:00", "2026-03-30T00:00")).toString()
-    ).toBe("PT23H");
-  });
-});
 
 describe("durationWith(): calendar units", () => {
   it.each([

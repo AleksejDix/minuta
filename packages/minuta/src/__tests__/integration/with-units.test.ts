@@ -1,19 +1,15 @@
-import type { DatePeriod, PlainDate, Units } from "#src/types";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, expectTypeOf, it } from "vitest";
+import type { DatePeriod } from "#src/types";
 import type { MonthGrid } from "#src/calendar";
 import { calendar } from "#src/calendar";
 import { createUnits } from "#src/create-units";
 import { withUnits } from "#src/core";
 
 const SUNDAY = 0;
-const WEEK_DAYS = 7;
 const SEVEN = 7;
 
 const units = createUnits({ weekStartsOn: SUNDAY });
-const workdays = {
-  workdaysIn: (_units: Units, value: PlainDate): PlainDate => value,
-};
 
 describe("withUnits()", () => {
   it("exposes the units it was built with", { timeout: 5000 }, () => {
@@ -35,33 +31,17 @@ describe("withUnits()", () => {
       expect(time.next(day).start.toString()).toBe("2026-03-16");
     }
   );
+});
 
-  it("binds plugin functions to the same units", { timeout: 5000 }, () => {
+describe("calendar()", () => {
+  it("binds the calendar functions to the units", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const time = withUnits(units, { plugins: [calendar] });
-    const grid = time.monthGrid(date("2026-03-15"));
-    expectTypeOf(time.monthGrid).returns.toEqualTypeOf<MonthGrid>();
+    const grids = calendar(units);
+    const grid = grids.monthGrid(date("2026-03-15"));
+    expectTypeOf(grids.monthGrid).returns.toEqualTypeOf<MonthGrid>();
     // The grid follows the units' Sunday week start
     expect(
       grid.periods.map((day) => day.start.dayOfWeek % SEVEN).at(SUNDAY)
     ).toBe(SUNDAY);
-  });
-
-  it("merges several plugins", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const time = withUnits(units, { plugins: [calendar, workdays] });
-    expectTypeOf(time).toHaveProperty("workdaysIn");
-    expectTypeOf(time).toHaveProperty("yearGrid");
-    expect(Object.keys(time)).toContain("workdaysIn");
-  });
-
-  it("rejects plugin members that clash", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const clashing = { next: (_units: Units): number => WEEK_DAYS };
-    const twice = [workdays, workdays] as const;
-    // @ts-expect-error -- `next` is already an operation
-    expect(() => withUnits(units, { plugins: [clashing] })).not.toThrow();
-    // @ts-expect-error -- `workdaysIn` comes from two plugins
-    expect(() => withUnits(units, { plugins: twice })).not.toThrow();
   });
 });

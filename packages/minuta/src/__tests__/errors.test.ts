@@ -4,7 +4,7 @@ import { createUnits } from "#src/create-units";
 import { date } from "#src/test/temporal";
 import { divideWith } from "#src/operations/divide";
 import { periodWith } from "#src/operations/period";
-import { snapWith } from "#src/operations/snap";
+import { snapWith } from "#src/operations/snap-with";
 
 const MAX_PERIODS = 10;
 const ZERO = 0;

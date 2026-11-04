@@ -1,7 +1,7 @@
 export { clamp } from "./clamp";
 export { contains } from "./contains";
 export { divideWith } from "./divide";
-export { durationWith, length } from "./duration";
+export { durationWith } from "./duration";
 export { gap } from "./gap";
 export { mergeWith } from "./merge";
 export { move } from "./move";
@@ -10,7 +10,7 @@ export { periodWith, range } from "./period";
 export { resize } from "./resize";
 export { sameWith } from "./same";
 export { nextWith, previousWith, shiftWith } from "./shift";
-export { snapWith } from "./snap";
+export { snapWith } from "./snap-with";
 export { split } from "./split";
 export { isWeekdayWith } from "./utils/is-weekday";
 export { isWeekendWith } from "./utils/is-weekend";

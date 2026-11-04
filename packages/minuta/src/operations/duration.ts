@@ -1,25 +1,6 @@
 import type { Period, Unit, Units } from "#src/types";
 import { isDatePeriod, zonedPeriod } from "#src/values";
 import { specFor, timeSpecFor, timeZoneOf } from "#src/units";
-import type { Temporal } from "@js-temporal/polyfill";
-
-/**
- * The period's length: whole days for a date period, exact hours, minutes
- * and smaller for a time period.
- *
- * @example
- * length(march); // P31D
- * length(zurichDayOfClockChange); // PT23H, as hours (a time period)
- *
- * @param period - The period to measure
- * @returns The length as a Temporal duration
- */
-function length(period: Period): Temporal.Duration {
-  if (isDatePeriod(period)) {
-    return period.start.until(period.end, { largestUnit: "day" });
-  }
-  return period.start.until(period.end, { largestUnit: "hour" });
-}
 
 /**
  * How many complete `unit`s fit into a period, counted from its start with
@@ -48,4 +29,4 @@ function durationWith(units: Units, period: Period, unit: Unit): number {
   return timeSpecFor(units, unit).diff(period.start, period.end);
 }
 
-export { durationWith, length };
+export { durationWith };

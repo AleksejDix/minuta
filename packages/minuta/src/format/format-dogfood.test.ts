@@ -15,11 +15,8 @@ import { format, formatAsRange } from "#src/test/format";
 import { Temporal } from "@js-temporal/polyfill";
 import { createUnits } from "#src/create-units";
 import { intervals } from "#src/intervals";
-import { withUnits } from "#src/core";
 
-const { clamp, gap, merge, move, snap, split } = withUnits(createUnits(), {
-  plugins: [intervals],
-});
+const { clamp, gap, merge, move, snap, split } = intervals(createUnits());
 
 const FORWARD_TWO = 2;
 const BACKWARD_THREE = -3;
