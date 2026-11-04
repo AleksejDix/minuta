@@ -1,16 +1,15 @@
 /**
- * Editing and combining periods, as a plugin: the gap between two periods,
- * their overlap (`clamp`), merging, splitting, resizing, moving, and
- * snapping dates to unit boundaries.
+ * Editing and combining periods: the gap between two periods, their overlap
+ * (`clamp`), merging, splitting, resizing, moving, and snapping dates to
+ * unit boundaries. `intervals(units)` binds the unit-aware ones to your
+ * units.
  *
  * @example
- * import { withUnits } from "@aleksejdix/minuta/core";
- * import { intervals } from "@aleksejdix/minuta/intervals";
  * import { createUnits } from "@aleksejdix/minuta/core";
+ * import { intervals } from "@aleksejdix/minuta/intervals";
  *
- * const time = withUnits(createUnits(), { plugins: [intervals] });
- * time.merge(time.divide(time.period(Temporal.Now.plainDateISO(), "month"), "day"), "month");
- * time.snap(Temporal.Now.zonedDateTimeISO(), "minute", { step: 15 });
+ * const edit = intervals(createUnits());
+ * edit.snap(Temporal.Now.zonedDateTimeISO(), "minute", { step: 15 });
  *
  * @module minuta/intervals
  */
@@ -28,85 +27,82 @@ import {
   mergeWith,
   move,
   resize,
-  snapWith,
   split,
 } from "#src/operations/index";
-import type { BoundAs } from "#src/bind";
 import type { SnapOptions } from "#src/operations/index";
-import { boundAs } from "#src/bind";
-
-/**
- * A function that takes no units, made to take them first like every
- * plugin function, so `withUnits` can bind it. Bound, it has exactly the
- * function's own signature, overloads and type parameters included.
- *
- * @param operation - A unit-free function
- * @returns The same function with a leading, ignored `units` parameter
- */
-function ignoringUnits<
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- The constraint matches any function; never[] must stay spreadable
-  Operation extends (...args: never[]) => unknown,
->(operation: Operation): IgnoringUnits<Operation> {
-  /**
-   * The operation, called without the units.
-   *
-   * @param _units - Ignored
-   * @param args - The operation's arguments
-   * @returns What the operation returns
-   */
-  function withoutUnits(
-    _units: Units,
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- A generic tuple cannot be proven read-only; Readonly<> is applied
-    ...args: Readonly<Parameters<Operation>>
-  ): ReturnType<Operation> {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Calling the operation returns its own return type
-    return operation(...args) as ReturnType<Operation>;
-  }
-  return boundAs<Operation>()(withoutUnits);
-}
-
-/** A unit-free function as a plugin function: units first, ignored. */
-type IgnoringUnits<Operation extends (...args: readonly never[]) => unknown> =
-  ((
-    units: Units,
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- A generic tuple cannot be proven read-only; Readonly<> is applied
-    ...args: Readonly<Parameters<Operation>>
-  ) => ReturnType<Operation>) &
-    BoundAs<Operation>;
+import { snapAny } from "#src/operations/snap";
 
 /** `snapWith` once bound: a date snaps to dates, a moment to moments. */
-type SnapBound = {
+type Snap = {
   (value: PlainDate, unit: DateUnit, options?: SnapOptions): PlainDate;
   (value: ZonedDateTime, unit: Unit, options?: SnapOptions): ZonedDateTime;
 };
 
-/** `mergeWith` once bound: periods of one kind merge into that kind. */
-type MergeBound = <Source extends Period>(
-  periods: readonly Source[],
-  unit?: Unit
-) => Source | undefined;
+/**
+ * The interval functions, the unit-aware ones bound to one set of units.
+ */
+type Intervals = Readonly<{
+  clamp: typeof clamp;
+  gap: typeof gap;
+  merge: <Source extends Period>(
+    periods: readonly Source[],
+    unit?: Unit
+  ) => Source | undefined;
+  move: typeof move;
+  resize: typeof resize;
+  snap: Snap;
+  split: typeof split;
+}>;
 
 /**
- * The intervals plugin: pass it to `withUnits(units, { plugins: [intervals] })`
- * or to `bind(units, intervals)`.
+ * Bind the interval functions to `units`: `merge(periods)` and
+ * `snap(value, unit)` instead of `mergeWith(units, …)` and
+ * `snapWith(units, …)`. The unit-free ones come along unchanged.
+ *
+ * @example
+ * const edit = intervals(createUnits());
+ * edit.snap(Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), "minute", { step: 15 }); // 10:30
+ * edit.merge(days, "month"); // one period, if the days touch
+ *
+ * @param units - Unit specs to bind
+ * @returns The interval functions without the `units` parameter
  */
-const intervals: Readonly<{
-  clamp: IgnoringUnits<typeof clamp>;
-  gap: IgnoringUnits<typeof gap>;
-  merge: typeof mergeWith & BoundAs<MergeBound>;
-  move: IgnoringUnits<typeof move>;
-  resize: IgnoringUnits<typeof resize>;
-  snap: typeof snapWith & BoundAs<SnapBound>;
-  split: IgnoringUnits<typeof split>;
-}> = {
-  clamp: ignoringUnits(clamp),
-  gap: ignoringUnits(gap),
-  merge: boundAs<MergeBound>()(mergeWith),
-  move: ignoringUnits(move),
-  resize: ignoringUnits(resize),
-  snap: boundAs<SnapBound>()(snapWith),
-  split: ignoringUnits(split),
-};
+function intervals(units: Units): Intervals {
+  function snap(
+    value: PlainDate,
+    unit: DateUnit,
+    options?: SnapOptions
+  ): PlainDate;
+  function snap(
+    value: ZonedDateTime,
+    unit: Unit,
+    options?: SnapOptions
+  ): ZonedDateTime;
+  /**
+   * `snapWith` bound to the units.
+   *
+   * @param value - The date or moment to snap
+   * @param unit - The unit whose boundaries to snap to
+   * @param options - `step` and `mode`
+   * @returns The boundary, of the value's kind
+   */
+  function snap(
+    value: PlainDate | ZonedDateTime,
+    unit: Unit,
+    options?: SnapOptions
+  ): PlainDate | ZonedDateTime {
+    return snapAny(units, value, unit, options);
+  }
+  return {
+    clamp,
+    gap,
+    merge: (periods, unit) => mergeWith(units, periods, unit),
+    move,
+    resize,
+    snap,
+    split,
+  };
+}
 
 export { intervals };
 export {
@@ -118,4 +114,5 @@ export {
   snapWith,
   split,
 } from "#src/operations/index";
+export type { Intervals, Snap };
 export type { SnapMode, SnapOptions } from "#src/operations/index";

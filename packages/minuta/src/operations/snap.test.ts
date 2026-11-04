@@ -1,7 +1,7 @@
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { createUnits } from "#src/create-units";
-import { snapWith } from "./snap";
+import { snapWith } from "./snap-with";
 
 const units = createUnits({ timeZone: "Europe/Zurich" });
 const ZURICH = "[Europe/Zurich]";

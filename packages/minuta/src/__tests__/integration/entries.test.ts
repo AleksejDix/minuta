@@ -6,13 +6,11 @@ import {
 } from "#src/calendar";
 import { describe, expect, it } from "vitest";
 import type { TimeValue } from "#src/types";
-import { bind } from "#src/core";
 import { createUnits } from "#src/create-units";
 import { dateTime } from "#src/test/temporal";
 
 const UNIT_FREE_OPERATIONS: readonly string[] = [
   "contains",
-  "length",
   "overlaps",
   "range",
 ];
@@ -61,7 +59,7 @@ function exportsOf(namespace: unknown): ReadonlyMap<string, unknown> {
 
 describe("export verification: core.ts", () => {
   it(
-    "should export the context-first operations and binders",
+    "should export the context-first operations and withUnits",
     { timeout: 5000 },
     async () => {
       expect.hasAssertions();
@@ -72,8 +70,6 @@ describe("export verification: core.ts", () => {
           ...UNIT_FREE_OPERATIONS,
           "MinutaError",
           "createUnits",
-          "bind",
-          "boundAs",
           "specFor",
           "withUnits",
         ])
@@ -146,12 +142,12 @@ describe("export verification: calendar.ts", () => {
   );
 
   it(
-    "should give the same grids through bind(units, calendar)",
+    "should give the same grids through calendar(units)",
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
       const units = createUnits({ weekStartsOn: 0 });
-      const grids = bind(units, calendar);
+      const grids = calendar(units);
 
       for (const date of GRID_DATES) {
         expect(grids.monthGrid(date)).toStrictEqual(monthGridWith(units, date));

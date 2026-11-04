@@ -5,7 +5,7 @@
 ## Rules
 
 - Every unit-aware function exists twice: `xWith(units, …)` in `@aleksejdix/minuta/core` takes the units first; `x(…)` in `@aleksejdix/minuta` is the same function bound to `createUnits()`: weeks starting on Monday, moments in the runtime's zone. Where the runtime has no Temporal, `await temporalReady()` from `@aleksejdix/minuta/temporal` first. Unit-free functions have one form and take no units.
-- `withUnits(units, { plugins })` (from `@aleksejdix/minuta/core`) binds every core operation, and the functions of plugins such as `calendar` (`@aleksejdix/minuta/calendar`: grids, `isWeekday`, `isWeekend`) and `intervals` (`@aleksejdix/minuta/intervals`: `gap`, `clamp`, `merge`, `split`, `resize`, `move`, `snap`), to your units, e.g. `withUnits(createUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] })`; the result's `units` are the units passed in. `bind(units, plugin)` binds a plugin on its own.
+- `withUnits(units)` (from `@aleksejdix/minuta/core`) binds every core operation to your units, e.g. `withUnits(createUnits({ weekStartsOn: "sunday" }))`; the result's `units` are the units passed in. `calendar(units)` (`@aleksejdix/minuta/calendar`: grids, `isWeekday`, `isWeekend`) and `intervals(units)` (`@aleksejdix/minuta/intervals`: `gap`, `clamp`, `merge`, `split`, `resize`, `move`, `snap`) bind their entry's functions the same way.
 - `Units` is a partial map of unit specs; pass only the units you use (`{ day, month }`) to keep the bundle small.
 - No result is `undefined`, never `null` (`clamp` without overlap, `merge([])`, …).
 - Invalid input throws `RangeError`; the message starts with one of the error codes below and says how to fix it.
@@ -125,20 +125,6 @@ contains(march, Temporal.PlainDate.from("2026-03-20")); // true
 contains(march, Temporal.PlainDate.from("2026-04-01")); // false
 ```
 
-### `length`
-
-```ts
-length(period: Period): Temporal.Duration
-```
-
-The period's length: whole days for a date period, exact hours, minutes
-and smaller for a time period.
-
-```ts
-length(march); // P31D
-length(zurichDayOfClockChange); // PT23H, as hours (a time period)
-```
-
 ### `overlaps`
 
 ```ts
@@ -223,7 +209,6 @@ type Minuta = Readonly<{
     options?: DivideOptions
   ) => Chunks<Source, Name>;
   duration: (period: Period, unit: Unit) => number;
-  length: typeof length;
   next: <Source extends Period>(period: Source) => Source;
   overlaps: typeof overlaps;
   period: <Name extends Unit>(value: TimeValue, unit: Name) => PeriodOf<Name>;
@@ -410,10 +395,6 @@ durationWith(units, march, "day"); // 31
 durationWith(units, period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // 23 in Zurich
 ```
 
-### `length`
-
-Same as `length` in `@aleksejdix/minuta`.
-
 ### `nextWith`
 
 ```ts
@@ -492,33 +473,6 @@ shiftWith(units, march, 2)  // May
 shiftWith(units, march, -1) // February
 ```
 
-### `bind`
-
-```ts
-bind(units: Units, plugin: Functions): BoundPlugin<Functions>
-```
-
-Bind every function of `plugin` to `units`.
-
-```ts
-import { calendar } from "@aleksejdix/minuta/calendar";
-const grids = bind(createUnits({ weekStartsOn: "sunday" }), calendar);
-grids.monthGrid(Temporal.Now.plainDateISO());
-```
-
-### `boundAs`
-
-```ts
-boundAs(): <Fn>(fn: Fn) => Fn & BoundAs<Shape>
-```
-
-Give a plugin function the signature it has once bound. Only a type: the
-function is returned as it is.
-
-```ts
-const snap = boundAs<typeof snapBound>()(snapWith);
-```
-
 ### `createUnits`
 
 ```ts
@@ -579,72 +533,20 @@ Same as `MinutaErrorCode` in `@aleksejdix/minuta`.
 ### `withUnits`
 
 ```ts
-withUnits(units: Units, options: WithUnitsOptions<Plugins> & NoClashes<Plugins> = {}): Minuta & BoundPlugins<Plugins>
+withUnits(units: Units): Minuta
 ```
 
-Bind every operation, and the functions of any plugins, to `units`. Pass
-only the units you need, or the full set of `createUnits()`.
+Bind every operation to `units`. Pass only the units you need, or the
+full set of `createUnits()`. For the calendar and interval functions, use
+`calendar(units)` and `intervals(units)` from their entries.
 
 ```ts
-import { calendar } from "@aleksejdix/minuta/calendar";
 import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(createUnits({ weekStartsOn: "sunday" }), { plugins: [calendar] });
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 time.next(time.period(Temporal.Now.plainDateISO(), "week"));
-time.monthGrid(Temporal.Now.plainDateISO()); // from the plugin
 time.units; // the units passed in
 ```
-
-### `Bound`
-
-```ts
-type Bound<Fn> =
-  Fn extends BoundAs<infer Shape>
-    ? unknown extends Shape
-      ? Unmarked<Fn>
-      : Shape
-    : Unmarked<Fn>;
-```
-
-`Fn` without its leading `units` parameter: the signature it names with
-`BoundAs`, else its own parameters after `units`.
-
-### `BoundAs`
-
-```ts
-type BoundAs<Shape> = Readonly<{ "~bound"?: Shape }>;
-```
-
-Marks a plugin function with the signature it has once bound. Binding
-through a conditional type keeps only the last overload of a function and
-none of its type parameters; a function that has overloads or type
-parameters names its bound form here instead.
-
-### `BoundPlugin`
-
-```ts
-type BoundPlugin<Functions> = Readonly<{
-  [Name in keyof Functions]: Bound<Functions[Name]>;
-}>;
-```
-
-Every function of a plugin, bound to one set of units.
-
-### `Plugin`
-
-```ts
-type Plugin = Readonly<Record<string, WithUnits>>;
-```
-
-An object of context-first functions, such as `calendar`.
-
-### `WithUnits`
-
-```ts
-type WithUnits = (units: Units, ...args: readonly never[]) => unknown;
-```
-
-A context-first function: unit specs first, then its own arguments.
 
 ### `Chunks`
 
@@ -657,17 +559,6 @@ Same as `DivideOptions` in `@aleksejdix/minuta`.
 ### `Minuta`
 
 Same as `Minuta` in `@aleksejdix/minuta`.
-
-### `WithUnitsOptions`
-
-```ts
-type WithUnitsOptions<Plugins extends readonly Plugin[]> = Readonly<{
-  /** Plugins whose functions join the result, bound to the same units */
-  plugins?: Plugins | undefined;
-}>;
-```
-
-Options of `withUnits`.
 
 ### `WeekOptions`
 
@@ -846,17 +737,17 @@ Same as `ZonedDateTime` in `@aleksejdix/minuta`.
 ### `calendar`
 
 ```ts
-const calendar: Readonly<{
-  dayGrid: typeof dayGridWith;
-  isWeekday: typeof isWeekdayWith;
-  isWeekend: typeof isWeekendWith;
-  monthGrid: typeof monthGridWith;
-  yearGrid: typeof yearGridWith;
-}>
+calendar(units: Units): Calendar
 ```
 
-The calendar plugin: pass it to `withUnits(units, { plugins: [calendar] })`
-or to `bind(units, calendar)`.
+Bind the calendar functions to `units`: `monthGrid(date)` instead of
+`monthGridWith(units, date)`.
+
+```ts
+const grids = calendar(createUnits({ weekStartsOn: "sunday" }));
+grids.monthGrid(Temporal.Now.plainDateISO()); // 6 weeks, from a Sunday
+grids.isWeekend(period(Temporal.PlainDate.from("2026-03-21"), "day")); // true
+```
 
 ### `dayGridWith`
 
@@ -932,6 +823,20 @@ isWeekendWith(createUnits(), period(Temporal.PlainDate.from("2026-03-21"), "day"
 isWeekendWith(createUnits({ weekend: ["friday", "saturday"] }), period(Temporal.PlainDate.from("2026-03-20"), "day")); // true (a Friday)
 ```
 
+### `Calendar`
+
+```ts
+type Calendar = Readonly<{
+  dayGrid: (value: TimeValue) => DayGrid;
+  isWeekday: (period: Period) => boolean;
+  isWeekend: (period: Period) => boolean;
+  monthGrid: (value: TimeValue) => MonthGrid;
+  yearGrid: (value: TimeValue) => YearGrid;
+}>;
+```
+
+The calendar functions, bound to one set of units.
+
 ### `DayGrid`
 
 ```ts
@@ -995,19 +900,18 @@ week start the grid was built with.
 ### `intervals`
 
 ```ts
-const intervals: Readonly<{
-  clamp: IgnoringUnits<typeof clamp>;
-  gap: IgnoringUnits<typeof gap>;
-  merge: typeof mergeWith & BoundAs<MergeBound>;
-  move: IgnoringUnits<typeof move>;
-  resize: IgnoringUnits<typeof resize>;
-  snap: typeof snapWith & BoundAs<SnapBound>;
-  split: IgnoringUnits<typeof split>;
-}>
+intervals(units: Units): Intervals
 ```
 
-The intervals plugin: pass it to `withUnits(units, { plugins: [intervals] })`
-or to `bind(units, intervals)`.
+Bind the interval functions to `units`: `merge(periods)` and
+`snap(value, unit)` instead of `mergeWith(units, …)` and
+`snapWith(units, …)`. The unit-free ones come along unchanged.
+
+```ts
+const edit = intervals(createUnits());
+edit.snap(Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), "minute", { step: 15 }); // 10:30
+edit.merge(days, "month"); // one period, if the days touch
+```
 
 ### `clamp`
 
@@ -1102,7 +1006,7 @@ resize(meeting, "end", Temporal.ZonedDateTime.from("2026-03-29T11:30[Europe/Zuri
 ```ts
 snapWith(units: Units, value: PlainDate, unit: DateUnit, options?: SnapOptions): PlainDate
 snapWith(units: Units, value: ZonedDateTime, unit: Unit, options?: SnapOptions): ZonedDateTime
-snapWith(units: Units, value: PlainDate | ZonedDateTime, unit: Unit, options: SnapOptions = {}): PlainDate | ZonedDateTime
+snapWith(units: Units, value: PlainDate | ZonedDateTime, unit: Unit, options?: SnapOptions): PlainDate | ZonedDateTime
 ```
 
 Snap a date or a moment to a boundary of `step` units: the unit's start,
@@ -1135,6 +1039,36 @@ split(march, Temporal.PlainDate.from("2026-03-15"));
 // [2026-03-01 – 2026-03-15, 2026-03-15 – 2026-04-01]
 split(march, Temporal.PlainDate.from("2027-01-01")); // undefined
 ```
+
+### `Intervals`
+
+```ts
+type Intervals = Readonly<{
+  clamp: typeof clamp;
+  gap: typeof gap;
+  merge: <Source extends Period>(
+    periods: readonly Source[],
+    unit?: Unit
+  ) => Source | undefined;
+  move: typeof move;
+  resize: typeof resize;
+  snap: Snap;
+  split: typeof split;
+}>;
+```
+
+The interval functions, the unit-aware ones bound to one set of units.
+
+### `Snap`
+
+```ts
+type Snap = {
+  (value: PlainDate, unit: DateUnit, options?: SnapOptions): PlainDate;
+  (value: ZonedDateTime, unit: Unit, options?: SnapOptions): ZonedDateTime;
+};
+```
+
+`snapWith` once bound: a date snaps to dates, a moment to moments.
 
 ### `SnapMode`
 

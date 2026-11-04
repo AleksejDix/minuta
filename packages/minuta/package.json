@@ -93,9 +93,9 @@
       "limit": "5 kB"
     },
     {
-      "name": "minuta/calendar: monthGrid via bind",
+      "name": "minuta/calendar: monthGrid via calendar(units)",
       "import": {
-        "dist/core.js": "{ bind, createUnits }",
+        "dist/core.js": "{ createUnits }",
         "dist/calendar.js": "{ calendar }"
       },
       "limit": "5 kB"

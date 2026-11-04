@@ -9,10 +9,10 @@ npm install @aleksejdix/minuta
 
 | What you import                                                 | minified + brotli |
 | --------------------------------------------------------------- | ----------------- |
-| `minuta`: `period`, `next`, `divide`                            | 2.0 kB            |
-| `@aleksejdix/minuta/core` with only the `day` and `month` units | 1.6 kB            |
-| Calendar grids through `bind`                                   | 2.2 kB            |
-| `createUnits` from `@aleksejdix/minuta/temporal`                | 1.4 kB            |
+| `minuta`: `period`, `next`, `divide`                            | 2.4 kB            |
+| `@aleksejdix/minuta/core` with only the `day` and `month` units | 1.7 kB            |
+| Calendar grids through `calendar(units)`                        | 2.7 kB            |
+| `temporalReady` from `@aleksejdix/minuta/temporal`              | 0.3 kB            |
 
 Zero dependencies, ES modules only, `sideEffects: false`. Budgets are
 checked on every CI run. Where the runtime has no Temporal yet (Safari,
@@ -50,10 +50,10 @@ configure.
 | Navigate | `next(period)` · `previous(period)` · `shift(period, steps)`      |
 | Compose  | `divide(period, unit, { step })`                                  |
 | Compare  | `contains(period, value)` · `overlaps(a, b)` · `same(a, b, unit)` |
-| Ask      | `duration(period, unit)` · `length(period)`                       |
+| Ask      | `duration(period, unit)`                                          |
 
-Interval helpers and calendar functions are [plugins](#plugins) in their own
-entries, so they cost nothing until you import them.
+Interval helpers and calendar functions are in [their own
+entries](#calendar-and-intervals), so they cost nothing until you import them.
 
 ```ts
 import {
@@ -125,58 +125,55 @@ nextWith(units, periodWith(units, Temporal.Now.plainDateISO(), "month"));
 A unit missing from `units` throws a `RangeError` starting with
 `UNIT_NOT_SUPPORTED`.
 
-## Plugins
+## Calendar and intervals
 
-A plugin is an object of context-first functions. Pass it to `withUnits` and
-its functions join the operations, bound to the same units. Two ship with
-minuta:
+Two more entries bind their functions to your units the same way:
 
-| Entry                          | Plugin      | Functions                                                                                                                                                                           |
-| ------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@aleksejdix/minuta/calendar`  | `calendar`  | `monthGrid(value)` · `yearGrid(value)` · `dayGrid(value)` · `isWeekday(period)` · `isWeekend(period)`                                                                               |
-| `@aleksejdix/minuta/intervals` | `intervals` | `merge(periods, unit?)` · `split(period, at)` · `gap(a, b)` · `clamp(period, bounds)` · `move(period, start)` · `resize(period, edge, value)` · `snap(value, unit, { step, mode })` |
+| Entry                          | Bind with          | Functions                                                                                                                                                                           |
+| ------------------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@aleksejdix/minuta/calendar`  | `calendar(units)`  | `monthGrid(value)` · `yearGrid(value)` · `dayGrid(value)` · `isWeekday(period)` · `isWeekend(period)`                                                                               |
+| `@aleksejdix/minuta/intervals` | `intervals(units)` | `merge(periods, unit?)` · `split(period, at)` · `gap(a, b)` · `clamp(period, bounds)` · `move(period, start)` · `resize(period, edge, value)` · `snap(value, unit, { step, mode })` |
 
 ```ts
 import { calendar } from "@aleksejdix/minuta/calendar";
 import { intervals } from "@aleksejdix/minuta/intervals";
 import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(
-  createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] }),
-  { plugins: [calendar, intervals] }
-);
+const units = createUnits({
+  weekStartsOn: "sunday",
+  weekend: ["friday", "saturday"],
+});
+const time = withUnits(units);
+const grids = calendar(units);
+const edit = intervals(units);
+
 const today = Temporal.Now.plainDateISO();
-time.monthGrid(today).periods; // always 42 days: no layout jumps
-time.yearGrid(today).periods; // whole weeks covering the year
-time.dayGrid(today).periods; // the day's real hours: 23, 24 or 25
-time.isWeekend(time.period(Temporal.PlainDate.from("2026-03-20"), "day")); // true: a Friday
-time.snap(Temporal.Now.zonedDateTimeISO(), "minute", { step: 15 }); // the nearest quarter hour
+grids.monthGrid(today).periods; // always 42 days: no layout jumps
+grids.yearGrid(today).periods; // whole weeks covering the year
+grids.dayGrid(today).periods; // the day's real hours: 23, 24 or 25
+grids.isWeekend(time.period(Temporal.PlainDate.from("2026-03-20"), "day")); // true: a Friday
+edit.snap(Temporal.Now.zonedDateTimeISO(), "minute", { step: 15 }); // the nearest quarter hour
 time.next(time.period(today, "week")); // the operations, same units
-time.units; // the units it was built with
 ```
 
 The `weekend` lives in the units like the week start, so `isWeekend` and
 `isWeekday` follow it. `merge([])`, `clamp` without overlap, `split` outside
 the period and `gap` between touching periods return `undefined`.
 
-Member names must be unique: a plugin function named like an operation or
-like another plugin's is a type error. `bind(units, plugin)` binds a plugin on
-its own.
-
-Write your own the same way:
+Every function also comes context-first (`monthGridWith(units, value)`,
+`snapWith(units, value, unit)`), so your own functions are plain functions
+that take the units:
 
 ```ts
 import type { DatePeriod, Units } from "@aleksejdix/minuta/core";
-import { bind, createUnits, divideWith } from "@aleksejdix/minuta/core";
+import { createUnits, divideWith } from "@aleksejdix/minuta/core";
 import { period } from "@aleksejdix/minuta";
 
-const workdays = {
-  workdaysIn: (units: Units, month: DatePeriod) =>
-    divideWith(units, month, "day").filter((day) => day.start.dayOfWeek < 6),
-};
+const workdaysIn = (units: Units, month: DatePeriod) =>
+  divideWith(units, month, "day").filter((day) => day.start.dayOfWeek < 6);
 
 const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
-bind(createUnits(), workdays).workdaysIn(march); // 22 day periods
+workdaysIn(createUnits(), march); // 22 day periods
 ```
 
 Custom units are data too: add the name and its kind to `UnitRegistry`
