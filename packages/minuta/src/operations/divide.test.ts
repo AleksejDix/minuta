@@ -230,3 +230,27 @@ describe("divideWith(): uneven steps", () => {
     );
   });
 });
+
+describe("divideWith(): days of a time period across a clock change", () => {
+  it.each([
+    { from: "2026-03-28T00:00", hours: "24 23", to: "2026-03-30T00:00" },
+    { from: "2026-10-24T00:00", hours: "24 25", to: "2026-10-26T00:00" },
+  ] as const)(
+    "cuts $from to $to at midnights, not at the clock change",
+    { timeout: 5000 },
+    ({ from, hours, to }) => {
+      expect.hasAssertions();
+      const span = range(
+        zoned(`${from}[Europe/Zurich]`),
+        zoned(`${to}[Europe/Zurich]`)
+      );
+      const days = divideWith(units, span, "day");
+      expect(
+        days
+          .map((day) => day.start.until(day.end, { largestUnit: "hour" }).hours)
+          .join(" ")
+      ).toBe(hours);
+      expect(touching(days)).toBe(true);
+    }
+  );
+});

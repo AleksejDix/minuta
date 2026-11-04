@@ -149,9 +149,10 @@ function timeSpecFor(units: Units, unit: Unit): TimeSpec {
 }
 
 /**
- * Where the unit after the one starting at `start` begins. For time units
- * that is the next wall-clock boundary or the zone's next clock change,
- * whichever comes first, so a unit never spans a clock change.
+ * Where the unit after the one starting at `start` begins: the next
+ * boundary, or the zone's next clock change when it comes first and the
+ * unit starts there. An hour, a minute or a second never spans a clock
+ * change; a day on moments does, its start is the start of its date.
  *
  * @param spec - The unit's spec on moments
  * @param start - A unit start
@@ -164,7 +165,11 @@ function nextStart(spec: TimeSpec, start: ZonedDateTime): ZonedDateTime {
     return next;
   }
   const change = start.getTimeZoneTransition("next");
-  if (change !== null && compare(change, next) < EQUAL) {
+  if (
+    change !== null &&
+    compare(change, next) < EQUAL &&
+    compare(spec.startOf(change), change) === EQUAL
+  ) {
     return change;
   }
   return next;
