@@ -14,7 +14,7 @@ type ZonedDateTime = Readonly<Temporal.ZonedDateTime>;
 /**
  * Registry of unit names and their kind: `"date"` units (a year … a day)
  * are made of calendar dates, `"time"` units (an hour … a second) of
- * moments in a time zone. An interface so plugins can add units through
+ * moments in a time zone. An interface so your code can add units through
  * module augmentation; the matching spec is passed as data in `Units`.
  */
 // oxlint-disable-next-line typescript/consistent-type-definitions -- Module augmentation requires an interface
