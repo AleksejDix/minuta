@@ -1,18 +1,17 @@
 import type { JSX, ReactNode } from "react";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 import { describe, expect, it } from "vitest";
 import { MinutaRoot } from "./minuta-root";
 import type { ZonedDateTime } from "@aleksejdix/minuta/core";
 import { renderHook } from "@testing-library/react";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinutaContext } from "./minuta-context";
-import { withUnits } from "@aleksejdix/minuta/core";
 import { zoned } from "./test-temporal";
 
 type WrapperProps = Readonly<{ children: ReactNode }>;
 
 const SUNDAY = 0;
 const WEEK = 7;
-const UNITS = temporalUnits({ weekStartsOn: SUNDAY });
+const UNITS = createUnits({ weekStartsOn: SUNDAY });
 
 function createTestDate(): ZonedDateTime {
   return zoned("2024-01-15T12:30:45[Europe/Zurich]");

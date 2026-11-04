@@ -5,8 +5,8 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { RenderResult } from "@testing-library/react";
 import type { WeekStart } from "./week-start";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { date } from "#src/test-temporal";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const GRID_DAYS = 42;
 const JANUARY_2024_OUTSIDE_DAYS = 11;
@@ -18,7 +18,7 @@ function renderCalendar(weekStartsOn: WeekStart = MONDAY): RenderResult {
   return render(
     <CalendarRoot
       date={date("2024-01-15")}
-      units={temporalUnits({ weekStartsOn })}
+      units={createUnits({ weekStartsOn })}
     >
       <CalendarHeader />
       <CalendarGrid />

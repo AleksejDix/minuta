@@ -1,7 +1,7 @@
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
+import { createUnits } from "#src/create-units";
 import { dayGridWith } from "./day-grid";
-import { temporalUnits } from "#src/adapters/temporal/index";
 
 const FIRST = 0;
 const ONE = 1;
@@ -41,7 +41,7 @@ describe("dayGridWith(): clock changes", () => {
     { timeout: 5000 },
     ({ day, gapHour, hours, zone }) => {
       expect.hasAssertions();
-      const grid = dayGridWith(temporalUnits({ timeZone: zone }), date(day));
+      const grid = dayGridWith(createUnits({ timeZone: zone }), date(day));
       expect(grid.periods).toHaveLength(hours);
       expect(grid.gapHour).toBe(gapHour);
       expect(grid.ambiguousHour).toBeUndefined();
@@ -59,7 +59,7 @@ describe("dayGridWith(): fall back", () => {
     { timeout: 5000 },
     ({ ambiguousHour, day, zone }) => {
       expect.hasAssertions();
-      const grid = dayGridWith(temporalUnits({ timeZone: zone }), date(day));
+      const grid = dayGridWith(createUnits({ timeZone: zone }), date(day));
       expect(grid.periods).toHaveLength(TWENTY_FIVE);
       expect(grid.ambiguousHour).toBe(ambiguousHour);
       expect(grid.gapHour).toBeUndefined();
@@ -71,7 +71,7 @@ describe("dayGridWith(): plain days and zones", () => {
   it("has 24 plain hours without clock changes", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const grid = dayGridWith(
-      temporalUnits({ timeZone: "UTC" }),
+      createUnits({ timeZone: "UTC" }),
       date("2024-03-10")
     );
     expect(grid.periods.map((slot) => slot.hour)).toStrictEqual(
@@ -89,7 +89,7 @@ describe("dayGridWith(): plain days and zones", () => {
     () => {
       expect.hasAssertions();
       const grid = dayGridWith(
-        temporalUnits({ timeZone: "UTC" }),
+        createUnits({ timeZone: "UTC" }),
         zoned("2024-03-10T12:00[America/New_York]")
       );
       expect(grid.periods).toHaveLength(TWENTY_THREE);
@@ -102,7 +102,7 @@ describe("dayGridWith(): plain days and zones", () => {
   it("has no hours on the day Samoa skipped", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const grid = dayGridWith(
-      temporalUnits({ timeZone: "Pacific/Apia" }),
+      createUnits({ timeZone: "Pacific/Apia" }),
       date("2011-12-30")
     );
     expect(grid.periods).toStrictEqual([]);

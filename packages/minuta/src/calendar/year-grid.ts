@@ -23,7 +23,7 @@ type YearGrid = Readonly<{
  * week containing December 31. The week start comes from the `week` unit.
  *
  * @example
- * yearGridWith(temporalUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-06-01")).periods; // 53 week periods
+ * yearGridWith(createUnits({ weekStartsOn: "monday" }), Temporal.PlainDate.from("2026-06-01")).periods; // 53 week periods
  *
  * @param units - Available unit specs (needs `year` and `week`)
  * @param value - Any value in the target year

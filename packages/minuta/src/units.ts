@@ -41,7 +41,7 @@ const SETTINGS: ReadonlySet<string> = new Set([
  * The spec for `unit`.
  *
  * @example
- * specFor(temporalUnits(), "week").startOf(Temporal.PlainDate.from("2026-03-18")); // 2026-03-16, a Monday
+ * specFor(createUnits(), "week").startOf(Temporal.PlainDate.from("2026-03-18")); // 2026-03-16, a Monday
  *
  * @param units - Available unit specs
  * @param unit - Unit to look up
@@ -58,7 +58,7 @@ function specFor<Name extends Unit>(units: Units, unit: Name): SpecOf<Name> {
         .join(", ") || "none";
     throw new RangeError(
       `${MinutaError.UnitNotSupported}: no "${unit}" spec in the units passed (available: ${available}). ` +
-        `Pass a full set such as temporalUnits(), or add a "${unit}" spec to your units.`
+        `Pass a full set such as createUnits(), or add a "${unit}" spec to your units.`
     );
   }
   return spec;

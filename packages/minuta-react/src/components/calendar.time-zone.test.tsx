@@ -4,7 +4,7 @@ import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import { at } from "#src/test-temporal";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 
 const MARCH_DAYS = 31;
 const FIRST_DAY = 1;
@@ -13,7 +13,7 @@ const MARCH_NUMBERS: readonly string[] = Array.from(
   (_unused, index) => String(index + FIRST_DAY)
 );
 // UTC+14: far from every runtime zone the tests run in
-const units = temporalUnits({ timeZone: "Pacific/Kiritimati" });
+const units = createUnits({ timeZone: "Pacific/Kiritimati" });
 
 describe("calendar parts with time-zone units", () => {
   afterEach(cleanup);

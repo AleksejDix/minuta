@@ -3,10 +3,10 @@ import { date, dateTime, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
 import { contains } from "./contains";
+import { createUnits } from "#src/create-units";
 import { overlaps } from "./overlaps";
-import { temporalUnits } from "#src/adapters/temporal/index";
 
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
+const units = createUnits({ timeZone: "Europe/Zurich" });
 const march = periodWith(units, date("2026-03-18"), "month");
 const hour = periodWith(
   units,

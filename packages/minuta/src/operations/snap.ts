@@ -14,7 +14,7 @@ import {
   timeSpecFor,
 } from "#src/units";
 import { compare, isPlainDate } from "#src/values";
-import { getTemporal } from "#src/adapters/temporal/temporal-api";
+import { getTemporal } from "#src/temporal-api";
 
 const DEFAULT_STEP = 1;
 const EQUAL = 0;

@@ -3,10 +3,10 @@ import { date, text, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
 import { compare } from "#src/values";
+import { createUnits } from "#src/create-units";
 import { divideWith } from "./divide";
-import { temporalUnits } from "#src/adapters/temporal/index";
 
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
+const units = createUnits({ timeZone: "Europe/Zurich" });
 
 const EQUAL = 0;
 const FIRST = 0;

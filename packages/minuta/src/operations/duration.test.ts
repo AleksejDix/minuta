@@ -3,9 +3,9 @@ import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { durationWith, length } from "./duration";
 import { periodWith, range } from "./period";
-import { temporalUnits } from "#src/adapters/temporal/index";
+import { createUnits } from "#src/create-units";
 
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
+const units = createUnits({ timeZone: "Europe/Zurich" });
 
 const ZERO = 0;
 const ONE = 1;
@@ -131,7 +131,7 @@ describe("durationWith(): partial, empty and zoned periods", () => {
     { timeout: 5000 },
     ({ day, hours, zone }) => {
       expect.hasAssertions();
-      const inZone = temporalUnits({ timeZone: zone });
+      const inZone = createUnits({ timeZone: zone });
       const period = periodWith(inZone, date(day), "day");
       expect(durationWith(inZone, period, "hour")).toBe(hours);
     }

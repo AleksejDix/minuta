@@ -6,9 +6,9 @@ import {
 import { describe, expect, it } from "vitest";
 import type { VNode } from "vue";
 import { at } from "#src/test/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { h } from "vue";
 import { mountRender } from "#src/test/mount";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const MARCH_DAYS = 31;
 const FIRST_DAY = 1;
@@ -17,7 +17,7 @@ const MARCH_NUMBERS: readonly string[] = Array.from(
   (_unused, index) => String(index + FIRST_DAY)
 );
 // UTC+14: far from every runtime zone the tests run in
-const units = temporalUnits({ timeZone: "Pacific/Kiritimati" });
+const units = createUnits({ timeZone: "Pacific/Kiritimati" });
 
 describe("calendar parts with time-zone units", () => {
   it("numbers the days in the units' time zone", { timeout: 5000 }, () => {

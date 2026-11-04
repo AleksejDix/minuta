@@ -3,14 +3,14 @@ import { date, zoned } from "#src/test/temporal";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { MonthGrid } from "#src/calendar";
 import { calendar } from "#src/calendar";
-import { temporalUnits } from "#src/temporal";
+import { createUnits } from "#src/create-units";
 import { withUnits } from "#src/core";
 
 const SUNDAY = 0;
 const WEEK_DAYS = 7;
 const SEVEN = 7;
 
-const units = temporalUnits({ weekStartsOn: SUNDAY });
+const units = createUnits({ weekStartsOn: SUNDAY });
 const workdays = {
   workdaysIn: (_units: Units, value: PlainDate): PlainDate => value,
 };

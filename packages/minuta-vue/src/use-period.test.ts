@@ -2,8 +2,8 @@ import type { Period, Unit } from "@aleksejdix/minuta/core";
 import { computed, effect, isRef, ref } from "vue";
 import { describe, expect, it } from "vitest";
 import { probeInRoot, silenceVueWarnings } from "./test/mount";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { date } from "#src/test/temporal";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinutaContext } from "./minuta-context";
 import { usePeriod } from "./use-period";
 
@@ -48,7 +48,7 @@ describe("usePeriod()", () => {
     expect.hasAssertions();
     const { result: week } = probeInRoot(() => usePeriod("week"), {
       date: testDate,
-      units: temporalUnits({ weekStartsOn: SUNDAY }),
+      units: createUnits({ weekStartsOn: SUNDAY }),
     });
 
     expect(week.value.start).toStrictEqual(date("2023-12-31"));

@@ -7,16 +7,16 @@ import {
   second,
   weekSpec,
   year,
-} from "./specs";
+} from "#src/specs";
 import { weekStartOf, weekendOf } from "#src/weekday";
 import type { AllUnits } from "#src/types";
 import type { WeekOptions } from "#src/weekday";
 import { runtimeTimeZone } from "#src/values";
 
 /**
- * Options of `temporalUnits`: the week, the weekend and the time zone.
+ * Options of `createUnits`: the week, the weekend and the time zone.
  */
-type TemporalUnitsOptions = WeekOptions &
+type UnitsOptions = WeekOptions &
   Readonly<{
     /**
      * IANA time zone that dates become moments in, e.g. when a day is
@@ -36,16 +36,15 @@ type TemporalUnitsOptions = WeekOptions &
  * `await temporalReady()` first.
  *
  * @example
- * import { temporalUnits } from "@aleksejdix/minuta/temporal";
- * import { withUnits } from "@aleksejdix/minuta/core";
+ * import { createUnits, withUnits } from "@aleksejdix/minuta/core";
  *
- * const time = withUnits(temporalUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
+ * const time = withUnits(createUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
  * time.period(Temporal.PlainDate.from("2026-03-18"), "week"); // [Mar 15, Mar 22)
  *
  * @param options - Week start, weekend and time zone
  * @returns A spec for every unit, with the settings
  */
-function temporalUnits(options: TemporalUnitsOptions = {}): AllUnits {
+function createUnits(options: UnitsOptions = {}): AllUnits {
   const weekStartsOn = weekStartOf(options);
   return {
     day,
@@ -62,5 +61,5 @@ function temporalUnits(options: TemporalUnitsOptions = {}): AllUnits {
   };
 }
 
-export { temporalUnits };
-export type { TemporalUnitsOptions };
+export { createUnits };
+export type { UnitsOptions };

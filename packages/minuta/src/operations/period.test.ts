@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
 import { Temporal } from "@js-temporal/polyfill";
 import type { TimeValue } from "#src/types";
-import { temporalUnits } from "#src/adapters/temporal/index";
+import { createUnits } from "#src/create-units";
 
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
+const units = createUnits({ timeZone: "Europe/Zurich" });
 const ZURICH = "[Europe/Zurich]";
 
 describe("periodWith(): date units", () => {

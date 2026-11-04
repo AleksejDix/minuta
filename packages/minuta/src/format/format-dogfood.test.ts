@@ -13,11 +13,11 @@ import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { format, formatAsRange } from "#src/test/format";
 import { Temporal } from "@js-temporal/polyfill";
+import { createUnits } from "#src/create-units";
 import { intervals } from "#src/intervals";
-import { temporalUnits } from "#src/temporal";
 import { withUnits } from "#src/core";
 
-const { clamp, gap, merge, move, snap, split } = withUnits(temporalUnits(), {
+const { clamp, gap, merge, move, snap, split } = withUnits(createUnits(), {
   plugins: [intervals],
 });
 

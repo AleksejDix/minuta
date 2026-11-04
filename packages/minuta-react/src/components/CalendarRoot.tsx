@@ -11,7 +11,7 @@ type CalendarRootProps = Readonly<{
   isDisabled?: ((day: Period) => boolean) | undefined;
   /** Called with the clicked day */
   onSelect?: ((day: Period) => void) | undefined;
-  /** Unit specs, default: `temporalUnits()` (weeks start on Monday) */
+  /** Unit specs, default: `createUnits()` (weeks start on Monday) */
   units?: Units | undefined;
 }>;
 

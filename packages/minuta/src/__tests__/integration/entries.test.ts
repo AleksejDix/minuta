@@ -7,8 +7,8 @@ import {
 import { describe, expect, it } from "vitest";
 import type { TimeValue } from "#src/types";
 import { bind } from "#src/core";
+import { createUnits } from "#src/create-units";
 import { dateTime } from "#src/test/temporal";
-import { temporalUnits } from "#src/temporal";
 
 const UNIT_FREE_OPERATIONS: readonly string[] = [
   "contains",
@@ -71,6 +71,7 @@ describe("export verification: core.ts", () => {
           ...CORE_OPERATIONS,
           ...UNIT_FREE_OPERATIONS,
           "MinutaError",
+          "createUnits",
           "bind",
           "boundAs",
           "specFor",
@@ -149,7 +150,7 @@ describe("export verification: calendar.ts", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const units = temporalUnits({ weekStartsOn: 0 });
+      const units = createUnits({ weekStartsOn: 0 });
       const grids = bind(units, calendar);
 
       for (const date of GRID_DATES) {

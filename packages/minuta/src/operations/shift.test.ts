@@ -3,9 +3,9 @@ import { date, text, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { nextWith, previousWith, shiftWith } from "./shift";
 import { periodWith, range } from "./period";
-import { temporalUnits } from "#src/adapters/temporal/index";
+import { createUnits } from "#src/create-units";
 
-const units = temporalUnits({ timeZone: "Europe/Zurich" });
+const units = createUnits({ timeZone: "Europe/Zurich" });
 const ZURICH = "[Europe/Zurich]";
 
 const MINUS_THREE_HUNDRED_SIXTY_SIX = -366;

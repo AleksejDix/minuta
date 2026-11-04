@@ -1,12 +1,11 @@
 import type { MinutaOptions, MinutaState } from "./types";
 import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 import { useCallback, useMemo, useState } from "react";
 import { currentMoment } from "./now";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useClock } from "./use-clock";
-import { withUnits } from "@aleksejdix/minuta/core";
 
-const DEFAULT_UNITS: Units = temporalUnits();
+const DEFAULT_UNITS: Units = createUnits();
 
 // The units' zone, else the runtime's
 function timeZoneOf(units: Units): string {

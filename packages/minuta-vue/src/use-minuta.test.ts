@@ -1,10 +1,9 @@
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 import { date, now, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import type { TimePeriod } from "@aleksejdix/minuta/core";
 import { isRef } from "vue";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
-import { withUnits } from "@aleksejdix/minuta/core";
 
 const WEEK_LENGTH = 7;
 
@@ -51,7 +50,7 @@ describe("useMinuta() defaults", () => {
         minuta.period(testDate, "week").start.dayOfWeek % WEEK_LENGTH
       ).toBe(MONDAY);
       expect(Object.keys(minuta.units.value)).toStrictEqual(
-        Object.keys(temporalUnits())
+        Object.keys(createUnits())
       );
     }
   );
@@ -87,7 +86,7 @@ describe("useMinuta() options", () => {
     for (const weekStartsOn of WEEK_DAY_INDEXES) {
       const minuta = useMinuta({
         date: testDate,
-        units: temporalUnits({ weekStartsOn }),
+        units: createUnits({ weekStartsOn }),
       });
       expect(
         minuta.period(testDate, "week").start.dayOfWeek % WEEK_LENGTH
@@ -97,7 +96,7 @@ describe("useMinuta() options", () => {
 
   it("keeps the given units", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const { day, month, second } = temporalUnits();
+    const { day, month, second } = createUnits();
     const units = { day, month, second };
     const minuta = useMinuta({ date: testDate, units });
 
@@ -132,7 +131,7 @@ describe("useMinuta() options", () => {
 describe("useMinuta() operations", () => {
   it("are the operations of withUnits(units)", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const units = temporalUnits({ weekStartsOn: SUNDAY });
+    const units = createUnits({ weekStartsOn: SUNDAY });
     const minuta = useMinuta({ date: testDate, units });
     const bound = withUnits(units);
     const week = bound.period(testDate, "week");

@@ -18,11 +18,12 @@ describe("minuta/temporal reads globalThis.Temporal", () => {
   it("leaves the global alone on import", { timeout: 5000 }, async () => {
     expect.hasAssertions();
     const before = Object.getOwnPropertyDescriptor(globalThis, "Temporal");
-    const { temporalUnits } = await import("#src/temporal");
+    await import("#src/temporal");
+    const { createUnits } = await import("#src/core");
     expect(
       Object.getOwnPropertyDescriptor(globalThis, "Temporal")
     ).toStrictEqual(before);
-    const units = temporalUnits();
+    const units = createUnits();
     expect(units.month.startOf(date("2026-03-15")).toString()).toBe(
       "2026-03-01"
     );
@@ -33,9 +34,9 @@ describe("minuta/temporal reads globalThis.Temporal", () => {
     { timeout: 5000 },
     async () => {
       expect.hasAssertions();
-      const { temporalUnits } = await import("#src/temporal");
+      const { createUnits } = await import("#src/core");
       Reflect.deleteProperty(globalThis, "Temporal");
-      const units = temporalUnits();
+      const units = createUnits();
       expect(() =>
         units.month.diff(date("2026-03-15"), date("2026-04-15"))
       ).toThrow(MISSING_TEMPORAL);
@@ -51,11 +52,12 @@ describe("temporalReady", () => {
     { timeout: 5000 },
     async () => {
       expect.hasAssertions();
-      const { temporalReady, temporalUnits } = await import("#src/temporal");
+      const { temporalReady } = await import("#src/temporal");
+      const { createUnits } = await import("#src/core");
       Reflect.deleteProperty(globalThis, "Temporal");
       await temporalReady();
       expect("Temporal" in globalThis).toBe(true);
-      const units = temporalUnits();
+      const units = createUnits();
       expect(units.month.add(date("2026-03-15"), ONE_MONTH).toString()).toBe(
         "2026-04-15"
       );

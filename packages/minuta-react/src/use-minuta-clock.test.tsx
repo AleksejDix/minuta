@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { at, date } from "./test-temporal";
 import { act } from "react";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { renderHook } from "@testing-library/react";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 import { useMinuta } from "./use-minuta";
 
 const ZONE = "Europe/Zurich";
 const BEFORE_MIDNIGHT = at("2026-03-18T22:59:59Z", ZONE);
 const NEXT_DAY = date("2026-03-19");
-const units = temporalUnits({ timeZone: ZONE });
+const units = createUnits({ timeZone: ZONE });
 const TWO_SECONDS = 2000;
 const NO_TIMERS = 0;
 

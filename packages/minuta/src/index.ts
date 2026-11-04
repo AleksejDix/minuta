@@ -20,7 +20,7 @@ import {
   sameWith,
   shiftWith,
 } from "#src/operations/index";
-import { temporalUnits } from "#src/adapters/temporal/index";
+import { createUnits } from "#src/create-units";
 
 /*
  * Each function binds the units on its own, so bundlers drop the unused
@@ -28,7 +28,7 @@ import { temporalUnits } from "#src/adapters/temporal/index";
  * cannot drift apart.
  */
 // oxlint-disable-next-line eslint/no-inline-comments -- The pure marker lets bundlers drop the units when no bound function is used
-const units = /* @__PURE__ */ temporalUnits();
+const units = /* @__PURE__ */ createUnits();
 
 /**
  * Split a period into chunks of `unit`, clipped to the period. Temporal units,

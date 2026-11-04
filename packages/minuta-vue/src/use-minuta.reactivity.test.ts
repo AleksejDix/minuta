@@ -4,7 +4,7 @@ import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import type { MinutaState } from "./types";
 import type { ReactiveEffectRunner } from "vue";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { useMinuta } from "./use-minuta";
 
 const MONTH_OFFSET = 1;
@@ -193,7 +193,7 @@ describe("useMinuta() reactive units and unit", () => {
   it("recomputes periods when the units change", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const moment = zoned("2024-01-03T12:00:00[Europe/Zurich]");
-    const units = shallowRef(temporalUnits({ weekStartsOn: MONDAY }));
+    const units = shallowRef(createUnits({ weekStartsOn: MONDAY }));
     const minuta = useMinuta(() => ({
       date: moment,
       unit: "week",
@@ -201,7 +201,7 @@ describe("useMinuta() reactive units and unit", () => {
     }));
     expect(minuta.browsing.value.start).toStrictEqual(date("2024-01-01"));
 
-    units.value = temporalUnits({ weekStartsOn: SUNDAY });
+    units.value = createUnits({ weekStartsOn: SUNDAY });
 
     expect(minuta.browsing.value.start).toStrictEqual(date("2023-12-31"));
     expect(minuta.period(moment, "week").start.dayOfWeek % WEEK_LENGTH).toBe(
@@ -228,11 +228,11 @@ describe("useMinuta() destructured operations", () => {
   it("follow a change of units", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const moment = zoned("2024-01-03T12:00:00[Europe/Zurich]");
-    const units = shallowRef(temporalUnits({ weekStartsOn: MONDAY }));
+    const units = shallowRef(createUnits({ weekStartsOn: MONDAY }));
     const minuta = useMinuta(() => ({ units: units.value }));
     const { period } = minuta;
 
-    units.value = temporalUnits({ weekStartsOn: SUNDAY });
+    units.value = createUnits({ weekStartsOn: SUNDAY });
 
     expect(period(moment, "week").start.dayOfWeek % WEEK_LENGTH).toBe(SUNDAY);
     expect(minuta.period).toBe(period);

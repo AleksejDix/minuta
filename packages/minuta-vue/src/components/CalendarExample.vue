@@ -3,8 +3,8 @@ import CalendarGrid from "./CalendarGrid.vue";
 import CalendarHeader from "./CalendarHeader.vue";
 import CalendarRoot from "./CalendarRoot.vue";
 import type { Period } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta/core";
 import { shallowRef } from "vue";
-import { temporalUnits } from "@aleksejdix/minuta/temporal";
 
 const SUNDAY = 0;
 const MONDAY = 1;
@@ -18,7 +18,7 @@ const emit = defineEmits<{
 defineSlots<Record<string, never>>();
 
 const weekStartsOn = shallowRef<WeekStart>(MONDAY);
-const units = shallowRef(temporalUnits({ weekStartsOn: MONDAY }));
+const units = shallowRef(createUnits({ weekStartsOn: MONDAY }));
 
 /**
  * Switches the week start by rebuilding the units.
@@ -27,7 +27,7 @@ const units = shallowRef(temporalUnits({ weekStartsOn: MONDAY }));
  */
 function setWeekStart(value: WeekStart): void {
   weekStartsOn.value = value;
-  units.value = temporalUnits({ weekStartsOn: value });
+  units.value = createUnits({ weekStartsOn: value });
 }
 
 /**

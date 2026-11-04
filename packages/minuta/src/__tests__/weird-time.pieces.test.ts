@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { nextWith, previousWith } from "#src/operations/shift";
+import { createUnits } from "#src/create-units";
 import { date } from "#src/test/temporal";
 import { divideWith } from "#src/operations/divide";
 import { durationWith } from "#src/operations/duration";
 import { periodWith } from "#src/operations/period";
-import { temporalUnits } from "#src/temporal";
 
 /*
  * The pieces of time that only exist on weird days: a date the clocks skip,
@@ -16,7 +16,7 @@ const ONE = 1;
 const SHOWN_HOURS = 4;
 
 describe("weird time: Pacific/Apia, the skipped day", () => {
-  const units = temporalUnits({ timeZone: "Pacific/Apia" });
+  const units = createUnits({ timeZone: "Pacific/Apia" });
   const skipped = periodWith(units, date("2011-12-30"), "day");
 
   it("is a date with no hours", { timeout: 5000 }, () => {
@@ -38,7 +38,7 @@ describe("weird time: Pacific/Apia, the skipped day", () => {
 });
 
 describe("weird time: Australia/Lord_Howe, hours around a 30-minute change", () => {
-  const units = temporalUnits({ timeZone: "Australia/Lord_Howe" });
+  const units = createUnits({ timeZone: "Australia/Lord_Howe" });
 
   function hoursAround(day: string): string[] {
     const hours = divideWith(

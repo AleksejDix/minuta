@@ -34,10 +34,11 @@ function getTemporal(): TemporalApi {
  * on `globalThis`. Await it once, before anything renders.
  *
  * @example
- * import { temporalReady, temporalUnits } from "@aleksejdix/minuta/temporal";
+ * import { createUnits } from "@aleksejdix/minuta/core";
+import { temporalReady } from "@aleksejdix/minuta/temporal";
  *
  * await temporalReady();
- * const units = temporalUnits();
+ * const units = createUnits();
  *
  * @returns Resolves once `globalThis.Temporal` exists
  */
