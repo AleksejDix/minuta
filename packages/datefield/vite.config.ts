@@ -18,4 +18,8 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
   ],
+  test: {
+    // Temporal on globalThis before any test, for the Temporal functions
+    setupFiles: [path.resolve(import.meta.dirname, "../../vitest.setup.ts")],
+  },
 });

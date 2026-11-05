@@ -44,7 +44,7 @@
   "devDependencies": {
     "@minuta/tsconfig": "2.0.0-alpha.1",
     "@vitest/browser-playwright": "^4.0.13",
-    "@aleksejdix/datefield": "^0.1.0",
+    "@aleksejdix/datefield": "^0.2.0",
     "@aleksejdix/fechita": "^0.1.0",
     "playwright": "^1.63.0",
     "typescript": "^5.7.3",

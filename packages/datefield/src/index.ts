@@ -25,6 +25,13 @@ export {
 
 // Convert
 export { toDate, fromDate, segmentsToString } from "./convert";
+export {
+  fromTemporal,
+  toPlainDate,
+  toPlainDateTime,
+  toPlainTime,
+} from "./temporal";
+export type { FieldValue } from "./temporal";
 
 // Input
 export { inputDigit, clearSegment } from "./input";
