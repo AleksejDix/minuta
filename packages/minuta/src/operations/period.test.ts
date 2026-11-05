@@ -1,7 +1,7 @@
 import { date, dateTime, text, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
-import { Temporal } from "@js-temporal/polyfill";
+import { Temporal } from "temporal-polyfill/full";
 import type { TimeValue } from "#src/types";
 import { createUnits } from "#src/create-units";
 

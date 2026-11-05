@@ -1,4 +1,4 @@
-import type { Temporal } from "@js-temporal/polyfill";
+import type { Temporal } from "temporal-polyfill";
 
 type TemporalApi = typeof Temporal;
 
@@ -30,7 +30,7 @@ function getTemporal(): TemporalApi {
 /**
  * Make Temporal available before minuta computes with it. Does nothing where
  * the runtime has Temporal (Chrome and Edge 144+, Firefox 139+, Node 26+);
- * elsewhere it loads `@js-temporal/polyfill` in its own chunk and installs it
+ * elsewhere it loads `temporal-polyfill` in its own chunk and installs it
  * on `globalThis`. Await it once, before anything renders.
  *
  * @example
@@ -46,7 +46,7 @@ async function temporalReady(): Promise<void> {
   if (hasTemporal(globalThis)) {
     return;
   }
-  const { Temporal: polyfill } = await import("@js-temporal/polyfill");
+  const { Temporal: polyfill } = await import("temporal-polyfill/full");
   Object.assign(globalThis, { Temporal: polyfill });
 }
 

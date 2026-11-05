@@ -16,7 +16,7 @@ npm install @aleksejdix/minuta
 
 Zero dependencies, ES modules only, `sideEffects: false`. Budgets are
 checked on every CI run. Where the runtime has no Temporal yet (Safari,
-Node 24), install `@js-temporal/polyfill` and `await temporalReady()` from
+Node 24), install `temporal-polyfill` and `await temporalReady()` from
 `@aleksejdix/minuta/temporal` once, before anything computes; elsewhere
 nothing more is loaded.
 

@@ -4,7 +4,7 @@
  * instant `Temporal.Now` reads, so fake timers in tests move it too.
  */
 
-import type { Temporal } from "@js-temporal/polyfill";
+import type { Temporal } from "temporal-polyfill";
 import type { ZonedDateTime } from "@aleksejdix/minuta/core";
 
 type TemporalApi = typeof Temporal;

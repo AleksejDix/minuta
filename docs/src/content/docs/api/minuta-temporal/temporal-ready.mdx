@@ -8,7 +8,7 @@ import Flow from "../../../../components/diagrams/Flow.astro";
 Makes sure `globalThis.Temporal` exists before minuta computes with it. Where
 the runtime has Temporal (Chrome and Edge 144+, Firefox 139+, Node 26+), it
 does nothing and loads nothing. Elsewhere (Safari, Node 24) it loads
-`@js-temporal/polyfill` in its own chunk and installs it on `globalThis`.
+`temporal-polyfill` in its own chunk and installs it on `globalThis`.
 
 ```ts
 import { temporalReady } from "@aleksejdix/minuta/temporal";
@@ -46,7 +46,7 @@ period(Temporal.PlainDate.from("2026-03-18"), "month");
       text: "Chrome, Edge, Firefox, Node 26+: resolves at once and loads nothing.",
     },
     {
-      code: 'import("@js-temporal/polyfill")',
+      code: 'import("temporal-polyfill/full")',
       layer: "Runtime has none",
       text: "Safari, Node 24: loads the polyfill chunk and sets globalThis.Temporal.",
     },
@@ -98,7 +98,7 @@ or polyfilled, so they agree on every period.
 ## Install
 
 ```sh
-npm install @js-temporal/polyfill
+npm install temporal-polyfill
 ```
 
 The polyfill is an optional peer dependency of minuta. A bundle that never

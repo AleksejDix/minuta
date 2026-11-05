@@ -1,6 +1,6 @@
 import type { Period, PlainDate, ZonedDateTime } from "#src/types";
 import { compare, isPlainDate, isZoned } from "#src/values";
-import type { Temporal } from "@js-temporal/polyfill";
+import type { Temporal } from "temporal-polyfill";
 import { sameKind } from "./kinds";
 
 const EQUAL = 0;

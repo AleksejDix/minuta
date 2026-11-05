@@ -11,7 +11,7 @@ import Flow from "../../../../components/diagrams/Flow.astro";
 minuta computes with [Temporal](https://tc39.es/proposal-temporal/docs/).
 Chrome and Edge 144+, Firefox 139+ and Node 26+ have it built in; Safari and
 Node 24 do not yet. `@aleksejdix/minuta/temporal` closes that gap: await
-`temporalReady()` once, and it loads `@js-temporal/polyfill` only where
+`temporalReady()` once, and it loads `temporal-polyfill` only where
 Temporal is missing.
 
 ```ts
@@ -29,7 +29,7 @@ not import it.
       text: "Once, before anything renders.",
     },
     {
-      code: 'import("@js-temporal/polyfill")',
+      code: 'import("temporal-polyfill/full")',
       layer: "Only without Temporal",
       text: "Loads the polyfill chunk and sets globalThis.Temporal.",
     },

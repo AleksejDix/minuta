@@ -19,7 +19,7 @@ npm install @aleksejdix/minuta
 
 minuta computes with Temporal. Chrome and Edge 144+, Firefox 139+ and
 Node 26+ have it. Only where it is missing (Safari, Node 24), also install
-`@js-temporal/polyfill` and await `temporalReady()` once, before you compute:
+`temporal-polyfill` and await `temporalReady()` once, before you compute:
 
 ```ts
 import { temporalReady } from "@aleksejdix/minuta/temporal";
