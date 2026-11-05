@@ -130,8 +130,10 @@ hijri.duration(ramadan, "day"); // → 30
 Every calendar Temporal has works: `buddhist`, `chinese`, `coptic`, `dangi`,
 `ethioaa`, `ethiopic`, `gregory`, `hebrew`, `indian`, `islamic-civil`,
 `islamic-tbla`, `islamic-umalqura`, `iso8601`, `japanese`, `persian`, `roc`.
-The polyfill (`@js-temporal/polyfill` 0.5) fails on Chinese, Dangi, Coptic
-and Ethiopic dates; native Temporal computes them.
+The polyfill `temporalReady()` loads (`temporal-polyfill`'s full build)
+computes them all too; its Chinese and Dangi dates come from the runtime's
+`Intl` data, so they can differ from native Temporal by a day around the
+start of a month.
 
 - **Years with 13 months.** A Hebrew leap year has 13 months, an Ethiopic
   year always does. There are still four quarters: a leap month (Adar I)

@@ -5,7 +5,7 @@
  */
 import type { Period, ZonedDateTime } from "@aleksejdix/minuta";
 import { contains, divide, period } from "@aleksejdix/minuta";
-import type { Temporal } from "@js-temporal/polyfill";
+import type { Temporal } from "temporal-polyfill";
 import { formatPeriod } from "@aleksejdix/minuta/format";
 
 type TemporalApi = typeof Temporal;

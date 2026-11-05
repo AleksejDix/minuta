@@ -12,7 +12,7 @@ import {
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { format, formatAsRange } from "#src/test/format";
-import { Temporal } from "@js-temporal/polyfill";
+import { Temporal } from "temporal-polyfill/full";
 import { createUnits } from "#src/create-units";
 import { intervals } from "#src/intervals";
 

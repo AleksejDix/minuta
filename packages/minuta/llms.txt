@@ -1146,7 +1146,7 @@ temporalReady(): Promise<void>
 
 Make Temporal available before minuta computes with it. Does nothing where
 the runtime has Temporal (Chrome and Edge 144+, Firefox 139+, Node 26+);
-elsewhere it loads `@js-temporal/polyfill` in its own chunk and installs it
+elsewhere it loads `temporal-polyfill` in its own chunk and installs it
 on `globalThis`. Await it once, before anything renders.
 
 ```ts

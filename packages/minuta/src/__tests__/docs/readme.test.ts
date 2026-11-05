@@ -25,14 +25,11 @@ const ENTRY_FILES: Readonly<Record<string, string>> = {
  * The examples use the global Temporal, as apps do; TypeScript has no type
  * for it yet, so each example gets the polyfill's
  */
-// The package root, one level above the `dist` file it resolves to
+// The package root, where the file it resolves to lies
 const POLYFILL_ENTRY = createRequire(import.meta.url).resolve(
-  "@js-temporal/polyfill"
+  "temporal-polyfill"
 );
-const POLYFILL_TYPES = path.join(
-  path.dirname(path.dirname(POLYFILL_ENTRY)),
-  "index"
-);
+const POLYFILL_TYPES = path.join(path.dirname(POLYFILL_ENTRY), "index");
 const TEMPORAL_GLOBAL =
   `import type { Temporal as TemporalApi } from "${POLYFILL_TYPES}";\n` +
   "declare const Temporal: typeof TemporalApi;\n";

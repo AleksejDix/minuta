@@ -2,7 +2,7 @@ import type { Period, Units } from "#src/types";
 import { compare, isDatePeriod, zonedPeriod } from "#src/values";
 import { describe, expect, it } from "vitest";
 import { nextWith, previousWith } from "#src/operations/shift";
-import { Temporal } from "@js-temporal/polyfill";
+import { Temporal } from "temporal-polyfill/full";
 import { createUnits } from "#src/create-units";
 import { divideWith } from "#src/operations/divide";
 import { periodWith } from "#src/operations/period";

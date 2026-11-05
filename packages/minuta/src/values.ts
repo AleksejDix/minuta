@@ -12,7 +12,7 @@ import type {
   TimeValue,
   ZonedDateTime,
 } from "#src/types";
-import type { Temporal } from "@js-temporal/polyfill";
+import type { Temporal } from "temporal-polyfill";
 import { getTemporal } from "#src/temporal-api";
 
 const TAG_PLAIN_DATE = "Temporal.PlainDate";

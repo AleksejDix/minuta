@@ -5,7 +5,7 @@
  */
 
 import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta/core";
-import type { Temporal } from "@js-temporal/polyfill";
+import type { Temporal } from "temporal-polyfill";
 
 type TemporalApi = typeof Temporal;
 

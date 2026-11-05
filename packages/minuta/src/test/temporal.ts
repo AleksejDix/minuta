@@ -4,7 +4,7 @@
  */
 
 import type { Period } from "#src/types";
-import { Temporal } from "@js-temporal/polyfill";
+import { Temporal } from "temporal-polyfill/full";
 
 /**
  * A calendar date.

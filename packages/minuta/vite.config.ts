@@ -21,7 +21,7 @@ export default defineConfig({
       formats: ["es"],
     },
     rollupOptions: {
-      external: ["@js-temporal/polyfill"],
+      external: ["temporal-polyfill", "temporal-polyfill/full"],
       output: {
         preserveModules: false,
       },
