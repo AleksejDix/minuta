@@ -1,6 +1,6 @@
 {
   "name": "@aleksejdix/minuta-vue",
-  "version": "2.0.0-next.0",
+  "version": "2.0.0-next.1",
   "description": "Vue.js integration for minuta with reactive composables",
   "author": "Aleksej Dix <git@aleksejdix.com>",
   "license": "Apache-2.0",
@@ -65,7 +65,7 @@
     "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
   },
   "dependencies": {
-    "@aleksejdix/minuta": "^2.0.0-next.0"
+    "@aleksejdix/minuta": "^2.0.0-next.1"
   },
   "devDependencies": {
     "@aleksejdix/datefield": "^0.1.0",
