@@ -112,6 +112,7 @@ const docs: AstroIntegration = starlight({
             items: [
               "concepts/weeks-and-calendars",
               "concepts/time-zones",
+              "concepts/calendar-systems",
               { autogenerate: { directory: "guide/calendars" } },
             ],
             label: "Calendars",

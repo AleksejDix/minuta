@@ -1,0 +1,166 @@
+---
+title: Calendar systems
+description: Hijri, Hebrew, Persian, Japanese and every other calendar Temporal knows — their months, years, quarters and labels.
+---
+
+import { plainDate } from "../../../components/temporal";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { formatPeriod } from "@aleksejdix/minuta/format";
+import CalendarsDemo from "../../../components/demos/CalendarsDemo.astro";
+import Timeline from "../../../components/diagrams/Timeline.astro";
+
+export const day = plainDate("2026-03-18");
+export const hebrew = withUnits(createUnits({ calendar: "hebrew" }));
+export const leapYear = hebrew.period(plainDate("2024-01-15"), "year");
+export const isoYear = withUnits(createUnits()).period(
+  plainDate("2024-01-15"),
+  "year"
+);
+export const monthIn = (calendar, locale) =>
+  formatPeriod(
+    withUnits(createUnits({ calendar })).period(day, "month"),
+    locale
+  );
+
+A `Date` knows one calendar, the Gregorian. Temporal knows many, and every
+Temporal date carries its calendar. minuta follows it: a month is the
+calendar's month, a year the calendar's year, a quarter three of its months.
+
+<CalendarsDemo />
+
+## Pick a calendar
+
+There are two ways, and both give the same periods:
+
+```ts
+import { period } from "@aleksejdix/minuta";
+import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+
+// 1. Pass a date in that calendar: periods keep it
+period(Temporal.PlainDate.from("2026-03-18").withCalendar("hebrew"), "month");
+
+// 2. Read every date in one calendar
+const hijri = withUnits(createUnits({ calendar: "islamic-umalqura" }));
+hijri.period(Temporal.PlainDate.from("2026-03-18"), "month");
+// → Ramadan 1447: { start: 2026-02-18, end: 2026-03-20 } in ISO terms
+```
+
+Without `calendar`, a date keeps its own calendar, and dates made from
+moments are ISO 8601, the same on every server and in every browser.
+
+## The same day, in every calendar
+
+March 18, 2026, and the month it falls in:
+
+| Calendar            | `calendar`           | The month, in English                  | The month, natively                    |
+| ------------------- | -------------------- | -------------------------------------- | -------------------------------------- |
+| Gregorian           | `"gregory"`          | {monthIn("gregory", "en-US")}          | {monthIn("gregory", "en-US")}          |
+| Hijri (Umm al-Qura) | `"islamic-umalqura"` | {monthIn("islamic-umalqura", "en-US")} | {monthIn("islamic-umalqura", "ar-SA")} |
+| Hijri (civil)       | `"islamic-civil"`    | {monthIn("islamic-civil", "en-US")}    | {monthIn("islamic-civil", "ar-EG")}    |
+| Hebrew              | `"hebrew"`           | {monthIn("hebrew", "en-US")}           | {monthIn("hebrew", "he-IL")}           |
+| Persian             | `"persian"`          | {monthIn("persian", "en-US")}          | {monthIn("persian", "fa-IR")}          |
+| Indian national     | `"indian"`           | {monthIn("indian", "en-US")}           | {monthIn("indian", "hi-IN")}           |
+| Japanese            | `"japanese"`         | {monthIn("japanese", "en-US")}         | {monthIn("japanese", "ja-JP")}         |
+| Buddhist            | `"buddhist"`         | {monthIn("buddhist", "en-US")}         | {monthIn("buddhist", "th-TH")}         |
+| Republic of China   | `"roc"`              | {monthIn("roc", "en-US")}              | {monthIn("roc", "zh-TW")}              |
+
+The Chinese, Korean (`"dangi"`), Ethiopic (`"ethiopic"`, `"ethioaa"`) and
+Coptic calendars work too, where the runtime has Temporal built in; see
+[where they run](#where-they-run). Try them in the demo above.
+
+## Months and years have their own length
+
+- A Hijri month has 29 or 30 days, a Hijri year 354 or 355.
+- A Persian year starts at Nowruz, around March 21.
+- A Hebrew year has 12 months, or 13 in a leap year (Adar I is added).
+- A Chinese or Korean year has 13 months when it has a leap month.
+- Ethiopic and Coptic years always have 13 months: twelve of 30 days and
+  Pagume, 5 or 6 days.
+
+`duration(year, "month")`, `divide(year, "month")` and the grids count what
+the calendar has.
+
+## Quarters in years with 13 months
+
+Quarters are a business idea, and most places do business in years of 12
+months: Israel's and Saudi Arabia's budgets follow the Gregorian year, and
+Iran's fiscal year is the Persian year, 12 months from Nowruz. Ethiopia's fiscal year starts on Hamle 1 (July
+8), so the short 13th month, Pagume, sits inside a quarter rather than
+standing alone.
+
+minuta does the same in every calendar: **a year always has four quarters
+of three months**, and an extra month joins a quarter instead of making a
+fifth.
+
+- A **leap month** joins the quarter of the month it repeats: Hebrew Adar I
+  joins the second quarter, a Chinese leap sixth month too.
+- A **13th month** (Ethiopic and Coptic Pagume) joins the fourth quarter.
+
+<Timeline
+  caption="The Hebrew leap year 5784 (Sep 16, 2023 to Oct 2, 2024) and the ISO year 2024, in quarters. The Hebrew second quarter runs from Tevet to Adar II: four months, with Adar I."
+  tracks={[
+    {
+      label: 'hebrew.divide(5784, "quarter")',
+      periods: hebrew.divide(leapYear, "quarter"),
+      tone: "accent",
+    },
+    {
+      label: 'divide(2024, "quarter")',
+      periods: withUnits(createUnits()).divide(isoYear, "quarter"),
+      tone: "ink",
+    },
+  ]}
+/>
+
+```ts
+const hebrew = withUnits(createUnits({ calendar: "hebrew" }));
+const quarters = hebrew.divide(
+  hebrew.period(Temporal.PlainDate.from("2024-01-15"), "year"),
+  "quarter"
+);
+quarters.map((quarter) => formatRange(quarter, "en-US", { month: "long" }));
+// → ["Tishri – Kislev 5784", "Tevet – Adar II 5784", "Nisan – Sivan 5784", "Tamuz – Elul 5784"]
+```
+
+## Japanese eras
+
+A Japanese year is the whole year, even when an era starts in it. 2019 runs
+from January 1 to December 31, from Heisei 31 into Reiwa 1:
+
+```ts
+const year = period(
+  Temporal.PlainDate.from("2019-06-01").withCalendar("japanese"),
+  "year"
+);
+formatRange(year, "ja-JP"); // → "平成31年～令和元年"
+```
+
+## Labels
+
+[`formatPeriod`](../../api/minuta-format/format-period/#other-calendars) and
+`formatRange` show a period in its calendar: "Adar I 5784",
+"Ramadan 1447 AH". Pass `calendar` in the options to label it in another one.
+
+## Weeks stay weeks
+
+A week is seven days in every calendar, so the week start and the weekend
+come from [the units](../date-engines/), not from the calendar:
+`createUnits({ calendar: "islamic-umalqura", weekStartsOn: "saturday", weekend: ["friday"] })`.
+
+## Where they run
+
+| Runtime                                      | Calendars                                                                               |
+| -------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Chrome and Edge 144+, Firefox 139+, Node 26+ | all, with Temporal built in                                                             |
+| Safari, Node 24 (the polyfill)               | all but Chinese, Korean, Ethiopic and Coptic: `@js-temporal/polyfill` 0.5 fails on them |
+
+The Julian calendar is not part of Temporal, so it is not here yet.
+
+## Related
+
+- [`createUnits`](../../api/minuta-core/create-units/#calendars) — the
+  `calendar` option.
+- [Weeks and calendars](../weeks-and-calendars/) — week starts, weekends and
+  grids.
+- [`temporalReady`](../../api/minuta-temporal/temporal-ready/) — load the
+  polyfill where Temporal is missing.
