@@ -105,6 +105,11 @@ Days are named (`"monday"`); the numbers 0 (Sunday) to 6 (Saturday) work
 too. `timeZone` is where dates become moments, as when a day is divided into
 hours. Hours, minutes and seconds made from a `ZonedDateTime` keep its zone.
 
+Months and years follow each date's calendar, or the one you set:
+`createUnits({ calendar: "islamic-umalqura" })` gives lunar months of 29 or
+30 days, `"hebrew"` years of 12 or 13 months, still in four quarters. Every
+calendar Temporal has works, and labels from `minuta/format` use it.
+
 The bound object's members have exactly the types of the default entry, so
 the two cannot drift apart.
 

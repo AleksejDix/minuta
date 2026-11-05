@@ -9,9 +9,10 @@ import { defineConfig } from "vitest/config";
  */
 const SOURCE = "@minuta/source";
 
-// Each package and the config its tests use
-const PACKAGES: readonly (readonly [string, string])[] = [
+// Each package, the config its tests use, and a name when one package has two
+const PACKAGES: readonly (readonly [string, string, string?])[] = [
   ["minuta", "vite.config.ts"],
+  ["minuta", "vitest.browser.config.ts", "minuta-browsers"],
   ["minuta-vue", "vitest.config.ts"],
   ["minuta-react", "vitest.config.ts"],
   ["datefield", "vite.config.ts"],
@@ -22,13 +23,17 @@ const PACKAGES: readonly (readonly [string, string])[] = [
 ];
 
 // A package's own config, plus the condition
-function project(name: string, config: string): TestProjectInlineConfiguration {
+function project(
+  name: string,
+  config: string,
+  label: string = name
+): TestProjectInlineConfiguration {
   const dir = `./packages/${name}`;
   return {
     extends: `${dir}/${config}`,
     resolve: { conditions: [SOURCE, ...defaultClientConditions] },
     ssr: { resolve: { conditions: [SOURCE, ...defaultServerConditions] } },
-    test: { name, root: dir },
+    test: { name: label, root: dir },
   };
 }
 
@@ -68,7 +73,9 @@ export default defineConfig({
         singleFork: true,
       },
     },
-    projects: PACKAGES.map(([name, config]) => project(name, config)),
+    projects: PACKAGES.map(([name, config, label]) =>
+      project(name, config, label)
+    ),
     setupFiles: ["./vitest.setup.ts"],
   },
 });
