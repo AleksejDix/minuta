@@ -196,7 +196,9 @@ function snapDate(
 ): PlainDate {
   return snapped({
     distance: daysBetween,
-    epoch: getTemporal().PlainDate.from(EPOCH_DATE),
+    epoch: getTemporal()
+      .PlainDate.from(EPOCH_DATE)
+      .withCalendar(request.value.calendarId),
     line: dateLine(spec),
     mode: request.mode,
     outer: outerDateLine(units, request.unit),
@@ -214,7 +216,8 @@ function snapMoment(
     distance: nanosecondsBetween,
     epoch: getTemporal()
       .Instant.from(EPOCH_INSTANT)
-      .toZonedDateTimeISO(value.timeZoneId),
+      .toZonedDateTimeISO(value.timeZoneId)
+      .withCalendar(value.calendarId),
     line: timeLine(timeSpecFor(units, unit)),
     mode: request.mode,
     outer: outerTimeLine(units, unit),

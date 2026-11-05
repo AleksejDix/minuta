@@ -485,7 +485,7 @@ units on `PlainDate`, time units on `ZonedDateTime`. Pass the result to
 start on Monday unless `weekStartsOn` says otherwise (`"sunday"` …
 `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
 the days `isWeekend` counts (Saturday and Sunday unless set); `timeZone`
-is where dates become moments. Where the runtime has no Temporal,
+is where dates become moments; `calendar` the calendar dates are read in. Where the runtime has no Temporal,
 `await temporalReady()` first.
 
 ```ts
@@ -505,6 +505,12 @@ type UnitsOptions = WeekOptions &
      * divided into hours: `"UTC"`, `"Europe/Zurich"`. Default: the runtime's.
      */
     timeZone?: string | undefined;
+    /**
+     * Temporal calendar every date is read in, e.g. `"hebrew"`,
+     * `"islamic-umalqura"`, `"persian"`. Default: each date keeps its own
+     * calendar (ISO 8601 for dates made from moments).
+     */
+    calendar?: string | undefined;
   }>;
 ```
 
