@@ -1,0 +1,36 @@
+---
+title: toPlainTime
+description: Read a time field's value as a Temporal.PlainTime, or get undefined while it is incomplete or impossible.
+---
+
+Read the time the user typed as a `Temporal.PlainTime`, a wall-clock time
+with no date and no zone: `14:05` gives `14:05:00`, its seconds 0 when the
+field has none. While the hour or the minute is empty, or the time does not
+exist (a 25th hour), you get `undefined`.
+
+```ts
+import { toPlainTime } from "@aleksejdix/datefield";
+```
+
+```ts
+toPlainTime(segments);
+```
+
+## Example
+
+```ts
+import { deriveFormat, parseSegments, toPlainTime } from "@aleksejdix/datefield";
+
+const format = deriveFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+toPlainTime(parseSegments(format, "14:05")); // → 14:05:00
+toPlainTime(parseSegments(format, "25:00")); // → undefined   (no 25th hour)
+```
+
+## Parameters
+
+- `segments`: the field's segments.
+
+## Returns
+
+A `Temporal.PlainTime`, or `undefined`.
