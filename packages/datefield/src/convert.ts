@@ -128,13 +128,40 @@ function toDate(segments: readonly Segment[]): Date | undefined {
   return buildDate(parts);
 }
 
-// A part of `date` as a segment of `length` slots shows it
+/**
+ * What a field shows a value from: its editable parts, and the moment Intl
+ * names its derived parts (a weekday, a day period) by, a Date read in
+ * local time or epoch milliseconds read in UTC.
+ */
+type Wall = {
+  readonly at: Readonly<Date> | number;
+  readonly parts: Readonly<Record<EditableSegmentType, number>>;
+  readonly timeZone: string | undefined;
+};
+
+// A Date's wall clock, in local time
+function wallOfDate(date: Readonly<Date>): Wall {
+  return {
+    at: date,
+    parts: {
+      day: EDITABLE_GETTERS.day(date),
+      hour: EDITABLE_GETTERS.hour(date),
+      minute: EDITABLE_GETTERS.minute(date),
+      month: EDITABLE_GETTERS.month(date),
+      second: EDITABLE_GETTERS.second(date),
+      year: EDITABLE_GETTERS.year(date),
+    },
+    timeZone: undefined,
+  };
+}
+
+// A part of the wall clock as a segment of `length` slots shows it
 function editableValue(
   type: EditableSegmentType,
   length: number,
-  date: Readonly<Date>
+  wall: Readonly<Wall>
 ): string {
-  const part = EDITABLE_GETTERS[type](date);
+  const part = wall.parts[type];
   if (type === "year") {
     return String(shownYear(part, length)).padStart(length, ZERO_PAD);
   }
@@ -142,14 +169,14 @@ function editableValue(
 }
 
 type TokenInput = {
-  readonly date: Readonly<Date>;
   readonly locale: string | undefined;
   readonly pos: number;
   readonly token: Readonly<FormatToken>;
+  readonly wall: Readonly<Wall>;
 };
 
 function tokenToSegment(input: TokenInput): Segment | undefined {
-  const { date, locale, pos, token } = input;
+  const { locale, pos, token, wall } = input;
   if (token.type === "literal") {
     return {
       end: pos + token.char.length,
@@ -159,19 +186,47 @@ function tokenToSegment(input: TokenInput): Segment | undefined {
     };
   }
   if (isEditableType(token.type)) {
-    const value = editableValue(token.type, token.length, date);
+    const value = editableValue(token.type, token.length, wall);
     return { end: pos + token.length, start: pos, type: token.type, value };
   }
   if (DERIVED_TYPES.has(token.type)) {
     const value = extractDerivedPart({
-      date,
+      date: wall.at,
       length: token.length,
       locale,
+      timeZone: wall.timeZone,
       type: token.type,
     });
     return { end: pos + value.length, start: pos, type: token.type, value };
   }
   return undefined;
+}
+
+/**
+ * The segments a wall clock shows in a format.
+ *
+ * @param wall - The value's parts and the moment its derived parts are named by
+ * @param format - Format of the segments
+ * @param locale - Locale for derived segments (defaults to en-US)
+ * @returns The segments
+ */
+function segmentsOf(
+  wall: Readonly<Wall>,
+  format: Readonly<DateFormat>,
+  locale?: string
+): Segment[] {
+  let pos = 0;
+  const segments: Segment[] = [];
+
+  for (const token of format) {
+    const segment = tokenToSegment({ locale, pos, token, wall });
+    if (segment !== undefined) {
+      segments.push(segment);
+      pos = segment.end;
+    }
+  }
+
+  return segments;
 }
 
 /**
@@ -190,18 +245,7 @@ function fromDate(
   format: Readonly<DateFormat>,
   locale?: string
 ): Segment[] {
-  let pos = 0;
-  const segments: Segment[] = [];
-
-  for (const token of format) {
-    const segment = tokenToSegment({ date, locale, pos, token });
-    if (segment !== undefined) {
-      segments.push(segment);
-      pos = segment.end;
-    }
-  }
-
-  return segments;
+  return segmentsOf(wallOfDate(date), format, locale);
 }
 
 /**
@@ -214,4 +258,5 @@ function segmentsToString(segments: readonly Segment[]): string {
   return segments.map((seg) => seg.value).join("");
 }
 
-export { fromDate, segmentsToString, toDate };
+export { collectParts, fromDate, segmentsOf, segmentsToString, toDate };
+export type { DateParts, Wall };

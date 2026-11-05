@@ -81,20 +81,27 @@ function derivedOptions(
 }
 
 type DerivedPartInput = {
-  readonly date: Readonly<Date>;
+  /** A Date, read in local time, or epoch milliseconds read in `timeZone`. */
+  readonly date: Readonly<Date> | number;
   readonly length: number;
   readonly locale: string | undefined;
+  /** The zone epoch milliseconds are read in; a Date's is the runtime's. */
+  readonly timeZone?: string | undefined;
   readonly type: string;
 };
 
 function extractDerivedPart(input: DerivedPartInput): string {
-  const { date, length, locale = DEFAULT_LOCALE, type } = input;
+  const { date, length, locale = DEFAULT_LOCALE, timeZone, type } = input;
   const opts = derivedOptions(type, length);
   if (opts === undefined) {
     return "";
   }
 
-  const fmt = new Intl.DateTimeFormat(locale, opts);
+  // The options are made anew each time (derivedOptions): the zone joins them.
+  const fmt = new Intl.DateTimeFormat(
+    locale,
+    Object.assign(opts, { timeZone })
+  );
   const part = fmt
     .formatToParts(date)
     .find((item: Readonly<Intl.DateTimeFormatPart>) => item.type === type);
