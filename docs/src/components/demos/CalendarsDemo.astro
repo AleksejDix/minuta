@@ -1,0 +1,76 @@
+---
+import DemoFrame from "./DemoFrame.astro";
+
+// Each calendar and its name
+const CALENDARS: readonly (readonly [string, string])[] = [
+  ["islamic-umalqura", "Hijri (Umm al-Qura)"],
+  ["hebrew", "Hebrew"],
+  ["persian", "Persian"],
+  ["chinese", "Chinese"],
+  ["ethiopic", "Ethiopic"],
+  ["japanese", "Japanese"],
+  ["indian", "Indian national"],
+  ["buddhist", "Buddhist"],
+  ["dangi", "Korean (Dangi)"],
+  ["coptic", "Coptic"],
+  ["roc", "Republic of China"],
+  ["islamic-civil", "Hijri (civil)"],
+  ["gregory", "Gregorian"],
+];
+---
+
+<DemoFrame
+  name="calendars"
+  problem="A Date only knows the Gregorian calendar: no Hijri month, no Hebrew leap year, no Ethiopic 13th month."
+  solution="Periods follow the calendar you pick: its months, its years, its quarters and its labels."
+>
+  <label class="demo-label" slot="controls">
+    Calendar
+    <select class="demo-input" data-part="calendar">
+      {
+        CALENDARS.map(([id, name]) => (
+          <option value={id}>
+            {name}
+          </option>
+        ))
+      }
+    </select>
+  </label>
+  <label class="demo-label" slot="controls">
+    Date
+    <input class="demo-input" type="date" value="2026-03-18" data-part="date" />
+  </label>
+  <div class="flex gap-2" slot="controls">
+    <button class="demo-input" type="button" data-part="previous">← Month</button>
+    <button class="demo-input" type="button" data-part="next">Month →</button>
+  </div>
+
+  <div class="grid gap-2" slot="problem">
+    <code class="demo-code" data-part="naive"></code>
+    <p class="text-muted-foreground">
+      The month a <code>Date</code> grid shows, whatever calendar the reader lives by.
+    </p>
+  </div>
+
+  <div class="grid gap-2" slot="solution">
+    <code class="demo-code" data-part="code"></code>
+    <p class="text-destructive" data-part="unsupported" hidden></p>
+    <div class="grid gap-3" data-part="result">
+      <p>
+        <span class="font-semibold" data-part="label"></span>
+        <span class="text-muted-foreground" data-part="native" lang=""></span>
+      </p>
+      <table class="w-fit border-collapse" data-part="grid"></table>
+      <p class="text-muted-foreground" data-part="facts"></p>
+      <ol class="grid list-inside list-decimal gap-1" data-part="quarters"></ol>
+    </div>
+  </div>
+</DemoFrame>
+
+<script>
+  import { mountCalendarsDemos } from "./calendars-demo";
+  import { temporalReady } from "@aleksejdix/minuta/temporal";
+
+  await temporalReady();
+  mountCalendarsDemos();
+</script>
