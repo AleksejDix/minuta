@@ -190,6 +190,13 @@ grids.monthGrid(Temporal.PlainDate.from("2026-03-18")).periods[0].start;
 // → 2026-03-01, the grid starts on a Sunday
 ```
 
+## Other calendars
+
+Units read dates in the calendar each date carries, or in the one you set:
+`createUnits({ calendar: "hebrew" })`. Months, years, quarters and grids
+then follow that calendar. See
+[calendars](../../api/minuta-core/create-units/#calendars).
+
 ## Your own units
 
 Units are plain data, so you can add one. Give it a `kind` and the three

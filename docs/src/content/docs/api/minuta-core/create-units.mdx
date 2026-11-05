@@ -7,6 +7,20 @@ import { plainDate } from "../../../../components/temporal";
 import { createUnits, divideWith, periodWith } from "@aleksejdix/minuta/core";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
+export const hijri = createUnits({ calendar: "islamic-umalqura" });
+export const earlyMonths = (units) =>
+  divideWith(
+    units,
+    {
+      end: plainDate("2026-05-01"),
+      start: plainDate("2026-01-01"),
+      unit: "custom",
+    },
+    "month"
+  );
+export const isoMonths = earlyMonths(createUnits());
+export const hijriMonths = earlyMonths(hijri);
+
 export const weeksOfMarch = (units) =>
   divideWith(
     units,
@@ -63,9 +77,9 @@ pieces are cut at the month's edges:
 
 ## Parameters
 
-| Name      | What it is                                                            |
-| --------- | --------------------------------------------------------------------- |
-| `options` | Optional. Week start, weekend and time zone, see [Options](#options). |
+| Name      | What it is                                                                      |
+| --------- | ------------------------------------------------------------------------------- |
+| `options` | Optional. Week start, weekend, time zone and calendar, see [Options](#options). |
 
 ## Options
 
@@ -74,6 +88,7 @@ pieces are cut at the month's edges:
 | `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).                       |
 | `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend.                |
 | `timeZone`     | the runtime's zone       | The IANA zone dates become moments in, e.g. when a day is divided into hours: `"UTC"`, `"Europe/Zurich"`. |
+| `calendar`     | each date's own          | The [calendar](#calendars) every date is read in, e.g. `"hebrew"`, `"islamic-umalqura"`, `"persian"`.     |
 
 Hours, minutes and seconds made from a `ZonedDateTime` keep its zone; a day
 or longer is made of dates, which have none. `timeZone` applies where a date
@@ -84,6 +99,48 @@ has to become a moment, as when a day is divided into hours.
 The units: a spec for each unit, plus `timeZone`, `weekStartsOn` (a number,
 0 = Sunday) and `weekend` (numbers). Add your own units by spreading them:
 `{ ...createUnits(), fortnight }`.
+
+## Calendars
+
+Months and years follow the calendar of the date they are made from:
+Temporal carries it in every date. A Hebrew date gives a Hebrew month, a
+Hijri date a lunar month of 29 or 30 days. With `calendar`, every date is
+read in that calendar first, so ISO dates give Hijri months too:
+
+```ts
+const hijri = withUnits(createUnits({ calendar: "islamic-umalqura" }));
+
+const ramadan = hijri.period(Temporal.PlainDate.from("2026-03-18"), "month");
+// → { start: 2026-02-18[u-ca=islamic-umalqura], end: 2026-03-20[…], unit: "month" }
+hijri.duration(ramadan, "day"); // → 30
+```
+
+<Timeline
+  caption="The months of early 2026, in ISO 8601 and in the Hijri calendar. Ramadan 1447 runs from Feb 18 to Mar 19."
+  tracks={[
+    { label: "ISO months", periods: isoMonths, tone: "ink" },
+    {
+      label: 'createUnits({ calendar: "islamic-umalqura" })',
+      periods: hijriMonths,
+      tone: "accent",
+    },
+  ]}
+/>
+
+Every calendar Temporal has works: `buddhist`, `chinese`, `coptic`, `dangi`,
+`ethioaa`, `ethiopic`, `gregory`, `hebrew`, `indian`, `islamic-civil`,
+`islamic-tbla`, `islamic-umalqura`, `iso8601`, `japanese`, `persian`, `roc`.
+The polyfill (`@js-temporal/polyfill` 0.5) fails on Chinese, Dangi, Coptic
+and Ethiopic dates; native Temporal computes them.
+
+- **Years with 13 months.** A Hebrew leap year has 13 months, an Ethiopic
+  year always does. There are still four quarters: a leap month (Adar I)
+  joins the quarter of the month it repeats, a 13th month (Pagume) joins the
+  fourth quarter, as in Ethiopia's fiscal quarters.
+- **Japanese eras.** A `year` is the whole year, even when an era starts in
+  it: 2019 runs from Heisei 31 into Reiwa 1.
+- **Labels** follow the period's calendar; see
+  [`formatPeriod`](../../minuta-format/format-period/#other-calendars).
 
 ## Temporal
 
