@@ -64,7 +64,7 @@
     "@aleksejdix/minuta": "^2.0.0-next.1"
   },
   "devDependencies": {
-    "@aleksejdix/datefield": "^0.1.0",
+    "@aleksejdix/datefield": "^0.2.0",
     "@aleksejdix/fechita": "^0.1.0",
     "@aleksejdix/input-dom": "^0.1.0",
     "@aleksejdix/input-state": "^0.1.0",

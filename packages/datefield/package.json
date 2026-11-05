@@ -1,6 +1,6 @@
 {
   "name": "@aleksejdix/datefield",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Headless segmented date input: Intl locale formats as input masks, segment rotation and day clamping.",
   "license": "Apache-2.0",
@@ -45,8 +45,9 @@
     "@aleksejdix/text-buffer": "^0.1.0"
   },
   "devDependencies": {
-    "@minuta/tsconfig": "2.0.0-alpha.1",
     "@aleksejdix/fechita": "^0.1.0",
+    "@minuta/tsconfig": "2.0.0-alpha.1",
+    "temporal-polyfill": "^1.0.8",
     "typescript": "^5.7.3",
     "vite": "^7.2.4",
     "vite-plugin-dts": "^4.4.0",
@@ -62,5 +63,13 @@
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "peerDependencies": {
+    "temporal-polyfill": "^1.0.8"
+  },
+  "peerDependenciesMeta": {
+    "temporal-polyfill": {
+      "optional": true
+    }
   }
 }
