@@ -1,0 +1,35 @@
+---
+title: toPlainDateTime
+description: Read a field's date and time as a Temporal.PlainDateTime, at midnight where it shows no time.
+---
+
+Read the date and the time the user typed as a `Temporal.PlainDateTime`, with
+no zone: a date field gives its day at midnight, a date and time field both.
+While the day is missing or does not exist, you get `undefined`.
+
+```ts
+import { toPlainDateTime } from "@aleksejdix/datefield";
+```
+
+```ts
+toPlainDateTime(segments);
+```
+
+## Example
+
+```ts
+import { deriveFormat, parseSegments, toPlainDateTime } from "@aleksejdix/datefield";
+
+const format = deriveFormat("de-CH");
+
+toPlainDateTime(parseSegments(format, "31.03.2026")); // → 2026-03-31T00:00:00
+toPlainDateTime(parseSegments(format, "30.02.2026")); // → undefined
+```
+
+## Parameters
+
+- `segments`: the field's segments.
+
+## Returns
+
+A `Temporal.PlainDateTime`, or `undefined`.

@@ -1,0 +1,38 @@
+---
+title: toPlainDate
+description: Read a field's day as a Temporal.PlainDate, or get undefined while it is incomplete or impossible.
+---
+
+Read the day the user typed as a `Temporal.PlainDate`: the segments of
+`31.03.2026` give `2026-03-31`, a date with no time zone, as the field shows
+none. While a slot is empty, or the day does not exist, you get `undefined`.
+It is `toDate` without a `Date`: nothing moves across time zones.
+
+```ts
+import { toPlainDate } from "@aleksejdix/datefield";
+```
+
+```ts
+toPlainDate(segments);
+```
+
+## Example
+
+```ts
+import { deriveFormat, parseSegments, toPlainDate } from "@aleksejdix/datefield";
+
+const format = deriveFormat("de-CH");
+
+toPlainDate(parseSegments(format, "31.03.2026")); // → 2026-03-31
+toPlainDate(parseSegments(format, "31.03.____")); // → undefined   (not finished)
+toPlainDate(parseSegments(format, "30.02.2026")); // → undefined   (no 30 February)
+```
+
+## Parameters
+
+- `segments`: the field's segments, from `parseSegments` or the field itself.
+
+## Returns
+
+A `Temporal.PlainDate`, or `undefined`. Temporal is read from `globalThis` when
+converting: in a runtime without it, await minuta's `temporalReady()` first.
