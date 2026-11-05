@@ -6,12 +6,17 @@
 import type { DateSpec, PlainDate, TimeSpec, ZonedDateTime } from "#src/types";
 import type { WeekdayNumber } from "#src/weekday";
 import { compare } from "#src/values";
+import { getTemporal } from "#src/temporal-api";
 
 const ONE = 1;
 const EQUAL = 0;
 const DAYS_PER_WEEK = 7;
 const MONTHS_PER_QUARTER = 3;
+const QUARTERS_PER_YEAR = 4;
+const LAST_QUARTER = 3;
 const FIRST = 1;
+const MONTH_DIGITS = 2;
+const DECIMAL = 10;
 
 /**
  * `diff` from an estimate, corrected to the spec's contract: the complete
@@ -75,10 +80,6 @@ function addMonths(date: PlainDate, amount: number): PlainDate {
   return date.add({ months: amount });
 }
 
-function addQuarters(date: PlainDate, amount: number): PlainDate {
-  return date.add({ months: amount * MONTHS_PER_QUARTER });
-}
-
 function addYears(date: PlainDate, amount: number): PlainDate {
   return date.add({ years: amount });
 }
@@ -94,20 +95,79 @@ const month: DateSpec = {
   startOf: (date) => date.with({ day: FIRST }),
 };
 
+/**
+ * The quarter (0 to 3) a date's month belongs to, by its month code: a leap
+ * month (Hebrew Adar I, `M05L`) joins the quarter of the month it repeats,
+ * a 13th month (Ethiopic and Coptic Pagume, `M13`) joins the fourth.
+ *
+ * @param date - A date in any calendar
+ * @returns The quarter's index
+ */
+function quarterOf(date: PlainDate): number {
+  const monthNumber = Number.parseInt(
+    date.monthCode.slice(FIRST, FIRST + MONTH_DIGITS),
+    DECIMAL
+  );
+  return Math.min(
+    Math.floor((monthNumber - FIRST) / MONTHS_PER_QUARTER),
+    LAST_QUARTER
+  );
+}
+
+/**
+ * The first day of a quarter, counted in quarters since year 0 of the
+ * date's calendar.
+ *
+ * @param date - Any date in the calendar
+ * @param index - Year times 4 plus the quarter
+ * @returns The quarter's first day
+ */
+function quarterStart(date: PlainDate, index: number): PlainDate {
+  const year = Math.floor(index / QUARTERS_PER_YEAR);
+  const firstMonth =
+    (index - year * QUARTERS_PER_YEAR) * MONTHS_PER_QUARTER + FIRST;
+  return getTemporal().PlainDate.from({
+    calendar: date.calendarId,
+    day: FIRST,
+    monthCode: `M${String(firstMonth).padStart(MONTH_DIGITS, "0")}`,
+    year,
+  });
+}
+
+function quarterIndex(date: PlainDate): number {
+  return date.year * QUARTERS_PER_YEAR + quarterOf(date);
+}
+
+/**
+ * `amount` quarters later, the same month of the quarter and the same day,
+ * clamped to the quarter's last month and the month's last day.
+ *
+ * @param date - Any date
+ * @param amount - How many quarters
+ * @returns The date
+ */
+function addQuarters(date: PlainDate, amount: number): PlainDate {
+  const index = quarterIndex(date) + amount;
+  const target = quarterStart(date, index);
+  const { months } = target.until(quarterStart(date, index + ONE), {
+    largestUnit: "month",
+  });
+  const offset = quarterStart(date, quarterIndex(date)).until(
+    date.with({ day: FIRST }),
+    { largestUnit: "month" }
+  ).months;
+  return target
+    .add({ months: Math.min(offset, months - ONE) })
+    .with({ day: date.day });
+}
+
 const quarter: DateSpec = {
   add: addQuarters,
   diff: completeDiff(addQuarters, (from, to) =>
     Math.trunc(monthsUntil(from, to) / MONTHS_PER_QUARTER)
   ),
   kind: "date",
-  startOf: (date) =>
-    date.with({
-      day: FIRST,
-      month:
-        Math.floor((date.month - FIRST) / MONTHS_PER_QUARTER) *
-          MONTHS_PER_QUARTER +
-        FIRST,
-    }),
+  startOf: (date) => quarterStart(date, quarterIndex(date)),
 };
 
 const year: DateSpec = {

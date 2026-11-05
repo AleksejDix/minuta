@@ -8,6 +8,7 @@ const EQUAL = 0;
 const MONTH_OFFSET = 1;
 const UTC = "UTC";
 const EPOCH = 0;
+const ISO_CALENDAR = "iso8601";
 
 /**
  * Display options for custom ranges and unknown period types.
@@ -80,14 +81,31 @@ type IntlValue = Readonly<{ date: Date; timeZone: string }>;
  */
 function toIntl(value: PlainDate | ZonedDateTime): IntlValue {
   if (isPlainDate(value)) {
+    // The ISO fields: a Hebrew or Hijri date's own year, month and day are not the Date's
+    const iso = value.withCalendar(ISO_CALENDAR);
     const date = new Date(EPOCH);
-    date.setUTCFullYear(value.year, value.month - MONTH_OFFSET, value.day);
+    date.setUTCFullYear(iso.year, iso.month - MONTH_OFFSET, iso.day);
     return { date, timeZone: UTC };
   }
   return {
     date: new Date(value.epochMilliseconds),
     timeZone: value.timeZoneId,
   };
+}
+
+/**
+ * The calendar to show a period in: the one it was made in. Options can
+ * pick another.
+ *
+ * @param period - Any period
+ * @returns The `calendar` option, none for ISO 8601
+ */
+function calendarOf(period: Period): Intl.DateTimeFormatOptions {
+  const calendar = period.start.calendarId;
+  if (calendar === ISO_CALENDAR) {
+    return {};
+  }
+  return { calendar };
 }
 
 function optionsFor(
@@ -101,7 +119,7 @@ function optionsFor(
   if (!picksFields) {
     Object.assign(merged, defaults);
   }
-  Object.assign(merged, { timeZone }, options);
+  Object.assign(merged, calendarOf(period), { timeZone }, options);
   if (isDatePeriod(period)) {
     // A date is the same day in every zone: read it where it was written
     merged.timeZone = UTC;

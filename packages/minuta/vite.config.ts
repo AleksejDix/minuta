@@ -1,4 +1,4 @@
-/// <reference types="vitest/config" />
+import { configDefaults } from "vitest/config";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import path from "node:path";
@@ -34,6 +34,8 @@ export default defineConfig({
     }),
   ],
   test: {
+    // Native Temporal only: vitest.browser.config.ts runs these
+    exclude: [...configDefaults.exclude, "src/**/*.browser.test.ts"],
     setupFiles: [fromRoot("../../vitest.setup.ts")],
   },
 });

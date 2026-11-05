@@ -1,3 +1,4 @@
+import type { AllUnits, DateSpec } from "#src/types";
 import {
   day,
   hour,
@@ -9,7 +10,6 @@ import {
   year,
 } from "#src/specs";
 import { weekStartOf, weekendOf } from "#src/weekday";
-import type { AllUnits } from "#src/types";
 import type { WeekOptions } from "#src/weekday";
 import { runtimeTimeZone } from "#src/values";
 
@@ -23,7 +23,55 @@ type UnitsOptions = WeekOptions &
      * divided into hours: `"UTC"`, `"Europe/Zurich"`. Default: the runtime's.
      */
     timeZone?: string | undefined;
+    /**
+     * Temporal calendar every date is read in, e.g. `"hebrew"`,
+     * `"islamic-umalqura"`, `"persian"`. Default: each date keeps its own
+     * calendar (ISO 8601 for dates made from moments).
+     */
+    calendar?: string | undefined;
   }>;
+
+/**
+ * A date spec that reads every date in `calendar` first.
+ *
+ * @param spec - A date unit's spec
+ * @param calendar - A Temporal calendar id
+ * @returns The spec in that calendar
+ */
+function inCalendar(spec: DateSpec, calendar: string): DateSpec {
+  return {
+    add: (date, amount) => spec.add(date.withCalendar(calendar), amount),
+    diff: (from, to) =>
+      spec.diff(from.withCalendar(calendar), to.withCalendar(calendar)),
+    kind: "date",
+    startOf: (date) => spec.startOf(date.withCalendar(calendar)),
+  };
+}
+
+/** The date units' specs. */
+type DateSpecs = Readonly<
+  Record<"day" | "month" | "quarter" | "week" | "year", DateSpec>
+>;
+
+/**
+ * The date specs in `calendar`, or as they are without one.
+ *
+ * @param dates - The date units' specs
+ * @param calendar - A Temporal calendar id, if any
+ * @returns The specs
+ */
+function datesIn(dates: DateSpecs, calendar: string | undefined): DateSpecs {
+  if (calendar === undefined) {
+    return dates;
+  }
+  return {
+    day: inCalendar(dates.day, calendar),
+    month: inCalendar(dates.month, calendar),
+    quarter: inCalendar(dates.quarter, calendar),
+    week: inCalendar(dates.week, calendar),
+    year: inCalendar(dates.year, calendar),
+  };
+}
 
 /**
  * Unit specs for every unit, computed with the TC39 Temporal API: date
@@ -32,7 +80,7 @@ type UnitsOptions = WeekOptions &
  * start on Monday unless `weekStartsOn` says otherwise (`"sunday"` …
  * `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
  * the days `isWeekend` counts (Saturday and Sunday unless set); `timeZone`
- * is where dates become moments. Where the runtime has no Temporal,
+ * is where dates become moments; `calendar` the calendar dates are read in. Where the runtime has no Temporal,
  * `await temporalReady()` first.
  *
  * @example
@@ -46,18 +94,22 @@ type UnitsOptions = WeekOptions &
  */
 function createUnits(options: UnitsOptions = {}): AllUnits {
   const weekStartsOn = weekStartOf(options);
+  const dates = datesIn(
+    { day, month, quarter, week: weekSpec(weekStartsOn), year },
+    options.calendar
+  );
   return {
-    day,
+    day: dates.day,
     hour,
     minute,
-    month,
-    quarter,
+    month: dates.month,
+    quarter: dates.quarter,
     second,
     timeZone: options.timeZone ?? runtimeTimeZone(),
-    week: weekSpec(weekStartsOn),
+    week: dates.week,
     weekStartsOn,
     weekend: weekendOf(options),
-    year,
+    year: dates.year,
   };
 }
 
