@@ -185,8 +185,23 @@ formatPeriod(period(tokyo, "hour"), "en-US", { timeZone: "Europe/Zurich" });
 
 ## Other calendars
 
-The locale can ask for another calendar system with `-u-ca-`. Only the label
-changes; the period is still the same Gregorian month.
+A period made in another calendar is labelled in that calendar: a Hebrew
+month reads "Adar I 5784", a Hijri month "Ramadan 1447 AH". See
+[calendars](../../minuta-core/create-units/#calendars). The `calendar` option
+picks another one for the label only.
+
+```ts
+const ramadan = withUnits(createUnits({ calendar: "islamic-umalqura" })).period(
+  Temporal.PlainDate.from("2026-03-18"),
+  "month"
+);
+formatPeriod(ramadan, "en-US"); // → "Ramadan 1447 AH"
+formatPeriod(ramadan, "en-US", { calendar: "gregory", dateStyle: "long" }); // → "February 18, 2026"
+```
+
+For an ISO period, the locale can ask for another calendar system with
+`-u-ca-`. Only the label changes; the period is still the same Gregorian
+month.
 
 ```ts
 formatPeriod(period(date, "month"), "en-US-u-ca-buddhist"); // → "March 2569 BE"
