@@ -3,6 +3,8 @@ title: toPlainTime
 description: Read a time field's value as a Temporal.PlainTime, or get undefined while it is incomplete or impossible.
 ---
 
+import Flow from "../../../../components/diagrams/Flow.astro";
+
 Read the time the user typed as a `Temporal.PlainTime`, a wall-clock time
 with no date and no zone: `14:05` gives `14:05:00`, its seconds 0 when the
 field has none. While the hour or the minute is empty, or the time does not
@@ -16,10 +18,30 @@ import { toPlainTime } from "@aleksejdix/datefield";
 toPlainTime(segments);
 ```
 
+<Flow
+  steps={[
+    { code: '"14:05"', layer: "field", text: "The time field holds text." },
+    {
+      code: 'hour "14", minute "05"',
+      layer: "parseSegments",
+      text: "The text is cut into hour and minute.",
+    },
+    {
+      code: "14:05:00",
+      layer: "toPlainTime",
+      text: "Both are digits and form a real time, so you get a PlainTime, its seconds 0.",
+    },
+  ]}
+/>
+
 ## Example
 
 ```ts
-import { deriveFormat, parseSegments, toPlainTime } from "@aleksejdix/datefield";
+import {
+  deriveFormat,
+  parseSegments,
+  toPlainTime,
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
 

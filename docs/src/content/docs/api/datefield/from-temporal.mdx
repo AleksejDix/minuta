@@ -3,6 +3,8 @@ title: fromTemporal
 description: Show a Temporal.PlainDate, PlainTime or PlainDateTime as a field's segments.
 ---
 
+import Flow from "../../../../components/diagrams/Flow.astro";
+
 Turn a Temporal value into the segments a field shows, in its format:
 `2026-03-31` in a `de-CH` date field is `31.03.2026`. A date shows its day,
 a time its hour and minute, a date and time both. Parts the field derives (a
@@ -17,10 +19,34 @@ import { fromTemporal } from "@aleksejdix/datefield";
 fromTemporal(value, format, locale);
 ```
 
+<Flow
+  steps={[
+    {
+      code: 'Temporal.PlainDate.from("2026-03-31")',
+      layer: "value",
+      text: "A day, with no time zone.",
+    },
+    {
+      code: 'day "31", month "03", year "2026"',
+      layer: "fromTemporal",
+      text: "Its parts, in the order and widths of the de-CH format.",
+    },
+    {
+      code: '"31.03.2026"',
+      layer: "segmentsToString",
+      text: "The text the field shows.",
+    },
+  ]}
+/>
+
 ## Example
 
 ```ts
-import { deriveFormat, fromTemporal, segmentsToString } from "@aleksejdix/datefield";
+import {
+  deriveFormat,
+  fromTemporal,
+  segmentsToString,
+} from "@aleksejdix/datefield";
 
 const date = deriveFormat("de-CH");
 const time = deriveFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
