@@ -3,6 +3,8 @@ title: toPlainDate
 description: Read a field's day as a Temporal.PlainDate, or get undefined while it is incomplete or impossible.
 ---
 
+import Flow from "../../../../components/diagrams/Flow.astro";
+
 Read the day the user typed as a `Temporal.PlainDate`: the segments of
 `31.03.2026` give `2026-03-31`, a date with no time zone, as the field shows
 none. While a slot is empty, or the day does not exist, you get `undefined`.
@@ -16,10 +18,30 @@ import { toPlainDate } from "@aleksejdix/datefield";
 toPlainDate(segments);
 ```
 
+<Flow
+  steps={[
+    { code: '"31.03.2026"', layer: "field", text: "The field holds text." },
+    {
+      code: 'day "31", month "03", year "2026"',
+      layer: "parseSegments",
+      text: "The text is cut into day, month and year.",
+    },
+    {
+      code: "2026-03-31",
+      layer: "toPlainDate",
+      text: "All three are digits and form a real day, so you get a PlainDate, with no time zone.",
+    },
+  ]}
+/>
+
 ## Example
 
 ```ts
-import { deriveFormat, parseSegments, toPlainDate } from "@aleksejdix/datefield";
+import {
+  deriveFormat,
+  parseSegments,
+  toPlainDate,
+} from "@aleksejdix/datefield";
 
 const format = deriveFormat("de-CH");
 
