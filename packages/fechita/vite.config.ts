@@ -35,4 +35,8 @@ export default defineConfig({
       include: ["src/**/*.ts"],
     }),
   ],
+  test: {
+    // Temporal on globalThis before any test, as apps load it
+    setupFiles: [path.resolve(import.meta.dirname, "../../vitest.setup.ts")],
+  },
 });

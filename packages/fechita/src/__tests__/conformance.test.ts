@@ -186,6 +186,11 @@ const REJECTED: readonly Rejected[] = [
   { code: ParseError.NoYear, text: "--02-29" },
   { code: ParseError.InvalidMonth, text: "--13-01" },
   { code: ParseError.InvalidDay, text: "--04-31" },
+  // Years Temporal cannot hold every day of
+  { code: ParseError.OutOfRange, text: "+999999-01-01" },
+  { code: ParseError.OutOfRange, text: "-271821-04-20" },
+  { code: ParseError.OutOfRange, text: "+275760-W01-1" },
+  { code: ParseError.OutOfRange, text: "+275760-001" },
   // A time alone: fechita reads dates
   { code: ParseError.NoDate, text: "10:04" },
   { code: ParseError.NoDate, text: "10:04:05Z" },

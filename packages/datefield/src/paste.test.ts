@@ -1,6 +1,7 @@
 import { dateOrder, deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
 import type { DateFormat } from "./types";
+import type { FieldValue } from "./temporal";
 import { createInputState } from "@aleksejdix/input-state";
 import { dateMask } from "./field";
 import { parseDate } from "@aleksejdix/fechita";
@@ -34,18 +35,18 @@ function parsedDate(
   text: string,
   locale: string,
   format: Readonly<DateFormat>
-): Date | undefined {
+): FieldValue | undefined {
   const result = parseDate(text, { locale, order: dateOrder(format) });
-  if (result.valid) {
-    return result.date;
+  if (!result.valid || result.kind === "instant") {
+    return undefined;
   }
-  return undefined;
+  return result.value;
 }
 
 function parserFor(
   locale: string,
   format: Readonly<DateFormat>
-): (text: string) => Date | undefined {
+): (text: string) => FieldValue | undefined {
   return (text) => parsedDate(text, locale, format);
 }
 

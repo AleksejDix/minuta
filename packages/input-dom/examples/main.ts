@@ -1,3 +1,4 @@
+import type { DateFormat, FieldValue } from "@aleksejdix/datefield";
 import {
   clampDay,
   dateMask,
@@ -15,7 +16,6 @@ import {
   isComplete,
   parseMask,
 } from "@aleksejdix/input-state";
-import type { DateFormat } from "@aleksejdix/datefield";
 import type { InputState } from "@aleksejdix/input-state";
 import { attachInput } from "@aleksejdix/input-dom";
 import { parseDate } from "@aleksejdix/fechita";
@@ -88,17 +88,23 @@ function rotated(
   return withSegments(state, rotateSegment(segments, index, DOWN));
 }
 
+const USER_ZONE = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 // The demo reads pastes in every locale; an app loads only the ones it needs
 function pastedDate(
   text: string,
   locale: string,
   format: Readonly<DateFormat>
-): Date | undefined {
+): FieldValue | undefined {
   const result = parseDate(text, { locale, order: dateOrder(format) });
-  if (result.valid) {
-    return result.date;
+  if (!result.valid) {
+    return undefined;
   }
-  return undefined;
+  if (result.kind === "instant") {
+    // The field shows a wall clock: the instant's in the user's zone
+    return result.value.toZonedDateTimeISO(USER_ZONE).toPlainDateTime();
+  }
+  return result.value;
 }
 
 function describeDate(format: Readonly<DateFormat>, state: InputState): string {

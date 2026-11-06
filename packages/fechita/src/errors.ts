@@ -20,6 +20,8 @@ const ParseError = {
   NoDate: "NO_DATE",
   /** The text has a month and day but no year (--10-13, the HTML yearless date) */
   NoYear: "NO_YEAR",
+  /** The year is outside what Temporal holds: years -271820 to 275759 */
+  OutOfRange: "OUT_OF_RANGE",
   /** The weekday in the text is not the weekday of the date */
   WeekdayMismatch: "WEEKDAY_MISMATCH",
 } as const;

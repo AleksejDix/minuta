@@ -1,16 +1,16 @@
 /**
  * Calendar arithmetic for readings: which readings name a real day, and the
- * Date they stand for.
+ * Temporal value they stand for.
  */
 
 import type { DateParts } from "./types";
 import { ParseError } from "./errors";
 import type { ParseErrorCode } from "./errors";
 import type { Reading } from "./candidates";
+import type { Temporal } from "./temporal";
+import { temporal } from "./temporal";
 
 const MONTHS = 12;
-const JANUARY = 0;
-const DECEMBER = 11;
 const FIRST = 1;
 const LAST_OF_DECEMBER = 31;
 // ISO 8601 week 1 is the week with January 4, and weeks start on Monday
@@ -20,12 +20,17 @@ const THURSDAY = 4;
 const WEEKS = 52;
 const LONG_YEAR_WEEKS = 53;
 const NONE = 0;
-const MS_PER_MINUTE = 60_000;
 const MINUTES_PER_HOUR = 60;
 const MAX_HOUR = 23;
 const MAX_MINUTE = 59;
 // 60 is a leap second (RFC 3339)
 const MAX_SECOND = 60;
+/*
+ * The years whose every day, time and offset Temporal can hold: it ends
+ * inside -271821 and 275760
+ */
+const MIN_YEAR = -271_820;
+const MAX_YEAR = 275_759;
 
 /** The time of day a reading is combined with. */
 type Clock = Readonly<{
@@ -36,7 +41,7 @@ type Clock = Readonly<{
   second: number;
 }>;
 
-/** No time in the text: local midnight. */
+/** The fields of a date without a time. */
 const MIDNIGHT: Clock = {
   hour: NONE,
   millisecond: NONE,
@@ -46,28 +51,34 @@ const MIDNIGHT: Clock = {
 };
 
 /**
- * The UTC midnight of a day, counted from the first of a month: day 0 is
- * the day before, day 32 of January is February 1. Years below 100 are
- * taken literally.
- *
- * @param year - The year
- * @param month - Month 0–11
- * @param day - The day of the month, any number
- * @returns The UTC midnight
+ * The value a text stands for: a date, a wall-clock date and time, or the
+ * exact instant when the text has an offset.
  */
-function utcDay(year: number, month: number, day: number): Date {
-  const date = new Date(NONE);
-  date.setUTCFullYear(year, month, day);
-  return date;
+type Parsed =
+  | Readonly<{ kind: "date"; value: Temporal.PlainDate }>
+  | Readonly<{ kind: "dateTime"; value: Temporal.PlainDateTime }>
+  | Readonly<{ kind: "instant"; value: Temporal.Instant }>;
+
+/** One of the values `parseDate` returns. */
+type ParsedValue = Parsed["value"];
+
+function inRange(year: number): boolean {
+  return year >= MIN_YEAR && year <= MAX_YEAR;
 }
 
-function readingAt(date: Readonly<Date>): Reading {
-  return {
-    day: date.getUTCDate(),
-    month: date.getUTCMonth() + FIRST,
-    order: "YMD",
-    year: date.getUTCFullYear(),
-  };
+/** The day, month and year of a reading or of date parts. */
+type Day = Pick<Reading, "day" | "month" | "year">;
+
+function dayOf(reading: Day): Temporal.PlainDate {
+  return temporal().PlainDate.from({
+    day: reading.day,
+    month: reading.month,
+    year: reading.year,
+  });
+}
+
+function readingAt(date: Readonly<Temporal.PlainDate>): Reading {
+  return { day: date.day, month: date.month, order: "YMD", year: date.year };
 }
 
 /**
@@ -75,30 +86,33 @@ function readingAt(date: Readonly<Date>): Reading {
  *
  * @param year - The year
  * @param ordinal - The day of the year, 1–365 or 366 in leap years
- * @returns The day, or `INVALID_DAY` when the year has no such day
+ * @returns The day, or `INVALID_DAY` / `OUT_OF_RANGE`
  */
 function ordinalReading(
   year: number,
   ordinal: number
 ): Reading | ParseErrorCode {
-  const date = utcDay(year, JANUARY, ordinal);
-  if (ordinal < FIRST || date.getUTCFullYear() !== year) {
+  if (!inRange(year)) {
+    return ParseError.OutOfRange;
+  }
+  const first = dayOf({ day: FIRST, month: FIRST, year });
+  if (ordinal < FIRST || ordinal > first.daysInYear) {
     return ParseError.InvalidDay;
   }
-  return readingAt(date);
+  return readingAt(first.add({ days: ordinal - FIRST }));
 }
 
 /**
  * The ISO 8601 weeks of a year: 53 when it starts or ends on a Thursday,
  * otherwise 52.
  *
- * @param year - The ISO week-numbering year
+ * @param first - January 1 of the ISO week-numbering year
  * @returns 52 or 53
  */
-function weeksIn(year: number): number {
+function weeksIn(first: Readonly<Temporal.PlainDate>): number {
   const ends = [
-    utcDay(year, JANUARY, FIRST).getUTCDay(),
-    utcDay(year, DECEMBER, LAST_OF_DECEMBER).getUTCDay(),
+    first.dayOfWeek,
+    first.with({ day: LAST_OF_DECEMBER, month: MONTHS }).dayOfWeek,
   ];
   if (ends.includes(THURSDAY)) {
     return LONG_YEAR_WEEKS;
@@ -113,40 +127,33 @@ function weeksIn(year: number): number {
  * @param year - The ISO week-numbering year
  * @param week - The week, 1–52 or 53
  * @param weekday - The weekday, 1 (Monday) to 7 (Sunday)
- * @returns The day, or `INVALID_DAY` / `INVALID_WEEK`
+ * @returns The day, or `INVALID_DAY` / `INVALID_WEEK` / `OUT_OF_RANGE`
  */
 function weekReading(
   year: number,
   week: number,
   weekday: number
 ): Reading | ParseErrorCode {
+  if (!inRange(year)) {
+    return ParseError.OutOfRange;
+  }
   if (weekday < FIRST || weekday > DAYS_PER_WEEK) {
     return ParseError.InvalidDay;
   }
-  if (week < FIRST || week > weeksIn(year)) {
+  const first = dayOf({ day: FIRST, month: FIRST, year });
+  if (week < FIRST || week > weeksIn(first)) {
     return ParseError.InvalidWeek;
   }
-  // Days since Monday: Sunday, day 0 of getUTCDay, is the seventh
-  const sinceMonday =
-    (utcDay(year, JANUARY, WEEK_ONE_DAY).getUTCDay() + DAYS_PER_WEEK - FIRST) %
-    DAYS_PER_WEEK;
+  const weekOne = first.with({ day: WEEK_ONE_DAY });
   return readingAt(
-    utcDay(
-      year,
-      JANUARY,
-      WEEK_ONE_DAY -
-        sinceMonday +
-        (week - FIRST) * DAYS_PER_WEEK +
-        weekday -
-        FIRST
-    )
+    weekOne.add({
+      days: (week - FIRST) * DAYS_PER_WEEK + weekday - weekOne.dayOfWeek,
+    })
   );
 }
 
 function daysIn(year: number, month: number): number {
-  const date = new Date(NONE);
-  date.setFullYear(year, month, NONE);
-  return date.getDate();
+  return temporal().PlainYearMonth.from({ month, year }).daysInMonth;
 }
 
 /**
@@ -156,6 +163,9 @@ function daysIn(year: number, month: number): number {
  * @returns The error code, or undefined for a real day
  */
 function problemOf(reading: Reading): ParseErrorCode | undefined {
+  if (!inRange(reading.year)) {
+    return ParseError.OutOfRange;
+  }
   if (reading.month < FIRST || reading.month > MONTHS) {
     return ParseError.InvalidMonth;
   }
@@ -193,10 +203,13 @@ function offsetMinutes(sign: number, hours: number, minutes: number): number {
  * Why a time of day is not one, if it is not. ISO 8601-1:2019 no longer
  * allows 24:00, so hours are 0–23.
  *
- * @param clock - The time as written
+ * @param clock - The time as written, undefined when there is none
  * @returns `INVALID_TIME`, `INVALID_OFFSET`, or undefined for a real time
  */
-function clockProblem(clock: Clock): ParseErrorCode | undefined {
+function clockProblem(clock: Clock | undefined): ParseErrorCode | undefined {
+  if (clock === undefined) {
+    return undefined;
+  }
   if (
     clock.hour > MAX_HOUR ||
     clock.minute > MAX_MINUTE ||
@@ -214,10 +227,10 @@ function clockProblem(clock: Clock): ParseErrorCode | undefined {
  * The fields of a reading at a time of day.
  *
  * @param reading - Day, month and year
- * @param clock - Time of day and offset
+ * @param clock - Time of day and offset; midnight when undefined
  * @returns The date parts
  */
-function partsOf(reading: Reading, clock: Clock): DateParts {
+function partsOf(reading: Reading, clock: Clock = MIDNIGHT): DateParts {
   return {
     day: reading.day,
     hour: clock.hour,
@@ -231,32 +244,56 @@ function partsOf(reading: Reading, clock: Clock): DateParts {
 }
 
 /**
- * The Date of some parts: local time, or the exact instant with an offset.
- * Years below 100 are taken literally.
+ * The value of a real day at a time of day: the date when the text has no
+ * time, the wall-clock date and time when it has no offset, otherwise the
+ * exact instant. A leap second is the second before, as in Temporal.
  *
- * @param parts - The date parts
- * @returns The Date
+ * @param reading - Day, month and year of a real day
+ * @param clock - Time of day and offset, undefined when the text has none
+ * @returns The value and its kind
  */
-function dateOf(parts: DateParts): Date {
-  const date = new Date(NONE);
-  if (parts.offsetMinutes === undefined) {
-    date.setFullYear(parts.year, parts.month - FIRST, parts.day);
-    date.setHours(parts.hour, parts.minute, parts.second, parts.millisecond);
-    return date;
+function parsedOf(reading: Reading, clock: Clock | undefined): Parsed {
+  const day = dayOf(reading);
+  if (clock === undefined) {
+    return { kind: "date", value: day };
   }
-  date.setUTCFullYear(parts.year, parts.month - FIRST, parts.day);
-  date.setUTCHours(parts.hour, parts.minute, parts.second, parts.millisecond);
-  return new Date(date.getTime() - parts.offsetMinutes * MS_PER_MINUTE);
+  const wall = day.toPlainDateTime({
+    hour: clock.hour,
+    millisecond: clock.millisecond,
+    minute: clock.minute,
+    second: Math.min(clock.second, MAX_MINUTE),
+  });
+  if (clock.offsetMinutes === undefined) {
+    return { kind: "dateTime", value: wall };
+  }
+  return {
+    kind: "instant",
+    value: wall
+      .toZonedDateTime("UTC")
+      .toInstant()
+      .subtract({ minutes: clock.offsetMinutes }),
+  };
+}
+
+/**
+ * The weekday of a real day, 0 (Sunday) to 6 (Saturday), as the locale
+ * data counts them.
+ *
+ * @param reading - Day, month and year of a real day
+ * @returns The weekday
+ */
+function weekdayOf(reading: Day): number {
+  return dayOf(reading).dayOfWeek % DAYS_PER_WEEK;
 }
 
 export {
-  MIDNIGHT,
   clockProblem,
-  dateOf,
   offsetMinutes,
   ordinalReading,
+  parsedOf,
   partsOf,
   problemOf,
   weekReading,
+  weekdayOf,
 };
-export type { Clock };
+export type { Clock, Parsed, ParsedValue };

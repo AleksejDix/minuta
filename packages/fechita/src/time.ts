@@ -4,8 +4,9 @@
  * `+02:00`, `+0200`, `GMT+1`, `UTC`.
  */
 
-import { MIDNIGHT, clockProblem, offsetMinutes } from "./date";
+import { clockProblem, offsetMinutes } from "./date";
 import { rangeOf, wordRuns } from "./words";
+import type { Clock } from "./date";
 import type { ParseErrorCode } from "./errors";
 import type { Tables } from "./match";
 import type { WordTable } from "./words";
@@ -33,14 +34,11 @@ const POSITIVE = 1;
 
 /** A time of day read from text, and the text left without it. */
 type TimeOfDay = Readonly<{
-  hour: number;
-  millisecond: number;
-  minute: number;
-  offsetMinutes: number | undefined;
-  rest: string;
-  second: number;
+  /** The time as written, undefined when the text has none */
+  clock: Clock | undefined;
   /** Why the time is not one (25:00, +25:00), or undefined */
   problem: ParseErrorCode | undefined;
+  rest: string;
 }>;
 
 type Groups = Readonly<Record<string, string | undefined>>;
@@ -235,12 +233,12 @@ function fractionOf(groups: Groups): number {
  *
  * @param text - Normalised text
  * @param periods - Day-period words of the own and all loaded locales
- * @returns The time and the remaining text, or undefined without a time
+ * @returns The time, undefined without one, and the remaining text
  */
-function timeIn(text: string, periods: Tables): TimeOfDay | undefined {
+function timeIn(text: string, periods: Tables): TimeOfDay {
   const found = timeFound(text);
   if (found === undefined) {
-    return undefined;
+    return { clock: undefined, problem: undefined, rest: text };
   }
   const { groups } = found;
   const written = Number(groups["hour"]);
@@ -252,28 +250,11 @@ function timeIn(text: string, periods: Tables): TimeOfDay | undefined {
     offsetMinutes: offsetOf(groups["offset"]),
     second: Number(groups["second"] ?? NONE),
   };
-  return Object.assign(clock, {
+  return {
+    clock,
     problem: clockProblem(clock),
     rest: `${found.before} ${found.after}`,
-  });
-}
-
-/**
- * The whole text at midnight, when it holds no time.
- *
- * @param text - Normalised text
- * @returns Midnight with the text as the rest
- */
-function untimed(text: string): TimeOfDay {
-  return {
-    hour: MIDNIGHT.hour,
-    millisecond: MIDNIGHT.millisecond,
-    minute: MIDNIGHT.minute,
-    offsetMinutes: MIDNIGHT.offsetMinutes,
-    problem: undefined,
-    rest: text,
-    second: MIDNIGHT.second,
   };
 }
 
-export { timeIn, untimed };
+export { timeIn };
