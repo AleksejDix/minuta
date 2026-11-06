@@ -85,7 +85,7 @@ field.buffer.text; // → "01.03.2026"
 // 4. Paste a date in any form, read by fechita in the field's order
 const parse = (text) => {
   const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 };
 field = createInputState({ mask: dateMask(format) });
 field = typeDate(format, field, "31. Januar 2026", { parse });

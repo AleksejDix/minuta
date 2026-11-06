@@ -17,6 +17,7 @@ export const triggers = {
   InvalidWeek: "2025-W53-1",
   NoDate: "hello",
   NoYear: "--10-13",
+  OutOfRange: "+999999-01-01",
   WeekdayMismatch: "Monday 31 March 2026",
 };
 
@@ -57,6 +58,7 @@ A plain object. Each name maps to the code string that appears in
 | `InvalidWeek`       | `INVALID_WEEK`        | The ISO 8601 week does not exist in that year: `2025-W53-1` (2025 has 52 weeks), `2026-W00-1`.          |
 | `NoDate`            | `NO_DATE`             | No day, month and year were found in the text.                                                          |
 | `NoYear`            | `NO_YEAR`             | The text has a month and day but no year: the HTML yearless date `--10-13`.                             |
+| `OutOfRange`        | `OUT_OF_RANGE`        | The year is outside −271820 to 275759, the years Temporal holds every day of: `+999999-01-01`.          |
 | `WeekdayMismatch`   | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                                                 |
 
 Each constant with a text that makes `parseDate` report it. The codes on the

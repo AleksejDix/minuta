@@ -2,15 +2,24 @@
  * Parsing dates: `new Date(text)` gives up or silently guesses; fechita reads
  * dates in any language and reports ambiguity instead of guessing.
  */
-import { dayLabel, demoRoots, fillList, part, timeLabel } from "./dom";
+import {
+  dayLabel,
+  demoRoots,
+  fillList,
+  part,
+  readDayLabel,
+  readLabel,
+  timeLabel,
+} from "./dom";
 import type { Order } from "@aleksejdix/fechita";
+import type { ReadValue } from "./dom";
 import { parseDate } from "@aleksejdix/fechita";
 
 // What fechita said, as read-only data
 type Reading = Readonly<{
-  candidates: readonly Readonly<Date>[];
+  candidates: readonly ReadValue[];
   codes: readonly string[];
-  date: Readonly<Date> | undefined;
+  value: ReadValue | undefined;
 }>;
 
 const ORDERS: ReadonlySet<string> = new Set(["DMY", "MDY", "YMD"]);
@@ -30,17 +39,17 @@ function parsed(text: string, order: string): ReturnType<typeof parseDate> {
 function reading(text: string, order: string): Reading {
   const result = parsed(text, order);
   if (result.valid) {
-    return { candidates: [], codes: [], date: result.date };
+    return { candidates: [], codes: [], value: result.value };
   }
   return {
     candidates: result.candidates,
     codes: result.errorCodes,
-    date: undefined,
+    value: undefined,
   };
 }
 
-function sameDay(left: Readonly<Date>, right: Readonly<Date>): boolean {
-  return dayLabel(left) === dayLabel(right);
+function sameDay(naive: Readonly<Date>, value: ReadValue): boolean {
+  return dayLabel(naive) === readDayLabel(value);
 }
 
 function naiveVerdict(naive: Readonly<Date>, read: Reading): string {
@@ -50,10 +59,10 @@ function naiveVerdict(naive: Readonly<Date>, read: Reading): string {
   if (read.candidates.length > NONE) {
     return "✗ new Date() picked one reading and did not tell you there are others.";
   }
-  if (read.date === undefined) {
+  if (read.value === undefined) {
     return "✗ new Date() accepted text that is not a valid date.";
   }
-  if (sameDay(naive, read.date)) {
+  if (sameDay(naive, read.value)) {
     return "This one new Date() reads right too. Try another.";
   }
   return "✗ new Date() read a different day.";
@@ -77,14 +86,14 @@ function showNaive(root: HTMLElement, text: string, read: Reading): void {
 
 function showReading(root: HTMLElement, read: Reading): void {
   const result = part(root, "result", HTMLElement);
-  if (read.date === undefined) {
+  if (read.value === undefined) {
     result.textContent = `not valid: ${read.codes.join(", ")}`;
   } else {
-    result.textContent = `✓ valid: ${timeLabel(read.date)}`;
+    result.textContent = `✓ valid: ${readLabel(read.value)}`;
   }
   fillList(
     part(root, "candidates", HTMLElement),
-    read.candidates.map((candidate) => `could be ${dayLabel(candidate)}`)
+    read.candidates.map((candidate) => `could be ${readDayLabel(candidate)}`)
   );
 }
 

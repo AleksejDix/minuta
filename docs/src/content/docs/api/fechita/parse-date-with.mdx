@@ -9,10 +9,10 @@ import { en } from "@aleksejdix/fechita/locales/en";
 import Flow from "../../../../components/diagrams/Flow.astro";
 
 export const locales = { de, en };
-export const dayLabel = new Intl.DateTimeFormat("en-US", { dateStyle: "long" });
+export const LONG = { dateStyle: "long" };
 export const describe = (result) =>
   result.valid
-    ? `valid: ${dayLabel.format(result.date)}`
+    ? `valid: ${result.value.toLocaleString("en-US", LONG)}`
     : `invalid: ${result.errorCodes.join(", ")}`;
 
 Read the date in a text using only the locales you pass in. It is the
@@ -52,7 +52,7 @@ The candidates and the result are what the calls above return:
     },
     {
       code: parseDateWith(locales, "04/05/2026")
-        .candidates.map((date) => dayLabel.format(date))
+        .candidates.map((value) => value.toLocaleString("en-US", LONG))
         .join(" or "),
       layer: "text",
       text: "“04/05/2026” has no words, only numbers. Two orders give a real date.",
@@ -81,7 +81,7 @@ The candidates and the result are what the calls above return:
 ## Returns
 
 The same result as [`parseDate`](../parse-date/#returns):
-`{ valid: true, date, parts }` or `{ valid: false, errorCodes, candidates }`.
+`{ valid: true, kind, value, parts }` or `{ valid: false, errorCodes, candidates }`.
 
 ## `parseDateWith` or `withLocales`?
 

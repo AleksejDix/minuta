@@ -47,6 +47,8 @@ import DemoFrame from "./DemoFrame.astro";
 
 <script>
   import { mountParsingDemos } from "./parsing-demo";
+  import { temporalReady } from "@aleksejdix/minuta/temporal";
 
+  await temporalReady();
   mountParsingDemos();
 </script>

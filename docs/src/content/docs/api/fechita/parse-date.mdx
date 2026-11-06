@@ -6,8 +6,8 @@ description: Read the date in a text — ISO, numbers in any order, month and we
 import ParseDiagram from "../../../../components/diagrams/ParseDiagram.astro";
 
 Read the date in a piece of text, written in almost any way and in any of 104
-languages. You get a date only when the text means exactly one date.
-Otherwise you get the reason and the dates it could mean.
+languages. You get a Temporal value only when the text means exactly one
+date. Otherwise you get the reason and the dates it could mean.
 
 ```ts
 import { parseDate } from "@aleksejdix/fechita";
@@ -23,7 +23,7 @@ parseDate(text, options?)
 import { parseDate } from "@aleksejdix/fechita";
 
 parseDate("2026-03-31");
-// → { valid: true, date: 31 March 2026 00:00 local time, parts: { … } }
+// → { valid: true, kind: "date", value: Temporal.PlainDate 2026-03-31, parts: { … } }
 
 parseDate("31. März 2026"); // → valid: 31 March 2026
 parseDate("31 de marzo de 2026"); // → valid: 31 March 2026
@@ -37,8 +37,7 @@ parseDate("04/05/2026", { locale: "de-CH" }); // → valid: 4 May 2026
 parseDate("04/05/2026", { order: "MDY" }); // → valid: 5 April 2026
 ```
 
-All results on this page were made in the time zone Europe/Zurich, with today
-being in 2026.
+All results on this page were made with today being in 2026.
 
 What `parseDate` makes of three texts — one clear date, one that could mean
 two days, and one that is not a date:
@@ -62,7 +61,7 @@ two days, and one that is not a date:
 | --------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `locale`        | none    | The language and region the text was written in, e.g. `"de-CH"` or `"en-US"`. Its usual date order settles ambiguous numbers, and its words win when two languages use one word for different months. |
 | `order`         | none    | `"DMY"`, `"MDY"` or `"YMD"`: how to read numbers that fit more than one order. Wins over `locale`.                                                                                                    |
-| `referenceDate` | now     | The date two-digit years are counted from, see [Two-digit years](#two-digit-years).                                                                                                                   |
+| `referenceDate` | today   | A `Temporal.PlainDate` two-digit years are counted from, see [Two-digit years](#two-digit-years).                                                                                                     |
 
 ## Returns
 
@@ -73,7 +72,8 @@ When the text means exactly one date:
 | Field   | What it is                                                                                                                                        |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `valid` | `true`.                                                                                                                                           |
-| `date`  | A `Date`. Local time, or the exact moment when the text has a UTC offset (`Z`, `+02:00`, `GMT+1`).                                                |
+| `kind`  | `"date"`, `"dateTime"` or `"instant"`: which Temporal type `value` is. Check it to narrow `value` in TypeScript.                                  |
+| `value` | The date as a Temporal value, see [Kinds of value](#kinds-of-value).                                                                              |
 | `parts` | The fields as written: `year`, `month` (1–12), `day`, `hour`, `minute`, `second`, `millisecond`, and `offsetMinutes` when the text has an offset. |
 
 When it does not:
@@ -82,16 +82,41 @@ When it does not:
 | ------------ | ----------------------------------------------------------------------------------- |
 | `valid`      | `false`.                                                                            |
 | `errorCodes` | Why there is no single date, e.g. `["AMBIGUOUS_DAY_MONTH"]`. See [Errors](#errors). |
-| `candidates` | The dates the text could mean. Filled for `AMBIGUOUS_DAY_MONTH`, empty otherwise.   |
+| `candidates` | The values the text could mean. Filled for `AMBIGUOUS_DAY_MONTH`, empty otherwise.  |
 
 ```ts
 const result = parseDate(text);
 if (result.valid) {
-  save(result.date);
+  save(result.value);
 } else if (result.candidates.length > 0) {
   askWhichOne(result.candidates);
 }
 ```
+
+### Kinds of value
+
+The text decides the type, so nothing is added that it does not say:
+
+| `kind`       | `value`                  | When                                                                   |
+| ------------ | ------------------------ | ---------------------------------------------------------------------- |
+| `"date"`     | `Temporal.PlainDate`     | The text has a date only: `31.03.2026`. No time, no time zone.         |
+| `"dateTime"` | `Temporal.PlainDateTime` | A date and a time without an offset: `31.03.2026 14:05`. A wall clock. |
+| `"instant"`  | `Temporal.Instant`       | A time with a UTC offset (`Z`, `+02:00`, `GMT+1`): one exact moment.   |
+
+```ts
+const result = parseDate("2026-03-31T10:00+02:00");
+if (result.valid && result.kind === "instant") {
+  result.value.toString(); // "2026-03-31T08:00:00Z"
+  result.value.toZonedDateTimeISO("Europe/Zurich"); // the moment in a zone
+}
+```
+
+An offset is not a time zone: `+02:00` does not say whether that is Zurich in
+summer or Cairo, so fechita returns the moment and leaves the zone to you.
+
+fechita reads `globalThis.Temporal` when it parses. Where the runtime has no
+Temporal yet (Safari, Node 24), load the polyfill first with minuta's
+[`await temporalReady()`](../../minuta-temporal/temporal-ready/).
 
 ## Ambiguous dates
 
@@ -163,15 +188,18 @@ A year must have two or four digits, a day or a month one or two.
 ## Two-digit years
 
 A two-digit year is placed in a window of 100 years: from 80 years before
-`referenceDate` to 19 years after it. With today in 2026 that window is
-1946–2045.
+the year of `referenceDate` to 19 years after it. With today in 2026 that
+window is 1946–2045. A `referenceDate` in another calendar counts by its ISO
+year.
 
 ```ts
 parseDate("31.03.68"); // → 31 March 1968
 parseDate("31.03.45"); // → 31 March 2045
 parseDate("31.03.46"); // → 31 March 1946
 
-parseDate("31.03.70", { referenceDate: new Date(2026, 0, 1) }); // → 31 March 1970
+parseDate("31.03.70", {
+  referenceDate: Temporal.PlainDate.from("2026-01-01"),
+}); // → 31 March 1970
 ```
 
 With two digits, the year can also be the first number, so short dates are
@@ -221,8 +249,9 @@ A month name needs a year next to it. `31 March` and `March 2026` give
 
 ## Weekday names are checked
 
-A weekday in the text must match the date. A wrong one is reported, not
-ignored, because it usually means the date was mistyped.
+A weekday in the text must match the date as written, whatever its offset. A
+wrong one is reported, not ignored, because it usually means the date was
+mistyped.
 
 ```ts
 parseDate("Tuesday 31 March 2026"); // → 31 March 2026
@@ -238,22 +267,27 @@ ignores it:
 ## ISO dates and times
 
 ISO 8601 and RFC 3339 are read exactly, so `2026-04-05` is never ambiguous.
-Without an offset the time is local; with one, `date` is that exact moment.
+Without an offset the time is a `PlainDateTime`; with one, `value` is that
+exact moment as an `Instant`.
 
 ```ts
 parseDate("2026-03-31T10:00");
-// → 31 March 2026 10:00 local time
+// → PlainDateTime 2026-03-31T10:00:00
 
 parseDate("2026-03-31T10:00:00.250+02:00");
-// → the moment 2026-03-31T08:00:00.250Z,
+// → Instant 2026-03-31T08:00:00.25Z,
 //   parts.offsetMinutes: 120, parts.millisecond: 250
 
 parseDate("2026-03-31T10.5");
-// → 31 March 2026 10:30 local time: a decimal fraction on the hour or
+// → PlainDateTime 2026-03-31T10:30:00: a decimal fraction on the hour or
 //   minute (with . or ,) sets the smaller parts
 
 parseDate("Tue, 31 Mar 2026 10:00:00 +0200");
-// → the moment 2026-03-31T08:00:00Z (an email date, RFC 2822)
+// → Instant 2026-03-31T08:00:00Z (an email date, RFC 2822)
+
+parseDate("2016-12-31T23:59:60Z");
+// → Instant 2016-12-31T23:59:59Z: a leap second is the second before, as
+//   in Temporal; parts.second is still 60
 
 parseDate("2026-W14-2");
 // → 31 March 2026: Tuesday of ISO week 14. Week 1 holds 4 January,
@@ -277,7 +311,7 @@ period words of other languages, and offsets such as `UTC` or `GMT+1`.
 parseDate("31.03.2026 14:05"); // → 31 March 2026 14:05
 parseDate("2:05 PM 31.03.2026"); // → 31 March 2026 14:05
 parseDate("2026年3月31日 晚上11:59"); // → 31 March 2026 23:59 ("晚上" is evening)
-parseDate("31.03.2026 23:59 UTC"); // → the moment 2026-03-31T23:59:00Z
+parseDate("31.03.2026 23:59 UTC"); // → Instant 2026-03-31T23:59:00Z
 ```
 
 ## Invalid dates
@@ -309,7 +343,10 @@ the day instead:
 - Digits of every script: `٣١/٠٣/٢٠٢٦` is 31 March 2026.
 - Years with an era: `15 March 44 BC` is year −43, counted the astronomical
   way (1 BC is year 0).
-- All dates are in the Gregorian calendar.
+- All dates are read in the Gregorian calendar and returned in the ISO
+  calendar; `value.withCalendar("hebrew")` shows one in another.
+- Years from −271820 to 275759, the years Temporal holds every day of.
+  Others give `OUT_OF_RANGE`: `+999999-01-01`.
 
 ## Errors
 
@@ -327,6 +364,7 @@ constants.
 | `INVALID_WEEK`        | The ISO week does not exist in that year: `2025-W53-1`.                    |
 | `NO_DATE`             | No day, month and year were found: `hello`, `""`, `March 2026`.            |
 | `NO_YEAR`             | A month and day without a year: `--10-13`.                                 |
+| `OUT_OF_RANGE`        | The year is outside −271820 to 275759, the years Temporal holds.           |
 | `WEEKDAY_MISMATCH`    | The weekday in the text is not the weekday of the date.                    |
 
 ## Related

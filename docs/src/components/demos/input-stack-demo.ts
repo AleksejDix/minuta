@@ -3,6 +3,7 @@
  * mangles pastes; the minuta field keeps the cursor and reads the paste,
  * and every layer's state is shown live.
  */
+import type { DateFormat, FieldValue } from "@aleksejdix/datefield";
 import {
   clampDay,
   dateMask,
@@ -17,12 +18,12 @@ import {
 } from "@aleksejdix/datefield";
 import { createInputState, isComplete } from "@aleksejdix/input-state";
 import { dayLabel, demoRoots, part } from "./dom";
-import type { DateFormat } from "@aleksejdix/datefield";
 import type { InputState } from "@aleksejdix/input-state";
 import { attachInput } from "@aleksejdix/input-dom";
 import { parseDate } from "@aleksejdix/fechita";
 
 const LOCALE = "de-CH";
+const USER_ZONE = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 const DIGITS = 8;
 const DAY_END = 2;
 const MONTH_END = 4;
@@ -45,12 +46,16 @@ function naiveMask(value: string): string {
 function pastedDate(
   format: Readonly<DateFormat>,
   text: string
-): Date | undefined {
+): FieldValue | undefined {
   const result = parseDate(text, { locale: LOCALE, order: dateOrder(format) });
-  if (result.valid) {
-    return result.date;
+  if (!result.valid) {
+    return undefined;
   }
-  return undefined;
+  if (result.kind === "instant") {
+    // The field shows a wall clock: the instant's in the user's zone
+    return result.value.toZonedDateTimeISO(USER_ZONE).toPlainDateTime();
+  }
+  return result.value;
 }
 
 function rotated(
