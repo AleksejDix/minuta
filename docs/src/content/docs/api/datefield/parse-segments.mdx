@@ -88,11 +88,11 @@ Text that is shorter than the format gives empty values at the end. Field text
 from a [`dateMask`](../date-mask/) always has the full length, so this only
 happens with text from elsewhere.
 
-To read the date out of the segments, use [`toDate`](../to-date/).
+To read the date out of the segments, use [`toPlainDate`](../to-plain-date/).
 
 ## Related
 
 - [`segmentsToString`](../segments-to-string/) — join segments back into text.
-- [`toDate`](../to-date/) — read a `Date` from the segments.
-- [`fromDate`](../from-date/) — build segments from a `Date`.
+- [`toPlainDate`](../to-plain-date/) — read a `Temporal.PlainDate` from the segments.
+- [`fromTemporal`](../from-temporal/) — build segments from a Temporal value.
 - [`withSegments`](../with-segments/) — write changed segments back into the field.

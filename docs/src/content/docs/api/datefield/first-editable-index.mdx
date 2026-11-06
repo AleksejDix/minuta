@@ -3,16 +3,17 @@ title: firstEditableIndex
 description: The index of the first segment you can type into, such as the day in de-CH or the year in ja-JP.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import {
   deriveFormat,
   firstEditableIndex,
-  fromDate,
+  fromTemporal,
   segmentsToString,
 } from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
-export const segments = fromDate(
-  new Date(2026, 2, 31),
+export const segments = fromTemporal(
+  plainDate("2026-03-31"),
   deriveFormat("en-US", {
     weekday: "short",
     day: "2-digit",
@@ -39,7 +40,7 @@ firstEditableIndex(segments);
 import {
   deriveFormat,
   firstEditableIndex,
-  fromDate,
+  fromTemporal,
 } from "@aleksejdix/datefield";
 
 const format = deriveFormat("en-US", {
@@ -48,7 +49,7 @@ const format = deriveFormat("en-US", {
   month: "2-digit",
   year: "numeric",
 });
-const segments = fromDate(new Date(2026, 2, 31), format);
+const segments = fromTemporal(Temporal.PlainDate.from("2026-03-31"), format);
 // "Tue, 03/31/2026" → weekday, ", ", month, "/", day, "/", year
 
 firstEditableIndex(segments); // → 2   the month; the weekday cannot be typed
@@ -63,9 +64,9 @@ firstEditableIndex(segments); // → 2   the month; the weekday cannot be typed
 
 ## Parameters
 
-| Name       | What it is                                                                           |
-| ---------- | ------------------------------------------------------------------------------------ |
-| `segments` | Segments, from [`parseSegments`](../parse-segments/) or [`fromDate`](../from-date/). |
+| Name       | What it is                                                                                   |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| `segments` | Segments, from [`parseSegments`](../parse-segments/) or [`fromTemporal`](../from-temporal/). |
 
 ## Returns
 

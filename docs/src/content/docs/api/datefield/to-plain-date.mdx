@@ -8,7 +8,7 @@ import Flow from "../../../../components/diagrams/Flow.astro";
 Read the day the user typed as a `Temporal.PlainDate`: the segments of
 `31.03.2026` give `2026-03-31`, a date with no time zone, as the field shows
 none. While a slot is empty, or the day does not exist, you get `undefined`.
-It is `toDate` without a `Date`: nothing moves across time zones.
+Nothing moves across time zones.
 
 ```ts
 import { toPlainDate } from "@aleksejdix/datefield";

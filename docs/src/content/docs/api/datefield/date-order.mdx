@@ -3,16 +3,17 @@ title: dateOrder
 description: Tell whether a format puts the day, the month or the year first — "DMY", "MDY" or "YMD".
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import {
   dateOrder,
   deriveFormat,
-  fromDate,
+  fromTemporal,
   segmentsToString,
 } from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const written = (locale) =>
-  segmentsToString(fromDate(new Date(2026, 2, 31), deriveFormat(locale)));
+  segmentsToString(fromTemporal(plainDate("2026-03-31"), deriveFormat(locale)));
 export const order = (locale) => dateOrder(deriveFormat(locale));
 
 Tell in which order a format writes day, month and year: `"DMY"` for `de-CH`,

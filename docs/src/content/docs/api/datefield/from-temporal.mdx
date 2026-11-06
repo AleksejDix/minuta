@@ -9,7 +9,7 @@ Turn a Temporal value into the segments a field shows, in its format:
 `2026-03-31` in a `de-CH` date field is `31.03.2026`. A date shows its day,
 a time its hour and minute, a date and time both. Parts the field derives (a
 weekday, a day period, an era) are named off the value's wall clock, so the
-runtime's time zone never moves one. It is `fromDate` without a `Date`.
+runtime's time zone never moves one.
 
 ```ts
 import { fromTemporal } from "@aleksejdix/datefield";
@@ -63,4 +63,4 @@ segmentsToString(fromTemporal(Temporal.PlainTime.from("09:30"), time)); // → "
 
 ## Returns
 
-The segments, as `fromDate` gives them.
+The segments: one per format token, with its start, end, type and value.

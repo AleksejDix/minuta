@@ -72,7 +72,7 @@ import {
   parseSegments,
   rotateSegment,
   segmentAtPosition,
-  toDate,
+  toPlainDate,
   typeDate,
   withSegments,
 } from "@aleksejdix/datefield";
@@ -118,7 +118,7 @@ const controller = attachInput(
       ),
     onKeyDown: (event, state) => rotated(state, event.key),
     onChange: (state) => {
-      const date = toDate(parseSegments(format, state.buffer.text));
+      const date = toPlainDate(parseSegments(format, state.buffer.text));
       console.log(date ?? "not a complete date yet");
     },
   }
