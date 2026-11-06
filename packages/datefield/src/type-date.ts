@@ -6,10 +6,11 @@
 
 import type { DateFormat, Segment } from "./types";
 import { setSelection, slotChar, typeChar } from "@aleksejdix/input-state";
+import type { FieldValue } from "./temporal";
 import type { InputState } from "@aleksejdix/input-state";
 import { clampDay } from "./rotate";
 import { digitFit } from "./digit-fit";
-import { fromDate } from "./convert";
+import { fromTemporal } from "./temporal";
 import { fullYear } from "./year";
 import { nextSegment } from "./navigate";
 import { parseSegments } from "./parse";
@@ -155,7 +156,7 @@ type TypeOptions = Readonly<{
    * Reads a pasted date in any form, e.g. fechita's `parseDate` with the
    * field's order. Without it a paste is typed like keystrokes.
    */
-  parse?: ((text: string) => Readonly<Date> | undefined) | undefined;
+  parse?: ((text: string) => FieldValue | undefined) | undefined;
 }>;
 
 /**
@@ -175,11 +176,11 @@ function pastedDate(
   if (paste.parse === undefined || paste.text.length <= ONE_CHAR) {
     return undefined;
   }
-  const date = paste.parse(paste.text);
-  if (date === undefined) {
+  const value = paste.parse(paste.text);
+  if (value === undefined) {
     return undefined;
   }
-  const filled = withSegments(state, fromDate(date, format));
+  const filled = withSegments(state, fromTemporal(value, format));
   return setSelection(filled, filled.buffer.text.length);
 }
 
@@ -199,7 +200,7 @@ function pastedDate(
  *
  * const parse = (text: string) => {
  *   const result = parseDate(text, { order: dateOrder(format) });
- *   return result.valid ? result.date : undefined;
+ *   return result.valid && result.kind !== "instant" ? result.value : undefined;
  * };
  * typeDate(format, field, "2026-03-31", { parse }).buffer.text; // "31.03.2026"
  *

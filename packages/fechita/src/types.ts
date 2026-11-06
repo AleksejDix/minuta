@@ -1,3 +1,5 @@
+import type { Temporal } from "./temporal";
+
 /**
  * Order of day, month and year in numeric dates: `DMY` (31.03.2026),
  * `MDY` (3/31/2026) or `YMD` (2026/03/31).
@@ -53,8 +55,8 @@ type ParseOptions = Readonly<{
   locale?: string | undefined;
   /** Order for ambiguous numeric dates; takes precedence over `locale` */
   order?: Order | undefined;
-  /** Reference for two-digit years (80 years back, 19 ahead). Default: now */
-  referenceDate?: Readonly<Date> | undefined;
+  /** Reference for two-digit years (80 years back, 19 ahead). Default: today */
+  referenceDate?: Readonly<Temporal.PlainDate> | undefined;
 }>;
 
 /**

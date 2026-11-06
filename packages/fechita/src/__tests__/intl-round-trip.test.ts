@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { Temporal } from "temporal-polyfill/full";
 import { allLocales } from "#src/locales/all";
 import { parseDate } from "#src/index";
 
@@ -8,12 +9,12 @@ import { parseDate } from "#src/index";
  * calendar) reads back as the same moment.
  */
 
-const REFERENCE = new Date("2026-01-01T00:00");
+const REFERENCE = Temporal.PlainDate.from("2026-01-01");
 const HOUR_DIGITS = 2;
 const TAGS = Object.keys(allLocales);
 
 // The 28th of every month, a leap day, the turn of years, far years
-const DATES: readonly Readonly<Date>[] = [
+const DATES: readonly Readonly<Temporal.PlainDate>[] = [
   "2026-01-28",
   "2026-02-28",
   "2026-03-28",
@@ -31,17 +32,19 @@ const DATES: readonly Readonly<Date>[] = [
   "2000-01-01",
   "2031-07-04",
   "1970-01-01",
-].map((day) => new Date(`${day}T00:00`));
+].map((day) => Temporal.PlainDate.from(day));
 
 // Every hour of one day, for AM/PM and flexible day periods
-const TIMES: readonly Readonly<Date>[] = Array.from(
+const TIMES: readonly Readonly<Temporal.PlainDateTime>[] = Array.from(
   { length: 24 },
   (_unused, hour) =>
-    new Date(`2026-03-31T${String(hour).padStart(HOUR_DIGITS, "0")}:07`)
+    Temporal.PlainDateTime.from(
+      `2026-03-31T${String(hour).padStart(HOUR_DIGITS, "0")}:07`
+    )
 );
 
 type Sample = Readonly<{
-  date: Readonly<Date>;
+  date: Readonly<Temporal.PlainDate> | Readonly<Temporal.PlainDateTime>;
   options: Readonly<Intl.DateTimeFormatOptions>;
 }>;
 
@@ -59,18 +62,14 @@ const SAMPLES: readonly Sample[] = [
 
 function readsBack(tag: string, sample: Sample): boolean {
   const locale = `${tag}-u-ca-gregory`;
-  const text = new Intl.DateTimeFormat(locale, sample.options).format(
-    sample.date
-  );
+  const text = sample.date.toLocaleString(locale, sample.options);
   const result = parseDate(text, { locale: tag, referenceDate: REFERENCE });
-  return result.valid && result.date.getTime() === sample.date.getTime();
+  return result.valid && result.value.toString() === sample.date.toString();
 }
 
 function failuresIn(tag: string): string[] {
   return SAMPLES.filter((sample) => !readsBack(tag, sample)).map((sample) =>
-    new Intl.DateTimeFormat(`${tag}-u-ca-gregory`, sample.options).format(
-      sample.date
-    )
+    sample.date.toLocaleString(`${tag}-u-ca-gregory`, sample.options)
   );
 }
 

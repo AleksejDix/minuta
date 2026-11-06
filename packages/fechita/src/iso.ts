@@ -126,19 +126,21 @@ function spreadFraction(
 }
 
 /**
- * The time of an ISO 8601 / RFC 3339 date-time, basic or extended: midnight
- * when the text has only a date.
+ * The time of an ISO 8601 / RFC 3339 date-time, basic or extended.
  *
  * @param groups - The groups of the match
- * @returns The time as written
+ * @returns The time as written, undefined when the text has only a date
  */
-function clockOf(groups: Groups): Clock {
+function clockOf(groups: Groups): Clock | undefined {
+  if (groups["hour"] === undefined) {
+    return undefined;
+  }
   const spread = spreadFraction(
     fractionMs(groups["hourFraction"], MS_PER_HOUR) +
       fractionMs(groups["minuteFraction"], MS_PER_MINUTE)
   );
   return {
-    hour: Number(groups["hour"] ?? NONE),
+    hour: Number(groups["hour"]),
     millisecond:
       spread.millisecond +
       Number(

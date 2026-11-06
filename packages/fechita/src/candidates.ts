@@ -30,29 +30,26 @@ const ORDERS: readonly Order[] = ["YMD", "DMY", "MDY"];
 
 /**
  * The full year a written year stands for: two digits in a window from 80
- * years before the reference to 19 after; other years as written.
+ * years before the reference year to 19 after; other years as written.
  *
  * @param written - The digits of the year
- * @param reference - Reference date for two-digit years; undefined keeps
+ * @param reference - Reference year for two-digit years; undefined keeps
  *   the year as written (a year with an era, "44 v. Chr.")
  * @returns The full year
  */
-function fullYear(
-  written: string,
-  reference: Readonly<Date> | undefined
-): number {
+function fullYear(written: string, reference: number | undefined): number {
   const value = Number(written);
   if (written.length !== TWO_DIGITS || reference === undefined) {
     return value;
   }
-  const start = reference.getFullYear() - YEARS_BEFORE;
+  const start = reference - YEARS_BEFORE;
   return start + ((((value - start) % CENTURY) + CENTURY) % CENTURY);
 }
 
 function readingIn(
   groups: readonly string[],
   order: Order,
-  reference: Readonly<Date>
+  reference: number
 ): Reading | undefined {
   const [first = "", second = "", third = ""] = groups;
   const byOrder: Readonly<Record<Order, readonly [string, string, string]>> = {
@@ -109,12 +106,12 @@ function groupsFor(groups: readonly string[], order: Order): readonly string[] {
  * The readings of numbers without a month name.
  *
  * @param groups - The runs of digits in the text, in order
- * @param reference - Reference date for two-digit years
+ * @param reference - Reference year for two-digit years
  * @returns One reading per order that fits the digits
  */
 function numericReadings(
   groups: readonly string[],
-  reference: Readonly<Date>
+  reference: number
 ): Reading[] {
   return ORDERS.flatMap((order) =>
     [readingIn(groupsFor(groups, order), order, reference)].filter(
@@ -141,13 +138,13 @@ function namedYear(groups: readonly string[]): string | undefined {
  *
  * @param groups - The runs of digits in the text, in order
  * @param month - The named month, 1–12
- * @param reference - Reference date for two-digit years; left out with an era
+ * @param reference - Reference year for two-digit years; left out with an era
  * @returns The readings
  */
 function namedReadings(
   groups: readonly string[],
   month: number,
-  reference?: Readonly<Date>
+  reference?: number
 ): Reading[] {
   const year = namedYear(groups);
   const day = groups.find(

@@ -3,9 +3,9 @@
  * order or locale when the text alone allows several.
  */
 
+import type { Clock, Parsed, ParsedValue } from "./date";
 import type { DateParts, Locales, Order, ParseOptions } from "./types";
-import { dateOf, partsOf, problemOf } from "./date";
-import type { Clock } from "./date";
+import { parsedOf, partsOf, problemOf } from "./date";
 import { ParseError } from "./errors";
 import type { ParseErrorCode } from "./errors";
 import type { Reading } from "./candidates";
@@ -18,16 +18,15 @@ const NONE = 0;
  * What `parseDate` returns: the date, or why there is not exactly one.
  */
 type ParseResult =
+  | (Parsed &
+      Readonly<{
+        /** The fields read from the text */
+        parts: DateParts;
+        valid: true;
+      }>)
   | Readonly<{
-      /** The date: local time, or the exact instant when the text has an offset */
-      date: Date;
-      /** The fields read from the text */
-      parts: DateParts;
-      valid: true;
-    }>
-  | Readonly<{
-      /** Every date the text could mean, e.g. both readings of 04/05/2026 */
-      candidates: readonly Date[];
+      /** Every value the text could mean, e.g. both readings of 04/05/2026 */
+      candidates: readonly Readonly<ParsedValue>[];
       /** Why there is not exactly one date */
       errorCodes: readonly ParseErrorCode[];
       valid: false;
@@ -42,7 +41,7 @@ type ParseResult =
  */
 function failure(
   codes: readonly ParseErrorCode[],
-  candidates: readonly Readonly<Date>[] = []
+  candidates: readonly Readonly<ParsedValue>[] = []
 ): ParseResult {
   return { candidates, errorCodes: codes, valid: false };
 }
@@ -51,12 +50,14 @@ function failure(
  * The result of one reading at a time of day.
  *
  * @param reading - Day, month and year
- * @param clock - Time of day and offset
+ * @param clock - Time of day and offset, undefined when the text has none
  * @returns The valid result
  */
-function success(reading: Reading, clock: Clock): ParseResult {
-  const parts = partsOf(reading, clock);
-  return { date: dateOf(parts), parts, valid: true };
+function success(reading: Reading, clock: Clock | undefined): ParseResult {
+  return Object.assign(parsedOf(reading, clock), {
+    parts: partsOf(reading, clock),
+    valid: true as const,
+  });
 }
 
 function orderFor(locales: Locales, options: ParseOptions): Order | undefined {
@@ -84,14 +85,14 @@ function problems(readings: readonly Reading[]): ParseErrorCode[] {
 // Several real readings: the one in `order`, or AMBIGUOUS_DAY_MONTH
 function pickedIn(
   real: readonly Reading[],
-  clock: Clock,
+  clock: Clock | undefined,
   order: Order | undefined
 ): ParseResult {
   const picked = real.find((reading) => reading.order === order);
   if (picked === undefined) {
     return failure(
       [ParseError.AmbiguousDayMonth],
-      real.map((reading) => dateOf(partsOf(reading, clock)))
+      real.map((reading) => parsedOf(reading, clock).value)
     );
   }
   return success(picked, clock);
@@ -114,13 +115,13 @@ function distinctDays(readings: readonly Reading[]): Reading[] {
  * `options`; otherwise the reasons and candidates.
  *
  * @param readings - Every reading of the text
- * @param clock - Time of day and offset
+ * @param clock - Time of day and offset, undefined when the text has none
  * @param scope - The loaded locales and the options
  * @returns The result
  */
 function chosen(
   readings: readonly Reading[],
-  clock: Clock,
+  clock: Clock | undefined,
   scope: Readonly<{ locales: Locales; options: ParseOptions }>
 ): ParseResult {
   const real = distinctDays(

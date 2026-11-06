@@ -1,12 +1,13 @@
 /**
  * What a parse reads with: the words of every loaded locale and those of the
- * text's own locale, cached per set of locales.
+ * text's own locale, cached per set of locales, and the reference year.
  */
 
 import type { LocaleData, Locales, ParseOptions } from "./types";
 import { localeFor, wordsOf } from "./words";
 import type { Tables } from "./match";
 import type { Words } from "./words";
+import { temporal } from "./temporal";
 
 // Without a locale, English is the lingua franca of short date words: BC, AM
 const LINGUA_FRANCA = "en";
@@ -16,6 +17,8 @@ type Context = Readonly<{
   locales: Locales;
   options: ParseOptions;
   own: Words | undefined;
+  /** The ISO year two-digit years are read around */
+  referenceYear: number;
   words: Words;
 }>;
 
@@ -61,6 +64,18 @@ function weekdayTables(context: Context): Tables {
 }
 
 /**
+ * The year two-digit years are read around: the reference date's ISO year,
+ * or today's.
+ *
+ * @param options - The parse options
+ * @returns The ISO year
+ */
+function referenceYear(options: ParseOptions): number {
+  const reference = options.referenceDate ?? temporal().Now.plainDateISO();
+  return reference.withCalendar("iso8601").year;
+}
+
+/**
  * The words a parse reads with.
  *
  * @param locales - The loaded locales
@@ -72,6 +87,7 @@ function contextOf(locales: Locales, options: ParseOptions): Context {
     locales,
     options,
     own: ownIndexOf(locales, options.locale ?? LINGUA_FRANCA),
+    referenceYear: referenceYear(options),
     words: indexOf(locales),
   };
 }

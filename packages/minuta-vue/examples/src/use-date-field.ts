@@ -1,4 +1,5 @@
 import type { ComputedRef, ShallowRef } from 'vue'
+import type { DateFormat, FieldValue } from '@aleksejdix/datefield'
 import {
   clampDay,
   dateMask,
@@ -14,7 +15,6 @@ import {
   withSegments,
 } from '@aleksejdix/datefield'
 import { computed, shallowRef, watch } from 'vue'
-import type { DateFormat } from '@aleksejdix/datefield'
 import type { InputController } from '@aleksejdix/input-dom'
 import type { InputState } from '@aleksejdix/input-state'
 import { attachInput } from '@aleksejdix/input-dom'
@@ -102,17 +102,23 @@ function rotated(
   return withSegments(state, rotateSegment(segments, index, rotationDirection(key)))
 }
 
+const USER_ZONE = new Intl.DateTimeFormat().resolvedOptions().timeZone
+
 // The demo reads pastes in every locale; an app loads only the ones it needs
 function pastedDate(
   text: string,
   locale: string,
   format: Readonly<DateFormat>,
-): Readonly<Date> | undefined {
+): FieldValue | undefined {
   const result = parseDate(text, { locale, order: dateOrder(format) })
-  if (result.valid) {
-    return result.date
+  if (!result.valid) {
+    return undefined
   }
-  return undefined
+  if (result.kind === 'instant') {
+    // The field shows a wall clock: the instant's in the user's zone
+    return result.value.toZonedDateTimeISO(USER_ZONE).toPlainDateTime()
+  }
+  return result.value
 }
 
 /**
