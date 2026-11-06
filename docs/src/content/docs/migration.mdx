@@ -1,0 +1,259 @@
+---
+title: Migrating from 1.x
+description: Move from minuta 1.x to 2.0 — Temporal values instead of Date, exclusive ends, createUnits instead of adapters, and the changes in datefield and fechita.
+---
+
+import { period } from "@aleksejdix/minuta";
+import { plainDate } from "../../components/temporal";
+import Flow from "../../components/diagrams/Flow.astro";
+import Timeline from "../../components/diagrams/Timeline.astro";
+
+export const october = period(plainDate("2026-10-12"), "month");
+
+minuta 2.0 computes with [Temporal](https://tc39.es/proposal-temporal/docs/)
+only. `Date` is gone from every package, a period ends where the next one
+starts, and the date-library adapters are deleted. The operations keep their
+names: `period`, `divide`, `next`, `contains` and the rest work as before,
+on Temporal values.
+
+<Flow
+  steps={[
+    {
+      code: "await temporalReady()",
+      layer: "runtime",
+      text: "Load the polyfill where Temporal is missing: Safari and Node 24.",
+    },
+    {
+      code: 'Temporal.PlainDate.from("2026-10-12")',
+      layer: "values",
+      text: "Pass Temporal values where you passed a Date.",
+    },
+    {
+      code: "[start, end)",
+      layer: "ends",
+      text: "end is the start of the next period, not its last millisecond.",
+    },
+    {
+      code: "createUnits({ weekStartsOn, timeZone })",
+      layer: "units",
+      text: "One units maker replaces the six adapters.",
+    },
+  ]}
+/>
+
+## At a glance
+
+| 1.x                                                                  | 2.0                                                                              |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `Date` in and out                                                    | `Temporal.PlainDate` for days and larger, `Temporal.ZonedDateTime` for sub-day   |
+| `end` is the last millisecond                                        | `end` is the start of the next period: `[start, end)`                            |
+| `nativeUnits`, `dateFnsUnits`, `luxonUnits`, `dayjsUnits` …          | [`createUnits`](../api/minuta-core/create-units/) from `@aleksejdix/minuta/core` |
+| `dateFnsTzUnits({ timeZone })`                                       | `createUnits({ timeZone })`                                                      |
+| `temporalUnits` from `@aleksejdix/minuta/temporal`                   | `createUnits`; that entry now has only `temporalReady`                           |
+| `withUnits(units, { plugins: [calendar] })`, `bind(units, calendar)` | `withUnits(units)`, `calendar(units)`, `intervals(units)`                        |
+| `length(period)`                                                     | `period.start.until(period.end)`                                                 |
+| datefield `toDate`, `fromDate`                                       | `toPlainDate`, `toPlainDateTime`, `toPlainTime`, `fromTemporal`                  |
+| fechita `result.date`                                                | `result.value` and `result.kind`                                                 |
+
+## 1. Temporal, and the polyfill where it is missing
+
+Chrome and Edge 144+, Firefox 139+ and Node 26+ have Temporal: nothing to
+install. For Safari and Node 24, install the polyfill and await
+[`temporalReady()`](../api/minuta-temporal/temporal-ready/) once, before
+anything computes. It loads the polyfill only where Temporal is missing.
+
+```sh
+npm install temporal-polyfill
+```
+
+```ts
+import { temporalReady } from "@aleksejdix/minuta/temporal";
+
+await temporalReady();
+```
+
+Remove `date-fns`, `date-fns-tz`, `luxon`, `dayjs` or `moment` if minuta was
+the only reason you had them.
+
+## 2. Temporal values instead of Date
+
+Days, weeks, months, quarters and years are calendar dates: their `start` and
+`end` are `Temporal.PlainDate`, with no time and no time zone, so a clock
+change can never move a day. Hours, minutes and seconds are moments: their
+`start` and `end` are `Temporal.ZonedDateTime`.
+
+```ts
+// 1.x
+period(new Date(2026, 9, 12, 14, 30), "month");
+
+// 2.0
+period(Temporal.PlainDate.from("2026-10-12"), "month");
+// → { start: 2026-10-01, end: 2026-11-01, unit: "month" }
+
+period(Temporal.Now.zonedDateTimeISO(), "hour");
+// → start and end are ZonedDateTime, in their zone
+```
+
+`period` takes a `PlainDate`, a `PlainDateTime`, a `ZonedDateTime` or an
+`Instant` (read in the units' time zone).
+
+## 3. Ends are exclusive
+
+In 1.x a month ended on its last millisecond, `Oct 31 23:59:59.999`. In 2.0
+it ends where November starts: `end` is `2026-11-01`, and that day is not in
+October. A period and its `next` touch without a gap and without overlapping.
+
+<Timeline
+  caption="October in 2.0: it starts on October 1 and ends where November starts. The end belongs to the next month."
+  tracks={[
+    { label: 'period(day, "month")', periods: [october], tone: "accent" },
+  ]}
+/>
+
+Code that read the last moment of a period changes:
+
+```ts
+// 1.x: the last day of the month
+month.end; // Oct 31 23:59:59.999
+
+// 2.0: the end is November 1; the last day is the one before
+month.end.subtract({ days: 1 }); // 2026-10-31
+
+// 2.0: is a date inside? contains() already uses [start, end)
+contains(month, Temporal.PlainDate.from("2026-11-01")); // → false
+```
+
+## 4. createUnits instead of the adapters
+
+All adapters are deleted. [`createUnits`](../api/minuta-core/create-units/)
+takes the same settings and computes with Temporal:
+
+```ts
+// 1.x
+import { nativeUnits } from "@aleksejdix/minuta/native";
+import { dateFnsTzUnits } from "@aleksejdix/minuta/date-fns-tz";
+
+nativeUnits({ weekStartsOn: "sunday" });
+dateFnsTzUnits({ timeZone: "America/New_York" });
+
+// 2.0
+import { createUnits } from "@aleksejdix/minuta/core";
+
+createUnits({ weekStartsOn: "sunday" });
+createUnits({ timeZone: "America/New_York" });
+createUnits({ calendar: "hebrew" }); // new: any Temporal calendar
+```
+
+## 5. Factories instead of plugins
+
+`withUnits` takes only the units. The calendar and interval functions are
+bound by their own factories:
+
+```ts
+// 1.x
+const time = withUnits(units, { plugins: [calendar, intervals] });
+const grids = bind(units, calendar);
+
+// 2.0
+import { calendar } from "@aleksejdix/minuta/calendar";
+import { intervals } from "@aleksejdix/minuta/intervals";
+
+const time = withUnits(units);
+const grids = calendar(units);
+const edit = intervals(units);
+```
+
+## 6. length is gone
+
+`length(period)` gave milliseconds. Ask Temporal for the elapsed time, or
+[`duration`](../api/minuta/duration/) for whole units:
+
+```ts
+// 1.x
+length(day); // → 86400000
+
+// 2.0
+day.start.until(day.end); // → P1D, a Temporal.Duration
+duration(day, "hour"); // → 24 (23 or 25 around a clock change)
+```
+
+## 7. React and Vue
+
+`useMinuta` keeps its options; the values change type:
+
+| Option / field | 1.x                        | 2.0                                                  |
+| -------------- | -------------------------- | ---------------------------------------------------- |
+| `date`         | a `Date`                   | a `PlainDate`, `PlainDateTime` or `ZonedDateTime`    |
+| `now`          | a `Date`                   | a `ZonedDateTime`                                    |
+| `units`        | `nativeUnits()` by default | `createUnits()` by default                           |
+| `now` (result) | a `Period`                 | a second as a time period, `start` a `ZonedDateTime` |
+
+Calendar days are date periods, so `day.start` is the `PlainDate` to store or
+to hand to a date field.
+
+## 8. datefield
+
+`toDate` and `fromDate` are removed. Read the field with
+[`toPlainDate`](../api/datefield/to-plain-date/),
+[`toPlainDateTime`](../api/datefield/to-plain-date-time/) or
+[`toPlainTime`](../api/datefield/to-plain-time/), and fill it with
+[`fromTemporal`](../api/datefield/from-temporal/):
+
+```ts
+// 1.x
+toDate(parseSegments(format, text));
+fromDate(new Date(2026, 2, 31), format);
+
+// 2.0
+toPlainDate(parseSegments(format, text)); // → 2026-03-31
+fromTemporal(Temporal.PlainDate.from("2026-03-31"), format);
+```
+
+- [`checkDate`](../api/datefield/check-date/): `min` and `max` are a
+  `PlainDate` (the whole day) or a `PlainDateTime` (an exact limit in a field
+  with a time). `isUnavailable` gets the day as a `PlainDate`.
+- [`checkDay`](../api/datefield/check-day/) takes a `PlainDate`:
+  `checkDay(day.start, rules)`.
+- `rotateSegment`'s `today` is a `PlainDate`.
+- `typeDate`'s `parse` returns a `PlainDate`, `PlainDateTime` or `PlainTime`.
+
+## 9. fechita
+
+[`parseDate`](../api/fechita/parse-date/) returns `kind` and `value` instead
+of `date`. The text decides the type:
+
+```ts
+// 1.x
+parseDate("31.03.2026").date; // a Date at local midnight
+
+// 2.0
+const result = parseDate("31.03.2026");
+result.kind; //  → "date"
+result.value; // → Temporal.PlainDate 2026-03-31
+```
+
+A time without an offset gives a `PlainDateTime`, a time with one an
+`Instant`. `referenceDate` is a `PlainDate`. Years Temporal cannot hold give
+the new code `OUT_OF_RANGE`.
+
+## Dates from elsewhere
+
+An API or a database may still hand you a `Date`. Convert at the edge of your
+app, once:
+
+```ts
+// A Date's moment, in a zone
+const moment = Temporal.Instant.fromEpochMilliseconds(
+  date.getTime()
+).toZonedDateTimeISO("Europe/Zurich");
+const day = moment.toPlainDate();
+
+// Back to a Date, for a library that wants one
+new Date(moment.epochMilliseconds);
+```
+
+## Related
+
+- [Installation](../installation/) — Temporal support and the polyfill.
+- [Periods and units](../concepts/periods-and-units/) — the 2.0 model.
+- [Units](../concepts/date-engines/) — `createUnits` and its settings.
