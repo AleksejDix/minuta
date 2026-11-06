@@ -22,7 +22,7 @@ export const format = deriveFormat("de-CH");
 export const empty = createInputState({ mask: dateMask(format) });
 export const parse = (text) => {
   const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 };
 export const pasted = applyInputEvent(
   empty,
@@ -87,7 +87,7 @@ const element = document.querySelector("#date");
 // Read pasted dates in any form, in the order the field shows
 function parse(text) {
   const result = parseDate(text, { locale, order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 }
 
 // ArrowUp / ArrowDown step the segment under the cursor
@@ -180,7 +180,7 @@ The paste from the table, step by step:
       text: "applyInputEvent hands the pasted text to the insert option.",
     },
     {
-      code: `parse("2026-03-31") → ${parse("2026-03-31").toDateString()}`,
+      code: `parse("2026-03-31") → PlainDate ${parse("2026-03-31").toString()}`,
       layer: "fechita",
       text: "typeDate asks the parser first; fechita reads the ISO date.",
     },

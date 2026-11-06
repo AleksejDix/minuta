@@ -16,7 +16,8 @@ type Props = Readonly<{
 
 const { compare = false, locale, order, text } = Astro.props;
 
-const label = new Intl.DateTimeFormat("en-US", { dateStyle: "full" });
+// The Temporal value fechita read: a date, a wall clock or an instant
+const FULL = { dateStyle: "full" } as const;
 const withTime = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
 
 /**
@@ -46,7 +47,7 @@ const naiveText = naiveLabel(new Date(text));
     result.valid ? (
       <div class="parse-diagram__out is-valid">
         <span class="parse-diagram__tag">valid</span>
-        <strong>{label.format(result.date)}</strong>
+        <strong>{result.value.toLocaleString("en-US", FULL)}</strong>
       </div>
     ) : (
       <div class="parse-diagram__out is-invalid">
@@ -54,7 +55,7 @@ const naiveText = naiveLabel(new Date(text));
         {result.candidates.length > 0 ? (
           <ul>
             {result.candidates.map((candidate) => (
-              <li>could be {label.format(candidate)}</li>
+              <li>could be {candidate.toLocaleString("en-US", FULL)}</li>
             ))}
           </ul>
         ) : (

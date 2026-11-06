@@ -103,7 +103,7 @@ const field = createInputState({ mask: dateMask(format) });
 
 const parse = (text) => {
   const result = parseDate(text, { order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 };
 
 typeDate(format, field, "04/05/2026", { parse }).buffer.text;

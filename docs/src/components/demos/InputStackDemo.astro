@@ -47,6 +47,8 @@ import DemoFrame from "./DemoFrame.astro";
 
 <script>
   import { mountInputStackDemos } from "./input-stack-demo";
+  import { temporalReady } from "@aleksejdix/minuta/temporal";
 
+  await temporalReady();
   mountInputStackDemos();
 </script>

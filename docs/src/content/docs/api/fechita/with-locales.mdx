@@ -17,10 +17,10 @@ export const texts = [
   "31 марта 2026",
   "2026-03-31",
 ];
-export const dayLabel = new Intl.DateTimeFormat("en-US", { dateStyle: "long" });
+export const LONG = { dateStyle: "long" };
 export const describe = (result) =>
   result.valid
-    ? `valid: ${dayLabel.format(result.date)}`
+    ? `valid: ${result.value.toLocaleString("en-US", LONG)}`
     : `invalid: ${result.errorCodes.join(", ")}`;
 
 Get a `parseDate` function that knows only the languages you pass in. Your

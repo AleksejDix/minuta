@@ -43,7 +43,8 @@ and October in Croatian. In Welsh, "Dydd Mawrth" (Tuesday) contains
 times. Digits come in many scripts: `٣١` is 31 in Arabic-Indic digits.
 
 **Calendars.** Not every culture counts years the same way. fechita reads
-everything as the Gregorian calendar, the one `Date` uses.
+everything as the Gregorian calendar and returns ISO-calendar Temporal
+values; `withCalendar` shows them in any other.
 
 ## How fechita decides
 
@@ -136,7 +137,7 @@ const field = createInputState({ mask: dateMask(format) });
 
 const parse = (text: string) => {
   const result = parseDate(text, { order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 };
 
 typeDate(format, field, "2026-03-31", { parse }).buffer.text; // → "31.03.2026"

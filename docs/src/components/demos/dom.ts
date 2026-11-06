@@ -146,6 +146,38 @@ function valueLabel(value: PlainDate | ZonedDateTime): string {
   return value.toLocaleString("en-US", DAY_OPTIONS);
 }
 
+/** A value fechita reads: a date, a wall clock, or an instant. */
+type ReadValue =
+  | Readonly<Temporal.PlainDate>
+  | Readonly<Temporal.PlainDateTime>
+  | Readonly<Temporal.Instant>;
+
+/**
+ * A value fechita read as "Sat, Jan 31, 2026", an instant's day in the
+ * browser's zone.
+ *
+ * @param value - The value
+ * @returns The label
+ */
+function readDayLabel(value: ReadValue): string {
+  return value.toLocaleString("en-US", DAY_OPTIONS);
+}
+
+/**
+ * A value fechita read with its time when it has one: a date as "Sat, Jan
+ * 31, 2026", a wall clock or an instant as "Jan 31, 2026, 23:59:59", the
+ * instant in the browser's zone.
+ *
+ * @param value - The value
+ * @returns The label
+ */
+function readLabel(value: ReadValue): string {
+  if ("hour" in value || !("day" in value)) {
+    return value.toLocaleString("en-US", TIME_OPTIONS);
+  }
+  return value.toLocaleString("en-US", DAY_OPTIONS);
+}
+
 /**
  * The calendar date an `<input type="date">` holds, or undefined while empty.
  *
@@ -181,6 +213,9 @@ export {
   now,
   part,
   plainDate,
+  readDayLabel,
+  readLabel,
   timeLabel,
   valueLabel,
 };
+export type { ReadValue };

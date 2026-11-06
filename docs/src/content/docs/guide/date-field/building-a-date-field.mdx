@@ -42,7 +42,7 @@ export const withoutTypeDate = keys("1.3.2026");
 export const withTypeDate = keys("1.3.2026", typeDateInsert);
 export const parse = (text) => {
   const result = parseDate(text, { locale: "de-CH", order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 };
 export const pastedPlain = typeDate(format, field, "2026-03-31");
 export const pastedParsed = typeDate(format, field, "2026-03-31", { parse });
@@ -284,7 +284,7 @@ const element = document.querySelector("#date");
 // Read pasted dates in any form, in the order the field shows ("DMY")
 function parse(text) {
   const result = parseDate(text, { locale, order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 }
 
 const controller = attachInput(
@@ -350,7 +350,7 @@ const element = document.querySelector("#date");
 
 function parse(text) {
   const result = parseDate(text, { locale, order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 }
 
 // 31.04 → 30.04, once the cursor has left the part being typed
@@ -635,7 +635,7 @@ export function attachDateField(element, { locale, date, onChange }) {
   // Step 3: read pasted dates in the order the field shows
   function parse(text) {
     const result = parseDate(text, { locale, order: dateOrder(format) });
-    return result.valid ? result.date : undefined;
+    return result.valid && result.kind !== "instant" ? result.value : undefined;
   }
 
   // Step 4: keep the day valid

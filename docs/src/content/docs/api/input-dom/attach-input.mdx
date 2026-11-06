@@ -221,7 +221,7 @@ const element = document.querySelector("#date");
 
 const parse = (text) => {
   const result = parseDate(text, { locale, order: dateOrder(format) });
-  return result.valid ? result.date : undefined;
+  return result.valid && result.kind !== "instant" ? result.value : undefined;
 };
 
 const controller = attachInput(

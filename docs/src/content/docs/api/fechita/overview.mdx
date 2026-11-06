@@ -20,8 +20,9 @@ npm install @aleksejdix/fechita
 
 ## Where it sits
 
-fechita is a standalone package with no dependencies. It does not need the
-rest of minuta, and the rest of minuta does not need it.
+fechita is a standalone package with no dependencies. It returns Temporal
+values and reads `globalThis.Temporal`, native or a polyfill. It does not need
+the rest of minuta, and the rest of minuta does not need it.
 
 The date field uses it for one job: reading a **pasted** date. When a user
 pastes `March 31, 2026` into a `__.__.____` field,
@@ -36,7 +37,7 @@ dates are hard to read.
 import { parseDate } from "@aleksejdix/fechita";
 
 parseDate("31. März 2026");
-// → { valid: true, date: 31 March 2026 00:00 local time,
+// → { valid: true, kind: "date", value: Temporal.PlainDate 2026-03-31,
 //     parts: { year: 2026, month: 3, day: 31, hour: 0, minute: 0, … } }
 
 parseDate("04/05/2026");
