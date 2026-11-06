@@ -132,13 +132,13 @@ With [`attachInput`](../../input-dom/attach-input/), the first one is the
 - While the year is empty, February allows 29: `30.02.____` becomes
   `29.02.____`.
 - An impossible month, like `13`, allows up to 31.
-- Day `00` is not changed. [`toDate`](../to-date/) returns `undefined` for it.
+- Day `00` is not changed. [`toPlainDate`](../to-plain-date/) returns `undefined` for it.
 
-Two-digit years follow the same rule as [`toDate`](../to-date/): `29.02.24`
+Two-digit years follow the same rule as [`toPlainDate`](../to-plain-date/): `29.02.24`
 is a leap day, `29.02.25` becomes `28.02.25`.
 
 ## Related
 
 - [`rotateSegment`](../rotate-segment/) — arrow keys; clamps the day itself.
 - [`withSegments`](../with-segments/) — write the result back into the field.
-- [`toDate`](../to-date/) — read the date once it is valid.
+- [`toPlainDate`](../to-plain-date/) — read the date once it is valid.

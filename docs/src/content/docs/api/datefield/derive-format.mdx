@@ -139,7 +139,7 @@ Some locales put invisible characters in their separators. `ar-EG` gives
 
 You can ask for a weekday, era, AM/PM, fractional seconds or time zone name.
 They come back as parts too, but nobody can type them. They work with
-[`fromDate`](../from-date/) for display, and [`dateMask`](../date-mask/)
+[`fromTemporal`](../from-temporal/) for display, and [`dateMask`](../date-mask/)
 refuses them.
 
 ```ts
@@ -149,6 +149,10 @@ deriveFormat("en-US", { hour: "2-digit", minute: "2-digit" });
 deriveFormat("en-US", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 // → hour, ":", minute   (no AM/PM, so it can be typed)
 ```
+
+The format is read off a fixed moment in UTC, so the runtime's time zone
+never changes it. A field has no time zone, so a time zone name shows `UTC`
+unless the options give a `timeZone`.
 
 :::caution
 Do not ask for a month by name (`month: "long"` or `"short"`). The month

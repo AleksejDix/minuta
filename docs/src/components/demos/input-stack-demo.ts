@@ -12,12 +12,12 @@ import {
   parseSegments,
   rotateSegment,
   segmentAtPosition,
-  toDate,
+  toPlainDate,
   typeDate,
   withSegments,
 } from "@aleksejdix/datefield";
 import { createInputState, isComplete } from "@aleksejdix/input-state";
-import { dayLabel, demoRoots, part } from "./dom";
+import { demoRoots, part, valueLabel } from "./dom";
 import type { InputState } from "@aleksejdix/input-state";
 import { attachInput } from "@aleksejdix/input-dom";
 import { parseDate } from "@aleksejdix/fechita";
@@ -75,11 +75,11 @@ function rotated(
 }
 
 function dateText(format: Readonly<DateFormat>, state: InputState): string {
-  const date = toDate(parseSegments(format, state.buffer.text));
-  if (date === undefined) {
+  const day = toPlainDate(parseSegments(format, state.buffer.text));
+  if (day === undefined) {
     return "undefined — not complete yet";
   }
-  return dayLabel(date);
+  return valueLabel(day);
 }
 
 function showLayers(
