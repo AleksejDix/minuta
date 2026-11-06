@@ -1,14 +1,13 @@
 import type { DateFormat, FormatToken, Segment, SegmentType } from "./types";
 
 const PLACEHOLDER = "_";
-const REFERENCE_YEAR = 2026;
-/** Zero-based: 10 is November */
-const REFERENCE_MONTH_INDEX = 10;
-const REFERENCE_DAY = 13;
-const REFERENCE_HOUR = 14;
-const REFERENCE_MINUTE = 35;
-const REFERENCE_SECOND = 47;
-const REFERENCE_MILLISECOND = 123;
+/**
+ * A moment that produces unambiguous parts, read in UTC: day=13, month=11,
+ * year=2026, hour=14, minute=35, second=47, no single-digit ambiguity.
+ * 2026-11-13T14:35:47.123Z.
+ */
+const REFERENCE_MOMENT = 1_794_580_547_123;
+const REFERENCE_ZONE = "UTC";
 
 /**
  * Intl part types mapped to our SegmentType.
@@ -27,20 +26,6 @@ const INTL_TYPE_MAP: Readonly<Partial<Record<string, SegmentType>>> = {
   weekday: "weekday",
   year: "year",
 };
-
-/**
- * A reference date that produces unambiguous parts:
- * day=13, month=11, year=2026, hour=14, minute=35, second=47 — no single-digit ambiguity.
- */
-const REFERENCE_DATE = new Date(
-  REFERENCE_YEAR,
-  REFERENCE_MONTH_INDEX,
-  REFERENCE_DAY,
-  REFERENCE_HOUR,
-  REFERENCE_MINUTE,
-  REFERENCE_SECOND,
-  REFERENCE_MILLISECOND
-);
 
 const DEFAULT_OPTIONS: Readonly<Intl.DateTimeFormatOptions> = {
   day: "2-digit",
@@ -95,13 +80,15 @@ function deriveFormat(
     numberingSystem: "latn",
   });
 
+  // The reference is read in UTC unless the options name a zone
+  const zoned: Intl.DateTimeFormatOptions = { timeZone: REFERENCE_ZONE };
   const fmt = new Intl.DateTimeFormat(
     intlLocale.toString(),
-    options ?? DEFAULT_OPTIONS
+    Object.assign(zoned, options ?? DEFAULT_OPTIONS)
   );
   const tokens: DateFormat = [];
 
-  for (const part of fmt.formatToParts(REFERENCE_DATE)) {
+  for (const part of fmt.formatToParts(REFERENCE_MOMENT)) {
     const token = partToToken(part);
     if (token !== undefined) {
       tokens.push(token);

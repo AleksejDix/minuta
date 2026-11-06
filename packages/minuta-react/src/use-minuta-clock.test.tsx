@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { at, date } from "./test-temporal";
+import { at, date, useFakeClock } from "./test-temporal";
 import { act } from "react";
 import { createUnits } from "@aleksejdix/minuta/core";
 import { renderHook } from "@testing-library/react";
@@ -14,11 +14,12 @@ const NO_TIMERS = 0;
 
 describe("useMinuta() clock", () => {
   beforeEach(() => {
-    vi.useFakeTimers({ now: BEFORE_MIDNIGHT.epochMilliseconds });
+    useFakeClock(BEFORE_MIDNIGHT);
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it("moves today to the new day after midnight", { timeout: 5000 }, () => {

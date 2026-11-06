@@ -6,6 +6,7 @@
 
 import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta/core";
 import type { Temporal } from "temporal-polyfill";
+import { vi } from "vitest";
 
 type TemporalApi = typeof Temporal;
 
@@ -61,4 +62,21 @@ function now(): ZonedDateTime {
   return temporal().Now.zonedDateTimeISO();
 }
 
-export { at, date, now, zoned };
+/**
+ * Fake timers for a clock test, starting at `start`: Temporal.Now reads the
+ * fake clock too, so advancing the timers moves "now". Undo with
+ * `vi.useRealTimers()` and `vi.restoreAllMocks()`.
+ *
+ * @param start - The moment the clock starts at
+ */
+function useFakeClock(start: ZonedDateTime): void {
+  vi.useFakeTimers({ now: start.epochMilliseconds });
+  const api = temporal();
+  vi.spyOn(api.Now, "zonedDateTimeISO").mockImplementation(
+    (timeZone: Readonly<Temporal.TimeZoneLike> = start.timeZoneId) =>
+      // The fake clock is the timers' Date; the library itself reads Temporal
+      api.Instant.fromEpochMilliseconds(Date.now()).toZonedDateTimeISO(timeZone)
+  );
+}
+
+export { at, date, now, useFakeClock, zoned };
