@@ -1,5 +1,6 @@
 import type { DateField } from './use-date-field'
 import type { InjectionKey } from 'vue'
+import type { Temporal } from 'temporal-polyfill'
 import { inject } from 'vue'
 
 /**
@@ -12,7 +13,7 @@ type DateFieldContext = Omit<DateField, 'setDate'>
  */
 type DateFieldRootProps = Readonly<{
   locale: string
-  value?: Readonly<Date> | undefined
+  value?: Readonly<Temporal.PlainDate> | undefined
 }>
 
 const dateFieldContextKey: InjectionKey<DateFieldContext> = Symbol('DateFieldContext')

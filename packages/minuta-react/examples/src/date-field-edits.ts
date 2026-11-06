@@ -8,10 +8,11 @@ import {
   shown,
   typeText,
 } from "./date-field-test-utils";
+import { dateString, isoDate } from "./date-field-dates";
 import { deriveFormat, placeholder } from "@aleksejdix/datefield";
 import type { Field } from "./date-field-test-utils";
+import { Temporal } from "temporal-polyfill";
 import { cleanup } from "@testing-library/react";
-import { isoDate } from "./date-field-dates";
 
 const SEED = 1028;
 const RANDOM_EDITS = 300;
@@ -24,8 +25,6 @@ const BASE = 10;
 const DIGITS = Array.from({ length: BASE }, (_unused, digit) => String(digit));
 const SEPARATORS = [".", "/", "-", " "];
 const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "Home"];
-// Day 0 of a month is the last day of the month before
-const LAST_OF_PREVIOUS = 0;
 const EMPTY_SLOT = "_";
 const ONE = 1;
 
@@ -53,11 +52,14 @@ function pick<Item>(random: Random, items: readonly Item[]): Item {
   return item;
 }
 
-function randomDate(random: Random): Date {
+function randomDate(random: Random): Temporal.PlainDate {
   const year = FIRST_YEAR + below(random, YEAR_SPAN);
-  const month = below(random, MONTHS);
-  const days = new Date(year, month + ONE, LAST_OF_PREVIOUS).getDate();
-  return new Date(year, month, ONE + below(random, days));
+  const first = Temporal.PlainDate.from({
+    day: ONE,
+    month: ONE + below(random, MONTHS),
+    year,
+  });
+  return first.with({ day: ONE + below(random, first.daysInMonth) });
 }
 
 type Edit = (random: Random, field: Field, length: number) => string;
@@ -101,7 +103,7 @@ const EDITS: readonly Edit[] = [
   (random, field) => {
     const text = pick(random, [
       isoDate(randomDate(random)),
-      randomDate(random).toDateString(),
+      dateString(randomDate(random)),
       "hello",
       String(below(random, LONGEST_MONTH)),
     ]);
@@ -143,7 +145,7 @@ function malformed(
   }
   const date = field.date();
   if (date !== undefined && shown(locale, date) !== text) {
-    return `reported ${date.toDateString()} for ${JSON.stringify(text)}`;
+    return `reported ${date.toString()} for ${JSON.stringify(text)}`;
   }
   return undefined;
 }

@@ -7,7 +7,7 @@ import {
   parseSegments,
   rotateSegment,
   segmentAtPosition,
-  toDate,
+  toPlainDate,
   typeDate,
   withSegments,
 } from "@aleksejdix/datefield";
@@ -108,11 +108,11 @@ function pastedDate(
 }
 
 function describeDate(format: Readonly<DateFormat>, state: InputState): string {
-  const date = toDate(parseSegments(format, state.buffer.text));
+  const date = toPlainDate(parseSegments(format, state.buffer.text));
   if (date === undefined) {
-    return `toDate(): — (incomplete or invalid)\n${describeState(state)}`;
+    return `toPlainDate(): — (incomplete or invalid)\n${describeState(state)}`;
   }
-  return `toDate(): ${date.toDateString()}\n${describeState(state)}`;
+  return `toPlainDate(): ${date.toString()}\n${describeState(state)}`;
 }
 
 function mountDate(): void {

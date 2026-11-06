@@ -1,8 +1,9 @@
 import type { App, Component, ComputedRef, VNode } from 'vue'
 import { createApp, defineComponent, h, nextTick } from 'vue'
-import { deriveFormat, fromDate, segmentsToString } from '@aleksejdix/datefield'
+import { deriveFormat, fromTemporal, segmentsToString } from '@aleksejdix/datefield'
 import DateFieldInput from './DateFieldInput.vue'
 import DateFieldRoot from './DateFieldRoot.vue'
+import { Temporal } from 'temporal-polyfill'
 import { useDateFieldContext } from './date-field-context'
 
 const LABEL = 'Date'
@@ -10,7 +11,7 @@ const ALL = 0
 
 type Field = Readonly<{
   /** The field's date, `undefined` while incomplete */
-  date: () => Readonly<Date> | undefined
+  date: () => Readonly<Temporal.PlainDate> | undefined
   input: HTMLInputElement
 }>
 
@@ -29,7 +30,7 @@ function cleanup(): void {
 }
 
 type Probed = Readonly<{
-  date: ComputedRef<Readonly<Date> | undefined>
+  date: ComputedRef<Readonly<Temporal.PlainDate> | undefined>
   element: HTMLElement
 }>
 
@@ -38,12 +39,12 @@ const readContext: typeof useDateFieldContext = useDateFieldContext
 
 type DateProbe = Readonly<{
   component: Component
-  date: () => ComputedRef<Readonly<Date> | undefined> | undefined
+  date: () => ComputedRef<Readonly<Temporal.PlainDate> | undefined> | undefined
 }>
 
 // A field part that renders nothing and reads the field's date
 function dateProbe(): DateProbe {
-  let date: ComputedRef<Readonly<Date> | undefined> | undefined = undefined
+  let date: ComputedRef<Readonly<Temporal.PlainDate> | undefined> | undefined = undefined
   const component = defineComponent({
     setup: () => {
       ;({ date } = readContext())
@@ -54,8 +55,12 @@ function dateProbe(): DateProbe {
 }
 
 // The demo's field: its root, the input and the probe
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Vue's Component type cannot be deeply readonly
-function fieldTree(locale: string, value: Readonly<Date> | undefined, probe: Component): Component {
+function fieldTree(
+  locale: string,
+  value: Readonly<Temporal.PlainDate> | undefined,
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Vue's Component type cannot be deeply readonly
+  probe: Component,
+): Component {
   return defineComponent({
     setup: () => (): VNode =>
       h(
@@ -67,7 +72,7 @@ function fieldTree(locale: string, value: Readonly<Date> | undefined, probe: Com
 }
 
 // Mount the field with a probe that reads its date
-function mountField(locale: string, value: Readonly<Date> | undefined): Probed {
+function mountField(locale: string, value: Readonly<Temporal.PlainDate> | undefined): Probed {
   const probe = dateProbe()
   const element = document.createElement('div')
   document.body.append(element)
@@ -88,7 +93,7 @@ function mountField(locale: string, value: Readonly<Date> | undefined): Probed {
  * @param value - Initial date
  * @returns The input and the field's date, once input-dom is attached
  */
-async function renderField(locale: string, value?: Readonly<Date>): Promise<Field> {
+async function renderField(locale: string, value?: Readonly<Temporal.PlainDate>): Promise<Field> {
   const { date, element } = mountField(locale, value)
   // The input's ref reaches the field, and input-dom attaches, on the next tick
   await nextTick()
@@ -134,13 +139,13 @@ function pressKey(input: HTMLInputElement, key: string): void {
 }
 
 /**
- * A local calendar day, e.g. `localDay("2026-10-28")`.
+ * A calendar day, e.g. `localDay("2026-10-28")`.
  *
  * @param iso - The day as `YYYY-MM-DD`
- * @returns Local midnight of that day
+ * @returns The day
  */
-function localDay(iso: string): Date {
-  return new Date(`${iso}T00:00:00`)
+function localDay(iso: string): Temporal.PlainDate {
+  return Temporal.PlainDate.from(iso)
 }
 
 /**
@@ -150,8 +155,8 @@ function localDay(iso: string): Date {
  * @param date - The date
  * @returns The formatted field text
  */
-function shown(locale: string, date: Readonly<Date>): string {
-  return segmentsToString(fromDate(date, deriveFormat(locale), locale))
+function shown(locale: string, date: Readonly<Temporal.PlainDate>): string {
+  return segmentsToString(fromTemporal(date, deriveFormat(locale), locale))
 }
 
 export {

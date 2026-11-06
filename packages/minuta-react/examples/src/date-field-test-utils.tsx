@@ -1,11 +1,12 @@
 import {
   deriveFormat,
-  fromDate,
+  fromTemporal,
   segmentsToString,
 } from "@aleksejdix/datefield";
 import { render, screen } from "@testing-library/react";
 import { DateFieldInput } from "./DateFieldInput";
 import { DateFieldRoot } from "./DateFieldRoot";
+import { Temporal } from "temporal-polyfill";
 import { act } from "react";
 import { vi } from "vitest";
 
@@ -13,7 +14,7 @@ const LABEL = "Date";
 
 type Field = Readonly<{
   /** The date the field last reported, `undefined` while incomplete */
-  date: () => Readonly<Date> | undefined;
+  date: () => Readonly<Temporal.PlainDate> | undefined;
   input: HTMLInputElement;
 }>;
 
@@ -24,8 +25,12 @@ type Field = Readonly<{
  * @param value - Initial date
  * @returns The input and the last reported date
  */
-function renderField(locale: string, value?: Readonly<Date>): Field {
-  const report = vi.fn<(date: Readonly<Date> | undefined) => void>();
+function renderField(
+  locale: string,
+  value?: Readonly<Temporal.PlainDate>
+): Field {
+  const report =
+    vi.fn<(date: Readonly<Temporal.PlainDate> | undefined) => void>();
   render(
     <DateFieldRoot locale={locale} onChange={report} value={value}>
       <DateFieldInput label={LABEL} />
@@ -95,13 +100,13 @@ function pressKey(input: HTMLInputElement, key: string): void {
 }
 
 /**
- * A local calendar day, e.g. `localDay("2026-10-28")`.
+ * A calendar day, e.g. `localDay("2026-10-28")`.
  *
  * @param iso - The day as `YYYY-MM-DD`
- * @returns Local midnight of that day
+ * @returns The day
  */
-function localDay(iso: string): Date {
-  return new Date(`${iso}T00:00:00`);
+function localDay(iso: string): Temporal.PlainDate {
+  return Temporal.PlainDate.from(iso);
 }
 
 /**
@@ -111,8 +116,8 @@ function localDay(iso: string): Date {
  * @param date - The date
  * @returns The formatted field text
  */
-function shown(locale: string, date: Readonly<Date>): string {
-  return segmentsToString(fromDate(date, deriveFormat(locale), locale));
+function shown(locale: string, date: Readonly<Temporal.PlainDate>): string {
+  return segmentsToString(fromTemporal(date, deriveFormat(locale), locale));
 }
 
 export {

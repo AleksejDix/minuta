@@ -36,9 +36,13 @@ function useClock(
     const nextDay = tomorrow.toZonedDateTime({
       timeZone: clock.value.timeZoneId,
     });
-    const timer = setTimeout(() => {
-      clock.value = currentMoment(timeZoneOf(operations.value));
-    }, nextDay.epochMilliseconds - Date.now());
+    const timer = setTimeout(
+      () => {
+        clock.value = currentMoment(timeZoneOf(operations.value));
+      },
+      nextDay.epochMilliseconds -
+        currentMoment(clock.value.timeZoneId).epochMilliseconds
+    );
     onCleanup(() => {
       clearTimeout(timer);
     });

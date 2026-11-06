@@ -1,10 +1,11 @@
 import type { Context, Ref } from "react";
 import { createContext, useContext } from "react";
 import type { InputState } from "@aleksejdix/input-state";
+import type { Temporal } from "temporal-polyfill";
 
 type DateFieldContextValue = Readonly<{
   /** The field's date, `undefined` while incomplete or invalid */
-  date: Readonly<Date> | undefined;
+  date: Readonly<Temporal.PlainDate> | undefined;
   /** Ref for the `<input>` the controller attaches to */
   inputRef: Ref<HTMLInputElement>;
   /** The field state, mirrored from input-dom */
