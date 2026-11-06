@@ -207,7 +207,7 @@ import {
   parseSegments,
   rotateSegment,
   segmentAtPosition,
-  toDate,
+  toPlainDate,
   typeDate,
   withSegments,
 } from "@aleksejdix/datefield";
@@ -252,7 +252,7 @@ const controller = attachInput(
     },
 
     onChange: (state) => {
-      console.log(toDate(parseSegments(format, state.buffer.text)));
+      console.log(toPlainDate(parseSegments(format, state.buffer.text)));
     },
   }
 );
