@@ -1,6 +1,7 @@
 import { DateProblem, checkDate, checkDay } from "./rules";
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
+import { Temporal } from "temporal-polyfill/full";
 
 const DATE = deriveFormat("de-CH");
 const DATE_TIME = deriveFormat("de-CH", {
@@ -11,18 +12,18 @@ const DATE_TIME = deriveFormat("de-CH", {
   year: "numeric",
 });
 const SATURDAY = 6;
-const SUNDAY = 0;
+const SUNDAY = 7;
 const YEAR_2026 = {
-  max: new Date("2026-12-31T00:00"),
-  min: new Date("2026-01-01T00:00"),
+  max: Temporal.PlainDate.from("2026-12-31"),
+  min: Temporal.PlainDate.from("2026-01-01"),
 };
 
 function dateOf(text: string): ReturnType<typeof parseSegments> {
   return parseSegments(DATE, text);
 }
 
-function isWeekend(date: Readonly<Date>): boolean {
-  return date.getDay() === SATURDAY || date.getDay() === SUNDAY;
+function isWeekend(day: Readonly<Temporal.PlainDate>): boolean {
+  return day.dayOfWeek === SATURDAY || day.dayOfWeek === SUNDAY;
 }
 
 describe("checkDate() limits", () => {
@@ -45,15 +46,26 @@ describe("checkDate() limits", () => {
     expect.hasAssertions();
     // A min with a time of day still allows its whole day in a date field
     const rules = {
-      max: new Date("2026-06-15T09:00"),
-      min: new Date("2026-06-15T18:30"),
+      max: Temporal.PlainDateTime.from("2026-06-15T09:00"),
+      min: Temporal.PlainDateTime.from("2026-06-15T18:30"),
     };
     expect(checkDate(dateOf("15.06.2026"), rules)).toBeUndefined();
+  });
+});
+
+describe("checkDate() limits in a field with a time", () => {
+  it("allows the whole day of a PlainDate", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const rules = { max: Temporal.PlainDate.from("2026-06-15") };
+    const late = parseSegments(DATE_TIME, "15.06.2026, 23:59");
+    const next = parseSegments(DATE_TIME, "16.06.2026, 00:00");
+    expect(checkDate(late, rules)).toBeUndefined();
+    expect(checkDate(next, rules)).toBe(DateProblem.AfterMax);
   });
 
   it("compares moments in a field with a time", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const rules = { min: new Date("2026-06-15T18:30") };
+    const rules = { min: Temporal.PlainDateTime.from("2026-06-15T18:30") };
     const early = parseSegments(DATE_TIME, "15.06.2026, 18:29");
     const onTime = parseSegments(DATE_TIME, "15.06.2026, 18:30");
     expect(checkDate(early, rules)).toBe(DateProblem.BeforeMin);
@@ -81,7 +93,7 @@ describe("checkDate() availability", () => {
     expect.hasAssertions();
     const rules = {
       isUnavailable: isWeekend,
-      min: new Date("2026-06-15T00:00"),
+      min: Temporal.PlainDate.from("2026-06-15"),
     };
     expect(checkDate(dateOf("13.06.2026"), rules)).toBe(DateProblem.BeforeMin);
   });
@@ -92,13 +104,15 @@ describe("checkDay()", () => {
     expect.hasAssertions();
     const rules = {
       isUnavailable: isWeekend,
-      min: new Date("2026-06-15T18:30"),
+      min: Temporal.PlainDateTime.from("2026-06-15T18:30"),
     };
-    expect(checkDay(new Date("2026-06-15T00:00"), rules)).toBeUndefined();
-    expect(checkDay(new Date("2026-06-14T23:59"), rules)).toBe(
+    expect(
+      checkDay(Temporal.PlainDate.from("2026-06-15"), rules)
+    ).toBeUndefined();
+    expect(checkDay(Temporal.PlainDate.from("2026-06-14"), rules)).toBe(
       DateProblem.BeforeMin
     );
-    expect(checkDay(new Date("2026-06-20T12:00"), rules)).toBe(
+    expect(checkDay(Temporal.PlainDate.from("2026-06-20"), rules)).toBe(
       DateProblem.Unavailable
     );
   });

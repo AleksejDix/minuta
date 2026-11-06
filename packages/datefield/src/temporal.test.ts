@@ -1,6 +1,5 @@
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
-import { fromDate, segmentsToString } from "./convert";
 import {
   fromTemporal,
   toPlainDate,
@@ -9,6 +8,7 @@ import {
 } from "./temporal";
 import type { Segment } from "./types";
 import { Temporal } from "temporal-polyfill/full";
+import { segmentsToString } from "./convert";
 
 const date = deriveFormat("de-CH");
 const time = deriveFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -17,8 +17,6 @@ const twelve = deriveFormat("en-US", {
   hour12: true,
   minute: "2-digit",
 });
-// 23:30, as a local Date reads it
-const LATE = new Date("2000-01-01T23:30:00");
 
 /**
  * A value as ISO, "" for none.
@@ -102,7 +100,7 @@ describe("fromTemporal()", () => {
   });
 
   it(
-    "names a derived part as fromDate does the same wall clock",
+    "names a derived part from the wall clock, in no zone",
     {
       timeout: 5000,
     },
@@ -110,8 +108,7 @@ describe("fromTemporal()", () => {
       expect.hasAssertions();
       const at = Temporal.PlainTime.from("23:30");
       const shown = periodOf(fromTemporal(at, twelve, "en-US"));
-      expect(shown).toBe(periodOf(fromDate(LATE, twelve, "en-US")));
-      expect(shown).not.toBe("");
+      expect(shown).toBe("at night");
     }
   );
 });

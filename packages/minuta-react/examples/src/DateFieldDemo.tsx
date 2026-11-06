@@ -8,13 +8,14 @@ import {
 import { DateField } from "./DateField";
 import type { JSX } from "react";
 import { LocaleSelect } from "./LocaleSelect";
+import type { Temporal } from "temporal-polyfill";
 
 type DateFieldDemoProps = Readonly<{
   locale: string;
   locales: readonly string[];
-  onChange: (date: Readonly<Date> | undefined) => void;
+  onChange: (date: Readonly<Temporal.PlainDate> | undefined) => void;
   onLocaleChange: (locale: string) => void;
-  value: Readonly<Date> | undefined;
+  value: Readonly<Temporal.PlainDate> | undefined;
 }>;
 
 const TITLE = "Date field";

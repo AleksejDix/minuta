@@ -1,6 +1,7 @@
 import { clampDay, rotateSegment } from "./rotate";
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
+import { Temporal } from "temporal-polyfill/full";
 import { segmentsToString } from "./convert";
 
 const DAY = 0;
@@ -11,7 +12,7 @@ const UP = 1;
 const DOWN = -1;
 
 const format = deriveFormat("de-CH");
-const today = new Date("2026-10-08T00:00:00");
+const today = Temporal.PlainDate.from("2026-10-08");
 
 function rotate(
   text: string,

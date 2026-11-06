@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   backspace,
   beforeInput,
-  localDay,
   renderField,
   select,
   typeText,
@@ -54,7 +53,7 @@ describe("<DateFieldRoot> typed dates", () => {
     expect.hasAssertions();
     const field = renderField("de-CH");
     typeText(field.input, "28102026");
-    expect(field.date()).toStrictEqual(localDay("2026-10-28"));
+    expect(String(field.date())).toBe("2026-10-28");
   });
 
   it("reports no date while the field is incomplete", { timeout: 5000 }, () => {
@@ -87,7 +86,7 @@ describe("<DateFieldRoot> autofill", () => {
     const field = renderField("de-CH");
     fireEvent.change(field.input, { target: { value: "2026-10-28" } });
     expect(field.input.value).toBe("28.10.2026");
-    expect(field.date()).toStrictEqual(localDay("2026-10-28"));
+    expect(String(field.date())).toBe("2026-10-28");
   });
 });
 
@@ -101,7 +100,7 @@ describe("<DateFieldRoot> fixing typos", () => {
     backspace(field.input);
     typeText(field.input, "7");
     expect(field.input.value).toBe("28.10.2027");
-    expect(field.date()).toStrictEqual(localDay("2027-10-28"));
+    expect(String(field.date())).toBe("2027-10-28");
   });
 
   it("retypes a selected month", { timeout: 5000 }, () => {

@@ -8,8 +8,14 @@ import {
 import { dateMask, withSegments } from "./field";
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
+import type { DateFormat } from "./types";
 import type { InputState } from "@aleksejdix/input-state";
-import { toDate } from "./convert";
+import { toPlainDate } from "./temporal";
+
+// The day a field's text makes, as Temporal writes it
+function dayIn(format: Readonly<DateFormat>, text: string): string {
+  return String(toPlainDate(parseSegments(format, text)));
+}
 
 const DE = deriveFormat("de-CH");
 const MONTH_SEGMENT = 2;
@@ -79,7 +85,7 @@ describe("withSegments()", () => {
 
 describe("date field typing", () => {
   it(
-    "types a date, clamps the day and yields a Date",
+    "types a date, clamps the day and yields a PlainDate",
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
@@ -92,9 +98,7 @@ describe("date field typing", () => {
         clampDay(parseSegments(DE, typed.buffer.text))
       );
       expect(clamped.buffer.text).toBe("28.02.2026");
-      expect(toDate(parseSegments(DE, clamped.buffer.text))).toStrictEqual(
-        new Date("2026-02-28T00:00:00")
-      );
+      expect(dayIn(DE, clamped.buffer.text)).toBe("2026-02-28");
     }
   );
 });

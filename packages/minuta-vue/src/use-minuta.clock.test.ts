@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useFakeClock, zoned } from "#src/test/temporal";
 import type { MinutaState } from "#src/types";
 import { createUnits } from "@aleksejdix/minuta/core";
 import { effectScope } from "vue";
 import { useMinuta } from "./use-minuta";
-import { zoned } from "#src/test/temporal";
 
 const BEFORE_MIDNIGHT = zoned("2026-03-18T23:59:59[Europe/Zurich]");
 const NEXT_DAY = zoned("2026-03-19T12:00[Europe/Zurich]");
@@ -32,11 +32,12 @@ function scopedMinuta(): Readonly<{ minuta: MinutaState; stop: () => void }> {
 
 describe("useMinuta() clock", () => {
   beforeEach(() => {
-    vi.useFakeTimers({ now: BEFORE_MIDNIGHT.epochMilliseconds });
+    useFakeClock(BEFORE_MIDNIGHT);
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it("moves today to the new day after midnight", { timeout: 5000 }, () => {

@@ -4,7 +4,9 @@
  */
 
 import type { Segment } from "./types";
-import { toDate } from "./convert";
+import type { Temporal } from "./temporal-api";
+import { temporal } from "./temporal-api";
+import { toPlainDateTime } from "./temporal";
 
 /** Why a finished date is not allowed, as named constants. */
 const DateProblem = {
@@ -19,96 +21,77 @@ const DateProblem = {
 type DateProblemCode = (typeof DateProblem)[keyof typeof DateProblem];
 
 /**
- * The dates a field allows. `min` and `max` are inclusive; in a field
- * without a time they allow their whole day, so `min: new Date()` means
- * "from today".
+ * The dates a field allows. `min` and `max` are inclusive: a `PlainDate`
+ * allows its whole day, also in a field with a time, so
+ * `min: Temporal.Now.plainDateISO()` means "from today"; a `PlainDateTime`
+ * is an exact limit in a field with a time. `isUnavailable` gets the day.
  */
 type DateRules = Readonly<{
-  isUnavailable?: (date: Readonly<Date>) => boolean;
-  max?: Readonly<Date>;
-  min?: Readonly<Date>;
+  isUnavailable?: (day: Readonly<Temporal.PlainDate>) => boolean;
+  max?: Limit;
+  min?: Limit;
 }>;
 
-const TIME_TYPES: ReadonlySet<string> = new Set(["hour", "minute", "second"]);
-const YEAR_KEY = 10_000;
-const MONTH_KEY = 100;
-const MONTH_INDEX_OFFSET = 1;
-const SAME = 0;
+/** A limit of a field: a whole day, or a moment on a wall clock. */
+type Limit = Readonly<Temporal.PlainDate> | Readonly<Temporal.PlainDateTime>;
 
-// A number that orders local days: 2026-06-15 → 20260615
-function dayKey(date: Readonly<Date>): number {
-  return (
-    date.getFullYear() * YEAR_KEY +
-    (date.getMonth() + MONTH_INDEX_OFFSET) * MONTH_KEY +
-    date.getDate()
-  );
-}
+const SAME = 0;
+const TIME_TYPES: ReadonlySet<string> = new Set(["hour", "minute", "second"]);
 
 function hasTime(segments: readonly Segment[]): boolean {
   return segments.some((segment) => TIME_TYPES.has(segment.type));
 }
 
+function isDay(limit: Limit): limit is Readonly<Temporal.PlainDate> {
+  return !("hour" in limit);
+}
+
 /**
- * Where `date` falls against a limit: negative before it, 0 on it, positive
- * after it. Fields without a time compare whole days.
+ * Where `value` falls against a limit: negative before it, 0 on it,
+ * positive after it. A day limit, or a field without a time, compares
+ * whole days.
  *
- * @param date - The field's date
+ * @param value - The field's date and time, midnight without a time
  * @param limit - `min` or `max`
- * @param byDay - Whether to compare days instead of moments
+ * @param byDay - Whether the field shows no time
  * @returns The order of the two
  */
 function compared(
-  date: Readonly<Date>,
-  limit: Readonly<Date>,
+  value: Readonly<Temporal.PlainDateTime>,
+  limit: Limit,
   byDay: boolean
 ): number {
-  if (byDay) {
-    return dayKey(date) - dayKey(limit);
+  const api = temporal();
+  if (byDay || isDay(limit)) {
+    return api.PlainDate.compare(value.toPlainDate(), limit);
   }
-  return date.getTime() - limit.getTime();
+  return api.PlainDateTime.compare(value, limit);
 }
 
 /**
- * Whether `date` is before `min` or after `max`.
- *
- * @param date - The field's date
- * @param rules - The allowed dates
- * @param byDay - Whether to compare days instead of moments
- * @returns The problem, or undefined inside the limits
- */
-function limitProblem(
-  date: Readonly<Date>,
-  rules: DateRules,
-  byDay: boolean
-): DateProblemCode | undefined {
-  if (rules.min !== undefined && compared(date, rules.min, byDay) < SAME) {
-    return DateProblem.BeforeMin;
-  }
-  if (rules.max !== undefined && compared(date, rules.max, byDay) > SAME) {
-    return DateProblem.AfterMax;
-  }
-  return undefined;
-}
-
-/**
- * Why `date` is not allowed, if it is not. The limits are checked first,
+ * Why `value` is not allowed, if it is not. The limits are checked first,
  * then `isUnavailable`.
  *
- * @param date - The date to check
+ * @param value - The date and time to check, midnight without a time
  * @param rules - The allowed dates
- * @param byDay - Whether to compare days instead of moments
+ * @param byDay - Whether to compare whole days
  * @returns The problem, or undefined when the date is allowed
  */
 function problemOf(
-  date: Readonly<Date>,
+  value: Readonly<Temporal.PlainDateTime>,
   rules: DateRules,
   byDay: boolean
 ): DateProblemCode | undefined {
-  const limit = limitProblem(date, rules, byDay);
-  if (limit !== undefined) {
-    return limit;
+  if (rules.min !== undefined && compared(value, rules.min, byDay) < SAME) {
+    return DateProblem.BeforeMin;
   }
-  if (rules.isUnavailable !== undefined && rules.isUnavailable(date)) {
+  if (rules.max !== undefined && compared(value, rules.max, byDay) > SAME) {
+    return DateProblem.AfterMax;
+  }
+  if (
+    rules.isUnavailable !== undefined &&
+    rules.isUnavailable(value.toPlainDate())
+  ) {
     return DateProblem.Unavailable;
   }
   return undefined;
@@ -120,7 +103,9 @@ function problemOf(
  * nothing: there is no date to check yet.
  *
  * @example
- * checkDate(parseSegments(format, "31.12.2025"), { min: new Date(2026, 0, 1) });
+ * checkDate(parseSegments(format, "31.12.2025"), {
+ *   min: Temporal.PlainDate.from("2026-01-01"),
+ * });
  * // → "BEFORE_MIN"
  *
  * @param segments - The field's segments
@@ -131,30 +116,30 @@ function checkDate(
   segments: readonly Segment[],
   rules: DateRules
 ): DateProblemCode | undefined {
-  const date = toDate(segments);
-  if (date === undefined) {
+  const value = toPlainDateTime(segments);
+  if (value === undefined) {
     return undefined;
   }
-  return problemOf(date, rules, !hasTime(segments));
+  return problemOf(value, rules, !hasTime(segments));
 }
 
 /**
- * Why the day holding `date` is not allowed, if it is not: the same rules
- * as {@link checkDate}, comparing whole days. Give it to a calendar so it
+ * Why `day` is not allowed, if it is not: the same rules as
+ * {@link checkDate}, comparing whole days. Give it to a calendar so it
  * disables exactly the days the field reports.
  *
  * @example
  * <CalendarRoot isDisabled={(day) => checkDay(day.start, rules) !== undefined} />
  *
- * @param date - Any moment of the day
+ * @param day - The day
  * @param rules - The allowed dates
  * @returns The problem, or undefined when the day is allowed
  */
 function checkDay(
-  date: Readonly<Date>,
+  day: Readonly<Temporal.PlainDate>,
   rules: DateRules
 ): DateProblemCode | undefined {
-  return problemOf(date, rules, true);
+  return problemOf(day.toPlainDateTime(), rules, true);
 }
 
 export { DateProblem, checkDate, checkDay };

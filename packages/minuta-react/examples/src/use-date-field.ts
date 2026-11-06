@@ -4,12 +4,12 @@ import {
   dateMask,
   dateOrder,
   deriveFormat,
-  fromDate,
+  fromTemporal,
   parseSegments,
   rotateSegment,
   segmentAtPosition,
   segmentsToString,
-  toDate,
+  toPlainDate,
   typeDate,
   withSegments,
 } from "@aleksejdix/datefield";
@@ -17,14 +17,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { InputController } from "@aleksejdix/input-dom";
 import type { InputState } from "@aleksejdix/input-state";
 import type { Ref } from "react";
+import type { Temporal } from "temporal-polyfill";
 import { attachInput } from "@aleksejdix/input-dom";
 import { createInputState } from "@aleksejdix/input-state";
 import { parseDate } from "@aleksejdix/fechita";
 
+/** The field's value: a calendar date. */
+type Day = Readonly<Temporal.PlainDate>;
+
 type DateField = Readonly<{
-  date: Readonly<Date> | undefined;
+  date: Day | undefined;
   inputRef: Ref<HTMLInputElement>;
-  setDate: (date: Readonly<Date>) => void;
+  setDate: (date: Day) => void;
   state: InputState;
 }>;
 
@@ -33,7 +37,7 @@ const DOWN = -1;
 
 function fieldFor(
   format: Readonly<DateFormat>,
-  date: Readonly<Date> | undefined,
+  date: Day | undefined,
   locale: string
 ): InputState {
   const mask = dateMask(format);
@@ -42,7 +46,7 @@ function fieldFor(
   }
   return createInputState({
     mask,
-    value: segmentsToString(fromDate(date, format, locale)),
+    value: segmentsToString(fromTemporal(date, format, locale)),
   });
 }
 
@@ -135,13 +139,10 @@ function attachField(
  * @param initialDate - Date shown before the user types
  * @returns The date, the input ref, a date setter and the mirrored state
  */
-function useDateField(
-  locale: string,
-  initialDate: Readonly<Date> | undefined
-): DateField {
+function useDateField(locale: string, initialDate: Day | undefined): DateField {
   const inputRef = useRef<HTMLInputElement>(null);
   const controller = useRef<InputController | null>(null);
-  const lastDate = useRef<Readonly<Date> | undefined>(initialDate);
+  const lastDate = useRef<Day | undefined>(initialDate);
   const format = useMemo(() => deriveFormat(locale), [locale]);
   const [state, setState] = useState(() =>
     fieldFor(format, initialDate, locale)
@@ -157,7 +158,7 @@ function useDateField(
       initial: fieldFor(format, lastDate.current, locale),
       locale,
       onChange: (next) => {
-        lastDate.current = toDate(parseSegments(format, next.buffer.text));
+        lastDate.current = toPlainDate(parseSegments(format, next.buffer.text));
         setState(next);
       },
     });
@@ -173,7 +174,7 @@ function useDateField(
    *
    * @param date - The new date
    */
-  function setDate(date: Readonly<Date>): void {
+  function setDate(date: Day): void {
     const next = fieldFor(format, date, locale);
     lastDate.current = date;
     if (controller.current !== null) {
@@ -182,7 +183,7 @@ function useDateField(
     setState(next);
   }
 
-  const date = toDate(parseSegments(format, state.buffer.text));
+  const date = toPlainDate(parseSegments(format, state.buffer.text));
   return { date, inputRef, setDate, state };
 }
 

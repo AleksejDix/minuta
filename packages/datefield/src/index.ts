@@ -24,7 +24,7 @@ export {
 } from "./navigate";
 
 // Convert
-export { toDate, fromDate, segmentsToString } from "./convert";
+export { segmentsToString } from "./convert";
 export {
   fromTemporal,
   toPlainDate,

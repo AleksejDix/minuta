@@ -1,20 +1,21 @@
 import type { JSX, ReactNode } from "react";
+import type { Temporal } from "temporal-polyfill";
 import { useDateFieldContext } from "./date-field-context";
 
-const TO_DATE_LABEL = "toDate()";
+const TO_DATE_LABEL = "toPlainDate()";
 const INVALID_DATE = "undefined (incomplete or invalid)";
 const STATE_LABEL = "Input state";
 const JSON_INDENT = 2;
 
-function renderDate(date: Readonly<Date> | undefined): ReactNode {
+function renderDate(date: Readonly<Temporal.PlainDate> | undefined): ReactNode {
   if (date === undefined) {
     return <em className="text-muted-foreground">{INVALID_DATE}</em>;
   }
-  return <span className="font-medium">{date.toDateString()}</span>;
+  return <span className="font-medium">{date.toString()}</span>;
 }
 
 /**
- * The field's `toDate(...)` result and the mirrored input state.
+ * The field's `toPlainDate(...)` result and the mirrored input state.
  *
  * @returns The output element
  */

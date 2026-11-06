@@ -32,9 +32,13 @@ function useClock(operations: Minuta, isControlled: boolean): ZonedDateTime {
     }
     const tomorrow = operations.next(operations.period(clock, "day")).start;
     const nextDay = tomorrow.toZonedDateTime({ timeZone: clock.timeZoneId });
-    const timer = setTimeout(() => {
-      setClock(currentMoment(timeZoneOf(operations)));
-    }, nextDay.epochMilliseconds - Date.now());
+    const timer = setTimeout(
+      () => {
+        setClock(currentMoment(timeZoneOf(operations)));
+      },
+      nextDay.epochMilliseconds -
+        currentMoment(clock.timeZoneId).epochMilliseconds
+    );
     return (): void => {
       clearTimeout(timer);
     };

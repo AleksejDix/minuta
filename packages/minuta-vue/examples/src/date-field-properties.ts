@@ -9,6 +9,7 @@ import {
   shown,
   typeText,
 } from './date-field-test-utils'
+import type { Temporal } from 'temporal-polyfill'
 import { deriveFormat } from '@aleksejdix/datefield'
 
 const DAY_STEPS = 40
@@ -118,7 +119,11 @@ function steppedBack(input: HTMLInputElement, dayInside: number): string {
 }
 
 // The change stepping the day up and back down made to a date, if any
-function driftFrom(input: HTMLInputElement, dayInside: number, date: Readonly<Date>): string[] {
+function driftFrom(
+  input: HTMLInputElement,
+  dayInside: number,
+  date: Readonly<Temporal.PlainDate>,
+): string[] {
   pasteText(input, isoDate(date))
   const before = input.value
   const after = steppedBack(input, dayInside)
@@ -137,7 +142,7 @@ function driftFrom(input: HTMLInputElement, dayInside: number, date: Readonly<Da
 async function dayStepDrift(locale: string): Promise<string[]> {
   const field = await renderField(locale)
   const dayInside = dayStart(locale) + ONE
-  const drifted = EDGE_DATES.flatMap((date: Readonly<Date>) =>
+  const drifted = EDGE_DATES.flatMap((date: Readonly<Temporal.PlainDate>) =>
     driftFrom(field.input, dayInside, date),
   )
   cleanup()

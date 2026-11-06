@@ -5,26 +5,27 @@ import {
   dateMask,
   dateOrder,
   deriveFormat,
-  fromDate,
+  fromTemporal,
   parseSegments,
   rotateSegment,
   segmentAtPosition,
   segmentsToString,
-  toDate,
+  toPlainDate,
   typeDate,
   withSegments,
 } from '@aleksejdix/datefield'
 import { computed, shallowRef, watch } from 'vue'
 import type { InputController } from '@aleksejdix/input-dom'
 import type { InputState } from '@aleksejdix/input-state'
+import type { Temporal } from 'temporal-polyfill'
 import { attachInput } from '@aleksejdix/input-dom'
 import { createInputState } from '@aleksejdix/input-state'
 import { parseDate } from '@aleksejdix/fechita'
 
 type DateField = Readonly<{
-  date: ComputedRef<Readonly<Date> | undefined>
+  date: ComputedRef<Readonly<Temporal.PlainDate> | undefined>
   element: ShallowRef<HTMLInputElement | undefined>
-  setDate: (date: Readonly<Date>) => void
+  setDate: (date: Readonly<Temporal.PlainDate>) => void
   state: Readonly<ShallowRef<InputState>>
 }>
 
@@ -37,7 +38,7 @@ type AttachedField = Readonly<{
 
 type Session = Readonly<{
   controller: ShallowRef<InputController | undefined>
-  lastDate: ShallowRef<Readonly<Date> | undefined>
+  lastDate: ShallowRef<Readonly<Temporal.PlainDate> | undefined>
   locale: () => string
   state: ShallowRef<InputState>
 }>
@@ -55,7 +56,7 @@ const DOWN = -1
  */
 function fieldFor(
   format: Readonly<DateFormat>,
-  date: Readonly<Date> | undefined,
+  date: Readonly<Temporal.PlainDate> | undefined,
   locale: string,
 ): InputState {
   const mask = dateMask(format)
@@ -64,7 +65,7 @@ function fieldFor(
   }
   return createInputState({
     mask,
-    value: segmentsToString(fromDate(date, format, locale)),
+    value: segmentsToString(fromTemporal(date, format, locale)),
   })
 }
 
@@ -166,7 +167,7 @@ function attachSession(
     locale: session.locale(),
     onChange: (next) => {
       // Remembered with this format, so a new locale keeps the date
-      session.lastDate.value = toDate(parseSegments(format, next.buffer.text))
+      session.lastDate.value = toPlainDate(parseSegments(format, next.buffer.text))
       session.state.value = next
     },
   })
@@ -184,7 +185,10 @@ function attachSession(
  * @param initialDate - Date shown before the user types
  * @returns The date, the element to attach to, a date setter and the state
  */
-function useDateField(locale: () => string, initialDate: Readonly<Date> | undefined): DateField {
+function useDateField(
+  locale: () => string,
+  initialDate: Readonly<Temporal.PlainDate> | undefined,
+): DateField {
   const element = shallowRef<HTMLInputElement>()
   const format = computed(() => deriveFormat(locale()))
   const session: Session = {
@@ -216,7 +220,7 @@ function useDateField(locale: () => string, initialDate: Readonly<Date> | undefi
    *
    * @param date - The new date
    */
-  function setDate(date: Readonly<Date>): void {
+  function setDate(date: Readonly<Temporal.PlainDate>): void {
     const next = fieldFor(format.value, date, locale())
     session.lastDate.value = date
     if (session.controller.value !== undefined) {
@@ -225,7 +229,9 @@ function useDateField(locale: () => string, initialDate: Readonly<Date> | undefi
     session.state.value = next
   }
 
-  const date = computed(() => toDate(parseSegments(format.value, session.state.value.buffer.text)))
+  const date = computed(() =>
+    toPlainDate(parseSegments(format.value, session.state.value.buffer.text)),
+  )
   return { date, element, setDate, state: session.state }
 }
 

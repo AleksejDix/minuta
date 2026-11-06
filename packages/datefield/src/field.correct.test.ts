@@ -7,10 +7,16 @@ import {
 import { dateMask, withSegments } from "./field";
 import { deriveFormat, parseSegments } from "./parse";
 import { describe, expect, it } from "vitest";
+import type { DateFormat } from "./types";
 import type { InputState } from "@aleksejdix/input-state";
 import { clampDay } from "./rotate";
 import { localeDigits } from "./digits";
-import { toDate } from "./convert";
+import { toPlainDate } from "./temporal";
+
+// The day a field's text makes, as Temporal writes it
+function dayIn(format: Readonly<DateFormat>, text: string): string {
+  return String(toPlainDate(parseSegments(format, text)));
+}
 
 const DE = deriveFormat("de-CH");
 const MONTH_START = 3;
@@ -73,9 +79,7 @@ describe("digits of other scripts", () => {
       expect.hasAssertions();
       const field = paste(createInputState({ mask: dateMask(DE) }), digits);
       expect(field.buffer.text).toBe("31.03.2026");
-      expect(toDate(parseSegments(DE, field.buffer.text))).toStrictEqual(
-        new Date("2026-03-31T00:00:00")
-      );
+      expect(dayIn(DE, field.buffer.text)).toBe("2026-03-31");
     }
   );
 });
@@ -93,8 +97,8 @@ describe("characters JavaScript reads as numbers", () => {
 
   it("never converts exponent notation", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    // Number("1e") is NaN and Number("1e1") is 10; toDate only reads digits
-    expect(toDate(parseSegments(DE, "1e.03.2026"))).toBeUndefined();
+    // Number("1e") is NaN and Number("1e1") is 10; toPlainDate only reads digits
+    expect(toPlainDate(parseSegments(DE, "1e.03.2026"))).toBeUndefined();
   });
 });
 
@@ -106,9 +110,7 @@ describe("calendars", () => {
   ])("gives %s a Gregorian field", { timeout: 5000 }, (locale, text) => {
     expect.hasAssertions();
     const format = deriveFormat(locale);
-    expect(toDate(parseSegments(format, text))).toStrictEqual(
-      new Date("2026-03-31T00:00:00")
-    );
+    expect(dayIn(format, text)).toBe("2026-03-31");
   });
 });
 
@@ -135,9 +137,7 @@ describe("initial values", () => {
       expect.hasAssertions();
       const format = deriveFormat("ar-EG");
       const field = createInputState({ mask: dateMask(format), value });
-      expect(toDate(parseSegments(format, field.buffer.text))).toStrictEqual(
-        new Date("2026-03-31T00:00:00")
-      );
+      expect(dayIn(format, field.buffer.text)).toBe("2026-03-31");
     }
   );
 });

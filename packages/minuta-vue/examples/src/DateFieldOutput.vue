@@ -13,8 +13,8 @@ const stateJson = computed(() => JSON.stringify(state.value, undefined, JSON_IND
 <template>
   <output class="grid gap-2 text-sm">
     <div class="flex items-baseline justify-between gap-4">
-      <code class="text-muted-foreground">toDate()</code>
-      <span v-if="date" class="font-medium">{{ date.toDateString() }}</span>
+      <code class="text-muted-foreground">toPlainDate()</code>
+      <span v-if="date" class="font-medium">{{ date.toString() }}</span>
       <em v-else class="text-muted-foreground">undefined (incomplete or invalid)</em>
     </div>
     <details>

@@ -1,5 +1,6 @@
 import type { Segment, SegmentType } from "./types";
-import { dateOf, fullYear, shownYear } from "./year";
+import { daysIn, fullYear, isoYear, shownYear } from "./year";
+import type { Temporal } from "./temporal-api";
 
 const UP = 1;
 const DOWN = -1;
@@ -17,8 +18,6 @@ const LAST_SECOND = 59;
 const MIDNIGHT = 0;
 /** A leap year, so an unknown year allows February 29 */
 const LEAP_YEAR = 2000;
-/** Day 0 of the next month is the last day of this month */
-const LAST_DAY_OF_PREVIOUS_MONTH = 0;
 const ZERO_PAD = "0";
 
 type Range = { readonly min: number; readonly max: number };
@@ -67,7 +66,7 @@ function daysInMonth(segments: readonly Segment[]): number {
   if (month === undefined || month < FIRST_MONTH || month > LAST_MONTH) {
     return MAX_DAYS_IN_MONTH;
   }
-  return dateOf(yearOf(segments), month, LAST_DAY_OF_PREVIOUS_MONTH).getDate();
+  return daysIn(yearOf(segments), month);
 }
 
 function rangeOf(
@@ -173,7 +172,7 @@ type RotateInput = {
   readonly current: number | undefined;
   readonly direction: Direction;
   readonly range: Range;
-  readonly today: Readonly<Date>;
+  readonly today: Readonly<Temporal.PlainDate> | undefined;
   readonly type: SegmentType;
   readonly width: number;
 };
@@ -182,7 +181,7 @@ function nextValue(input: RotateInput): number {
   const { current, direction, range, today, type, width } = input;
   if (current === undefined) {
     if (type === "year") {
-      return shownYear(today.getFullYear(), width);
+      return shownYear(isoYear(today), width);
     }
     return boundFor(direction, range);
   }
@@ -209,7 +208,8 @@ function nextValue(input: RotateInput): number {
  * @param segments - Current segments
  * @param index - Index of the segment to rotate
  * @param direction - 1 for up, -1 for down
- * @param today - reference for an empty year segment
+ * @param today - Reference for an empty year segment, by its ISO year;
+ *   today when left out
  * @returns The rotated segments, or the same array when the segment has no range
  */
 // oxlint-disable-next-line eslint/max-params -- Public API signature; an options object would break callers
@@ -218,7 +218,7 @@ function rotateSegment(
   segments: Segment[],
   index: number,
   direction: Direction,
-  today: Readonly<Date> = new Date()
+  today?: Readonly<Temporal.PlainDate>
 ): Segment[] {
   const seg = segments[index];
   const range = rangeOf(segments, seg);
