@@ -65,8 +65,7 @@ March 18, 2026, and the month it falls in:
 | Republic of China   | `"roc"`              | {monthIn("roc", "en-US")}              | {monthIn("roc", "zh-TW")}              |
 
 The Chinese, Korean (`"dangi"`), Ethiopic (`"ethiopic"`, `"ethioaa"`) and
-Coptic calendars work too, where the runtime has Temporal built in; see
-[where they run](#where-they-run). Try them in the demo above.
+Coptic calendars work too; try them in the demo above.
 
 ## Months and years have their own length
 
@@ -149,10 +148,12 @@ come from [the units](../date-engines/), not from the calendar:
 
 ## Where they run
 
-| Runtime                                      | Calendars                                                                               |
-| -------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Chrome and Edge 144+, Firefox 139+, Node 26+ | all, with Temporal built in                                                             |
-| Safari, Node 24 (the polyfill)               | all but Chinese, Korean, Ethiopic and Coptic: `@js-temporal/polyfill` 0.5 fails on them |
+Everywhere minuta runs. Chrome and Edge 144+, Firefox 139+ and Node 26+
+have Temporal built in, with every calendar. In Safari and Node 24,
+[`temporalReady`](../../api/minuta-temporal/temporal-ready/) loads
+`temporal-polyfill`'s full build, which has them all too; its Chinese and
+Korean dates come from the runtime's `Intl` data, so they can differ from
+native Temporal by a day around the start of a month.
 
 The Julian calendar is not part of Temporal, so it is not here yet.
 

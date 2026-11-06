@@ -134,29 +134,15 @@ function showNaive(root: HTMLElement, calendar: string): void {
 function show(root: HTMLElement): void {
   const { value: calendar } = part(root, "calendar", HTMLSelectElement);
   showNaive(root, calendar);
-  let supported = true;
-  try {
-    showResult(root, calendar);
-  } catch {
-    // The polyfill (Safari) lacks some calendars; native Temporal has them all
-    supported = false;
-  }
-  const unsupported = part(root, "unsupported", HTMLElement);
-  part(root, "result", HTMLElement).hidden = !supported;
-  unsupported.hidden = supported;
-  unsupported.textContent = `This browser computes with the Temporal polyfill, which cannot do the ${calendar} calendar yet. Chrome 144+ and Firefox 139+ can.`;
+  showResult(root, calendar);
 }
 
 // Move the date input a month on, in the picked calendar
 function step(root: HTMLElement, months: number): void {
   const calendar = part(root, "calendar", HTMLSelectElement).value;
   const input = part(root, "date", HTMLInputElement);
-  try {
-    const moved = dateOf(root).withCalendar(calendar).add({ months });
-    input.value = moved.withCalendar("iso8601").toString();
-  } catch {
-    input.value = dateOf(root).add({ months }).toString();
-  }
+  const moved = dateOf(root).withCalendar(calendar).add({ months });
+  input.value = moved.withCalendar("iso8601").toString();
   show(root);
 }
 
