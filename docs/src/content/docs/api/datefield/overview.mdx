@@ -11,7 +11,7 @@ import {
   dateMask,
   deriveFormat,
   parseSegments,
-  toDate,
+  toPlainDate,
   typeDate,
   withSegments,
 } from "@aleksejdix/datefield";
@@ -64,7 +64,7 @@ import {
   dateOrder,
   deriveFormat,
   parseSegments,
-  toDate,
+  toPlainDate,
   typeDate,
   withSegments,
 } from "@aleksejdix/datefield";
@@ -97,7 +97,7 @@ field = withSegments(field, clampDay(parseSegments(format, field.buffer.text)));
 field.buffer.text; // → "28.02.2026"
 
 // 6. Read the date
-toDate(parseSegments(format, field.buffer.text)); // → Sat Feb 28 2026
+toPlainDate(parseSegments(format, field.buffer.text)); // → PlainDate 2026-02-28
 ```
 
 In a browser, [input-dom](../../input-dom/overview/) runs these steps for you
@@ -128,9 +128,9 @@ The same steps as a sequence, each with the value it produces:
       text: "Cut a day that is too large for its month.",
     },
     {
-      code: toDate(parseSegments(format, clamped.buffer.text)).toDateString(),
-      layer: "toDate",
-      text: "Read the Date once the text is complete and real.",
+      code: `PlainDate ${toPlainDate(parseSegments(format, clamped.buffer.text))}`,
+      layer: "toPlainDate",
+      text: "Read the day once the text is complete and real.",
     },
   ]}
 />
@@ -176,11 +176,13 @@ The same steps as a sequence, each with the value it produces:
 | -------------------------------------------- | ---------------------------------------------------------------------- |
 | [`parseSegments`](../parse-segments/)        | Cut field text into segments.                                          |
 | [`segmentsToString`](../segments-to-string/) | Join segments back into text.                                          |
-| [`toDate`](../to-date/)                      | Read a `Date` from segments, or `undefined`.                           |
+| [`toPlainDate`](../to-plain-date/)           | Read a `Temporal.PlainDate` from segments, or `undefined`.             |
+| [`toPlainDateTime`](../to-plain-date-time/)  | Read a `Temporal.PlainDateTime` from segments, or `undefined`.         |
+| [`toPlainTime`](../to-plain-time/)           | Read a `Temporal.PlainTime` from segments, or `undefined`.             |
 | [`checkDate`](../check-date/)                | Why the date is not allowed: before `min`, after `max` or unavailable. |
 | [`checkDay`](../check-day/)                  | The same rules for one calendar day; give it to `isDisabled`.          |
 | [`DateProblem`](../date-problem/)            | The codes `checkDate` and `checkDay` return.                           |
-| [`fromDate`](../from-date/)                  | Write a `Date` as segments.                                            |
+| [`fromTemporal`](../from-temporal/)          | Write a Temporal date, time or both as segments.                       |
 | [`withSegments`](../with-segments/)          | Put segments back into the field, cursor kept.                         |
 
 ### Typing
@@ -220,5 +222,10 @@ The same steps as a sequence, each with the value it produces:
 - **No parser inside.** Pasting dates in other forms needs a parser; use
   [fechita](../../fechita/parse-date/). See
   [Parsing dates](../../../concepts/parsing-dates/).
-- **Never guesses on its own.** [`toDate`](../to-date/) returns `undefined`
+- **Temporal values, no `Date`.** Values go in and out as Temporal
+  `PlainDate`, `PlainDateTime` and `PlainTime`, with no time zone, as the
+  field shows none. datefield reads `globalThis.Temporal`; where it is
+  missing, load the polyfill first with
+  [`temporalReady()`](../../minuta-temporal/temporal-ready/).
+- **Never guesses on its own.** [`toPlainDate`](../to-plain-date/) returns `undefined`
   until the date is complete and real; it never changes what the user typed.

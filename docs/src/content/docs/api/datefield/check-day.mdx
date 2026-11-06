@@ -5,23 +5,24 @@ description: Check one calendar day against a date field's min, max and unavaila
 
 import { DateProblem, checkDay } from "@aleksejdix/datefield";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+import { plainDate } from "../../../../components/temporal";
 
 export const rules = {
-  isUnavailable: (date) => date.getDay() === 0 || date.getDay() === 6,
-  min: new Date("2026-06-15T18:30"),
+  isUnavailable: (day) => day.dayOfWeek >= 6,
+  min: globalThis.Temporal.PlainDateTime.from("2026-06-15T18:30"),
 };
-export const monday = checkDay(new Date("2026-06-15T00:00"), rules);
-export const sunday = checkDay(new Date("2026-06-14T12:00"), rules);
-export const saturday = checkDay(new Date("2026-06-20T12:00"), rules);
+export const monday = checkDay(plainDate("2026-06-15"), rules);
+export const sunday = checkDay(plainDate("2026-06-14"), rules);
+export const saturday = checkDay(plainDate("2026-06-20"), rules);
 export const june = Array.from(
   { length: 30 },
   (_, index) => `2026-06-${String(index + 1).padStart(2, "0")}`
 );
 export const unavailable = june.filter(
-  (day) => checkDay(new Date(`${day}T00:00`), rules) === DateProblem.Unavailable
+  (day) => checkDay(plainDate(day), rules) === DateProblem.Unavailable
 );
 
-Check the day holding a date against the same rules as
+Check one day, a `Temporal.PlainDate`, against the same rules as
 [`checkDate`](../check-date/), comparing whole days. Give it to a calendar's
 `isDisabled`, and the calendar disables exactly the days the field reports.
 
@@ -30,7 +31,7 @@ import { checkDay } from "@aleksejdix/datefield";
 ```
 
 ```ts
-checkDay(date, { min, max, isUnavailable });
+checkDay(day, { min, max, isUnavailable });
 ```
 
 ## Example
@@ -39,13 +40,13 @@ checkDay(date, { min, max, isUnavailable });
 import { checkDay } from "@aleksejdix/datefield";
 
 const rules = {
-  isUnavailable: (date) => date.getDay() === 0 || date.getDay() === 6,
-  min: new Date("2026-06-15T18:30"),
+  isUnavailable: (day) => day.dayOfWeek >= 6, // Saturday and Sunday
+  min: Temporal.PlainDateTime.from("2026-06-15T18:30"),
 };
 
-checkDay(new Date("2026-06-15T00:00"), rules); // → undefined
-checkDay(new Date("2026-06-14T12:00"), rules); // → "BEFORE_MIN"
-checkDay(new Date("2026-06-20T12:00"), rules); // → "UNAVAILABLE"
+checkDay(Temporal.PlainDate.from("2026-06-15"), rules); // → undefined
+checkDay(Temporal.PlainDate.from("2026-06-14"), rules); // → "BEFORE_MIN"
+checkDay(Temporal.PlainDate.from("2026-06-20"), rules); // → "UNAVAILABLE"
 ```
 
 Here: Monday 15 June → <code>{String(monday)}</code>, Sunday 14 June → <code>{String(sunday)}</code>,
@@ -65,10 +66,10 @@ calendar given `isDisabled` disables the days before 15 June and the dotted ones
 
 ## Parameters
 
-| Name    | What it is                                                              |
-| ------- | ----------------------------------------------------------------------- |
-| `date`  | Any moment of the day to check, such as a calendar day's `start`.       |
-| `rules` | `min`, `max` and `isUnavailable`, as for [`checkDate`](../check-date/). |
+| Name    | What it is                                                                  |
+| ------- | --------------------------------------------------------------------------- |
+| `day`   | The day to check, a `Temporal.PlainDate`, such as a calendar day's `start`. |
+| `rules` | `min`, `max` and `isUnavailable`, as for [`checkDate`](../check-date/).     |
 
 ## Returns
 

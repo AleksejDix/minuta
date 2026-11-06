@@ -3,16 +3,17 @@ title: localeDigits
 description: The ten digits a locale writes numbers with, such as ٠–٩ for ar-EG, to show a date field in them.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import {
   deriveFormat,
-  fromDate,
+  fromTemporal,
   localeDigits,
   segmentsToString,
 } from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const stored = segmentsToString(
-  fromDate(new Date(2026, 2, 31), deriveFormat("ar-EG"))
+  fromTemporal(plainDate("2026-03-31"), deriveFormat("ar-EG"))
 );
 export const digits = localeDigits("ar-EG");
 export const shown = stored.replace(/[0-9]/g, (digit) => digits[Number(digit)]);
@@ -52,7 +53,7 @@ A list of ten characters: the locale's digit for 0, for 1, … up to 9.
 ## Stored as 0–9, shown the locale's way
 
 A date field always _stores_ the digits `0`–`9`, so
-[`toDate`](../to-date/) and every other function can read it. Users can still
+[`toPlainDate`](../to-plain-date/) and every other function can read it. Users can still
 type or paste digits of any script; they are stored as `0`–`9`.
 
 `localeDigits` is for _showing_ the field. Pass it to

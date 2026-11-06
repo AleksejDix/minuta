@@ -3,16 +3,17 @@ title: formatLength
 description: How many characters a date written in a format takes, separators included.
 ---
 
+import { plainDate } from "../../../../components/temporal";
 import {
   deriveFormat,
   formatLength,
-  fromDate,
+  fromTemporal,
   segmentsToString,
 } from "@aleksejdix/datefield";
 import FieldDiagram from "../../../../components/diagrams/FieldDiagram.astro";
 
 export const written = (locale) =>
-  segmentsToString(fromDate(new Date(2026, 2, 31), deriveFormat(locale)));
+  segmentsToString(fromTemporal(plainDate("2026-03-31"), deriveFormat(locale)));
 export const length = (locale) => String(formatLength(deriveFormat(locale)));
 
 Count how many characters a date in a format takes, separators included:

@@ -85,12 +85,12 @@ segmentsToString(rotateSegment(segments, 4, -1)); // → "31.03.2025"   year dow
 
 ## Parameters
 
-| Name        | What it is                                                                        |
-| ----------- | --------------------------------------------------------------------------------- |
-| `segments`  | The current segments, from [`parseSegments`](../parse-segments/).                 |
-| `index`     | The segment to step, usually from [`segmentAtPosition`](../segment-at-position/). |
-| `direction` | `1` to go up (ArrowUp), `-1` to go down (ArrowDown).                              |
-| `today`     | Optional. The date an empty year starts from. Default: now.                       |
+| Name        | What it is                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `segments`  | The current segments, from [`parseSegments`](../parse-segments/).                          |
+| `index`     | The segment to step, usually from [`segmentAtPosition`](../segment-at-position/).          |
+| `direction` | `1` to go up (ArrowUp), `-1` to go down (ArrowDown).                                       |
+| `today`     | Optional. A `Temporal.PlainDate` whose ISO year an empty year starts from. Default: today. |
 
 ## Returns
 
@@ -168,7 +168,7 @@ The year steps by one and stops at the ends instead of wrapping: up from
 year an empty year segment starts from, for example in tests:
 
 ```ts
-rotateSegment(s("__.__.____"), 4, 1, new Date(2030, 0, 1)); // year → "2030"
+rotateSegment(s("__.__.____"), 4, 1, Temporal.PlainDate.from("2030-01-01")); // year → "2030"
 ```
 
 In a two-digit year segment (`year: "2-digit"`) the empty year starts at the
