@@ -98,7 +98,12 @@ const docs: AstroIntegration = starlight({
         icon: "open-book",
         items: [
           {
-            items: ["introduction", "getting-started", "installation"],
+            items: [
+              "introduction",
+              "getting-started",
+              "installation",
+              "migration",
+            ],
             label: "Getting started",
           },
           {
