@@ -3,7 +3,6 @@ import {
   backspace,
   beforeInput,
   cleanup,
-  localDay,
   renderField,
   select,
   typeText,
@@ -54,7 +53,7 @@ describe('<DateFieldRoot> typed dates', () => {
     expect.hasAssertions()
     const field = await renderField('de-CH')
     typeText(field.input, '28102026')
-    expect(field.date()).toStrictEqual(localDay('2026-10-28'))
+    expect(String(field.date())).toBe('2026-10-28')
   })
 
   it('reports no date while the field is incomplete', { timeout: 5000 }, async () => {
@@ -86,7 +85,7 @@ describe('<DateFieldRoot> autofill', () => {
     field.input.value = '2026-10-28'
     field.input.dispatchEvent(new Event('input', { bubbles: true }))
     expect(field.input.value).toBe('28.10.2026')
-    expect(field.date()).toStrictEqual(localDay('2026-10-28'))
+    expect(String(field.date())).toBe('2026-10-28')
   })
 })
 
@@ -100,7 +99,7 @@ describe('<DateFieldRoot> fixing typos', () => {
     backspace(field.input)
     typeText(field.input, '7')
     expect(field.input.value).toBe('28.10.2027')
-    expect(field.date()).toStrictEqual(localDay('2027-10-28'))
+    expect(String(field.date())).toBe('2027-10-28')
   })
 
   it('types into an empty field clicked past its end', { timeout: 5000 }, async () => {

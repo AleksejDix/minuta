@@ -1,17 +1,14 @@
 /*
  * The field's value as Temporal values instead of a Date: a date field
  * gives a Temporal.PlainDate, a time field a PlainTime, both a
- * PlainDateTime, with no time zone, as the field shows none. Temporal is
- * read from globalThis when converting, never at import, so an app can
- * load it first (minuta's temporalReady).
+ * PlainDateTime, with no time zone, as the field shows none.
  */
 
 import type { DateFormat, Segment } from "./types";
 import type { DateParts, Wall } from "./convert";
 import { collectParts, segmentsOf } from "./convert";
-import type { Temporal } from "temporal-polyfill";
-
-type TemporalApi = typeof Temporal;
+import type { Temporal } from "./temporal-api";
+import { temporal } from "./temporal-api";
 
 /** A value a field shows: a date, a time, or both. */
 type FieldValue =
@@ -19,32 +16,12 @@ type FieldValue =
   | Readonly<Temporal.PlainDateTime>
   | Readonly<Temporal.PlainTime>;
 
-const MISSING_TEMPORAL =
-  "datefield needs Temporal for its Temporal values: load it first (minuta's temporalReady())";
 const MIDNIGHT = 0;
 // The day a time with no date is shown on: any day, a fixed one.
 const ANY_DAY = "2000-01-01";
 const REJECT = { overflow: "reject" } as const;
 // The zone a wall clock's epoch milliseconds are read in.
 const WALL_ZONE = "UTC";
-
-function hasTemporal(scope: object): scope is { Temporal: TemporalApi } {
-  return "Temporal" in scope && scope.Temporal !== undefined;
-}
-
-/**
- * The runtime's Temporal, read when converting.
- *
- * @returns The Temporal namespace
- * @throws {Error} When there is none
- */
-function temporal(): TemporalApi {
-  const scope: object = globalThis;
-  if (hasTemporal(scope)) {
-    return scope.Temporal;
-  }
-  throw new Error(MISSING_TEMPORAL);
-}
 
 /**
  * The day in the parts; undefined when they hold none, a 30 February too.

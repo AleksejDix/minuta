@@ -1,7 +1,6 @@
 /**
  * The current moment, read from the runtime's Temporal (or the polyfill
- * that `temporalReady()` installed). The clock is `Date.now()`, the same
- * instant `Temporal.Now` reads, so fake timers in tests move it too.
+ * that `temporalReady()` installed).
  */
 
 import type { Temporal } from "temporal-polyfill";
@@ -27,9 +26,7 @@ function currentMoment(timeZone: string): ZonedDateTime {
       "minuta-react needs Temporal: await temporalReady() from @aleksejdix/minuta/temporal first"
     );
   }
-  return scope.Temporal.Instant.fromEpochMilliseconds(
-    Date.now()
-  ).toZonedDateTimeISO(timeZone);
+  return scope.Temporal.Now.zonedDateTimeISO(timeZone);
 }
 
 export { currentMoment };

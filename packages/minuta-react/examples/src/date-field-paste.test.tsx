@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   beforeInput,
-  localDay,
   pasteText,
   renderField,
   select,
@@ -35,7 +34,7 @@ describe("<DateFieldRoot> pasting written dates", () => {
     const field = renderField("de-CH");
     pasteText(field.input, text);
     expect(field.input.value).toBe(OCT_28);
-    expect(field.date()).toStrictEqual(localDay("2026-10-28"));
+    expect(String(field.date())).toBe("2026-10-28");
   });
 
   it("reads a dropped date like a pasted one", { timeout: 5000 }, () => {

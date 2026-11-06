@@ -5,10 +5,15 @@ import type { FieldValue } from "./temporal";
 import { createInputState } from "@aleksejdix/input-state";
 import { dateMask } from "./field";
 import { parseDate } from "@aleksejdix/fechita";
-import { toDate } from "./convert";
+import { toPlainDate } from "./temporal";
 import { typeDate } from "./type-date";
 
-const MARCH_31 = new Date("2026-03-31T00:00:00");
+// The day a field's text makes, as Temporal writes it
+function dayIn(format: Readonly<DateFormat>, text: string): string {
+  return String(toPlainDate(parseSegments(format, text)));
+}
+
+const MARCH_31 = "2026-03-31";
 const LOCALES: readonly string[] = [
   "de-CH",
   "en-US",
@@ -50,13 +55,12 @@ function parserFor(
   return (text) => parsedDate(text, locale, format);
 }
 
-function pasted(locale: string, text: string): Date | undefined {
+// The day the field holds after the paste, as Temporal writes it
+function pasted(locale: string, text: string): string {
   const format: Readonly<DateFormat> = deriveFormat(locale);
   const field = createInputState({ mask: dateMask(format) });
   const parse = parserFor(locale, format);
-  return toDate(
-    parseSegments(format, typeDate(format, field, text, { parse }).buffer.text)
-  );
+  return dayIn(format, typeDate(format, field, text, { parse }).buffer.text);
 }
 
 function typedWithoutParser(locale: string, text: string): string {
@@ -86,16 +90,13 @@ describe("pasted dates in other forms", () => {
       expect([
         pasted("de-CH", "04/05/2026"),
         pasted("en-US", "04/05/2026"),
-      ]).toStrictEqual([
-        new Date("2026-05-04T00:00:00"),
-        new Date("2026-04-05T00:00:00"),
-      ]);
+      ]).toStrictEqual(["2026-05-04", "2026-04-05"]);
     }
   );
 
   it("rejects a day that does not exist", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    expect(pasted("de-CH", "2026-04-31")).toBeUndefined();
+    expect(pasted("de-CH", "2026-04-31")).toBe("undefined");
   });
 });
 

@@ -13,6 +13,7 @@ import {
   shown,
   typeText,
 } from "./date-field-test-utils";
+import type { Temporal } from "temporal-polyfill";
 import { cleanup } from "@testing-library/react";
 import { deriveFormat } from "@aleksejdix/datefield";
 
@@ -122,7 +123,7 @@ function steppedBack(input: HTMLInputElement, dayInside: number): string {
 function driftFrom(
   input: HTMLInputElement,
   dayInside: number,
-  date: Readonly<Date>
+  date: Readonly<Temporal.PlainDate>
 ): string[] {
   pasteText(input, isoDate(date));
   const before = input.value;
@@ -142,7 +143,7 @@ function driftFrom(
 function dayStepDrift(locale: string): string[] {
   const field = renderField(locale);
   const dayInside = dayStart(locale) + ONE;
-  const drifted = EDGE_DATES.flatMap((date: Readonly<Date>) =>
+  const drifted = EDGE_DATES.flatMap((date: Readonly<Temporal.PlainDate>) =>
     driftFrom(field.input, dayInside, date)
   );
   cleanup();
