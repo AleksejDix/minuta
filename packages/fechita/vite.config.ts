@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import path from "node:path";
 import { readdirSync } from "node:fs";
+import { relativeTypes } from "@minuta/tsconfig/relative-types.ts";
 
 const SOURCE = path.resolve(import.meta.dirname, "src");
 // oxlint-disable-next-line node/no-sync -- Vite loads its config synchronously
@@ -31,6 +32,7 @@ export default defineConfig({
   },
   plugins: [
     dts({
+      beforeWriteFile: relativeTypes(import.meta.dirname),
       exclude: ["src/**/*.test.ts", "src/__tests__/**"],
       include: ["src/**/*.ts"],
     }),

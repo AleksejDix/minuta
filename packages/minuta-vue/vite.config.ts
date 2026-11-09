@@ -2,6 +2,7 @@ import type { ConfigEnv, UserConfig } from "vite";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import path from "node:path";
+import { relativeTypes } from "@minuta/tsconfig/relative-types.ts";
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 
@@ -46,6 +47,9 @@ const libraryConfig: UserConfig = {
   plugins: [
     vue(),
     dts({
+      beforeWriteFile: relativeTypes(import.meta.dirname),
+      // Vue's generated component code has no annotations to isolate
+      compilerOptions: { isolatedDeclarations: false },
       exclude: ["src/**/*.test.ts", "src/test/**"],
       include: ["src/**/*.ts", "src/**/*.vue"],
     }),

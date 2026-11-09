@@ -1,0 +1,9 @@
+{
+  "extends": "./base.json",
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}
