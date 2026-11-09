@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import path from "node:path";
 import react from "@vitejs/plugin-react";
+import { relativeTypes } from "@minuta/tsconfig/relative-types.ts";
 import tailwindcss from "@tailwindcss/vite";
 
 const EXTERNAL = [/^@aleksejdix\/minuta/u, /^react(?:\/.*)?$/u];
@@ -44,6 +45,7 @@ const libraryConfig: UserConfig = {
   },
   plugins: [
     dts({
+      beforeWriteFile: relativeTypes(import.meta.dirname),
       exclude: ["src/**/*.test.ts", "src/**/*.test.tsx"],
       include: ["src/**/*.ts", "src/**/*.tsx"],
     }),

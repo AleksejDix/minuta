@@ -2,12 +2,14 @@
   "name": "@minuta/tsconfig",
   "version": "2.0.0-alpha.1",
   "private": true,
-  "description": "Shared TypeScript configuration for Minuta monorepo",
+  "description": "Shared TypeScript configuration and build helpers for the Minuta monorepo",
   "license": "Apache-2.0",
   "files": [
-    "*.json"
+    "*.json",
+    "*.ts"
   ],
   "scripts": {
-    "test:coverage": "vitest run --coverage --passWithNoTests"
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "type-check": "tsc -p tsconfig.json"
   }
 }

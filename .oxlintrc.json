@@ -169,7 +169,11 @@
       }
     },
     {
-      "files": ["docs/scripts/**/*.ts", "scripts/**/*.ts"],
+      "files": [
+        "docs/scripts/**/*.ts",
+        "scripts/**/*.ts",
+        "packages/tsconfig/*.ts"
+      ],
       "rules": {
         "import/no-nodejs-modules": "off",
         "node/no-sync": "off"

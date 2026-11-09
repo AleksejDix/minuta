@@ -2,6 +2,7 @@ import { configDefaults } from "vitest/config";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import path from "node:path";
+import { relativeTypes } from "@minuta/tsconfig/relative-types.ts";
 
 function fromRoot(file: string): string {
   return path.resolve(import.meta.dirname, file);
@@ -25,6 +26,7 @@ export default defineConfig({
   },
   plugins: [
     dts({
+      beforeWriteFile: relativeTypes(import.meta.dirname),
       include: ["src/**/*.ts"],
       insertTypesEntry: true,
     }),
