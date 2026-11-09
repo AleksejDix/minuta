@@ -237,8 +237,8 @@ shaded columns in these pictures are always Saturday and Sunday.)
 />
 
 :::note
-To take both settings from the user's locale, use
-`Intl.Locale#getWeekInfo()` where the browser has it. The conversion is in
+To take both settings from the user's locale, pass it:
+`createUnits({ locale: navigator.language })`. See
 [Taking both from the user's locale](../../../concepts/weeks-and-calendars/#taking-both-from-the-users-locale).
 :::
 

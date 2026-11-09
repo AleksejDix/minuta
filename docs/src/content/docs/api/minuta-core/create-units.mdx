@@ -77,18 +77,19 @@ pieces are cut at the month's edges:
 
 ## Parameters
 
-| Name      | What it is                                                                      |
-| --------- | ------------------------------------------------------------------------------- |
-| `options` | Optional. Week start, weekend, time zone and calendar, see [Options](#options). |
+| Name      | What it is                                                                              |
+| --------- | --------------------------------------------------------------------------------------- |
+| `options` | Optional. Week start, weekend, locale, time zone and calendar, see [Options](#options). |
 
 ## Options
 
-| Option         | Default                  | What it does                                                                                              |
-| -------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).                       |
-| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend.                |
-| `timeZone`     | the runtime's zone       | The IANA zone dates become moments in, e.g. when a day is divided into hours: `"UTC"`, `"Europe/Zurich"`. |
-| `calendar`     | each date's own          | The [calendar](#calendars) every date is read in, e.g. `"hebrew"`, `"islamic-umalqura"`, `"persian"`.     |
+| Option         | Default                  | What it does                                                                                                                                                                                        |
+| -------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `weekStartsOn` | `"monday"`               | The first day of the week: `"sunday"` … `"saturday"`, or 0 (Sunday) … 6 (Saturday).                                                                                                                 |
+| `weekend`      | `["saturday", "sunday"]` | The days that [`isWeekendWith`](../../minuta-calendar/is-weekend-with/) counts as weekend.                                                                                                          |
+| `locale`       | none                     | Takes `weekStartsOn` and `weekend` from a locale's week (`Intl.Locale#getWeekInfo`): `"en-US"` starts on Sunday, `"ar-EG"` on Saturday with a Friday–Saturday weekend. The two options win over it. |
+| `timeZone`     | the runtime's zone       | The IANA zone dates become moments in, e.g. when a day is divided into hours: `"UTC"`, `"Europe/Zurich"`.                                                                                           |
+| `calendar`     | each date's own          | The [calendar](#calendars) every date is read in, e.g. `"hebrew"`, `"islamic-umalqura"`, `"persian"`.                                                                                               |
 
 Hours, minutes and seconds made from a `ZonedDateTime` keep its zone; a day
 or longer is made of dates, which have none. `timeZone` applies where a date
