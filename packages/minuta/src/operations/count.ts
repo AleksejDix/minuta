@@ -9,15 +9,15 @@ import { specFor, timeSpecFor, timeZoneOf } from "#src/units";
  * the clocks change on has 23 or 25 hours.
  *
  * @example
- * durationWith(units, march, "day"); // 31
- * durationWith(units, period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // 23 in Zurich
+ * countWith(units, march, "day"); // 31
+ * countWith(units, period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // 23 in Zurich
  *
  * @param units - Available unit specs
  * @param period - The period to measure
  * @param unit - The unit to count
  * @returns The number of complete units from the start
  */
-function durationWith(units: Units, period: Period, unit: Unit): number {
+function countWith(units: Units, period: Period, unit: Unit): number {
   if (isDatePeriod(period)) {
     const spec = specFor(units, unit);
     if (spec.kind === "date") {
@@ -29,4 +29,4 @@ function durationWith(units: Units, period: Period, unit: Unit): number {
   return timeSpecFor(units, unit).diff(period.start, period.end);
 }
 
-export { durationWith };
+export { countWith };

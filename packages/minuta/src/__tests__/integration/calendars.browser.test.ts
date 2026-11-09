@@ -1,10 +1,14 @@
-import { contains, divide, duration } from "#src/index";
-import { createUnits, withUnits } from "#src/core";
+import {
+  contains,
+  count,
+  createUnits,
+  divide,
+  toLocaleString,
+  withUnits,
+} from "#src/index";
 import { describe, expect, it } from "vitest";
 import type { DatePeriod } from "#src/types";
-import { formatPeriod } from "#src/format";
 import { getTemporal } from "#src/temporal-api";
-import { monthGridWith } from "#src/calendar";
 
 const CALENDARS: readonly string[] = [
   "buddhist",
@@ -79,9 +83,9 @@ describe("every built-in calendar, on native Temporal", () => {
     (calendar) => {
       expect.hasAssertions();
       const units = createUnits({ calendar });
-      expect(monthGridWith(units, today).periods).toHaveLength(GRID_DAYS);
+      expect(withUnits(units).monthGrid(today).periods).toHaveLength(GRID_DAYS);
       expect(
-        formatPeriod(withUnits(units).period(today, "month"), "en-US")
+        toLocaleString(withUnits(units).period(today, "month"), "en-US")
       ).not.toBe("");
     }
   );
@@ -95,7 +99,7 @@ describe("years with 13 months", () => {
       expect.hasAssertions();
       const time = withUnits(createUnits({ calendar: "ethiopic" }));
       const year = time.period(today, "year");
-      expect(duration(year, "month")).toBe(THIRTEEN);
+      expect(count(year, "month")).toBe(THIRTEEN);
       expect(
         time
           .divide(year, "quarter")
@@ -115,7 +119,7 @@ describe("years with 13 months", () => {
         getTemporal().PlainDate.from("2025-08-01"),
         "year"
       );
-      expect(duration(year, "month")).toBe(THIRTEEN);
+      expect(count(year, "month")).toBe(THIRTEEN);
       expect(
         time.divide(year, "quarter").map((quarter) => monthCodes(quarter))
       ).toStrictEqual([

@@ -4,7 +4,7 @@ import { createUnits } from "#src/create-units";
 import { date } from "#src/test/temporal";
 import { divideWith } from "#src/operations/divide";
 import { periodWith } from "#src/operations/period";
-import { snapWith } from "#src/operations/snap-with";
+import { roundWith } from "#src/operations/round";
 
 const MAX_PERIODS = 10;
 const ZERO = 0;
@@ -42,7 +42,7 @@ describe("error messages", () => {
     expect(() =>
       divideWith(units, year, "day", { maxPeriods: MAX_PERIODS })
     ).toThrow(
-      `${MinutaError.TooManyPeriods}: divideWith() generated over ${MAX_PERIODS} periods. ` +
+      `${MinutaError.TooManyPeriods}: divide() generated over ${MAX_PERIODS} periods. ` +
         "Use a larger unit or step, a shorter period, or raise the maxPeriods option."
     );
   });
@@ -58,14 +58,19 @@ describe("option errors", () => {
       const day = periodWith(units, date("2026-01-01"), "day");
       const fix = "must be a positive whole number";
       expect(() => divideWith(units, day, "hour", { step })).toThrow(
-        `${MinutaError.InvalidOption}: divideWith() step ${fix}, got ${String(step)}. Pass a count such as 1 or 15.`
+        `${MinutaError.InvalidOption}: divide() step ${fix}, got ${String(step)}. Pass a count such as 1 or 15.`
       );
       expect(() =>
         divideWith(units, day, "hour", { maxPeriods: step })
-      ).toThrow(`${MinutaError.InvalidOption}: divideWith() maxPeriods ${fix}`);
+      ).toThrow(`${MinutaError.InvalidOption}: divide() maxPeriods ${fix}`);
       expect(() =>
-        snapWith(units, date("2026-01-01"), "day", { step })
-      ).toThrow(`${MinutaError.InvalidOption}: snapWith() step ${fix}`);
+        roundWith(units, date("2026-01-01"), {
+          roundingIncrement: step,
+          smallestUnit: "day",
+        })
+      ).toThrow(
+        `${MinutaError.InvalidOption}: round() roundingIncrement ${fix}`
+      );
     }
   );
 });

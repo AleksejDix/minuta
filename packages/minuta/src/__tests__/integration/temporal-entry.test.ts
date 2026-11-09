@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createUnits } from "#src/core";
+import { createUnits } from "#src/index";
 import { temporalReady } from "#src/temporal";
 
 const UNIT_NAMES: readonly string[] = [

@@ -1,22 +1,24 @@
 import type { DatePeriod, DateUnit } from "#src/types";
 import {
+  clamp,
   contains,
   period as derivePeriod,
   divide,
+  gap,
+  merge,
+  move,
   next as nextPeriod,
   previous,
   range,
+  round,
   same,
   shift,
+  split,
 } from "#src/index";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { format, formatAsRange } from "#src/test/format";
 import { Temporal } from "temporal-polyfill/full";
-import { createUnits } from "#src/create-units";
-import { intervals } from "#src/intervals";
-
-const { clamp, gap, merge, move, snap, split } = intervals(createUnits());
 
 const FORWARD_TWO = 2;
 const BACKWARD_THREE = -3;
@@ -222,7 +224,10 @@ describe("dogfood snap()", () => {
   it("snaps a date to nearest 15-minute interval", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const moment = zoned("2024-03-15T10:38[UTC]");
-    const snapped = snap(moment, "minute", { step: SNAP_MINUTES });
+    const snapped = round(moment, {
+      roundingIncrement: SNAP_MINUTES,
+      smallestUnit: "minute",
+    });
     // Should round to nearest 15-min boundary
     expect(snapped.minute % SNAP_MINUTES).toBe(NO_REMAINDER);
   });
@@ -230,9 +235,10 @@ describe("dogfood snap()", () => {
   it("floor snaps to earlier boundary", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const moment = zoned("2024-03-15T10:37[UTC]");
-    const snapped = snap(moment, "minute", {
-      mode: "floor",
-      step: SNAP_MINUTES,
+    const snapped = round(moment, {
+      roundingIncrement: SNAP_MINUTES,
+      roundingMode: "floor",
+      smallestUnit: "minute",
     });
     expect(Temporal.ZonedDateTime.compare(snapped, moment)).toBeLessThanOrEqual(
       NO_REMAINDER
@@ -242,9 +248,10 @@ describe("dogfood snap()", () => {
   it("ceil snaps to later boundary", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const moment = zoned("2024-03-15T10:37[UTC]");
-    const snapped = snap(moment, "minute", {
-      mode: "ceil",
-      step: SNAP_MINUTES,
+    const snapped = round(moment, {
+      roundingIncrement: SNAP_MINUTES,
+      roundingMode: "ceil",
+      smallestUnit: "minute",
     });
     expect(
       Temporal.ZonedDateTime.compare(snapped, moment)

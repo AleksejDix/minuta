@@ -1,8 +1,8 @@
 import type { DatePeriod, TimePeriod } from "#src/types";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { periodWith, range } from "./period";
 import { createUnits } from "#src/create-units";
+import { periodWith } from "./period";
 import { sameWith } from "./same";
 
 const units = createUnits({ timeZone: "Europe/Zurich" });
@@ -13,10 +13,6 @@ function dayPeriod(value: string): DatePeriod {
 
 function hourAt(iso: string): TimePeriod {
   return periodWith(units, zoned(`${iso}[Europe/Zurich]`), "hour");
-}
-
-function span(from: string, to: string): DatePeriod {
-  return range(date(from), date(to));
 }
 
 describe("sameWith(): calendar units", () => {
@@ -62,16 +58,4 @@ describe("sameWith(): time units and custom", () => {
       );
     }
   );
-
-  it("asks for identical edges with custom", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const tenDays = span("2026-03-01", "2026-03-10");
-    const later = span("2026-03-01", "2026-03-11");
-    const shifted = span("2026-03-02", "2026-03-10");
-    expect(
-      sameWith(units, tenDays, span("2026-03-01", "2026-03-10"), "custom")
-    ).toBe(true);
-    expect(sameWith(units, tenDays, later, "custom")).toBe(false);
-    expect(sameWith(units, tenDays, shifted, "custom")).toBe(false);
-  });
 });

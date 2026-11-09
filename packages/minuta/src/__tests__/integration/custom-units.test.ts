@@ -1,15 +1,7 @@
-import type { DateSpec, Units } from "#src/core";
+import type { DateSpec, Units } from "#src/index";
+import { createUnits, withUnits } from "#src/index";
 import { date, text } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import {
-  divideWith,
-  durationWith,
-  nextWith,
-  periodWith,
-  withUnits,
-} from "#src/core";
-import { mergeWith, snapWith } from "#src/intervals";
-import { createUnits } from "#src/create-units";
 
 /*
  * A unit of your own: register its name and kind, pass its spec next to
@@ -43,7 +35,8 @@ const fortnight: DateSpec = {
 
 const own: Units = { fortnight };
 const units = Object.assign(own, builtIn);
-const sprint = periodWith(units, date("2026-03-18"), "fortnight");
+const time = withUnits(units);
+const sprint = time.period(date("2026-03-18"), "fortnight");
 
 describe("a custom unit", () => {
   it("makes periods aligned to its own boundaries", { timeout: 5000 }, () => {
@@ -56,29 +49,26 @@ describe("a custom unit", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      expect(nextWith(units, sprint).start.toString()).toBe("2026-03-30");
-      expect(divideWith(units, sprint, "day")).toHaveLength(DAYS);
-      expect(durationWith(units, sprint, "day")).toBe(DAYS);
-      expect(durationWith(units, sprint, "fortnight")).toBe(ONE);
+      expect(time.next(sprint).start.toString()).toBe("2026-03-30");
+      expect(time.divide(sprint, "day")).toHaveLength(DAYS);
+      expect(time.count(sprint, "day")).toBe(DAYS);
+      expect(time.count(sprint, "fortnight")).toBe(ONE);
     }
   );
 
-  it("snaps and merges to its boundaries", { timeout: 5000 }, () => {
+  it("rounds and merges to its boundaries", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const days = divideWith(units, sprint, "day");
-    const snapped = snapWith(units, date("2026-03-25"), "fortnight", {
-      mode: "floor",
+    const days = time.divide(sprint, "day");
+    const rounded = time.round(date("2026-03-25"), {
+      roundingMode: "floor",
+      smallestUnit: "fortnight",
     });
-    expect(snapped.toString()).toBe("2026-03-16");
-    expect(mergeWith(units, days, "fortnight")).toHaveProperty(
-      "unit",
-      "fortnight"
-    );
+    expect(rounded.toString()).toBe("2026-03-16");
+    expect(time.merge(days, "fortnight")).toHaveProperty("unit", "fortnight");
   });
 
-  it("works through withUnits", { timeout: 5000 }, () => {
+  it("keeps the units it was bound to", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const time = withUnits(units);
-    expect(time.period(date("2026-03-18"), "fortnight")).toStrictEqual(sprint);
+    expect(time.units).toBe(units);
   });
 });

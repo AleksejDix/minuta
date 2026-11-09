@@ -1,5 +1,7 @@
-import { formatPeriod, formatRange } from "#src/format/format";
 import type { Period } from "#src/types";
+import { isDatePeriod } from "#src/values";
+import { range } from "#src/operations/period";
+import { toLocaleString } from "#src/format/format";
 
 /**
  * Default test locale — en-US for readable English assertions.
@@ -17,7 +19,7 @@ const TEST_LOCALE = "en-US";
  * @returns The formatted period
  */
 function format(period: Period, locale: string = TEST_LOCALE): string {
-  return formatPeriod(period, locale);
+  return toLocaleString(period, locale);
 }
 
 /**
@@ -31,7 +33,10 @@ function format(period: Period, locale: string = TEST_LOCALE): string {
  * @returns The formatted range
  */
 function formatAsRange(period: Period, locale: string = TEST_LOCALE): string {
-  return formatRange(period, locale);
+  if (isDatePeriod(period)) {
+    return toLocaleString(range(period.start, period.end), locale);
+  }
+  return toLocaleString(range(period.start, period.end), locale);
 }
 
 export { format, formatAsRange };

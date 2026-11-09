@@ -10,14 +10,7 @@ const SOURCE = new URL("../../", import.meta.url);
 const NONE = 0;
 
 /** Package entry points, in the order they are documented. */
-const ENTRIES: readonly string[] = [
-  "index",
-  "core",
-  "calendar",
-  "intervals",
-  "format",
-  "temporal",
-];
+const ENTRIES: readonly string[] = ["index", "temporal"];
 
 const COMPILER_OPTIONS: ts.CompilerOptions = {
   customConditions: ["source"],
@@ -54,19 +47,13 @@ function resolved(checker: ts.TypeChecker, symbol: ts.Symbol): ts.Symbol {
   return checker.getAliasedSymbol(symbol);
 }
 
-type FindFunction = (name: string) => ts.SignatureDeclaration | undefined;
-
 function signatureText(
   name: string,
-  declaration: ts.SignatureDeclaration,
-  skipFirst: boolean
+  declaration: ts.SignatureDeclaration
 ): string {
   const parameters = declaration.parameters.map((parameter) =>
     parameter.getText()
   );
-  if (skipFirst) {
-    parameters.shift();
-  }
   const signature = `${name}(${parameters.join(", ")})`;
   if (declaration.type === undefined) {
     return signature;
@@ -79,15 +66,6 @@ function functionDeclarations(symbol: ts.Symbol): ts.SignatureDeclaration[] {
   return declarations.filter((declaration) =>
     ts.isFunctionDeclaration(declaration)
   );
-}
-
-function boundSignatures(name: string, findCore: FindFunction): string[] {
-  // A bound function of the default entry is its `…With` sibling without units
-  const sibling = findCore(`${name}With`);
-  if (sibling === undefined) {
-    return [];
-  }
-  return [signatureText(name, sibling, true)];
 }
 
 function declaredText(symbol: ts.Symbol, name: string): string[] {
@@ -104,17 +82,9 @@ function declaredText(symbol: ts.Symbol, name: string): string[] {
   return [];
 }
 
-function signaturesOf(
-  symbol: ts.Symbol,
-  name: string,
-  findCore: FindFunction
-): string[] {
-  const bound = boundSignatures(name, findCore);
-  if (bound.length > NONE) {
-    return bound;
-  }
+function signaturesOf(symbol: ts.Symbol, name: string): string[] {
   const functions = functionDeclarations(symbol).map((declaration) =>
-    signatureText(name, declaration, false)
+    signatureText(name, declaration)
   );
   if (functions.length > NONE) {
     return functions;
@@ -133,10 +103,9 @@ function isCallable(checker: ts.TypeChecker, symbol: ts.Symbol): boolean {
 
 function docsOf(
   checker: ts.TypeChecker,
-  context: Readonly<{ entry: string; findCore: FindFunction }>,
+  entry: string,
   exported: ts.Symbol
 ): ExportDocs {
-  const { entry, findCore } = context;
   const target = resolved(checker, exported);
   const name = exported.getName();
   return {
@@ -150,7 +119,7 @@ function docsOf(
       .filter((tag) => tag.name === "example")
       .map((tag) => ts.displayPartsToString(tag.text).trim()),
     name,
-    signatures: signaturesOf(target, name, findCore),
+    signatures: signaturesOf(target, name),
   };
 }
 
@@ -168,20 +137,6 @@ function moduleExports(
     throw new Error(`Entry ${entry} has no module symbol`);
   }
   return checker.getExportsOfModule(module);
-}
-
-function coreFunctionsOf(
-  program: ts.Program,
-  checker: ts.TypeChecker
-): FindFunction {
-  const functions = new Map<string, ts.SignatureDeclaration>();
-  for (const exported of moduleExports(program, checker, "core")) {
-    const [declaration] = functionDeclarations(resolved(checker, exported));
-    if (declaration !== undefined) {
-      functions.set(exported.getName(), declaration);
-    }
-  }
-  return (name) => functions.get(name);
 }
 
 type ErrorCode = Readonly<{
@@ -213,13 +168,13 @@ function errorCodesOf(checker: ts.TypeChecker, errors: ts.Symbol): ErrorCode[] {
  * @returns Every error code and its description
  */
 function errorCodes(): ErrorCode[] {
-  const program = ts.createProgram([entryPath("core")], COMPILER_OPTIONS);
+  const program = ts.createProgram([entryPath("index")], COMPILER_OPTIONS);
   const checker = program.getTypeChecker();
-  const errors = moduleExports(program, checker, "core").find(
+  const errors = moduleExports(program, checker, "index").find(
     (exported) => exported.getName() === "MinutaError"
   );
   if (errors === undefined) {
-    throw new Error("minuta/core does not export MinutaError");
+    throw new Error("minuta does not export MinutaError");
   }
   return errorCodesOf(checker, resolved(checker, errors));
 }
@@ -235,10 +190,9 @@ function publicApi(): ExportDocs[] {
     COMPILER_OPTIONS
   );
   const checker = program.getTypeChecker();
-  const findCore = coreFunctionsOf(program, checker);
   return ENTRIES.flatMap((entry) =>
     moduleExports(program, checker, entry).map((exported) =>
-      docsOf(checker, { entry, findCore }, exported)
+      docsOf(checker, entry, exported)
     )
   );
 }

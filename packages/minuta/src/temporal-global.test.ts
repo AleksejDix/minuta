@@ -19,7 +19,7 @@ describe("minuta/temporal reads globalThis.Temporal", () => {
     expect.hasAssertions();
     const before = Object.getOwnPropertyDescriptor(globalThis, "Temporal");
     await import("#src/temporal");
-    const { createUnits } = await import("#src/core");
+    const { createUnits } = await import("#src/index");
     expect(
       Object.getOwnPropertyDescriptor(globalThis, "Temporal")
     ).toStrictEqual(before);
@@ -34,7 +34,7 @@ describe("minuta/temporal reads globalThis.Temporal", () => {
     { timeout: 5000 },
     async () => {
       expect.hasAssertions();
-      const { createUnits } = await import("#src/core");
+      const { createUnits } = await import("#src/index");
       Reflect.deleteProperty(globalThis, "Temporal");
       const units = createUnits();
       expect(() =>
@@ -53,7 +53,7 @@ describe("temporalReady", () => {
     async () => {
       expect.hasAssertions();
       const { temporalReady } = await import("#src/temporal");
-      const { createUnits } = await import("#src/core");
+      const { createUnits } = await import("#src/index");
       Reflect.deleteProperty(globalThis, "Temporal");
       await temporalReady();
       expect("Temporal" in globalThis).toBe(true);

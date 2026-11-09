@@ -21,26 +21,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./core": {
-      "@minuta/source": "./src/core.ts",
-      "types": "./dist/core.d.ts",
-      "import": "./dist/core.js"
-    },
-    "./calendar": {
-      "@minuta/source": "./src/calendar.ts",
-      "types": "./dist/calendar.d.ts",
-      "import": "./dist/calendar.js"
-    },
-    "./intervals": {
-      "@minuta/source": "./src/intervals.ts",
-      "types": "./dist/intervals.d.ts",
-      "import": "./dist/intervals.js"
-    },
-    "./format": {
-      "@minuta/source": "./src/format.ts",
-      "types": "./dist/format.d.ts",
-      "import": "./dist/format.js"
-    },
     "./temporal": {
       "@minuta/source": "./src/temporal.ts",
       "types": "./dist/temporal.d.ts",
@@ -80,38 +60,22 @@
       "limit": "5 kB"
     },
     {
+      "name": "minuta: monthGrid",
+      "path": "dist/index.js",
+      "import": "{ monthGrid }",
+      "limit": "5 kB"
+    },
+    {
+      "name": "minuta: withUnits + createUnits",
+      "path": "dist/index.js",
+      "import": "{ withUnits, createUnits }",
+      "limit": "10 kB"
+    },
+    {
       "name": "minuta: everything",
       "path": "dist/index.js",
       "import": "*",
-      "limit": "5 kB"
-    },
-    {
-      "name": "minuta/core: periodWith + nextWith with two units",
-      "import": {
-        "dist/core.js": "{ createUnits, periodWith, nextWith }"
-      },
-      "limit": "5 kB"
-    },
-    {
-      "name": "minuta/calendar: monthGrid via calendar(units)",
-      "import": {
-        "dist/core.js": "{ createUnits }",
-        "dist/calendar.js": "{ calendar }"
-      },
-      "limit": "5 kB"
-    },
-    {
-      "name": "minuta/intervals: merge + snap",
-      "import": {
-        "dist/intervals.js": "{ mergeWith, snapWith }"
-      },
-      "limit": "5 kB"
-    },
-    {
-      "name": "minuta/format",
-      "path": "dist/format.js",
-      "import": "*",
-      "limit": "5 kB"
+      "limit": "10 kB"
     },
     {
       "name": "minuta/temporal: temporalReady",

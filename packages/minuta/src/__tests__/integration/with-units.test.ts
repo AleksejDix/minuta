@@ -1,10 +1,9 @@
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { DatePeriod } from "#src/types";
-import type { MonthGrid } from "#src/calendar";
-import { calendar } from "#src/calendar";
+import type { MonthGrid } from "#src/index";
 import { createUnits } from "#src/create-units";
-import { withUnits } from "#src/core";
+import { withUnits } from "#src/index";
 
 const SUNDAY = 0;
 const SEVEN = 7;
@@ -33,10 +32,10 @@ describe("withUnits()", () => {
   );
 });
 
-describe("calendar()", () => {
+describe("withUnits(): calendar functions", () => {
   it("binds the calendar functions to the units", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const grids = calendar(units);
+    const grids = withUnits(units);
     const grid = grids.monthGrid(date("2026-03-15"));
     expectTypeOf(grids.monthGrid).returns.toEqualTypeOf<MonthGrid>();
     // The grid follows the units' Sunday week start

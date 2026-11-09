@@ -2,8 +2,8 @@ import type { DatePeriod, DateUnit, TimePeriod } from "#src/types";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
+import { countWith } from "./count";
 import { createUnits } from "#src/create-units";
-import { durationWith } from "./duration";
 
 const units = createUnits({ timeZone: "Europe/Zurich" });
 
@@ -30,7 +30,7 @@ function zurich(from: string, to: string): TimePeriod {
   return range(zoned(`${from}[Europe/Zurich]`), zoned(`${to}[Europe/Zurich]`));
 }
 
-describe("durationWith(): calendar units", () => {
+describe("countWith(): calendar units", () => {
   it.each([
     { count: TWELVE, of: "year", unit: "month" },
     { count: FIFTY_TWO, of: "year", unit: "week" },
@@ -43,7 +43,7 @@ describe("durationWith(): calendar units", () => {
     { timeout: 5000 },
     ({ count, of, unit }) => {
       expect.hasAssertions();
-      expect(durationWith(units, periodOf("2026-03-18", of), unit)).toBe(count);
+      expect(countWith(units, periodOf("2026-03-18", of), unit)).toBe(count);
     }
   );
 
@@ -52,7 +52,7 @@ describe("durationWith(): calendar units", () => {
     { timeout: 5000 },
     (unit) => {
       expect.hasAssertions();
-      expect(durationWith(units, periodOf("2026-03-18", unit), unit)).toBe(ONE);
+      expect(countWith(units, periodOf("2026-03-18", unit), unit)).toBe(ONE);
     }
   );
 
@@ -64,7 +64,7 @@ describe("durationWith(): calendar units", () => {
     { timeout: 5000 },
     ({ days, month }) => {
       expect.hasAssertions();
-      expect(durationWith(units, periodOf(month, "month"), "day")).toBe(days);
+      expect(countWith(units, periodOf(month, "month"), "day")).toBe(days);
     }
   );
 
@@ -76,29 +76,25 @@ describe("durationWith(): calendar units", () => {
     { timeout: 5000 },
     ({ days, year }) => {
       expect.hasAssertions();
-      expect(durationWith(units, periodOf(year, "year"), "day")).toBe(days);
+      expect(countWith(units, periodOf(year, "year"), "day")).toBe(days);
     }
   );
 });
 
-describe("durationWith(): partial, empty and zoned periods", () => {
+describe("countWith(): partial, empty and zoned periods", () => {
   it("counts only complete units", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const twoMonths = range(date("2026-03-01"), date("2026-04-30"));
-    expect(durationWith(units, twoMonths, "month")).toBe(ONE);
+    expect(countWith(units, twoMonths, "month")).toBe(ONE);
     expect(
-      durationWith(
-        units,
-        zurich("2026-03-18T10:00", "2026-03-18T12:59"),
-        "hour"
-      )
+      countWith(units, zurich("2026-03-18T10:00", "2026-03-18T12:59"), "hour")
     ).toBe(TWO);
   });
 
   it("returns 0 for an empty period", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const empty = range(date("2026-03-18"), date("2026-03-18"));
-    expect(durationWith(units, empty, "day")).toBe(ZERO);
+    expect(countWith(units, empty, "day")).toBe(ZERO);
   });
 
   it.each([
@@ -113,7 +109,7 @@ describe("durationWith(): partial, empty and zoned periods", () => {
       expect.hasAssertions();
       const inZone = createUnits({ timeZone: zone });
       const period = periodWith(inZone, date(day), "day");
-      expect(durationWith(inZone, period, "hour")).toBe(hours);
+      expect(countWith(inZone, period, "hour")).toBe(hours);
     }
   );
 
@@ -126,7 +122,7 @@ describe("durationWith(): partial, empty and zoned periods", () => {
         zoned("2026-03-18T10:00[Asia/Tokyo]"),
         zoned("2026-03-20T09:00[Asia/Tokyo]")
       );
-      expect(durationWith(units, span, "day")).toBe(ONE);
+      expect(countWith(units, span, "day")).toBe(ONE);
     }
   );
 });

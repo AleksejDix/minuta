@@ -7,7 +7,7 @@ const EQUAL = 0;
 /**
  * Whether two periods fall into the same `unit`, compared by their starts:
  * the same calendar unit for date units, the same moment's unit for time
- * units. With `"custom"`, both edges must be identical.
+ * units. For identical periods, use `equals`.
  *
  * @example
  * sameWith(units, mondayPeriod, fridayPeriod, "week") // true
@@ -23,14 +23,8 @@ function sameWith(
   units: Units,
   first: Period,
   second: Period,
-  unit: Unit | "custom"
+  unit: Unit
 ): boolean {
-  if (unit === "custom") {
-    return (
-      first.start.toString() === second.start.toString() &&
-      first.end.toString() === second.end.toString()
-    );
-  }
   const spec = specFor(units, unit);
   const timeZone = timeZoneOf(units);
   if (spec.kind === "date") {

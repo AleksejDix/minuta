@@ -1,11 +1,15 @@
-import { createUnits, withUnits } from "#src/core";
+import {
+  count,
+  createUnits,
+  divide,
+  period,
+  range,
+  toLocaleString,
+  withUnits,
+} from "#src/index";
 import { describe, expect, it } from "vitest";
-import { divide, duration, period } from "#src/index";
-import { formatPeriod, formatRange } from "#src/format";
 import type { DatePeriod } from "#src/types";
 import { getTemporal } from "#src/temporal-api";
-import { monthGridWith } from "#src/calendar";
-import { snapWith } from "#src/intervals";
 
 const LEAP_YEAR = 5784;
 const COMMON_YEAR = 5785;
@@ -53,9 +57,9 @@ describe("periods in the date's own calendar", () => {
     const adarI = hebrewMonth(LEAP_YEAR, "M05L");
     const nextYear = hebrewMonth(COMMON_YEAR, "M01");
     expect(adarI.start.calendarId).toBe("hebrew");
-    expect(duration(adarI, "day")).toBe(LONG_MONTH);
-    expect(duration(period(adarI.start, "year"), "month")).toBe(THIRTEEN);
-    expect(duration(period(nextYear.start, "year"), "month")).toBe(TWELVE);
+    expect(count(adarI, "day")).toBe(LONG_MONTH);
+    expect(count(period(adarI.start, "year"), "month")).toBe(THIRTEEN);
+    expect(count(period(nextYear.start, "year"), "month")).toBe(TWELVE);
   });
 
   it(
@@ -83,7 +87,11 @@ describe("periods in the date's own calendar", () => {
       const june = getTemporal().PlainDate.from("2019-06-01");
       const year2019 = period(june.withCalendar("japanese"), "year");
       expect(isoText(year2019)).toBe("2019-01-01/2020-01-01");
-      expect(formatRange(year2019, "ja-JP")).toBe("平成31年～令和元年");
+      expect(
+        toLocaleString(range(year2019.start, year2019.end), "ja-JP", {
+          year: "numeric",
+        })
+      ).toBe("平成31年～令和元年");
     }
   );
 });
@@ -99,7 +107,7 @@ describe("createUnits({ calendar }): Hijri", () => {
   it("divides a year into its 12 lunar months", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const months = hijri.divide(hijri.period(today, "year"), "month");
-    const lengths = months.map((month) => duration(month, "day"));
+    const lengths = months.map((month) => count(month, "day"));
     expect(months).toHaveLength(TWELVE);
     expect(Math.min(...lengths)).toBe(SHORT_MONTH);
     expect(Math.max(...lengths)).toBe(LONG_MONTH);
@@ -111,7 +119,7 @@ describe("createUnits({ calendar }): Hijri", () => {
       calendar: "islamic-umalqura",
       weekStartsOn: "saturday",
     });
-    const grid = monthGridWith(units, today);
+    const grid = withUnits(units).monthGrid(today);
     expect(grid.periods).toHaveLength(GRID_DAYS);
     expect(grid.periods.map((day) => day.start.dayOfWeek).at(FIRST)).toBe(
       SATURDAY
@@ -129,12 +137,13 @@ describe("createUnits({ calendar }): Persian and Hebrew", () => {
     );
   });
 
-  it("snaps to the calendar's units", { timeout: 5000 }, () => {
+  it("rounds to the calendar's units", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const units = createUnits({ calendar: "hebrew" });
-    const snapped = snapWith(units, today, "year", {
-      mode: "floor",
-      step: TWO,
+    const hebrew = withUnits(createUnits({ calendar: "hebrew" }));
+    const snapped = hebrew.round(today, {
+      roundingIncrement: TWO,
+      roundingMode: "floor",
+      smallestUnit: "year",
     });
     expect(snapped.calendarId).toBe("hebrew");
     expect(snapped.monthCode).toBe("M01");
@@ -157,8 +166,8 @@ describe("formatting in the period's calendar", () => {
   it("names Hebrew and Hijri months", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const adarI = hebrewMonth(LEAP_YEAR, "M05L");
-    expect(formatPeriod(adarI, "en-US")).toBe("Adar I 5784");
-    expect(formatPeriod(hijri.period(today, "month"), "en-US")).toBe(
+    expect(toLocaleString(adarI, "en-US")).toBe("Adar I 5784");
+    expect(toLocaleString(hijri.period(today, "month"), "en-US")).toBe(
       "Ramadan 1447 AH"
     );
   });
@@ -167,6 +176,6 @@ describe("formatting in the period's calendar", () => {
     expect.hasAssertions();
     const adarI = hebrewMonth(LEAP_YEAR, "M05L");
     const options = { calendar: "gregory", dateStyle: "long" } as const;
-    expect(formatPeriod(adarI, "en-US", options)).toBe("February 10, 2024");
+    expect(toLocaleString(adarI, "en-US", options)).toBe("February 10, 2024");
   });
 });

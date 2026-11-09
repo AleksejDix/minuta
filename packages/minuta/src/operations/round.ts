@@ -6,6 +6,7 @@ import type {
   Units,
   ZonedDateTime,
 } from "#src/types";
+import type { RoundTo, RoundingMode } from "./round-options";
 import {
   assertPositiveInteger,
   nextStart,
@@ -13,23 +14,13 @@ import {
   timeSpecFor,
 } from "#src/units";
 import { compare, isPlainDate } from "#src/values";
+import { requestOf, roundsDown, roundsUp, tiesDown } from "./round-options";
 import { getTemporal } from "#src/temporal-api";
 
 const DEFAULT_STEP = 1;
 const EQUAL = 0;
 
-/** How `snap` / `snapWith` picks the boundary. */
-type SnapMode = "ceil" | "floor" | "nearest";
-
-/**
- * Options for `snap` / `snapWith`.
- */
-type SnapOptions = Readonly<{
-  /** `"floor"`, `"ceil"` or `"nearest"` (ties round up). Default: `"nearest"`. */
-  mode?: SnapMode | undefined;
-  /** How many units lie between boundaries. Default: 1. */
-  step?: number | undefined;
-}>;
+const EVEN = 2;
 
 // Steps count from the start of the enclosing unit, so they follow the clock
 const ENCLOSING: Readonly<Partial<Record<string, Unit>>> = {
@@ -58,13 +49,13 @@ type Line<Kind extends Value> = Readonly<{
   startOf: (value: Kind) => Kind;
 }>;
 
-type Snap<Kind extends Value> = Readonly<{
+type Rounding<Kind extends Value> = Readonly<{
   /** How far one value lies before another, to find the nearest */
   distance: (from: Kind, to: Kind) => bigint;
   /** Where steps count from without an enclosing unit */
   epoch: Kind;
   line: Line<Kind>;
-  mode: SnapMode;
+  mode: RoundingMode;
   /** The enclosing unit's line, or none for weeks and years */
   outer: Line<Kind> | undefined;
   step: number;
@@ -72,7 +63,7 @@ type Snap<Kind extends Value> = Readonly<{
 }>;
 
 type Request<Kind extends Value> = Readonly<{
-  mode: SnapMode;
+  mode: RoundingMode;
   step: number;
   unit: Unit;
   value: Kind;
@@ -105,11 +96,11 @@ function nanosecondsBetween(from: ZonedDateTime, to: ZonedDateTime): bigint {
 }
 
 // Where steps count from: the enclosing unit's start, else the epoch's unit
-function anchorOf<Kind extends Value>(snap: Snap<Kind>): Kind {
-  if (snap.outer === undefined) {
-    return snap.line.startOf(snap.epoch);
+function anchorOf<Kind extends Value>(rounding: Rounding<Kind>): Kind {
+  if (rounding.outer === undefined) {
+    return rounding.line.startOf(rounding.epoch);
   }
-  return snap.outer.startOf(snap.value);
+  return rounding.outer.startOf(rounding.value);
 }
 
 // The bounds, with `next` no later than the end of the enclosing unit
@@ -129,39 +120,63 @@ function capped<Kind extends Value>(
 }
 
 // The boundaries every `step` units from the anchor, capped at the enclosing unit's end
-function steppedBounds<Kind extends Value>(snap: Snap<Kind>): Bounds<Kind> {
-  const { line, step } = snap;
-  const anchor = anchorOf(snap);
-  const first = Math.floor(line.diff(anchor, snap.value) / step) * step;
+function steppedBounds<Kind extends Value>(
+  rounding: Rounding<Kind>
+): Bounds<Kind> {
+  const { line, step } = rounding;
+  const anchor = anchorOf(rounding);
+  const first = Math.floor(line.diff(anchor, rounding.value) / step) * step;
   const floor = line.add(anchor, first);
   const next = line.add(anchor, first + step);
-  return capped(snap.outer, anchor, { floor, next });
+  return capped(rounding.outer, anchor, { floor, next });
 }
 
-function boundsOf<Kind extends Value>(snap: Snap<Kind>): Bounds<Kind> {
-  if (snap.step === DEFAULT_STEP) {
-    const floor = snap.line.startOf(snap.value);
-    return { floor, next: snap.line.next(floor) };
+// The lower boundary on a tie: halfEven takes the even one from the anchor
+function tieGoesDown<Kind extends Value>(
+  rounding: Rounding<Kind>,
+  bounds: Bounds<Kind>
+): boolean {
+  if (rounding.mode === "halfEven") {
+    const { line, step } = rounding;
+    const index = line.diff(anchorOf(rounding), bounds.floor) / step;
+    return Math.abs(index % EVEN) === EQUAL;
   }
-  return steppedBounds(snap);
+  return tiesDown(rounding.mode);
 }
 
-function snapped<Kind extends Value>(snap: Snap<Kind>): Kind {
-  const { mode, value } = snap;
-  const { floor, next } = boundsOf(snap);
-  if (compare(floor, value) === EQUAL) {
-    return value;
+// The nearer boundary, ties by the mode
+function nearer<Kind extends Value>(
+  rounding: Rounding<Kind>,
+  bounds: Bounds<Kind>
+): Kind {
+  const below = rounding.distance(bounds.floor, rounding.value);
+  const above = rounding.distance(rounding.value, bounds.next);
+  if (below < above || (below === above && tieGoesDown(rounding, bounds))) {
+    return bounds.floor;
   }
-  if (mode === "floor") {
-    return floor;
+  return bounds.next;
+}
+
+function boundsOf<Kind extends Value>(rounding: Rounding<Kind>): Bounds<Kind> {
+  if (rounding.step !== DEFAULT_STEP) {
+    return steppedBounds(rounding);
   }
-  if (
-    mode === "ceil" ||
-    snap.distance(floor, value) >= snap.distance(value, next)
-  ) {
-    return next;
+  const floor = rounding.line.startOf(rounding.value);
+  return { floor, next: rounding.line.next(floor) };
+}
+
+function rounded<Kind extends Value>(rounding: Rounding<Kind>): Kind {
+  const bounds = boundsOf(rounding);
+  if (compare(bounds.floor, rounding.value) === EQUAL) {
+    return rounding.value;
   }
-  return floor;
+  if (roundsDown(rounding.mode)) {
+    return bounds.floor;
+  }
+  if (roundsUp(rounding.mode)) {
+    return bounds.next;
+  }
+  return nearer(rounding, bounds);
 }
 
 // The enclosing unit's spec on dates, when there is one
@@ -189,12 +204,12 @@ function outerTimeLine(
   return timeLine(timeSpecFor(units, enclosing));
 }
 
-function snapDate(
+function roundDate(
   units: Units,
   spec: DateSpec,
   request: Request<PlainDate>
 ): PlainDate {
-  return snapped({
+  return rounded({
     distance: daysBetween,
     epoch: getTemporal()
       .PlainDate.from(EPOCH_DATE)
@@ -207,12 +222,12 @@ function snapDate(
   });
 }
 
-function snapMoment(
+function roundMoment(
   units: Units,
   request: Request<ZonedDateTime>
 ): ZonedDateTime {
   const { unit, value } = request;
-  return snapped({
+  return rounded({
     distance: nanosecondsBetween,
     epoch: getTemporal()
       .Instant.from(EPOCH_INSTANT)
@@ -227,34 +242,42 @@ function snapMoment(
 }
 
 /**
- * `snapWith` without its overloads, for the bound `snap` of `intervals`.
+ * Round a date or a moment to a boundary of `roundingIncrement` units: the
+ * unit's start, or every n-th one counted from the start of the enclosing
+ * unit (minutes from the hour, hours from the day, days from the month,
+ * months and quarters from the year; weeks and years from 1970). Temporal's
+ * `round()`, extended to weeks, months, quarters and years. A date rounds to
+ * dates; a moment to moments in its zone, for date units to the start of a
+ * day.
+ *
+ * @example
+ * roundWith(units, Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), { smallestUnit: "minute", roundingIncrement: 15 }); // 10:30
+ * roundWith(units, Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), { smallestUnit: "day", roundingMode: "ceil" }); // Mar 16 00:00
+ * roundWith(units, Temporal.PlainDate.from("2026-03-18"), { smallestUnit: "week", roundingMode: "floor" }); // 2026-03-16
  *
  * @param units - Available unit specs
- * @param value - The date or moment to snap
- * @param unit - The unit whose boundaries to snap to
- * @param options - `step` (units between boundaries) and `mode`
- * @returns The boundary, of the value's kind
+ * @param value - The date or moment to round
+ * @param roundTo - The unit, or `smallestUnit`, `roundingIncrement` and `roundingMode`
+ * @returns The boundary, of the value's kind; `value` itself when it is one
+ * @throws {TypeError} For a date and a time unit: dates round to date units
  */
-// oxlint-disable-next-line eslint/max-params -- Context-first core signature: (units, value, unit, options)
-function snapAny(
+function roundWith(
   units: Units,
   value: PlainDate | ZonedDateTime,
-  unit: Unit,
-  options: SnapOptions = {}
+  roundTo: RoundTo
 ): PlainDate | ZonedDateTime {
-  const { mode = "nearest", step = DEFAULT_STEP } = options;
-  assertPositiveInteger(step, "snapWith() step");
+  const { mode, step, unit } = requestOf(roundTo);
+  assertPositiveInteger(step, "round() roundingIncrement");
   if (!isPlainDate(value)) {
-    return snapMoment(units, { mode, step, unit, value });
+    return roundMoment(units, { mode, step, unit, value });
   }
   const spec: DateSpec | TimeSpec = specFor(units, unit);
   if (spec.kind === "time") {
     throw new TypeError(
-      `A date snaps to date units, not to "${unit}": snap a ZonedDateTime instead.`
+      `A date rounds to date units, not to "${unit}": round a ZonedDateTime instead.`
     );
   }
-  return snapDate(units, spec, { mode, step, unit, value });
+  return roundDate(units, spec, { mode, step, unit, value });
 }
 
-export { snapAny };
-export type { SnapMode, SnapOptions };
+export { roundWith };
