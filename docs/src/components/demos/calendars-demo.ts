@@ -2,11 +2,14 @@
  * Calendar systems: a `Date` knows only the Gregorian calendar; minuta's
  * periods follow the calendar you pick, with its months, quarters and labels.
  */
-import type { DatePeriod, PlainDate } from "@aleksejdix/minuta";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import type { DatePeriod, Minuta, PlainDate } from "@aleksejdix/minuta";
+import {
+  createUnits,
+  range,
+  toLocaleString,
+  withUnits,
+} from "@aleksejdix/minuta";
 import { demoRoots, fillList, inputPlainDate, part, plainDate } from "./dom";
-import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
 
 const DAYS_A_WEEK = 7;
 const ONE = 1;
@@ -52,17 +55,13 @@ function header(text: string): HTMLTableCellElement {
 }
 
 // The month grid, numbered in the calendar: day 1 is the calendar's 1st
-function renderGrid(
-  table: HTMLElement,
-  units: ReturnType<typeof createUnits>,
-  date: PlainDate
-): void {
-  const { monthStart, periods } = monthGridWith(units, date);
+function renderGrid(table: HTMLElement, time: Minuta, date: PlainDate): void {
+  const { monthStart, periods } = time.monthGrid(date);
   const head = document.createElement("tr");
   head.replaceChildren(
     ...periods
       .slice(FIRST, DAYS_A_WEEK)
-      .map((day) => header(formatPeriod(day, ENGLISH, { weekday: "short" })))
+      .map((day) => header(toLocaleString(day, ENGLISH, { weekday: "short" })))
   );
   const rows = Array.from(
     { length: periods.length / DAYS_A_WEEK },
@@ -89,7 +88,7 @@ function quarterLines(quarters: readonly DatePeriod[]): string[] {
     const { months } = quarter.start.until(quarter.end, {
       largestUnit: "month",
     });
-    return `${formatRange(quarter, ENGLISH, { month: "long" })} (${String(months)} months)`;
+    return `${toLocaleString(range(quarter.start, quarter.end), ENGLISH, { month: "long", year: "numeric" })} (${String(months)} months)`;
   });
 }
 
@@ -100,21 +99,20 @@ function showLabels(
 ): void {
   const locale = NATIVE.get(calendar) ?? ENGLISH;
   const native = part(root, "native", HTMLElement);
-  part(root, "label", HTMLElement).textContent = formatPeriod(month, ENGLISH);
+  part(root, "label", HTMLElement).textContent = toLocaleString(month, ENGLISH);
   native.lang = locale;
-  native.textContent = ` · ${formatPeriod(month, locale)}`;
+  native.textContent = ` · ${toLocaleString(month, locale)}`;
 }
 
 function showResult(root: HTMLElement, calendar: string): void {
-  const units = createUnits({ calendar });
-  const time = withUnits(units);
+  const time = withUnits(createUnits({ calendar }));
   const date = dateOf(root);
   const month = time.period(date, "month");
   const year = time.period(date, "year");
   showLabels(root, month, calendar);
-  renderGrid(part(root, "grid", HTMLElement), units, date);
+  renderGrid(part(root, "grid", HTMLElement), time, date);
   part(root, "facts", HTMLElement).textContent =
-    `${String(time.duration(month, "day"))} days this month · ${String(year.start.monthsInYear)} months this year`;
+    `${String(time.count(month, "day"))} days this month · ${String(year.start.monthsInYear)} months this year`;
   fillList(
     part(root, "quarters", HTMLElement),
     quarterLines(time.divide(year, "quarter"))
@@ -126,7 +124,7 @@ function showNaive(root: HTMLElement, calendar: string): void {
   const date = dateOf(root);
   const gregorian = withUnits(createUnits()).period(date, "month");
   part(root, "naive", HTMLElement).textContent =
-    `new Date(${String(date.year)}, ${String(date.month - ONE)}, ${String(date.day)}).getMonth()  → ${String(date.month - ONE)} (${formatPeriod(gregorian, ENGLISH)})`;
+    `new Date(${String(date.year)}, ${String(date.month - ONE)}, ${String(date.day)}).getMonth()  → ${String(date.month - ONE)} (${toLocaleString(gregorian, ENGLISH)})`;
   part(root, "code", HTMLElement).textContent =
     `withUnits(createUnits({ calendar: "${calendar}" })).period(date, "month")`;
 }

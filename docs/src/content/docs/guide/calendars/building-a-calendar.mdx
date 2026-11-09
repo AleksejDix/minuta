@@ -7,20 +7,17 @@ sidebar:
 
 import { plainDate } from "../../../../components/temporal";
 import { Tabs, TabItem } from "@astrojs/starlight/components";
-import { period, shift } from "@aleksejdix/minuta";
-import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits, periodWith } from "@aleksejdix/minuta/core";
+import { createUnits, period, shift, withUnits } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 
 export const iso = (day) => day.start.toString();
-export const fridaySaturday = createUnits({
-  weekStartsOn: "sunday",
-  weekend: ["friday", "saturday"],
-});
-export const sundayFirst = createUnits({ weekStartsOn: "sunday" });
+export const fridaySaturday = withUnits(
+  createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] })
+);
+export const sundayFirst = withUnits(createUnits({ weekStartsOn: "sunday" }));
 export const focused = period(plainDate("2026-03-18"), "day");
-export const focusedWeek = periodWith(sundayFirst, focused.start, "week");
+export const focusedWeek = sundayFirst.period(focused.start, "week");
 
 This page builds a month calendar in six steps. The first three use plain
 JavaScript and a few lines of HTML, so you see where every day comes from.
@@ -42,18 +39,13 @@ only shows how to use them.
 
 A month view needs more days than the month has: the first row starts in the
 previous month and the last rows end in the next one.
-[`monthGridWith`](../../../api/minuta-calendar/month-grid-with/) gives you
-exactly those days. It takes the units (here `createUnits()`) and any date
-in the month you want:
+[`monthGrid`](../../../api/minuta/month-grid/) gives you exactly those
+days. It takes any date in the month you want:
 
 ```ts
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { monthGrid } from "@aleksejdix/minuta";
 
-const grid = monthGridWith(
-  createUnits(),
-  Temporal.PlainDate.from("2026-03-15")
-);
+const grid = monthGrid(Temporal.PlainDate.from("2026-03-15"));
 
 grid.periods.length; //   → 42
 grid.periods[0]; //       → { start: 2026-02-23, end: 2026-02-24, unit: "day" }, a Monday
@@ -73,11 +65,9 @@ To show them, cut the list into rows of 7. Start with an empty table:
 ```
 
 ```ts
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { monthGrid } from "@aleksejdix/minuta";
 
-const units = createUnits();
-const grid = monthGridWith(units, Temporal.PlainDate.from("2026-03-15"));
+const grid = monthGrid(Temporal.PlainDate.from("2026-03-15"));
 
 // Cut the 42 days into 6 weeks of 7
 const weeks = [];
@@ -109,19 +99,20 @@ days of March from the grey days around it.
 
 - The names come from the first row. Its 7 days are in the order of the
   grid, so format each one with
-  [`formatPeriod`](../../../api/minuta-format/format-period/). You never
+  [`toLocaleString`](../../../api/minuta/to-locale-string/). You never
   write a list of names that could fall out of step with the week start.
 - A day is outside the month when the month does not
   [`contain`](../../../api/minuta/contains/) it.
 
 ```ts
-import { contains, period } from "@aleksejdix/minuta";
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import {
+  contains,
+  monthGrid,
+  period,
+  toLocaleString,
+} from "@aleksejdix/minuta";
 
-const units = createUnits();
-const grid = monthGridWith(units, Temporal.PlainDate.from("2026-03-15"));
+const grid = monthGrid(Temporal.PlainDate.from("2026-03-15"));
 const month = period(grid.monthStart, "month");
 const weekday = { weekday: "short" };
 
@@ -132,7 +123,7 @@ for (let i = 0; i < grid.periods.length; i += 7) {
 
 // The first week gives the weekday names, in the order of the grid
 const names = weeks[0].map(
-  (day) => `<th>${formatPeriod(day, "en-US", weekday)}</th>`
+  (day) => `<th>${toLocaleString(day, "en-US", weekday)}</th>`
 );
 
 const rows = weeks.map((week) => {
@@ -164,13 +155,15 @@ matches March of other years; `contains` compares the whole month. Days are
 ## 2. Week start and weekend
 
 The week starts on Monday unless you say otherwise. Both the week start and
-the weekend are settings of the units, so you change them in one place:
+the weekend are settings of the units, so you change them in one place, and
+[`withUnits`](../../../api/minuta/with-units/) binds every function to them:
 
 ```ts
-const units = createUnits({
-  weekStartsOn: "sunday",
-  weekend: ["friday", "saturday"],
-});
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+const time = withUnits(
+  createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] })
+);
 ```
 
 The grid follows the week start on its own. March 2026 starts on a Sunday,
@@ -179,20 +172,22 @@ so the first row is now Mar 1–7 and the last day is Sat Apr 11:
 <MonthGrid month="2026-03" weekStartsOn="sunday" />
 
 The weekend does not change the grid. Mark weekend days yourself with
-[`isWeekendWith`](../../../api/minuta-calendar/is-weekend-with/). Here is the
-code from step 1 with the new units and a `weekend` class:
+[`isWeekend`](../../../api/minuta/is-weekend/). Here is the code from step 1
+with the bound functions and a `weekend` class:
 
 ```ts
-import { contains, period } from "@aleksejdix/minuta";
-import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import {
+  contains,
+  createUnits,
+  period,
+  toLocaleString,
+  withUnits,
+} from "@aleksejdix/minuta";
 
-const units = createUnits({
-  weekStartsOn: "sunday",
-  weekend: ["friday", "saturday"],
-});
-const grid = monthGridWith(units, Temporal.PlainDate.from("2026-03-15"));
+const time = withUnits(
+  createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] })
+);
+const grid = time.monthGrid(Temporal.PlainDate.from("2026-03-15"));
 const month = period(grid.monthStart, "month");
 const weekday = { weekday: "short" };
 
@@ -202,14 +197,14 @@ for (let i = 0; i < grid.periods.length; i += 7) {
 }
 
 const names = weeks[0].map(
-  (day) => `<th>${formatPeriod(day, "en-US", weekday)}</th>`
+  (day) => `<th>${toLocaleString(day, "en-US", weekday)}</th>`
 );
 
 const rows = weeks.map((week) => {
   const cells = week.map((day) => {
     const classes = [];
     if (!contains(month, day)) classes.push("outside");
-    if (isWeekendWith(units, day)) classes.push("weekend");
+    if (time.isWeekend(day)) classes.push("weekend");
     return `<td class="${classes.join(" ")}">${day.start.day}</td>`;
   });
   return `<tr>${cells.join("")}</tr>`;
@@ -225,14 +220,15 @@ The header row now reads `Sun Mon Tue Wed Thu Fri Sat`, and the Friday and
 Saturday columns have the class `weekend`.
 
 The dots mark the cells that get the class `weekend`: every day of the grid
-for which `isWeekendWith(units, day)` is `true` with these units. (The
+for which `time.isWeekend(day)` is `true` with these units. (The
 shaded columns in these pictures are always Saturday and Sunday.)
 
 <MonthGrid
   month="2026-03"
   weekStartsOn="sunday"
-  marks={monthGridWith(fridaySaturday, plainDate("2026-03-15"))
-    .periods.filter((day) => isWeekendWith(fridaySaturday, day))
+  marks={fridaySaturday
+    .monthGrid(plainDate("2026-03-15"))
+    .periods.filter((day) => fridaySaturday.isWeekend(day))
     .map(iso)}
 />
 
@@ -272,20 +268,25 @@ and the grid for it:
 ```
 
 ```ts
-import { contains, next, period, previous } from "@aleksejdix/minuta";
-import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
-import { formatPeriod } from "@aleksejdix/minuta/format";
-import { createUnits } from "@aleksejdix/minuta/core";
+import {
+  contains,
+  createUnits,
+  next,
+  period,
+  previous,
+  toLocaleString,
+  withUnits,
+} from "@aleksejdix/minuta";
 
 const locale = "en-US";
-const units = createUnits({ weekStartsOn: "sunday" });
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 const weekday = { weekday: "short" };
 
 // The month on screen: the only state of the calendar
 let month = period(Temporal.PlainDate.from("2026-03-15"), "month");
 
 function render() {
-  const grid = monthGridWith(units, month.start);
+  const grid = time.monthGrid(month.start);
 
   const weeks = [];
   for (let i = 0; i < grid.periods.length; i += 7) {
@@ -293,19 +294,19 @@ function render() {
   }
 
   const names = weeks[0].map(
-    (day) => `<th>${formatPeriod(day, locale, weekday)}</th>`
+    (day) => `<th>${toLocaleString(day, locale, weekday)}</th>`
   );
   const rows = weeks.map((week) => {
     const cells = week.map((day) => {
       const classes = [];
       if (!contains(month, day)) classes.push("outside");
-      if (isWeekendWith(units, day)) classes.push("weekend");
+      if (time.isWeekend(day)) classes.push("weekend");
       return `<td class="${classes.join(" ")}">${day.start.day}</td>`;
     });
     return `<tr>${cells.join("")}</tr>`;
   });
 
-  document.querySelector("#label").textContent = formatPeriod(month, locale);
+  document.querySelector("#label").textContent = toLocaleString(month, locale);
   document.querySelector("#grid").innerHTML = `
     <thead><tr>${names.join("")}</tr></thead>
     <tbody>${rows.join("")}</tbody>
@@ -327,7 +328,7 @@ render();
 The label reads "March 2026". One click on "Next →" shows "April 2026",
 whose grid starts on Sun Mar 29. The table always has 6 rows, so the page
 never jumps when the user pages through months.
-[`formatPeriod`](../../../api/minuta-format/format-period/) writes the label in
+[`toLocaleString`](../../../api/minuta/to-locale-string/) writes the label in
 any locale: `"de-CH"` gives "März 2026".
 
 This is the table after that click: April 2026, still 6 rows, from Sun
@@ -336,11 +337,10 @@ Mar 29 to Sat May 9.
 <MonthGrid month="2026-04" weekStartsOn="sunday" />
 
 :::tip
-`period`, `next` and `previous` from `@aleksejdix/minuta` use `createUnits()`,
-with Monday weeks. With another week start or a time zone, bind your units once with
-[`withUnits`](../../../api/minuta-core/with-units/) and
-[`calendar`](../../../api/minuta-calendar/calendar/), and call
-`time.next(month)`, `grids.monthGrid(date)` and so on.
+The functions of `@aleksejdix/minuta` use `createUnits()`, with Monday weeks.
+`withUnits(units)` returns every function bound to your units, with the same
+names: `time.monthGrid(date)`, `time.next(month)` and so on. A month has no
+week start, so `next` and `previous` of a month are the same either way.
 :::
 
 This is a working calendar, but it is not a date picker yet. Selecting a day,
@@ -356,7 +356,7 @@ lot more work. That is what the components do.
   everything below it shares one state.
 - **`CalendarHeader`** shows the month name between "← Previous" and
   "Next →".
-- **`CalendarGrid`** renders the 42 days of `monthGridWith`, with the
+- **`CalendarGrid`** renders the 42 days of `monthGrid`, with the
   weekday names on top.
 
 <div class="anatomy-figure not-content">
@@ -372,7 +372,7 @@ lot more work. That is what the components do.
           },
           {
             name: "<CalendarGrid>",
-            note: "the 42 days of monthGridWith as a table",
+            note: "the 42 days of monthGrid as a table",
             children: [
               {
                 name: "<CalendarDay> × 42",
@@ -419,7 +419,7 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-react/components";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 // Create the units once, outside the component
 const units = createUnits({ weekStartsOn: "sunday" });
@@ -459,7 +459,7 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-vue/components";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import "@aleksejdix/minuta-vue/style.css";
 
 const units = createUnits({ weekStartsOn: "sunday" });
@@ -576,10 +576,10 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-react/components";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const units = createUnits({ weekStartsOn: "sunday" });
+const time = withUnits(units);
 
 export function WeekendCalendar() {
   return (
@@ -587,7 +587,7 @@ export function WeekendCalendar() {
       <CalendarHeader />
       <CalendarGrid>
         {(day) => (
-          <span className={isWeekendWith(units, day) ? "weekend" : undefined}>
+          <span className={time.isWeekend(day) ? "weekend" : undefined}>
             <CalendarDay day={day} />
           </span>
         )}
@@ -764,7 +764,7 @@ render a `CalendarDay` inside, or the arrow keys do nothing.
 :::
 
 The plain calendar from step 3 has none of this. If you build your own
-calendar on `monthGridWith`, the keyboard and the ARIA attributes are yours
+calendar on `monthGrid`, the keyboard and the ARIA attributes are yours
 to write; the components are a good template to copy from.
 
 ## Next
@@ -773,9 +773,10 @@ to write; the components are a good template to copy from.
   typed partner of the calendar.
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start,
   weekend and grids explained.
-- [`monthGridWith`](../../../api/minuta-calendar/month-grid-with/) and
-  [`isWeekendWith`](../../../api/minuta-calendar/is-weekend-with/) — the
-  functions of steps 1 to 3.
+- [`monthGrid`](../../../api/minuta/month-grid/),
+  [`isWeekend`](../../../api/minuta/is-weekend/) and
+  [`withUnits`](../../../api/minuta/with-units/) — the functions of steps 1
+  to 3.
 - React: [`CalendarRoot`](../../../api/minuta-react/calendar-root/),
   [`CalendarGrid`](../../../api/minuta-react/calendar-grid/),
   [`CalendarDay`](../../../api/minuta-react/calendar-day/).

@@ -47,7 +47,7 @@ Every moment sits inside a period of every unit — here, Monday Oct 12 2026 at
 
 Every operation works on periods. You split them (`divide`), step through them
 (`next`, `previous`, `shift`), compare them (`same`, `contains`, `overlaps`)
-and count them (`duration`). The rest — calendars, intervals, formatting,
+and count them (`count`). The rest — calendars, intervals, formatting,
 date fields — builds on that one idea.
 
 Read [Periods and units](../concepts/periods-and-units/) for the full picture.
@@ -78,10 +78,9 @@ Read [Periods and units](../concepts/periods-and-units/) for the full picture.
 | Parse dates people type or paste, in any language | `fechita`                                           |
 | Build a segmented date input                      | `datefield` + `input-dom` (+ `fechita` for pasting) |
 
-`minuta` itself has several entry points — `minuta`, `@aleksejdix/minuta/core`,
-`@aleksejdix/minuta/calendar`, `@aleksejdix/minuta/intervals`, `@aleksejdix/minuta/format` and
-`@aleksejdix/minuta/temporal` — so you only load what you use. [Installation](../installation/) shows
-the details.
+`minuta` has one entry with every function, `@aleksejdix/minuta`, and
+`@aleksejdix/minuta/temporal` for the polyfill. Your bundler keeps only the
+functions you import. [Installation](../installation/) shows the details.
 
 ## Next
 

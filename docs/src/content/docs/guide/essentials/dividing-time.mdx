@@ -71,7 +71,7 @@ divide(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour").length; // 
 
 :::tip
 To only count the pieces, not make them, use
-[`duration`](../../../api/minuta/duration/): `duration(march, "day")` is `31`.
+[`count`](../../../api/minuta/count/): `count(march, "day")` is `31`.
 See [Comparing and measuring](../comparing-and-measuring/).
 :::
 
@@ -265,7 +265,7 @@ long before that: by default it throws once it would make more than
 
 ```ts
 divide(period(Temporal.PlainDate.from("2026-01-01"), "year"), "second");
-// RangeError: TOO_MANY_PERIODS: divideWith() generated over 100000 periods. …
+// RangeError: TOO_MANY_PERIODS: divide() generated over 100000 periods. …
 ```
 
 Set your own limit with `maxPeriods`, lower to protect a screen, or higher
@@ -275,7 +275,7 @@ when you really need more:
 divide(period(Temporal.PlainDate.from("2026-01-01"), "year"), "minute", {
   maxPeriods: 1000,
 });
-// RangeError: TOO_MANY_PERIODS: divideWith() generated over 1000 periods. …
+// RangeError: TOO_MANY_PERIODS: divide() generated over 1000 periods. …
 ```
 
 `step` and `maxPeriods` must be positive whole numbers. `{ step: 0 }` or
@@ -286,17 +286,13 @@ divide(period(Temporal.PlainDate.from("2026-01-01"), "year"), "minute", {
 A month view in a calendar is a grid: always six rows of seven days, starting
 on the first day of the week, with the days of the months around it filled
 in. You could build it with `divide`, but
-[`@aleksejdix/minuta/calendar`](../../../api/minuta-calendar/overview/) does it for you,
-and follows your week start:
+[`monthGrid`](../../../api/minuta/month-grid/) does it for you, and follows
+your week start:
 
 ```ts
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { monthGrid } from "@aleksejdix/minuta";
 
-const grid = monthGridWith(
-  createUnits(),
-  Temporal.PlainDate.from("2026-03-18")
-);
+const grid = monthGrid(Temporal.PlainDate.from("2026-03-18"));
 
 grid.periods.length; // → 42
 grid.periods[0]; //     → { start: 2026-02-23, end: 2026-02-24, unit: "day" }, a Monday
@@ -312,5 +308,5 @@ week start and weekends.
   these overlap, how long is it?
 - Reference: [`divide`](../../../api/minuta/divide/),
   [`range`](../../../api/minuta/range/),
-  [`duration`](../../../api/minuta/duration/),
-  [`monthGridWith`](../../../api/minuta-calendar/month-grid-with/).
+  [`count`](../../../api/minuta/count/),
+  [`monthGrid`](../../../api/minuta/month-grid/).

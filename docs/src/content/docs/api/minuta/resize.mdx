@@ -4,8 +4,7 @@ description: Move the start or the end of a period and keep the other edge — e
 ---
 
 import { zonedDateTime } from "../../../../components/temporal";
-import { range } from "@aleksejdix/minuta";
-import { resize } from "@aleksejdix/minuta/intervals";
+import { range, resize } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const meeting = range(
@@ -17,7 +16,7 @@ Move the start or the end of a period while the other edge stays where it
 is. Use it to make a meeting longer or to start a booking earlier.
 
 ```ts
-import { resize } from "@aleksejdix/minuta/intervals";
+import { resize } from "@aleksejdix/minuta";
 ```
 
 ```ts
@@ -27,8 +26,7 @@ resize(period, edge, value);
 ## Example
 
 ```ts
-import { resize } from "@aleksejdix/minuta/intervals";
-import { range } from "@aleksejdix/minuta";
+import { range, resize } from "@aleksejdix/minuta";
 
 const meeting = range(
   Temporal.ZonedDateTime.from("2026-03-29T09:00[Europe/Zurich]"),
@@ -162,5 +160,4 @@ as a `ZonedDateTime` for a date period.
 
 - [`move`](../move/) — move the whole period and keep its length.
 - [`clamp`](../clamp/) — cut a period to fit into bounds.
-- [`snapWith`](../snap-with/) — round the new edge to a neat time first.
-- [`intervals`](../intervals/) — use it as `edit.resize(period, edge, value)` with `intervals(units)`.
+- [`round`](../round/) — round the new edge to a neat time first.

@@ -83,7 +83,7 @@ All options are optional. You can call `useMinuta()` with nothing.
 | `units` | The units every function uses. The week start lives here.                                                 | `createUnits()`, Monday weeks |
 
 ```js
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 const sundayFirst = createUnits({ weekStartsOn: "sunday" });
 
@@ -105,13 +105,16 @@ An object with the state and every bound function.
 | `previous` | `previous(period)` — the period right before it, same unit.                                    |
 | `shift`    | `shift(period, steps)` — move a period by whole units, back with a negative number.            |
 | `divide`   | `divide(period, unit)` — split a period into smaller ones. See [divide](../../minuta/divide/). |
-| `duration` | `duration(period, unit)` — how many whole units fit into a period.                             |
+| `count`    | `count(period, unit)` — how many whole units fit into a period.                                |
 | `contains` | `contains(period, target)` — whether a date, moment or period lies fully inside the period.    |
 | `same`     | `same(a, b, unit)` — whether two periods fall into the same `unit`.                            |
 | `overlaps` | `overlaps(a, b)` — whether two periods share any time.                                         |
 | `range`    | `range(start, end)` — a custom period between two dates or two moments.                        |
 
-These are the same functions as in the core, without the units argument.
+These are the functions of [`withUnits(units)`](../../minuta/with-units/), with the
+same names as the main entry. The table lists the common ones; `round`,
+`merge`, `equals`, `compare`, `monthGrid`, `isWeekend`, `toLocaleString` and
+the rest are there too.
 
 `browse` takes any period, not only one of `unit`. With `unit: "month"`,
 `browse(someDay)` browses the month of that day.

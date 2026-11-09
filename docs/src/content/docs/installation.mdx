@@ -19,15 +19,11 @@ minuta is in beta (`1.0.0-beta`); the date field packages and `fechita` are at
         children: [
           {
             name: "minuta",
-            note: "ready to use: Temporal, weeks from Monday",
+            note: "every function, ready to use: Temporal, weeks from Monday",
           },
           {
-            name: "minuta/core",
-            note: "the same functions with your own units: createUnits, withUnits",
-          },
-          {
-            name: "minuta/calendar · minuta/intervals · minuta/format",
-            note: "grids and weekends · merge, split, snap · labels",
+            name: "createUnits · withUnits",
+            note: "the same functions with your own week, zone or calendar",
           },
           {
             name: "minuta/temporal",
@@ -101,7 +97,7 @@ await temporalReady();
 
 Nothing to install. To turn dates into moments in a zone you choose instead
 of the computer's, pass it to
-[`createUnits`](../api/minuta-core/create-units/):
+[`createUnits`](../api/minuta/create-units/):
 `createUnits({ timeZone: "UTC" })`. See [Units](../concepts/date-engines/)
 and [Time zones](../concepts/time-zones/).
 

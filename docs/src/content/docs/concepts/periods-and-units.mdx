@@ -58,10 +58,10 @@ Units are calendar units, not fixed lengths. A month has 28 to 31 days. A day
 has 24 hours, except on the nights the clocks change, when it has 23 or 25:
 
 ```ts
-import { duration, period } from "@aleksejdix/minuta";
+import { count, period } from "@aleksejdix/minuta";
 
-duration(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // → 28
-duration(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23 in Europe/Zurich
+count(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // → 28
+count(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23 in Europe/Zurich
 ```
 
 [`period`](../../api/minuta/period/) gives you the whole unit that a date

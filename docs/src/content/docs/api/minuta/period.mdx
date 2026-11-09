@@ -98,7 +98,8 @@ For the moment Wed Mar 18 2026, 14:35:20.500 in Europe/Zurich:
 | `"second"`  | 14:35:20         | 14:35:21         |
 
 Weeks start on Monday here (ISO 8601). To start them on Sunday, use
-`withUnits(createUnits({ weekStartsOn: "sunday" }))` from `@aleksejdix/minuta/core`.
+`withUnits(createUnits({ weekStartsOn: "sunday" })).period(date, "week")`,
+see [`withUnits`](../with-units/).
 
 ## Time zones and daylight saving
 
@@ -122,7 +123,7 @@ period(Temporal.Instant.from("2026-03-18T23:35:00Z"), "day");
 
 To compute in a fixed time zone instead, use
 `withUnits(createUnits({ timeZone: "UTC" }))`, or pass `ZonedDateTime`s in
-that zone (see [`createUnits`](../../minuta-core/create-units/)).
+that zone (see [`createUnits`](../create-units/)).
 
 ## There is no `"custom"` unit here
 
@@ -148,4 +149,4 @@ period(Temporal.Now.plainDateISO(), "custom");
 - [`range`](../range/) — a period between any two dates or moments.
 - [`next`](../next/) and [`previous`](../previous/) — the period after or before.
 - [`divide`](../divide/) — split the period into smaller ones.
-- [`periodWith`](../../minuta-core/period-with/) (`@aleksejdix/minuta/core`) — the same, with your own units and week start.
+- [`withUnits`](../with-units/) — the same, with your own week start, time zone or calendar.

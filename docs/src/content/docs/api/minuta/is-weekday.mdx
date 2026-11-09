@@ -1,0 +1,163 @@
+---
+title: isWeekday
+description: Check whether a period lies completely on working days — no Saturday, no Sunday, or no day of the weekend you set.
+---
+
+import { plainDate } from "../../../../components/temporal";
+import {
+  createUnits,
+  divide,
+  isWeekday,
+  period,
+  range,
+  withUnits,
+} from "@aleksejdix/minuta";
+import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(plainDate("2026-03-01"), "month");
+export const days = divide(march, "day");
+export const week = period(plainDate("2026-03-18"), "week");
+export const iso = (day) => day.start.toString();
+export const fridayOff = withUnits(
+  createUnits({ weekend: ["friday", "saturday"] })
+);
+
+Check whether a period lies completely on working days, that is, days that
+are not part of the weekend. The weekend is Saturday and Sunday unless you
+set other days with `withUnits`.
+
+```ts
+import { isWeekday } from "@aleksejdix/minuta";
+```
+
+```ts
+isWeekday(period);
+```
+
+## Example
+
+```ts
+import { divide, isWeekday, period } from "@aleksejdix/minuta";
+
+isWeekday(period(Temporal.PlainDate.from("2026-03-18"), "day")); // → true  (a Wednesday)
+isWeekday(period(Temporal.PlainDate.from("2026-03-21"), "day")); // → false (a Saturday)
+
+// The working days of March 2026
+divide(period(Temporal.PlainDate.from("2026-03-01"), "month"), "day").filter(
+  (day) => isWeekday(day)
+).length;
+// → 22
+```
+
+The dots mark those 22 days: every day of March 2026 for which
+`isWeekday(day)` returns `true`. The shaded weekend days have
+none.
+
+<MonthGrid
+  month="2026-03"
+  marks={days.filter((day) => isWeekday(day)).map(iso)}
+/>
+
+## Parameters
+
+| Name     | What it is                                              |
+| -------- | ------------------------------------------------------- |
+| `period` | The period to check: a day, an hour, a range of days, … |
+
+## Returns
+
+`true` when no day the period touches is a weekend day, otherwise `false`.
+
+## Another weekend
+
+Set the weekend in [`createUnits`](../create-units/), by hand or from a
+locale (`createUnits({ locale: "ar-EG" })`), and take `isWeekday` from
+[`withUnits`](../with-units/). Then Sunday is a working day:
+
+```ts
+import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+
+const time = withUnits(createUnits({ weekend: ["friday", "saturday"] }));
+
+time.isWeekday(period(Temporal.PlainDate.from("2026-03-22"), "day")); // → true  (a Sunday)
+time.isWeekday(period(Temporal.PlainDate.from("2026-03-20"), "day")); // → false (a Friday)
+```
+
+The working days of March 2026 with both settings. With Friday and Saturday
+off, Sundays become working days, and March has 23 of them:
+
+<Timeline
+  caption="Each bar is a day of March 2026 for which isWeekday returns true; the gaps are the weekends."
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: '["saturday", "sunday"]',
+      periods: days.filter((day) => isWeekday(day)),
+      tone: "accent",
+    },
+    {
+      label: '["friday", "saturday"]',
+      periods: days.filter((day) => fridayOff.isWeekday(day)),
+      tone: "accent",
+    },
+  ]}
+/>
+
+minuta knows nothing about public holidays. A holiday on a Tuesday is a
+working day for `isWeekday`.
+
+## Periods longer than a day
+
+Every day the period touches counts, even partly:
+
+```ts
+import { isWeekday, period, range } from "@aleksejdix/minuta";
+
+// Mon Mar 16 – Fri Mar 20 (the end, Sat Mar 21, is excluded)
+isWeekday(
+  range(
+    Temporal.PlainDate.from("2026-03-16"),
+    Temporal.PlainDate.from("2026-03-21")
+  )
+);
+// → true
+
+isWeekday(period(Temporal.PlainDate.from("2026-03-18"), "week")); // → false (has Sat and Sun)
+isWeekday(period(Temporal.PlainDate.from("2026-03-01"), "month")); // → false
+```
+
+<Timeline
+  caption="The week of Mar 16 2026. Monday to Friday stays inside the working days (top row); the whole week also covers the weekend."
+  tracks={[
+    {
+      label: "working days",
+      periods: divide(week, "day").filter((day) => isWeekday(day)),
+      tone: "muted",
+    },
+    {
+      label: "Mon – Fri: true",
+      periods: [range(plainDate("2026-03-16"), plainDate("2026-03-21"))],
+      tone: "accent",
+    },
+    { label: "the week: false", periods: [week] },
+  ]}
+/>
+
+A period with both kinds of days is neither: both `isWeekday` and
+[`isWeekend`](../is-weekend/) return `false`.
+
+A time period's days are read in its own zone, see
+[`isWeekend`](../is-weekend/#time-zones).
+
+## Errors
+
+`isWeekday` does not throw: it needs no unit specs, only the `weekend`
+setting (Saturday and Sunday when the units have none). It does not check
+the period: pass a valid one, e.g. from `period()`.
+
+## Related
+
+- [`isWeekend`](../is-weekend/) — the opposite check: only weekend days.
+- [`divide`](../divide/) — split a month into days to filter them.
+- [Weeks and calendars](../../../concepts/weeks-and-calendars/) — weekend explained.

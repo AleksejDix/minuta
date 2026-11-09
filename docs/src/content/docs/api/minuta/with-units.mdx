@@ -1,0 +1,166 @@
+---
+title: withUnits
+description: Bind every function to one set of units once — your week start, weekend, time zone, calendar or locale — with the same names.
+---
+
+import { plainDate } from "../../../../components/temporal";
+import { createUnits, next, period, withUnits } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = plainDate("2026-03-18");
+export const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
+export const week = time.period(date, "week");
+
+Bind every function to one set of units once, and get them all back with
+the same names. This is how you get weeks from Sunday, a fixed time zone,
+another calendar or the week of a locale, with the same calls as the main
+entry.
+
+```ts
+import { withUnits } from "@aleksejdix/minuta";
+```
+
+```ts
+withUnits(units);
+```
+
+## Example
+
+```ts
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
+
+const week = time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
+
+time.next(week);
+// → { start: 2026-03-22, end: 2026-03-29, unit: "week" }
+```
+
+Do this once, for example in a module of its own, and import `time` wherever
+you need it.
+
+<Timeline
+  caption="The same two calls from the main entry (Monday weeks) and from time, bound to Sunday weeks."
+  marks={[{ date, label: "Mar 18" }]}
+  tracks={[
+    {
+      label: 'period(date, "week")',
+      periods: [period(date, "week")],
+      tone: "ink",
+    },
+    { label: "next(…)", periods: [next(period(date, "week"))], tone: "ink" },
+    { label: 'time.period(date, "week")', periods: [week], tone: "accent" },
+    { label: "time.next(week)", periods: [time.next(week)], tone: "accent" },
+  ]}
+/>
+
+The calls read the same; the bound units shift every week one day earlier.
+
+## Parameters
+
+| Name    | What it is                                                              |
+| ------- | ----------------------------------------------------------------------- |
+| `units` | The units to compute with, usually [`createUnits()`](../create-units/). |
+
+_Units_ are the rules for each unit of time: where a week starts, how to add a
+month, the time zone dates become moments in.
+
+## Returns
+
+An object with every function of `@aleksejdix/minuta`, with the same names
+and the same types, bound to `units`:
+
+| Family    | Functions                                                    |
+| --------- | ------------------------------------------------------------ |
+| Create    | `period`, `range`                                            |
+| Navigate  | `next`, `previous`, `shift`                                  |
+| Compose   | `divide`, `merge`, `split`                                   |
+| Edit      | `clamp`, `gap`, `move`, `resize`                             |
+| Compare   | `contains`, `overlaps`, `same`, `equals`, `compare`          |
+| Measure   | `count`, `round`                                             |
+| Calendars | `monthGrid`, `yearGrid`, `dayGrid`, `isWeekday`, `isWeekend` |
+| Text      | `toLocaleString`                                             |
+
+`time.monthGrid(value)` takes the same arguments as
+[`monthGrid`](../month-grid/). Functions that need no units, such as
+`contains` or `toLocaleString`, are the very same functions.
+
+The object also has `units`: the very units you passed in, so other code can
+reuse them.
+
+```ts
+const units = createUnits();
+withUnits(units).units === units; // → true
+```
+
+The main entry is `withUnits(createUnits())`, as separate functions.
+
+## Your own helpers
+
+The type of the bound object is `Minuta`. Helpers that take it work with any
+units:
+
+```ts
+import type { DatePeriod, Minuta } from "@aleksejdix/minuta";
+import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+
+const workdaysIn = (time: Minuta, month: DatePeriod) =>
+  time.divide(month, "day").filter((day) => time.isWeekday(day));
+
+const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+workdaysIn(withUnits(createUnits({ locale: "de-CH" })), march); // → 22 day periods
+```
+
+## Use the same units for a period
+
+A period is plain data and does not remember which units made it. `next`
+steps from the period's start and then rounds to a whole unit with _its_
+units. A Monday week moved with Sunday units comes out as a Sunday week:
+
+```ts
+import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+
+const mondayWeek = period(Temporal.PlainDate.from("2026-03-18"), "week");
+// → { start: 2026-03-16, end: 2026-03-23, unit: "week" }
+
+withUnits(createUnits({ weekStartsOn: "sunday" })).next(mondayWeek);
+// → { start: 2026-03-22, end: 2026-03-29, unit: "week" }
+```
+
+Make the bound object once, for example in a module of its own, and use it
+for a period from start to finish.
+
+## Pass only the units you need
+
+`units` may contain only some units. Functions then work for those and throw
+for the rest:
+
+```ts
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+const { day, month } = createUnits();
+const time = withUnits({ day, month });
+
+time.period(Temporal.PlainDate.from("2026-03-18"), "month"); // works
+time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+// RangeError: UNIT_NOT_SUPPORTED: no "week" spec in the units passed (available: day, month). …
+```
+
+Taking `{ day, month }` out of `createUnits()` drops its settings
+(`weekStartsOn`, `weekend`, `timeZone`), which the calendar functions read.
+Keep the full set for those.
+
+## Errors
+
+`withUnits` itself does not throw. The bound functions throw the same errors
+as those of the main entry; a unit missing from `units` gives
+`UNIT_NOT_SUPPORTED`.
+
+## Related
+
+- [`createUnits`](../create-units/) — make the units.
+- [`specFor`](../spec-for/) — look up one unit's rules in the units.
+- [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start,
+  weekend and grids explained.

@@ -4,8 +4,7 @@ description: Cut a period down to the part that lies inside some bounds — e.g.
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { period, range } from "@aleksejdix/minuta";
-import { clamp } from "@aleksejdix/minuta/intervals";
+import { clamp, period, range } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const selection = range(
@@ -19,7 +18,7 @@ Cut a period down to the part that lies inside some bounds. Use it to keep a
 selection within the allowed dates, or to find the overlap of two periods.
 
 ```ts
-import { clamp } from "@aleksejdix/minuta/intervals";
+import { clamp } from "@aleksejdix/minuta";
 ```
 
 ```ts
@@ -29,8 +28,7 @@ clamp(period, bounds);
 ## Example
 
 ```ts
-import { clamp } from "@aleksejdix/minuta/intervals";
-import { range } from "@aleksejdix/minuta";
+import { clamp, range } from "@aleksejdix/minuta";
 
 const selection = range(
   Temporal.PlainDate.from("2026-01-05"),
@@ -132,7 +130,7 @@ clamp(march, march);
 // → { start: 2026-03-01, end: 2026-04-01, unit: "custom" }
 ```
 
-If you need the unit back, use `mergeWith(units, [result], "month")`: it
+If you need the unit back, use [`merge([result], "month")`](../merge/): it
 gives the unit `"month"` back when the result is exactly one month.
 
 ## Order matters only for naming
@@ -142,7 +140,6 @@ overlap. The names just say which one you think of as the limit.
 
 ## Related
 
-- [`overlaps`](../../minuta/overlaps/) — only check whether two periods overlap.
+- [`overlaps`](../overlaps/) — only check whether two periods overlap.
 - [`gap`](../gap/) — the time between two periods that do not overlap.
 - [`resize`](../resize/) — move one edge of a period yourself.
-- [`intervals`](../intervals/) — use it as `edit.clamp(period, bounds)` with `intervals(units)`.

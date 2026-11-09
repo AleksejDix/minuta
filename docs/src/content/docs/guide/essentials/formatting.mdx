@@ -1,19 +1,18 @@
 ---
 title: Formatting labels
-description: Turn periods into text with formatPeriod and formatRange — calendar titles, day labels, ranges like "Mar 2 – 8, 2026", in any locale and time zone.
+description: Turn periods into text with toLocaleString — calendar titles, day labels, ranges like "Mar 2 – 8, 2026", in any locale and time zone.
 sidebar:
   order: 5
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { period } from "@aleksejdix/minuta";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { period, toLocaleString } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const moment = zonedDateTime("2026-03-18T14:30[Europe/Zurich]");
 export const labelled = (units) =>
   units.map((unit) => ({
-    label: `${unit}: ${formatPeriod(period(moment, unit), "en-US")}`,
+    label: `${unit}: ${toLocaleString(period(moment, unit), "en-US")}`,
     periods: [period(moment, unit)],
     tone: "accent",
   }));
@@ -25,31 +24,31 @@ export const weeks = [
 
 A period is data. Sooner or later you show it to a person: "March 2026" above
 a calendar, "Wednesday, March 18" on a day view, "Mar 2 – 8, 2026" on a week.
-`@aleksejdix/minuta/format` writes these labels for you, in any language.
+`toLocaleString` writes these labels for you, in any language, like
+Temporal's `toLocaleString()`.
 
 ```ts
-import { formatPeriod, formatRange } from "@aleksejdix/minuta/format";
+import { toLocaleString } from "@aleksejdix/minuta";
 ```
 
-Both functions use the `Intl.DateTimeFormat` built into browsers and Node, so
-minuta ships no language data. They only read `start`, `end` and `unit`, so
-they work with periods from any units.
+It uses the `Intl.DateTimeFormat` built into browsers and Node, so minuta
+ships no language data. It only reads `start`, `end` and `unit`, so it works
+with periods from any units.
 
 All examples run in Europe/Zurich.
 
 ## A title for the calendar header
 
 Pass the period and a locale to
-[`formatPeriod`](../../../api/minuta-format/format-period/):
+[`toLocaleString`](../../../api/minuta/to-locale-string/):
 
 ```ts
-import { next, period } from "@aleksejdix/minuta";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { next, period, toLocaleString } from "@aleksejdix/minuta";
 
 const shown = period(Temporal.PlainDate.from("2026-03-18"), "month");
 
-formatPeriod(shown, "en-US"); //       → "March 2026"
-formatPeriod(next(shown), "en-US"); // → "April 2026"
+toLocaleString(shown, "en-US"); //       → "March 2026"
+toLocaleString(next(shown), "en-US"); // → "April 2026"
 ```
 
 Together with the ‹ › buttons from [Navigating time](../navigating-time/),
@@ -57,7 +56,7 @@ that is a working calendar header: step `shown`, then format it again.
 
 ## The unit picks the format
 
-You don't choose a pattern. `formatPeriod` looks at the period's unit and
+You don't choose a pattern. `toLocaleString` looks at the period's unit and
 shows what makes sense for it. For Wed Mar 18 2026, 14:30, in `"en-US"`:
 
 | Unit      | Label             |
@@ -76,7 +75,7 @@ Here are the periods of that moment, each with its label. First the large
 ones:
 
 <Timeline
-  caption="The year, the quarter and the month that contain Mar 18 2026, labelled by formatPeriod. The quarter is named by its first month."
+  caption="The year, the quarter and the month that contain Mar 18 2026, labelled by toLocaleString. The quarter is named by its first month."
   tracks={labelled(["year", "quarter", "month"])}
 />
 
@@ -89,13 +88,20 @@ Then the small ones, on the scale of one week:
 
 :::caution
 A quarter is labelled by its **first month**: Q2 2026 shows as "Apr 2026",
-not as a quarter. To show all three months, use `formatRange`:
+not as a quarter. To show all three months, format it as a range, with the
+fields you want:
 
 ```ts
+import { period, range, toLocaleString } from "@aleksejdix/minuta";
+
 const q2 = period(Temporal.PlainDate.from("2026-05-01"), "quarter");
 
-formatPeriod(q2, "en-US"); // → "Apr 2026"
-formatRange(q2, "en-US"); //  → "Apr – Jun 2026"
+toLocaleString(q2, "en-US"); // → "Apr 2026"
+toLocaleString(range(q2.start, q2.end), "en-US"); // → "Apr 1 – Jun 30, 2026"
+toLocaleString(range(q2.start, q2.end), "en-US", {
+  month: "short",
+  year: "numeric",
+}); // → "Apr – Jun 2026"
 ```
 
 :::
@@ -109,9 +115,13 @@ defaults, so name every field you want:
 ```ts
 const day = period(Temporal.PlainDate.from("2026-03-18"), "day");
 
-formatPeriod(day, "en-US"); // → "March 18, 2026"
-formatPeriod(day, "en-US", { weekday: "long" }); // → "Wednesday"
-formatPeriod(day, "en-US", { weekday: "long", month: "long", day: "numeric" });
+toLocaleString(day, "en-US"); // → "March 18, 2026"
+toLocaleString(day, "en-US", { weekday: "long" }); // → "Wednesday"
+toLocaleString(day, "en-US", {
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+});
 // → "Wednesday, March 18"
 ```
 
@@ -121,8 +131,8 @@ reader's language:
 ```ts
 const cell = { day: "numeric" } as const;
 
-formatPeriod(day, "en-US", cell); // → "18"
-formatPeriod(day, "ja-JP", cell); // → "18日"
+toLocaleString(day, "en-US", cell); // → "18"
+toLocaleString(day, "ja-JP", cell); // → "18日"
 ```
 
 The same works for the weekday names above the grid:
@@ -130,8 +140,8 @@ The same works for the weekday names above the grid:
 ```ts
 const weekday = { weekday: "short" } as const;
 
-formatPeriod(day, "en-US", weekday); // → "Wed"
-formatPeriod(day, "de-CH", weekday); // → "Mi"
+toLocaleString(day, "en-US", weekday); // → "Wed"
+toLocaleString(day, "de-CH", weekday); // → "Mi"
 ```
 
 ## Weeks and other ranges
@@ -142,10 +152,10 @@ A week is shown as a range from its first to its last day (the day before
 ```ts
 const week = period(Temporal.PlainDate.from("2026-03-02"), "week");
 
-formatPeriod(week, "en-US"); // → "Mar 2 – 8, 2026"
-formatPeriod(period(Temporal.PlainDate.from("2026-03-31"), "week"), "en-US");
+toLocaleString(week, "en-US"); // → "Mar 2 – 8, 2026"
+toLocaleString(period(Temporal.PlainDate.from("2026-03-31"), "week"), "en-US");
 // → "Mar 30 – Apr 5, 2026"
-formatPeriod(period(Temporal.PlainDate.from("2025-12-31"), "week"), "en-US");
+toLocaleString(period(Temporal.PlainDate.from("2025-12-31"), "week"), "en-US");
 // → "Dec 29, 2025 – Jan 4, 2026"
 ```
 
@@ -153,9 +163,9 @@ The three weeks on one axis. The more the start and the end have in common,
 the shorter the label:
 
 <Timeline
-  caption="A week across two years, a week inside one month and a week across two months, each labelled with formatPeriod in en-US."
+  caption="A week across two years, a week inside one month and a week across two months, each labelled with toLocaleString in en-US."
   tracks={weeks.map((week) => ({
-    label: formatPeriod(week, "en-US"),
+    label: toLocaleString(week, "en-US"),
     periods: [week],
     tone: "accent",
   }))}
@@ -166,7 +176,7 @@ Custom periods from `range` are shown as a range too:
 ```ts
 import { range } from "@aleksejdix/minuta";
 
-formatPeriod(
+toLocaleString(
   range(
     Temporal.PlainDate.from("2026-03-30"),
     Temporal.PlainDate.from("2026-04-06")
@@ -176,24 +186,21 @@ formatPeriod(
 // → "Mar 30 – Apr 5, 2026", the last day before the end
 ```
 
-[`formatRange`](../../../api/minuta-format/format-range/) always shows a
-period as "start – end", whatever its unit. When start and end look the same
-in the shown fields, it collapses to one:
+To show any period as "start – end", whatever its unit, format a `range`
+with the same start and end. When start and end look the same in the shown
+fields, it collapses to one:
 
 ```ts
-import { formatRange } from "@aleksejdix/minuta/format";
-
-formatRange(
-  period(
-    Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
-    "hour"
-  ),
-  "en-US"
+const hour = period(
+  Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
+  "hour"
 );
+toLocaleString(range(hour.start, hour.end), "en-US");
 // → "Mar 18, 2:00 – 3:00 PM"
 
-formatRange(period(Temporal.PlainDate.from("2026-03-18"), "day"), "en-US");
-// → "March 18, 2026"
+const day = period(Temporal.PlainDate.from("2026-03-18"), "day");
+toLocaleString(range(day.start, day.end), "en-US");
+// → "Mar 18, 2026"
 ```
 
 A time period shows its `end` as it is: the hour from 2:00 ends at 3:00. A
@@ -201,8 +208,8 @@ date period shows its last day, so a day collapses to one date.
 
 ## Times in a range
 
-A custom range shows only dates by default, so the times of a meeting are not
-shown. Name the fields you want, dates and times:
+A custom range of moments shows its day and times by default. Name the
+fields you want to show more or less:
 
 ```ts
 const meeting = range(
@@ -217,10 +224,10 @@ const dateAndTime = {
   minute: "2-digit",
 } as const;
 
-formatRange(meeting, "en-US"); // → "Mar 18, 2026"
-formatRange(meeting, "en-US", dateAndTime);
+toLocaleString(meeting, "en-US"); // → "Mar 18, 9:00 – 10:30 AM"
+toLocaleString(meeting, "en-US", dateAndTime);
 // → "Mar 18, 2026, 9:00 – 10:30 AM"
-formatRange(meeting, "en-US", { hour: "numeric", minute: "2-digit" });
+toLocaleString(meeting, "en-US", { hour: "numeric", minute: "2-digit" });
 // → "9:00 – 10:30 AM"
 ```
 
@@ -232,20 +239,20 @@ punctuation all follow it:
 ```ts
 const march = period(Temporal.PlainDate.from("2026-03-18"), "month");
 
-formatPeriod(march, "en-US"); // → "March 2026"
-formatPeriod(march, "de-CH"); // → "März 2026"
-formatPeriod(march, "fr-FR"); // → "mars 2026"
-formatPeriod(march, "ja-JP"); // → "2026年3月"
+toLocaleString(march, "en-US"); // → "March 2026"
+toLocaleString(march, "de-CH"); // → "März 2026"
+toLocaleString(march, "fr-FR"); // → "mars 2026"
+toLocaleString(march, "ja-JP"); // → "2026年3月"
 
-formatPeriod(week, "de-CH"); // → "2.–8. März 2026"
-formatPeriod(week, "en-GB"); // → "2 – 8 Mar 2026"
+toLocaleString(week, "de-CH"); // → "2.–8. März 2026"
+toLocaleString(week, "en-GB"); // → "2 – 8 Mar 2026"
 ```
 
 The locale can also ask for another calendar system with `-u-ca-`. Only the
 label changes; the period is still the same month:
 
 ```ts
-formatPeriod(march, "en-US-u-ca-buddhist"); // → "March 2569 BE"
+toLocaleString(march, "en-US-u-ca-buddhist"); // → "March 2569 BE"
 ```
 
 ## Intl options
@@ -254,15 +261,15 @@ Any [`Intl.DateTimeFormat` option](https://developer.mozilla.org/en-US/docs/Web/
 works. A few that come up often:
 
 ```ts
-formatPeriod(march, "en-US", { month: "short", year: "numeric" }); // → "Mar 2026"
-formatPeriod(day, "en-US", {
+toLocaleString(march, "en-US", { month: "short", year: "numeric" }); // → "Mar 2026"
+toLocaleString(day, "en-US", {
   month: "2-digit",
   day: "2-digit",
   year: "numeric",
 });
 // → "03/18/2026"
-formatPeriod(day, "en-US", { dateStyle: "full" }); // → "Wednesday, March 18, 2026"
-formatPeriod(
+toLocaleString(day, "en-US", { dateStyle: "full" }); // → "Wednesday, March 18, 2026"
+toLocaleString(
   period(
     Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
     "hour"
@@ -285,8 +292,7 @@ A date period has no zone, so its label is the same everywhere, and
 `ZonedDateTime`s, not the computer's:
 
 ```ts
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { createUnits, toLocaleString, withUnits } from "@aleksejdix/minuta";
 
 const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
 const tokyoHour = tokyo.period(
@@ -294,7 +300,7 @@ const tokyoHour = tokyo.period(
   "hour"
 );
 
-formatPeriod(tokyoHour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
+toLocaleString(tokyoHour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
 ```
 
 It is already 21 March in Tokyo, but still 20 March in Zurich. The label
@@ -304,7 +310,7 @@ To show a time period in another zone, pass `timeZone`, for example the same
 hour for a colleague in New York:
 
 ```ts
-formatPeriod(
+toLocaleString(
   period(
     Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
     "hour"
@@ -321,6 +327,5 @@ See [Time zones](../../../concepts/time-zones/) for the full picture.
 
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start,
   weekends and calendar grids.
-- Reference: [`formatPeriod`](../../../api/minuta-format/format-period/),
-  [`formatRange`](../../../api/minuta-format/format-range/),
-  [`@aleksejdix/minuta/format`](../../../api/minuta-format/overview/).
+- Reference: [`toLocaleString`](../../../api/minuta/to-locale-string/),
+  [`range`](../../../api/minuta/range/).

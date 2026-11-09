@@ -1,31 +1,27 @@
 ---
-title: monthGridWith
-description: Build the days of a month view — always 6 weeks of 7 days, starting on your week start.
+title: monthGrid
+description: Build the days of a month view — always 6 weeks of 7 days, starting on the first day of the week.
 ---
 
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 
 Build the days of a month view for a calendar: always 6 weeks of 7 days,
-starting on the first day of your week.
+starting on the first day of the week.
 
 ```ts
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
+import { monthGrid } from "@aleksejdix/minuta";
 ```
 
 ```ts
-monthGridWith(units, value);
+monthGrid(value);
 ```
 
 ## Example
 
 ```ts
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { monthGrid } from "@aleksejdix/minuta";
 
-const grid = monthGridWith(
-  createUnits(),
-  Temporal.PlainDate.from("2026-03-15")
-);
+const grid = monthGrid(Temporal.PlainDate.from("2026-03-15"));
 
 grid.periods.length; // → 42
 grid.periods[0]; // → { start: 2026-02-23, end: 2026-02-24, unit: "day" }, a Monday
@@ -43,10 +39,9 @@ first and the last rows. The shaded days are the weekend.
 
 ## Parameters
 
-| Name    | What it is                                                                                                                      |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `units` | The units to compute with, e.g. `createUnits()`. They decide the week start and the time zone. Needs `month`, `week` and `day`. |
-| `value` | Any date or moment inside the month you want. Mar 15 and Mar 31 give the same grid.                                             |
+| Name    | What it is                                                                          |
+| ------- | ----------------------------------------------------------------------------------- |
+| `value` | Any date or moment inside the month you want. Mar 15 and Mar 31 give the same grid. |
 
 ## Returns
 
@@ -76,7 +71,7 @@ February 2021 has 28 days and starts on a Monday. It fills exactly 4 rows,
 and the grid adds 2 more rows from March:
 
 ```ts
-const feb = monthGridWith(createUnits(), Temporal.PlainDate.from("2021-02-10"));
+const feb = monthGrid(Temporal.PlainDate.from("2021-02-10"));
 
 feb.periods[0].start; // → 2021-02-01, a Monday (no days from January)
 feb.periods[41].start; // → 2021-03-14 (the last 2 rows are all March)
@@ -97,11 +92,10 @@ the 42 days are not in March: the grey numbers in the
 To find them, check each day against the month with `contains`:
 
 ```ts
-import { contains, periodWith } from "@aleksejdix/minuta/core";
+import { contains, monthGrid, period } from "@aleksejdix/minuta";
 
-const units = createUnits();
-const grid = monthGridWith(units, Temporal.PlainDate.from("2026-03-15"));
-const month = periodWith(units, grid.monthStart, "month");
+const grid = monthGrid(Temporal.PlainDate.from("2026-03-15"));
+const month = period(grid.monthStart, "month");
 
 grid.periods.filter((day) => !contains(month, day)).length;
 // → 11
@@ -112,12 +106,13 @@ The days are `PlainDate`s with no time zone, so comparing
 
 ## Week start
 
-The grid starts on the first day of the week of the `units`. It is Monday
-unless you choose another day:
+The grid starts on the first day of the week: Monday here. For another week
+start, take `monthGrid` from [`withUnits`](../with-units/):
 
 ```ts
-const sunday = monthGridWith(
-  createUnits({ weekStartsOn: "sunday" }),
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+const sunday = withUnits(createUnits({ weekStartsOn: "sunday" })).monthGrid(
   Temporal.PlainDate.from("2026-03-15")
 );
 
@@ -131,29 +126,29 @@ sunday.weekStartsOn; // → 0
 Mar 1 now sits in the first cell, so no day of February is left in the
 grid, and the last two rows run into April up to Sat Apr 11.
 
-The weekend does not change the grid. Use
-[`isWeekendWith`](../is-weekend-with/) to mark weekend days.
+`createUnits({ locale: "en-US" })` takes the week start from a locale. The
+weekend does not change the grid. Use [`isWeekend`](../is-weekend/) to mark
+weekend days.
 
 ## Days are real days
 
 Each period is one calendar day: `start` is the day, `end` the next day, both
 `PlainDate`s. There is no time zone, so a clock change cannot move or cut a
 cell. Oct 25 2026 is `{ start: 2026-10-25, end: 2026-10-26 }` like any other
-day; divide it into hours, or use [`dayGridWith`](../day-grid-with/), to see
-its 25 hours in Europe/Zurich.
+day; divide it into hours, or use [`dayGrid`](../day-grid/), to see its 25
+hours in Europe/Zurich.
 
 ## Errors
 
-`monthGridWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED`
-when `units` has no `month`, `week` or `day`.
+`monthGrid` from `withUnits(units)` throws a `RangeError` starting with
+`UNIT_NOT_SUPPORTED` when `units` has no `month`, `week` or `day`.
 
 ## Related
 
-- [`yearGridWith`](../year-grid-with/) — the whole weeks of a year.
-- [`dayGridWith`](../day-grid-with/) — the hours of a day.
-- [`isWeekendWith`](../is-weekend-with/) — mark the weekend days of the grid.
-- [`calendar`](../calendar/) — use it as `grids.monthGrid(value)` with `calendar(units)`.
-- [`divide`](../../minuta/divide/) — split a month into its days without the
+- [`yearGrid`](../year-grid/) — the whole weeks of a year.
+- [`dayGrid`](../day-grid/) — the hours of a day.
+- [`isWeekend`](../is-weekend/) — mark the weekend days of the grid.
+- [`divide`](../divide/) — split a month into its days without the
   extra days around it.
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start,
   weekend and grids explained.

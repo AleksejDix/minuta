@@ -3,12 +3,14 @@
  * Saturday–Sunday weekend; minuta's grid follows the week start and weekend
  * you choose, or the locale's.
  */
-import type { Period, PlainDate } from "@aleksejdix/minuta";
+import type {
+  Minuta,
+  Period,
+  PlainDate,
+  WeekdayNumber,
+} from "@aleksejdix/minuta";
+import { createUnits, toLocaleString, withUnits } from "@aleksejdix/minuta";
 import { demoRoots, part, plainDate } from "./dom";
-import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
-import type { WeekdayNumber } from "@aleksejdix/minuta/core";
-import { createUnits } from "@aleksejdix/minuta/core";
-import { formatPeriod } from "@aleksejdix/minuta/format";
 
 type Cell = Readonly<{ day: number; outside: boolean; weekend: boolean }>;
 type WeekInfo = Readonly<{ firstDay: number; weekend: readonly number[] }>;
@@ -125,25 +127,19 @@ function naiveCells(month: Readonly<Date>): Cell[] {
   });
 }
 
-function minutaCells(
-  units: ReturnType<typeof createUnits>,
-  month: PlainDate
-): Cell[] {
-  return monthGridWith(units, month).periods.map((day: Period) => ({
+function minutaCells(time: Minuta, month: PlainDate): Cell[] {
+  return time.monthGrid(month).periods.map((day: Period) => ({
     day: day.start.day,
     outside: day.start.month !== month.month,
-    weekend: isWeekendWith(units, day),
+    weekend: time.isWeekend(day),
   }));
 }
 
-function headersOf(
-  units: ReturnType<typeof createUnits>,
-  month: PlainDate,
-  tag: string
-): string[] {
-  return monthGridWith(units, month)
+function headersOf(time: Minuta, month: PlainDate, tag: string): string[] {
+  return time
+    .monthGrid(month)
     .periods.slice(FIRST, DAYS_A_WEEK)
-    .map((day) => formatPeriod(day, tag, { weekday: "short" }));
+    .map((day) => toLocaleString(day, tag, { weekday: "short" }));
 }
 
 // The hand-made grid leaves the days before the 1st blank
@@ -198,7 +194,7 @@ function show(root: HTMLElement): void {
   const month = monthOf(part(root, "month", HTMLInputElement));
   const firstDay = firstDayOf(part(root, "month", HTMLInputElement));
   const settings = settingsOf(root, tag);
-  const units = createUnits(settings);
+  const time = withUnits(createUnits(settings));
   renderGrid(
     part(root, "naive", HTMLElement),
     NAIVE_HEADERS,
@@ -206,8 +202,8 @@ function show(root: HTMLElement): void {
   );
   renderGrid(
     part(root, "grid", HTMLElement),
-    headersOf(units, firstDay, tag),
-    minutaCells(units, firstDay)
+    headersOf(time, firstDay, tag),
+    minutaCells(time, firstDay)
   );
   part(root, "settings", HTMLElement).textContent =
     `createUnits({ weekStartsOn: ${String(settings.weekStartsOn)}, weekend: [${settings.weekend.join(", ")}] })`;

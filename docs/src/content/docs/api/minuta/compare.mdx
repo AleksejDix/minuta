@@ -1,0 +1,104 @@
+---
+title: compare
+description: Order two periods by their start, then by their end, like Temporal's compare() — a callback for sort.
+---
+
+import { plainDate } from "../../../../components/temporal";
+import { compare, period, range } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const appointments = [
+  range(plainDate("2026-03-18"), plainDate("2026-03-20")),
+  period(plainDate("2026-03-16"), "week"),
+  period(plainDate("2026-03-16"), "day"),
+  range(plainDate("2026-03-12"), plainDate("2026-03-17")),
+];
+export const sorted = [...appointments].sort(compare);
+
+Order two periods: by their start, and when the starts are equal, by their
+end. Like Temporal's `compare()`, it is a callback for `sort`.
+
+```ts
+import { compare } from "@aleksejdix/minuta";
+```
+
+```ts
+compare(first, second);
+```
+
+## Example
+
+```ts
+import { compare, next, period } from "@aleksejdix/minuta";
+
+const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+const april = next(march);
+
+[april, march].sort(compare); // → [march, april]
+compare(march, april); // → -1
+compare(april, march); // → 1
+compare(march, march); // → 0
+```
+
+Four periods sorted with `compare`, the first on top. The day and the week
+both start on Mon Mar 16; the day ends first, so it comes first:
+
+<Timeline
+  caption="periods.sort(compare): by start, then by end. The day and the week start together; the shorter one comes first."
+  tracks={sorted.map((piece, index) => ({
+    label: `${String(index + 1)}. ${piece.unit}`,
+    periods: [piece],
+    tone: "accent",
+  }))}
+/>
+
+## Parameters
+
+| Name     | What it is        |
+| -------- | ----------------- |
+| `first`  | One period.       |
+| `second` | The other period. |
+
+## Returns
+
+A negative number when `first` comes first, a positive number when
+`second` does, and `0` when both have the same start and the same end.
+
+```ts
+const monday = period(Temporal.PlainDate.from("2026-03-16"), "day");
+const week = period(Temporal.PlainDate.from("2026-03-16"), "week");
+
+compare(monday, week); // → -1: the same start, the day ends first
+```
+
+## Only the times count
+
+`compare` looks at where the periods start and end, not at their units,
+calendars or zones. A month and a range over the same days compare as `0`,
+and so do two hours at the same instant in different zones. To check that
+two periods are identical, use [`equals`](../equals/).
+
+## Dates next to moments
+
+A date period and a time period can be compared. The dates become moments
+in the zone of the time period: a day starts at its midnight there.
+
+```ts
+const day = period(Temporal.PlainDate.from("2026-03-16"), "day");
+const firstHour = period(
+  Temporal.ZonedDateTime.from("2026-03-16T00:00[Europe/Zurich]"),
+  "hour"
+);
+
+compare(day, firstHour); // → 1: the same start, the hour ends first
+```
+
+## Errors
+
+`compare` does not throw. It needs no units.
+
+## Related
+
+- [`equals`](../equals/) — are two periods identical?
+- [`overlaps`](../overlaps/) — do two periods share any time?
+- [`merge`](../merge/) — join periods into one.

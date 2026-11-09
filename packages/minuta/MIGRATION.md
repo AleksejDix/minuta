@@ -1,136 +1,26 @@
-# Migrating to the reworked minuta core
+# Migrating from 1.x to 2.0
 
-The core follows one rule now: **rules and data are separate.** Units (`day`,
-`week`, `month`, …) are plain data produced by an adapter; operations are pure
-functions. The default entry has the native units bound, so most code needs no
-adapter at all. This guide lists every change that can affect existing code.
+minuta 2.0 computes with Temporal only: periods hold `Temporal.PlainDate`s
+(days and larger) or `Temporal.ZonedDateTime`s (hours and smaller), a period
+ends where the next one starts, the date-library adapters are gone, and every
+function comes from one entry. The full guide, with examples for minuta,
+the React and Vue bindings, datefield and fechita, is on the docs site:
+[Migrating from 1.x](https://dix.consulting/minuta/migration/).
 
-## Imports and entry points
-
-| Before                                                                                                                                                | Now                                                                                                                                                                                                                         |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `import { next, divide } from "@aleksejdix/minuta/operations"` with an adapter argument                                                               | `import { next, divide } from "@aleksejdix/minuta"` — bound to the native units, weeks start on Monday                                                                                                                      |
-| `@aleksejdix/minuta/operations`                                                                                                                       | removed. Context-first functions live in `@aleksejdix/minuta/core`, bound ones in `minuta`                                                                                                                                  |
-| `@aleksejdix/minuta/helpers` (`isWeekend`, `isWeekday`, `isToday`, `isOverlapping`)                                                                   | removed. `overlaps` is a regular operation in `minuta` and `@aleksejdix/minuta/core`, `isWeekend` and `isWeekday` are in `@aleksejdix/minuta/calendar`; for `isToday` use `contains(period, now)`, which works for any unit |
-| `createNativeAdapter({ weekStartsOn })`                                                                                                               | `nativeUnits({ weekStartsOn })`                                                                                                                                                                                             |
-| `createDateFnsAdapter`, `createDateFnsTzAdapter`, `createDayjsAdapter`, `createLuxonAdapter`, `createMomentAdapter`, `createMinutaAdapter` (Temporal) | `dateFnsUnits`, `dateFnsTzUnits`, `dayjsUnits`, `luxonUnits`, `momentUnits`, `temporalUnits`                                                                                                                                |
-| Prebuilt instances `nativeFunctionalAdapter`, `dateFnsAdapter`, `dateFnsTzAdapter`, `luxonAdapter`, `minutaAdapter`                                   | removed. Call the factory                                                                                                                                                                                                   |
-
-Other week starts or other date libraries: bind your units once.
-
-```ts
-import { withUnits } from "@aleksejdix/minuta/core";
-import { luxonUnits } from "@aleksejdix/minuta/luxon";
-
-const time = withUnits(luxonUnits({ weekStartsOn: "sunday" }));
-time.next(time.period(new Date(), "week"));
-```
-
-## Renamed functions
-
-| Before                                          | Default entry (`minuta`)                     | Core (`@aleksejdix/minuta/core`)                        |
-| ----------------------------------------------- | -------------------------------------------- | ------------------------------------------------------- |
-| `derivePeriod(adapter, date, unit)`             | `period(date, unit)`                         | `periodWith(units, date, unit)`                         |
-| `createPeriod(start, end)`                      | `range(start, end)`                          | `range(start, end)`                                     |
-| `go(adapter, period, steps)`                    | `shift(period, steps)`                       | `shiftWith(units, period, steps)`                       |
-| `next(adapter, period)`                         | `next(period)`                               | `nextWith(units, period)`                               |
-| `previous(adapter, period)`                     | `previous(period)`                           | `previousWith(units, period)`                           |
-| `divide(adapter, period, unit, count, options)` | `divide(period, unit, { step, maxPeriods })` | `divideWith(units, period, unit, { step, maxPeriods })` |
-| `isSame(adapter, a, b, unit)`                   | `same(a, b, unit)`                           | `sameWith(units, a, b, unit)`                           |
-| `isToday(adapter, now, period)`                 | `contains(period, now)`                      | `contains(period, now)`                                 |
-| `duration(period, unit)`                        | `duration(period, unit)`                     | `durationWith(units, period, unit)`                     |
-| `duration(period)` (milliseconds)               | `length(period)`                             | `length(period)`                                        |
-| `isOverlapping(a, b)`                           | `overlaps(a, b)`                             | `overlaps(a, b)`                                        |
-
-`contains` keeps its name and takes no units.
-
-## Interval helpers and weekdays
-
-The core keeps the operations every caller needs. The interval helpers moved
-to `@aleksejdix/minuta/intervals`, the weekday checks to `@aleksejdix/minuta/calendar`:
-
-| Before                                    | Now                                                                                               |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `merge(periods, unit)`                    | `mergeWith(units, periods, unit)` from `@aleksejdix/minuta/intervals`                             |
-| `snap(date, 15 * 60_000, mode)`           | `snapWith(units, date, "minute", { step: 15, mode })` from `@aleksejdix/minuta/intervals`         |
-| `gap`, `move`, `resize`, `clamp`, `split` | Same names, no units, from `@aleksejdix/minuta/intervals`                                         |
-| `isWeekday(period)`, `isWeekend(period)`  | `isWeekdayWith(units, period)`, `isWeekendWith(units, period)` from `@aleksejdix/minuta/calendar` |
-
-Or bind them as plugins:
-
-```ts
-import { calendar } from "@aleksejdix/minuta/calendar";
-import { intervals } from "@aleksejdix/minuta/intervals";
-import { nativeUnits } from "@aleksejdix/minuta/native";
-import { withUnits } from "@aleksejdix/minuta/core";
-
-const time = withUnits(nativeUnits(), { plugins: [calendar, intervals] });
-time.merge([time.period(new Date(), "day")]);
-time.isWeekend(time.period(new Date(), "day"));
-```
-
-## Results that change
-
-| Function                                                 | Before                                                                                                                                                       | Now                                                                                                     | What to do                                                                                                                                                               |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `range` (was `createPeriod`)                             | Threw when `start` was after `end`                                                                                                                           | Swaps the dates                                                                                         | Nothing, unless you relied on the error                                                                                                                                  |
-| `period`, `range`                                        | Threw `Error("Period contains invalid date …")`                                                                                                              | Throw `RangeError` whose message starts with `INVALID_DATE`                                             | Match `MinutaError.InvalidDate` instead of the message                                                                                                                   |
-| `clamp`, `resize`                                        | Returned `null`                                                                                                                                              | Return `undefined`                                                                                      | Check for `undefined`                                                                                                                                                    |
-| Day grid `gapHour`, `ambiguousHour`                      | `null` when there is no DST hour                                                                                                                             | `undefined`                                                                                             | Check for `undefined`                                                                                                                                                    |
-| `duration(period, unit)`                                 | Truncated milliseconds: one unit short (a day was 0 days), DST ignored, only `day` to `second`                                                               | Counts complete units by the calendar, DST-aware, every unit                                            | Drop any `+ 1` workaround                                                                                                                                                |
-| `merge(periods, unit)`                                   | Always labelled the result `unit`, even when it was not one such period                                                                                      | Keeps `unit` only for exactly one aligned period, otherwise `"custom"`                                  | Check `unit` before relying on it                                                                                                                                        |
-| `split(period, date)`                                    | Returned a zero-length part for a date outside the period; both parts kept the unit                                                                          | Returns `undefined` unless the date is after the start and within the period; both parts are `"custom"` | Check for `undefined`                                                                                                                                                    |
-| `isWeekday`, `isWeekend`                                 | Only periods under 2 days could be true; Saturday and Sunday were fixed                                                                                      | True when every day the period touches is a working or weekend day; the weekend comes from the units    | Set `weekend` in the adapter options for other weekends                                                                                                                  |
-| Day grid `periods`                                       | Always 24 slots, labelled by index; spilled into the next day or dropped an hour on DST days                                                                 | The day's real hours (23, 24 or 25), labelled with the wall-clock hour in `units.timeZone`              | Drop the `timeZone` argument; use the adapter's zone                                                                                                                     |
-| `gap(a, b)`                                              | A one-millisecond period for touching or overlapping inputs; could include the last millisecond of an earlier period; two dates gave the span including both | `undefined` when the inputs touch or overlap; never includes a millisecond of either input              | Check for `undefined`; use `range(a, b)` for the span between two dates                                                                                                  |
-| `formatRange(period, locale, options)`                   | `options` replaced the defaults for the unit                                                                                                                 | `options` are merged over them                                                                          | Pass only what you want to change                                                                                                                                        |
-| `dateFnsTzUnits({ timezone })`                           | `timezone` option                                                                                                                                            | `timeZone`, as in `Intl` and `units.timeZone`                                                           | Rename the option                                                                                                                                                        |
-| `divide(period, unit)`                                   | Clipped first and last chunks kept `unit`                                                                                                                    | Only whole chunks keep `unit`; clipped ones are `"custom"`                                              | Check `unit` before `next` or formatting a chunk as a unit                                                                                                               |
-| `formatPeriodWith(period, locale, options)`              | Formatted the start with only `options`                                                                                                                      | Removed                                                                                                 | `formatPeriod(period, locale, options)` merges options over the unit defaults; for only your options use `new Intl.DateTimeFormat(locale, options).format(period.start)` |
-| `Series` type, `@aleksejdix/minuta/types` entry          | Exported                                                                                                                                                     | Removed                                                                                                 | Grids have their own types (`MonthGrid`, `YearGrid`, `DayGrid`); import types from `@aleksejdix/minuta/core`                                                             |
-| `merge([])`                                              | Threw                                                                                                                                                        | Returns `undefined`                                                                                     | Check for `undefined`                                                                                                                                                    |
-| `divide` over `maxPeriods`                               | Threw `Error`                                                                                                                                                | Throws `RangeError`                                                                                     | Catch `RangeError`                                                                                                                                                       |
-| Any unit-aware function with a unit missing from `units` | —                                                                                                                                                            | Throws `RangeError` starting with `UNIT_NOT_SUPPORTED`                                                  | Pass the unit, or an adapter's full set                                                                                                                                  |
-
-## Types
-
-- **`Period.type` is `Period.unit`.** `{ start, end, unit }`, deeply readonly.
-- **`ReadonlyPeriod` is gone.** `Period` is readonly itself.
-- **`AdapterUnit` is `Unit`.** The `UnitRegistry` interface stays for module augmentation.
-- **`Adapter` is gone.** Unit-aware functions take `Units`, a partial map of
-  `UnitSpec` (`{ startOf, endOf, add, diff }` for one unit). Adapters return
-  `AllUnits`. `UnitHandler` is `UnitSpec`.
-- **`StableMonth`, `StableYear`, `StableDay`** are `MonthGrid`, `YearGrid`, `DayGrid`.
-
-## Calendar grids
-
-The grids take units like every other unit-aware function. The week start
-comes from the `week` unit, so there is no separate `weekStartsOn` argument.
-
-| Before                                           | Now                                                  |
-| ------------------------------------------------ | ---------------------------------------------------- |
-| `createStableMonth(adapter, weekStartsOn, date)` | `monthGridWith(nativeUnits({ weekStartsOn }), date)` |
-| `createStableYear(adapter, weekStartsOn, date)`  | `yearGridWith(nativeUnits({ weekStartsOn }), date)`  |
-| `createStableDay(adapter, date, timeZone)`       | `dayGridWith(units, date)`                           |
-
-Or bind the `calendar` plugin once:
-
-```ts
-import { bind } from "@aleksejdix/minuta/core";
-import { calendar } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
-
-const grids = bind(nativeUnits({ weekStartsOn: "sunday" }), calendar);
-grids.monthGrid(new Date()).periods; // 42 day periods
-```
-
-Or bind it together with the operations:
-
-```ts
-import { calendar } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
-import { withUnits } from "@aleksejdix/minuta/core";
-
-const time = withUnits(nativeUnits(), { plugins: [calendar] });
-time.monthGrid(time.next(time.period(new Date(), "month")).start);
-```
+| 1.x                                                                             | 2.0                                                                            |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `Date` in and out                                                               | `Temporal.PlainDate` for days and larger, `Temporal.ZonedDateTime` for sub-day |
+| `end` is the last millisecond                                                   | `end` is the start of the next period: `[start, end)`                          |
+| `@aleksejdix/minuta/core`, `/calendar`, `/intervals`, `/format`                 | One entry, `@aleksejdix/minuta`, with every function                           |
+| `nativeUnits`, `dateFnsUnits`, `luxonUnits`, `dayjsUnits` …                     | `createUnits` from `@aleksejdix/minuta`                                        |
+| `dateFnsTzUnits({ timeZone })`                                                  | `createUnits({ timeZone })`                                                    |
+| `temporalUnits` from `@aleksejdix/minuta/temporal`                              | `createUnits`; that entry now has only `temporalReady`                         |
+| `withUnits(units, { plugins: [calendar] })`, `bind(units, calendar)`            | `withUnits(units)`: every function, the same names                             |
+| `periodWith(units, …)`, `monthGridWith(units, …)` and every other `…With`       | `period(…)`, `monthGrid(…)`, or `withUnits(units).period(…)`                   |
+| `snapWith(units, date, unit, { step, mode })`, `time.snap(…)`                   | `round(value, { smallestUnit, roundingIncrement, roundingMode })`              |
+| `duration(period, unit)`, `durationWith(units, period, unit)`                   | `count(period, unit)`                                                          |
+| `same(a, b, "custom")`                                                          | `equals(a, b)`                                                                 |
+| `formatPeriod(period, locale, options)`, `formatRange(period, locale, options)` | `toLocaleString(period, locales, options)`                                     |
+| `length(period)`                                                                | `period.start.until(period.end)`                                               |
+| datefield `toDate`, `fromDate`                                                  | `toPlainDate`, `toPlainDateTime`, `toPlainTime`, `fromTemporal`                |
+| fechita `result.date`                                                           | `result.value` and `result.kind`                                               |

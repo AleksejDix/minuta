@@ -12,9 +12,10 @@ export const october = period(plainDate("2026-10-12"), "month");
 
 minuta 2.0 computes with [Temporal](https://tc39.es/proposal-temporal/docs/)
 only. `Date` is gone from every package, a period ends where the next one
-starts, and the date-library adapters are deleted. The operations keep their
-names: `period`, `divide`, `next`, `contains` and the rest work as before,
-on Temporal values.
+starts, and the date-library adapters are deleted. Every function comes from
+one entry. Most keep their names: `period`, `divide`, `next`, `contains` and
+the rest work as before, on Temporal values. Where Temporal has a word,
+minuta now uses it: `round`, `count`, `equals`, `compare`, `toLocaleString`.
 
 <Flow
   steps={[
@@ -38,22 +39,33 @@ on Temporal values.
       layer: "units",
       text: "One units maker replaces the six adapters.",
     },
+    {
+      code: 'import { … } from "@aleksejdix/minuta"',
+      layer: "entry",
+      text: "One entry with every function replaces the subpaths.",
+    },
   ]}
 />
 
 ## At a glance
 
-| 1.x                                                                  | 2.0                                                                              |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `Date` in and out                                                    | `Temporal.PlainDate` for days and larger, `Temporal.ZonedDateTime` for sub-day   |
-| `end` is the last millisecond                                        | `end` is the start of the next period: `[start, end)`                            |
-| `nativeUnits`, `dateFnsUnits`, `luxonUnits`, `dayjsUnits` …          | [`createUnits`](../api/minuta-core/create-units/) from `@aleksejdix/minuta/core` |
-| `dateFnsTzUnits({ timeZone })`                                       | `createUnits({ timeZone })`                                                      |
-| `temporalUnits` from `@aleksejdix/minuta/temporal`                   | `createUnits`; that entry now has only `temporalReady`                           |
-| `withUnits(units, { plugins: [calendar] })`, `bind(units, calendar)` | `withUnits(units)`, `calendar(units)`, `intervals(units)`                        |
-| `length(period)`                                                     | `period.start.until(period.end)`                                                 |
-| datefield `toDate`, `fromDate`                                       | `toPlainDate`, `toPlainDateTime`, `toPlainTime`, `fromTemporal`                  |
-| fechita `result.date`                                                | `result.value` and `result.kind`                                                 |
+| 1.x                                                                             | 2.0                                                                                       |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `Date` in and out                                                               | `Temporal.PlainDate` for days and larger, `Temporal.ZonedDateTime` for sub-day            |
+| `end` is the last millisecond                                                   | `end` is the start of the next period: `[start, end)`                                     |
+| `@aleksejdix/minuta/core`, `/calendar`, `/intervals`, `/format`                 | One entry, `@aleksejdix/minuta`, with every function                                      |
+| `nativeUnits`, `dateFnsUnits`, `luxonUnits`, `dayjsUnits` …                     | [`createUnits`](../api/minuta/create-units/) from `@aleksejdix/minuta`                    |
+| `dateFnsTzUnits({ timeZone })`                                                  | `createUnits({ timeZone })`                                                               |
+| `temporalUnits` from `@aleksejdix/minuta/temporal`                              | `createUnits`; that entry now has only `temporalReady`                                    |
+| `withUnits(units, { plugins: [calendar] })`, `bind(units, calendar)`            | [`withUnits(units)`](../api/minuta/with-units/): every function, the same names           |
+| `periodWith(units, …)`, `monthGridWith(units, …)` and every other `…With`       | `period(…)`, `monthGrid(…)`, or `withUnits(units).period(…)`                              |
+| `snapWith(units, date, unit, { step, mode })`, `time.snap(…)`                   | [`round(value, { smallestUnit, roundingIncrement, roundingMode })`](../api/minuta/round/) |
+| `duration(period, unit)`, `durationWith(units, period, unit)`                   | [`count(period, unit)`](../api/minuta/count/)                                             |
+| `same(a, b, "custom")`                                                          | [`equals(a, b)`](../api/minuta/equals/)                                                   |
+| `formatPeriod(period, locale, options)`, `formatRange(period, locale, options)` | [`toLocaleString(period, locales, options)`](../api/minuta/to-locale-string/)             |
+| `length(period)`                                                                | `period.start.until(period.end)`                                                          |
+| datefield `toDate`, `fromDate`                                                  | `toPlainDate`, `toPlainDateTime`, `toPlainTime`, `fromTemporal`                           |
+| fechita `result.date`                                                           | `result.value` and `result.kind`                                                          |
 
 ## 1. Temporal, and the polyfill where it is missing
 
@@ -125,7 +137,7 @@ contains(month, Temporal.PlainDate.from("2026-11-01")); // → false
 
 ## 4. createUnits instead of the adapters
 
-All adapters are deleted. [`createUnits`](../api/minuta-core/create-units/)
+All adapters are deleted. [`createUnits`](../api/minuta/create-units/)
 takes the same settings and computes with Temporal:
 
 ```ts
@@ -137,36 +149,47 @@ nativeUnits({ weekStartsOn: "sunday" });
 dateFnsTzUnits({ timeZone: "America/New_York" });
 
 // 2.0
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 createUnits({ weekStartsOn: "sunday" });
 createUnits({ timeZone: "America/New_York" });
+createUnits({ locale: "en-US" }); // new: the week of a locale
 createUnits({ calendar: "hebrew" }); // new: any Temporal calendar
 ```
 
-## 5. Factories instead of plugins
+## 5. withUnits instead of plugins
 
-`withUnits` takes only the units. The calendar and interval functions are
-bound by their own factories:
+`@aleksejdix/minuta/core`, `/calendar`, `/intervals` and `/format` are gone.
+`@aleksejdix/minuta` has every function, ready to use with Monday weeks and
+the runtime's zone, the grids and the interval helpers included. For other
+units, [`withUnits(units)`](../api/minuta/with-units/) returns every
+function bound to them, with the same names. There are no plugins and no
+`…With` functions:
 
 ```ts
 // 1.x
-const time = withUnits(units, { plugins: [calendar, intervals] });
-const grids = bind(units, calendar);
-
-// 2.0
 import { calendar } from "@aleksejdix/minuta/calendar";
 import { intervals } from "@aleksejdix/minuta/intervals";
+import { periodWith, withUnits } from "@aleksejdix/minuta/core";
 
-const time = withUnits(units);
-const grids = calendar(units);
-const edit = intervals(units);
+const time = withUnits(units, { plugins: [calendar, intervals] });
+periodWith(units, date, "week");
+
+// 2.0
+import { createUnits, monthGrid, withUnits } from "@aleksejdix/minuta";
+
+monthGrid(Temporal.Now.plainDateISO()); // Monday weeks
+
+const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
+time.period(Temporal.Now.plainDateISO(), "week");
+time.monthGrid(Temporal.Now.plainDateISO());
+time.merge(periods);
 ```
 
 ## 6. length is gone
 
 `length(period)` gave milliseconds. Ask Temporal for the elapsed time, or
-[`duration`](../api/minuta/duration/) for whole units:
+[`count`](../api/minuta/count/) for whole units:
 
 ```ts
 // 1.x
@@ -174,10 +197,41 @@ length(day); // → 86400000
 
 // 2.0
 day.start.until(day.end); // → P1D, a Temporal.Duration
-duration(day, "hour"); // → 24 (23 or 25 around a clock change)
+count(day, "hour"); // → 24 (23 or 25 around a clock change)
 ```
 
-## 7. React and Vue
+## 7. Temporal's names
+
+Where Temporal has a word for it, 2.0 uses that word and Temporal's options:
+
+```ts
+// 1.x
+snapWith(units, date, "minute", { step: 15, mode: "nearest" });
+duration(month, "day");
+same(a, b, "custom");
+formatPeriod(month, "de-CH");
+formatRange(week, "en-US");
+
+// 2.0
+round(moment, { smallestUnit: "minute", roundingIncrement: 15 }); // halfExpand by default
+count(month, "day");
+equals(a, b);
+toLocaleString(month, "de-CH");
+toLocaleString(week, "en-US");
+```
+
+- [`round`](../api/minuta/round/) takes a unit alone (`round(value, "hour")`)
+  or Temporal's options. `"floor"` and `"ceil"` stay; `"nearest"` is
+  `"halfExpand"`, and the other Temporal modes work too. A date rounds to date
+  units only.
+- [`toLocaleString`](../api/minuta/to-locale-string/) picks the unit's format:
+  the month and year for a month, a range for weeks and custom periods. For a
+  month as a range, format `range(month.start, month.end)`. A custom span of
+  moments now shows its times.
+- [`compare(a, b)`](../api/minuta/compare/) is new: it orders periods by
+  start, then end, so `periods.sort(compare)` works.
+
+## 8. React and Vue
 
 `useMinuta` keeps its options; the values change type:
 
@@ -191,7 +245,7 @@ duration(day, "hour"); // → 24 (23 or 25 around a clock change)
 Calendar days are date periods, so `day.start` is the `PlainDate` to store or
 to hand to a date field.
 
-## 8. datefield
+## 9. datefield
 
 `toDate` and `fromDate` are removed. Read the field with
 [`toPlainDate`](../api/datefield/to-plain-date/),
@@ -217,7 +271,7 @@ fromTemporal(Temporal.PlainDate.from("2026-03-31"), format);
 - `rotateSegment`'s `today` is a `PlainDate`.
 - `typeDate`'s `parse` returns a `PlainDate`, `PlainDateTime` or `PlainTime`.
 
-## 9. fechita
+## 10. fechita
 
 [`parseDate`](../api/fechita/parse-date/) returns `kind` and `value` instead
 of `date`. The text decides the type:
