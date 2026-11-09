@@ -112,6 +112,9 @@ jobs:
       - name: Import every entry point in plain Node
         run: npm run check:node-esm
 
+      - name: Type-check every entry point as a consumer
+        run: npm run check:types
+
   format:
     name: Format
     runs-on: ubuntu-latest
