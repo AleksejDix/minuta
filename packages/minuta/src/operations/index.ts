@@ -16,5 +16,4 @@ export { nextWith, previousWith, shiftWith } from "./shift";
 export { split } from "./split";
 export { isWeekdayWith } from "./utils/is-weekday";
 export { isWeekendWith } from "./utils/is-weekend";
-export type { DivideOptions } from "./divide";
 export type { RoundOptions, RoundTo, RoundingMode } from "./round-options";
