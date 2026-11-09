@@ -77,22 +77,21 @@ isWeekendWith(units, period(Temporal.PlainDate.from("2026-03-22"), "day")); // �
 
 ## Taking both from the user's locale
 
-minuta does not guess the week start or the weekend from a locale. Where the
-runtime supports it, `Intl.Locale#getWeekInfo()` tells you. It numbers days
-1 = Monday … 7 = Sunday, so turn 7 into 0:
+minuta does not guess the week from the runtime's locale: without options,
+weeks start on Monday. Pass `locale` and both come from that locale's week,
+as `Intl.Locale#getWeekInfo()` gives it:
 
 ```ts
-const info = new Intl.Locale("en-US").getWeekInfo();
-// → { firstDay: 7, weekend: [6, 7] }
+createUnits({ locale: "en-US" }); // weeks from Sunday, weekend Saturday and Sunday
+createUnits({ locale: "ar-EG" }); // weeks from Saturday, weekend Friday and Saturday
+createUnits({ locale: "de-CH" }); // weeks from Monday, weekend Saturday and Sunday
 
-const units = createUnits({
-  weekStartsOn: info.firstDay % 7, // → 0, Sunday
-  weekend: info.weekend.map((day) => day % 7), // → [6, 0]
-});
+// weekStartsOn and weekend still win
+createUnits({ locale: "en-US", weekStartsOn: "monday" });
 ```
 
-With `"ar-EG"` this gives weeks starting on Saturday and a Friday–Saturday
-weekend. `getWeekInfo` is not available in every browser yet.
+`getWeekInfo` is in Chrome, Edge, Firefox, Safari 17+ and Node. Where a
+runtime lacks it, `locale` throws and asks for `weekStartsOn` and `weekend`.
 
 ## Week numbers
 
