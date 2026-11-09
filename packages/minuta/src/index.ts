@@ -1,38 +1,41 @@
 /**
- * Divide time into pieces. Every operation, ready to use: bound to the
- * Temporal units with weeks starting on Monday (ISO 8601). Where the runtime
- * has no Temporal, `await temporalReady()` from `@aleksejdix/minuta/temporal`
- * first.
+ * Divide time into pieces. Every function, ready to use: `withUnits(createUnits())`,
+ * the Temporal units with weeks starting on Monday (ISO 8601), the runtime's
+ * time zone and each date's own calendar. Where the runtime has no Temporal,
+ * `await temporalReady()` from `@aleksejdix/minuta/temporal` first.
  *
- * For other week starts or a smaller bundle, use `withUnits` from
- * `@aleksejdix/minuta/core`.
+ * For another week start, weekend, time zone, calendar or locale, bind every
+ * function at once with `withUnits(createUnits({ … }))`: the same names.
  *
  * @module minuta
  */
 import type { Chunks, DivideOptions } from "#src/operations/divide";
-import type { Period, PeriodOf, TimeValue, Unit } from "#src/types";
+import type {
+  DateUnit,
+  Period,
+  PeriodOf,
+  PlainDate,
+  TimeValue,
+  Unit,
+  ZonedDateTime,
+} from "#src/types";
 import {
+  countWith,
   divideWith,
-  durationWith,
+  mergeWith,
   nextWith,
   periodWith,
   previousWith,
+  roundWith,
   sameWith,
   shiftWith,
 } from "#src/operations/index";
-import { createUnits } from "#src/create-units";
-
-/*
- * Each function binds the units on its own, so bundlers drop the unused
- * ones. A test assigns them to `Minuta`, so this entry and `withUnits`
- * cannot drift apart.
- */
-// oxlint-disable-next-line eslint/no-inline-comments -- The pure marker lets bundlers drop the units when no bound function is used
-const units = /* @__PURE__ */ createUnits();
+import type { RoundTo } from "#src/operations/round-options";
+import { units } from "#src/default-units";
 
 /**
- * Split a period into chunks of `unit`, clipped to the period. Temporal units,
- * weeks start on Monday; `divideWith` in `minuta/core` takes your own units.
+ * Split a period into chunks of `unit`, clipped to the period. Weeks start
+ * on Monday.
  *
  * @example
  * divide(period(Temporal.PlainDate.from("2026-03-01"), "month"), "day"); // 31 day periods
@@ -52,23 +55,45 @@ function divide<Source extends Period, Name extends Unit>(
 }
 
 /**
- * How many complete `unit`s fit into a period. Temporal units, calendar- and
- * DST-aware; `durationWith` in `minuta/core` takes your own units.
+ * How many complete `unit`s fit into a period, calendar- and DST-aware: a
+ * number, where `start.until(end)` gives a `Temporal.Duration`.
  *
  * @example
- * duration(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour"); // 24
- * duration(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // 28
+ * count(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour"); // 24
+ * count(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // 28
  *
  * @param source - The period to measure
  * @param unit - The unit to count
  * @returns The number of complete units
  */
-function duration(source: Period, unit: Unit): number {
-  return durationWith(units, source, unit);
+function count(source: Period, unit: Unit): number {
+  return countWith(units, source, unit);
 }
 
 /**
- * The next period of the same unit. Temporal units, weeks start on Monday.
+ * Merge periods of one kind into one spanning the earliest start to the
+ * latest end. The result keeps `unit` (by default the first period's unit)
+ * only when it is exactly one period of that unit; otherwise its unit is
+ * `"custom"`.
+ *
+ * @example
+ * merge([januaryFirstHalf, januarySecondHalf], "month"); // January, unit "month"
+ * merge([january, march]); // Jan 1 – Apr 1, unit "custom"
+ * merge([]); // undefined
+ *
+ * @param periods - The periods to merge, all dates or all moments
+ * @param unit - The unit the merged period should have if it is aligned
+ * @returns The merged period, or undefined for an empty list
+ */
+function merge<Source extends Period>(
+  periods: readonly Source[],
+  unit?: Unit
+): Source | undefined {
+  return mergeWith(units, periods, unit);
+}
+
+/**
+ * The next period of the same unit. Weeks start on Monday.
  *
  * @example
  * next(period(Temporal.PlainDate.from("2026-03-15"), "month")); // April 2026
@@ -81,9 +106,8 @@ function next<Source extends Period>(source: Source): Source {
 }
 
 /**
- * The period of `unit` that contains `value`. Temporal units, weeks start on
- * Monday, moments in the runtime's zone; `periodWith` in `minuta/core` takes
- * your own units.
+ * The period of `unit` that contains `value`. Weeks start on Monday,
+ * moments lie in the runtime's zone.
  *
  * @example
  * period(Temporal.PlainDate.from("2026-03-15"), "month"); // { start: 2026-03-01, end: 2026-04-01, unit: "month" }
@@ -101,7 +125,7 @@ function period<Name extends Unit>(
 }
 
 /**
- * The previous period of the same unit. Temporal units, weeks start on Monday.
+ * The previous period of the same unit. Weeks start on Monday.
  *
  * @example
  * previous(period(Temporal.PlainDate.from("2026-03-15"), "month")); // February 2026
@@ -113,8 +137,37 @@ function previous<Source extends Period>(source: Source): Source {
   return previousWith(units, source);
 }
 
+function round(value: PlainDate, roundTo: RoundTo<DateUnit>): PlainDate;
+function round(value: ZonedDateTime, roundTo: RoundTo): ZonedDateTime;
 /**
- * Whether two periods fall into the same `unit`. Temporal units.
+ * Round a date or a moment to a unit's boundary, like Temporal's `round()`
+ * with the same options, extended to weeks, months, quarters and years.
+ * With `roundingIncrement`, boundaries count from the start of the
+ * enclosing unit (minutes from the hour, days from the month); weeks and
+ * years from 1970.
+ *
+ * @example
+ * round(Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), { smallestUnit: "minute", roundingIncrement: 15 }); // 10:30
+ * round(Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), { smallestUnit: "day", roundingMode: "ceil" }); // Mar 16 00:00
+ * round(Temporal.PlainDate.from("2026-03-18"), { smallestUnit: "week", roundingMode: "floor" }); // Monday 2026-03-16
+ * round(Temporal.PlainDate.from("2026-03-18"), "month"); // 2026-04-01 (halfExpand)
+ *
+ * @param value - The date or moment to round
+ * @param roundTo - The unit, or `smallestUnit` with `roundingIncrement`
+ *   (default 1) and `roundingMode` (default `"halfExpand"`)
+ * @returns The boundary, of the value's kind; `value` itself when it is one
+ * @throws {TypeError} For a date and a time unit: dates round to date units
+ */
+function round(
+  value: PlainDate | ZonedDateTime,
+  roundTo: RoundTo
+): PlainDate | ZonedDateTime {
+  return roundWith(units, value, roundTo);
+}
+
+/**
+ * Whether two periods fall into the same `unit`, by their starts. For
+ * identical periods, use `equals`.
  *
  * @example
  * same(period(Temporal.PlainDate.from("2026-03-16"), "day"), period(Temporal.PlainDate.from("2026-03-20"), "day"), "week"); // true
@@ -124,12 +177,12 @@ function previous<Source extends Period>(source: Source): Source {
  * @param unit - Granularity of the comparison
  * @returns Whether both periods are in the same unit
  */
-function same(first: Period, second: Period, unit: Unit | "custom"): boolean {
+function same(first: Period, second: Period, unit: Unit): boolean {
   return sameWith(units, first, second, unit);
 }
 
 /**
- * Move a period by `steps` of its own unit; negative moves back. Temporal units.
+ * Move a period by `steps` of its own unit; negative moves back.
  *
  * @example
  * shift(period(Temporal.PlainDate.from("2026-03-15"), "month"), 3); // June 2026
@@ -142,23 +195,63 @@ function shift<Source extends Period>(source: Source, steps: number): Source {
   return shiftWith(units, source, steps);
 }
 
-export { divide, duration, next, period, previous, same, shift };
-export { contains, overlaps, range } from "#src/operations/index";
-export { MinutaError } from "#src/units";
+export { count, divide, merge, next, period, previous, round, same, shift };
+export {
+  dayGrid,
+  isWeekday,
+  isWeekend,
+  monthGrid,
+  yearGrid,
+} from "#src/default-calendar";
+export {
+  clamp,
+  compare,
+  contains,
+  equals,
+  gap,
+  move,
+  overlaps,
+  range,
+  resize,
+  split,
+} from "#src/operations/index";
+export { toLocaleString } from "#src/format/format";
+export { createUnits } from "#src/create-units";
+export type { UnitsOptions } from "#src/create-units";
+export { MinutaError, specFor } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
+export { withUnits } from "#src/with-units";
+export type { Minuta, Round } from "#src/with-units";
 export type { Chunks, DivideOptions } from "#src/operations/divide";
-export type { Minuta } from "#src/with-units";
 export type {
+  RoundOptions,
+  RoundTo,
+  RoundingMode,
+} from "#src/operations/index";
+export type { WeekOptions, Weekday, WeekdayNumber } from "#src/weekday";
+export type {
+  DayGrid,
+  HourSlot,
+  MonthGrid,
+  YearGrid,
+} from "#src/calendar/index";
+export type {
+  AllUnits,
+  BuiltInUnit,
   DatePeriod,
+  DateSpec,
   DateUnit,
   Period,
   PeriodOf,
   PlainDate,
+  Settings,
+  SpecOf,
   TimePeriod,
+  TimeSpec,
   TimeUnit,
   TimeValue,
   Unit,
+  UnitRegistry,
   Units,
   ZonedDateTime,
 } from "#src/types";
-export type { Weekday } from "#src/weekday";

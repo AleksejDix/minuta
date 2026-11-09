@@ -11,11 +11,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        calendar: fromRoot("src/calendar.ts"),
-        core: fromRoot("src/core.ts"),
-        format: fromRoot("src/format.ts"),
         index: fromRoot("src/index.ts"),
-        intervals: fromRoot("src/intervals.ts"),
         temporal: fromRoot("src/temporal.ts"),
       },
       formats: ["es"],

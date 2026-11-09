@@ -2,17 +2,16 @@ import type { TimeValue, Unit } from "#src/types";
 import {
   next as defaultNext,
   divide,
-  duration,
   period,
   previous,
   same,
   shift,
+  withUnits,
 } from "#src/index";
 import { describe, expect, it } from "vitest";
 import type { Minuta } from "#src/with-units";
 import { createUnits } from "#src/create-units";
 import { dateTime } from "#src/test/temporal";
-import { withUnits } from "#src/core";
 
 const UNITS: readonly Unit[] = [
   "year",
@@ -61,22 +60,6 @@ const SHIFT_STEPS: readonly number[] = [
 const DIVIDE_STEP = 2;
 const MONDAY = 1;
 
-const UNIT_FREE_OPERATIONS: readonly string[] = [
-  "contains",
-  "overlaps",
-  "range",
-];
-
-const BOUND_OPERATIONS: readonly string[] = [
-  "divide",
-  "duration",
-  "next",
-  "period",
-  "previous",
-  "same",
-  "shift",
-];
-
 const INTERNAL_DETAILS: readonly string[] = [
   "assertValidDate",
   "bind",
@@ -85,10 +68,7 @@ const INTERNAL_DETAILS: readonly string[] = [
   "divideWith",
   "go",
   "isSame",
-  "createUnits",
   "periodWith",
-  "specFor",
-  "withUnits",
 ];
 
 const explicit = withUnits(createUnits());
@@ -104,24 +84,6 @@ function exportsOf(namespace: object): ReadonlyMap<string, unknown> {
 }
 
 describe("export verification: index.ts", () => {
-  it(
-    "should export exactly the operations plus MinutaError",
-    { timeout: 5000 },
-    async () => {
-      expect.hasAssertions();
-      const mainExports = exportsOf(await import("#src/index"));
-      const operations = [...BOUND_OPERATIONS, ...UNIT_FREE_OPERATIONS];
-
-      expect(new Set(mainExports.keys())).toStrictEqual(
-        new Set([...operations, "MinutaError"])
-      );
-
-      for (const op of operations) {
-        expect(mainExports.get(op)).toBeTypeOf("function");
-      }
-    }
-  );
-
   it(
     "should not export internal implementation details",
     { timeout: 5000 },
@@ -141,22 +103,6 @@ describe("export verification: index.ts", () => {
     const uniqueNames = [...new Set(exportNames)];
     expect(exportNames).toHaveLength(uniqueNames.length);
   });
-});
-
-describe("export verification: index.ts and core.ts", () => {
-  it(
-    "should share the unit-free operations with the core entry",
-    { timeout: 5000 },
-    async () => {
-      expect.hasAssertions();
-      const mainExports = exportsOf(await import("#src/index"));
-      const coreExports = exportsOf(await import("#src/core"));
-
-      for (const op of [...UNIT_FREE_OPERATIONS, "MinutaError"]) {
-        expect(mainExports.get(op)).toBe(coreExports.get(op));
-      }
-    }
-  );
 });
 
 describe("default entry vs withUnits(createUnits()): period()", () => {
@@ -240,13 +186,14 @@ describe("default entry vs withUnits(createUnits()): comparisons", () => {
 });
 
 describe("export verification: index.ts against Minuta", () => {
-  it("has exactly the bound signatures of withUnits", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    // A type error here means the default entry drifted from withUnits
-    const bound: Pick<
-      Minuta,
-      "divide" | "duration" | "next" | "period" | "previous" | "same" | "shift"
-    > = { divide, duration, next: defaultNext, period, previous, same, shift };
-    expect(Object.keys(bound)).toStrictEqual([...BOUND_OPERATIONS]);
-  });
+  it(
+    "has exactly the bound signatures of withUnits",
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
+      // A type error here means the default entry drifted from withUnits
+      const bound: Omit<Minuta, "units"> = await import("#src/index");
+      expect(bound.period).toBe(period);
+    }
+  );
 });

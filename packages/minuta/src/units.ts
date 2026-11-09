@@ -180,7 +180,7 @@ function nextStart(spec: TimeSpec, start: ZonedDateTime): ZonedDateTime {
  * number.
  *
  * @param value - The option value
- * @param option - Where it came from, e.g. "divideWith() step"
+ * @param option - Where it came from, e.g. "divide() step"
  */
 function assertPositiveInteger(value: number, option: string): void {
   if (!Number.isInteger(value) || value < ONE) {

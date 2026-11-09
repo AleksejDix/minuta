@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { nextWith, previousWith } from "#src/operations/shift";
+import { countWith } from "#src/operations/count";
 import { createUnits } from "#src/create-units";
 import { date } from "#src/test/temporal";
 import { divideWith } from "#src/operations/divide";
-import { durationWith } from "#src/operations/duration";
 import { periodWith } from "#src/operations/period";
 
 /*
@@ -23,7 +23,7 @@ describe("weird time: Pacific/Apia, the skipped day", () => {
     expect.hasAssertions();
     expect(skipped.start.toString()).toBe("2011-12-30");
     expect(divideWith(units, skipped, "hour")).toStrictEqual([]);
-    expect(durationWith(units, skipped, "hour")).toBe(NONE);
+    expect(countWith(units, skipped, "hour")).toBe(NONE);
   });
 
   it(

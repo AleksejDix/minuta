@@ -19,6 +19,14 @@ const CUSTOM_OPTIONS: DisplayOptions = {
   year: "numeric",
 };
 
+/** Display options for minutes, and for custom spans of moments. */
+const MINUTE_OPTIONS: DisplayOptions = {
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  month: "short",
+};
+
 /**
  * Display options per period type.
  */
@@ -26,12 +34,7 @@ const PERIOD_OPTIONS: Readonly<Partial<Record<string, DisplayOptions>>> = {
   custom: CUSTOM_OPTIONS,
   day: { day: "numeric", month: "long", year: "numeric" },
   hour: { day: "numeric", hour: "numeric", minute: "2-digit", month: "short" },
-  minute: {
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    month: "short",
-  },
+  minute: MINUTE_OPTIONS,
   month: { month: "long", year: "numeric" },
   quarter: { month: "short", year: "numeric" },
   second: {
@@ -108,13 +111,21 @@ function calendarOf(period: Period): Intl.DateTimeFormatOptions {
   return { calendar };
 }
 
+// A unit's defaults; a custom span of moments shows its times
+function defaultsOf(period: Period): DisplayOptions {
+  if (period.unit === "custom" && !isDatePeriod(period)) {
+    return MINUTE_OPTIONS;
+  }
+  return PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS;
+}
+
 function optionsFor(
   period: Period,
   options: DisplayOptions,
   timeZone: string
 ): Intl.DateTimeFormatOptions {
   const picksFields = FIELDS.some((field) => options[field] !== undefined);
-  const defaults = PERIOD_OPTIONS[period.unit] ?? CUSTOM_OPTIONS;
+  const defaults = defaultsOf(period);
   const merged: Intl.DateTimeFormatOptions = {};
   if (!picksFields) {
     Object.assign(merged, defaults);
@@ -141,73 +152,58 @@ function lastShown(period: Period): PlainDate | ZonedDateTime {
   return period.end;
 }
 
-/**
- * Format a period as a locale-aware range string, collapsing shared parts
- * (same year, same month) with `Intl.DateTimeFormat#formatRange`. A date
- * period shows its first and its last day; a time period its start and its
- * end. The same text everywhere: on native Temporal and the polyfill, on a
- * server and in the browser.
- *
- * @example
- * formatRange(march, "de-CH"); // "1.–31. März 2026"
- * formatRange(lastWeekOfMarch, "de-CH"); // "30. März – 5. Apr. 2026"
- * formatRange(hour, "en-US"); // "Mar 18, 10:00 – 11:00 AM"
- *
- * @param period - Period to format
- * @param locale - BCP 47 locale
- * @param options - Intl options. Ones that pick fields (`month`, `weekday`,
- *   `dateStyle` …) replace the unit's defaults; others (`hourCycle`,
- *   `timeZone` for moments) are added to them
- * @returns The formatted range
- */
-function formatRange(
+// A range with the shared parts (same year, same month) collapsed
+function rangeText(
   period: Period,
-  locale: string,
-  options: DisplayOptions = {}
+  locales: string | readonly string[] | undefined,
+  options: DisplayOptions
 ): string {
   const start = toIntl(period.start);
   const end = toIntl(lastShown(period));
   const format = new Intl.DateTimeFormat(
-    locale,
+    locales,
     optionsFor(period, options, start.timeZone)
   );
   return format.formatRange(start.date, end.date);
 }
 
 /**
- * Format a period as a locale-aware display string, picking the right
- * format for its unit: a weekday and a day for a day, the month and year
- * for a month, a range for weeks and custom periods. The same text
- * everywhere: on native Temporal and the polyfill, on a server and in the
- * browser.
+ * A period as locale-aware text, like Temporal's `toLocaleString()`, in the
+ * format of its unit: the month and year for a month, a weekday and a day
+ * for a day, a range for weeks and custom periods (shared parts collapsed by
+ * `Intl.DateTimeFormat#formatRange`; a date period shows its last day, not
+ * its exclusive end). For a month as a range, format `range(month.start,
+ * month.end)`. The same text everywhere: on native Temporal and the
+ * polyfill, on a server and in the browser.
  *
  * @example
- * formatPeriod(march, "de-CH"); // "März 2026"
- * formatPeriod(day, "en-US"); // "March 15, 2026"
- * formatPeriod(day, "en-US", { weekday: "short" }); // "Sun"
- * formatPeriod(week, "ja-JP"); // "2026/03/09～2026/03/15"
+ * toLocaleString(march, "de-CH"); // "März 2026"
+ * toLocaleString(day, "en-US"); // "March 15, 2026"
+ * toLocaleString(day, "en-US", { weekday: "short" }); // "Sun"
+ * toLocaleString(week, "ja-JP"); // "2026/03/09～2026/03/15"
+ * toLocaleString(range(march.start, march.end), "de-CH"); // "1.–31. März 2026"
  *
  * @param period - Period to format
- * @param locale - BCP 47 locale
+ * @param locales - BCP 47 locale(s); the runtime's when left out
  * @param options - Intl options. Ones that pick fields (`month`, `weekday`,
  *   `dateStyle` …) replace the unit's defaults; others (`hourCycle`,
  *   `timeZone` for moments) are added to them
  * @returns The formatted period
  */
-function formatPeriod(
+function toLocaleString(
   period: Period,
-  locale: string,
+  locales?: string | readonly string[],
   options: DisplayOptions = {}
 ): string {
   if (period.unit === "week" || period.unit === "custom") {
-    return formatRange(period, locale, options);
+    return rangeText(period, locales, options);
   }
   const start = toIntl(period.start);
   const format = new Intl.DateTimeFormat(
-    locale,
+    locales,
     optionsFor(period, options, start.timeZone)
   );
   return format.format(start.date);
 }
 
-export { formatPeriod, formatRange };
+export { toLocaleString };

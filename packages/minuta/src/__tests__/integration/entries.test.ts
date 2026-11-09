@@ -1,42 +1,67 @@
-import {
-  calendar,
-  dayGridWith,
-  monthGridWith,
-  yearGridWith,
-} from "#src/calendar";
+import { createUnits, withUnits } from "#src/index";
 import { describe, expect, it } from "vitest";
 import type { TimeValue } from "#src/types";
-import { createUnits } from "#src/create-units";
 import { dateTime } from "#src/test/temporal";
+import { readFile } from "node:fs/promises";
 
-const UNIT_FREE_OPERATIONS: readonly string[] = [
-  "contains",
-  "overlaps",
-  "range",
-];
-
-const CORE_OPERATIONS: readonly string[] = [
-  "divideWith",
-  "durationWith",
-  "nextWith",
-  "periodWith",
-  "previousWith",
-  "sameWith",
-  "shiftWith",
-];
-
-const INTERVAL_EXPORTS: readonly string[] = [
+// Every function: the main entry's exports and the members of withUnits
+const FUNCTIONS: readonly string[] = [
   "clamp",
+  "compare",
+  "contains",
+  "count",
+  "dayGrid",
+  "divide",
+  "equals",
   "gap",
-  "intervals",
-  "mergeWith",
+  "isWeekday",
+  "isWeekend",
+  "merge",
+  "monthGrid",
   "move",
+  "next",
+  "overlaps",
+  "period",
+  "previous",
+  "range",
   "resize",
-  "snapWith",
+  "round",
+  "same",
+  "shift",
   "split",
+  "toLocaleString",
+  "yearGrid",
 ];
 
-const REMOVED_ENTRIES: readonly string[] = ["operations", "helpers"];
+const SETUP: readonly string[] = [
+  "MinutaError",
+  "createUnits",
+  "specFor",
+  "withUnits",
+];
+
+const REMOVED_ENTRIES: readonly string[] = [
+  "calendar",
+  "core",
+  "format",
+  "intervals",
+];
+
+const MANIFEST = new URL("../../../package.json", import.meta.url);
+
+// The subpaths a package.json exports
+function subpathsOf(manifest: unknown): string[] {
+  if (
+    typeof manifest !== "object" ||
+    manifest === null ||
+    !("exports" in manifest) ||
+    typeof manifest.exports !== "object" ||
+    manifest.exports === null
+  ) {
+    throw new TypeError("Expected a package.json with exports");
+  }
+  return Object.keys(manifest.exports);
+}
 
 const GRID_DATES: readonly TimeValue[] = [
   dateTime("2024-01-01T00:00:00"),
@@ -57,62 +82,19 @@ function exportsOf(namespace: unknown): ReadonlyMap<string, unknown> {
   return new Map<string, unknown>(Object.entries(namespace));
 }
 
-describe("export verification: core.ts", () => {
+describe("entries", () => {
   it(
-    "should export the context-first operations and withUnits",
+    "are the main entry and minuta/temporal only",
     { timeout: 5000 },
     async () => {
       expect.hasAssertions();
-      const coreExports = exportsOf(await import("#src/core"));
-      expect(new Set(coreExports.keys())).toStrictEqual(
-        new Set([
-          ...CORE_OPERATIONS,
-          ...UNIT_FREE_OPERATIONS,
-          "MinutaError",
-          "createUnits",
-          "specFor",
-          "withUnits",
-        ])
-      );
+      const manifest: unknown = JSON.parse(await readFile(MANIFEST, "utf8"));
+      expect(subpathsOf(manifest)).toStrictEqual([".", "./temporal"]);
     }
   );
 
-  it(
-    "should re-export every operation unchanged from core, intervals or calendar",
-    { timeout: 5000 },
-    async () => {
-      expect.hasAssertions();
-      const entries = [
-        exportsOf(await import("#src/core")),
-        exportsOf(await import("#src/intervals")),
-        exportsOf(await import("#src/calendar")),
-      ];
-      const operationsIndex = exportsOf(await import("#src/operations/index"));
-
-      for (const [key, value] of operationsIndex) {
-        expect(entries.map((entry) => entry.get(key))).toContain(value);
-      }
-    }
-  );
-});
-
-describe("export verification: intervals.ts", () => {
-  it(
-    "should export the intervals plugin and its functions",
-    { timeout: 5000 },
-    async () => {
-      expect.hasAssertions();
-      const intervalExports = exportsOf(await import("#src/intervals"));
-      expect(new Set(intervalExports.keys())).toStrictEqual(
-        new Set(INTERVAL_EXPORTS)
-      );
-    }
-  );
-});
-
-describe("export verification: removed entries", () => {
   it.each(REMOVED_ENTRIES)(
-    "minuta/%s should no longer exist",
+    "minuta/%s is gone",
     { timeout: 5000 },
     async (entry: string) => {
       expect.hasAssertions();
@@ -121,49 +103,40 @@ describe("export verification: removed entries", () => {
   );
 });
 
-describe("export verification: calendar.ts", () => {
+describe("the main entry", () => {
+  it("exports every function and the setup", { timeout: 5000 }, async () => {
+    expect.hasAssertions();
+    const entry = exportsOf(await import("#src/index"));
+    expect(new Set(entry.keys())).toStrictEqual(
+      new Set([...FUNCTIONS, ...SETUP])
+    );
+  });
+
   it(
-    "should export the calendar plugin and the grid functions",
+    "has the same functions as withUnits, plus its units",
     { timeout: 5000 },
-    async () => {
+    () => {
       expect.hasAssertions();
-      const calendarExports = exportsOf(await import("#src/calendar"));
-      expect(new Set(calendarExports.keys())).toStrictEqual(
-        new Set([
-          "calendar",
-          "dayGridWith",
-          "isWeekdayWith",
-          "isWeekendWith",
-          "monthGridWith",
-          "yearGridWith",
-        ])
+      const bound = withUnits(createUnits());
+      expect(new Set(Object.keys(bound))).toStrictEqual(
+        new Set([...FUNCTIONS, "units"])
       );
     }
   );
 
   it(
-    "should give the same grids through calendar(units)",
+    "gives the same grids as withUnits(createUnits())",
     { timeout: 5000 },
-    () => {
+    async () => {
       expect.hasAssertions();
-      const units = createUnits({ weekStartsOn: 0 });
-      const grids = calendar(units);
+      const entry = await import("#src/index");
+      const bound = withUnits(createUnits());
 
       for (const date of GRID_DATES) {
-        expect(grids.monthGrid(date)).toStrictEqual(monthGridWith(units, date));
-        expect(grids.yearGrid(date)).toStrictEqual(yearGridWith(units, date));
-        expect(grids.dayGrid(date)).toStrictEqual(dayGridWith(units, date));
+        expect(entry.monthGrid(date)).toStrictEqual(bound.monthGrid(date));
+        expect(entry.yearGrid(date)).toStrictEqual(bound.yearGrid(date));
+        expect(entry.dayGrid(date)).toStrictEqual(bound.dayGrid(date));
       }
     }
   );
-});
-
-describe("export verification: format.ts", () => {
-  it("should export the formatting functions", { timeout: 5000 }, async () => {
-    expect.hasAssertions();
-    const formatExports = exportsOf(await import("#src/format"));
-    expect(new Set(formatExports.keys())).toStrictEqual(
-      new Set(["formatPeriod", "formatRange"])
-    );
-  });
 });

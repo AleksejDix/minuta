@@ -7,14 +7,8 @@ import type { ErrorCode, ExportDocs } from "./api-docs";
 
 const NONE = 0;
 
-type FirstEntry = (name: string) => string | undefined;
-
 const PACKAGE_NAMES: Readonly<Record<string, string>> = {
-  calendar: "@aleksejdix/minuta/calendar",
-  core: "@aleksejdix/minuta/core",
-  format: "@aleksejdix/minuta/format",
   index: "@aleksejdix/minuta",
-  intervals: "@aleksejdix/minuta/intervals",
   temporal: "@aleksejdix/minuta/temporal",
 };
 
@@ -24,9 +18,9 @@ const HEADER = `# minuta
 
 ## Rules
 
-- Every unit-aware function exists twice: \`xWith(units, …)\` in \`@aleksejdix/minuta/core\` takes the units first; \`x(…)\` in \`@aleksejdix/minuta\` is the same function bound to \`createUnits()\`: weeks starting on Monday, moments in the runtime's zone. Where the runtime has no Temporal, \`await temporalReady()\` from \`@aleksejdix/minuta/temporal\` first. Unit-free functions have one form and take no units.
-- \`withUnits(units)\` (from \`@aleksejdix/minuta/core\`) binds every core operation to your units, e.g. \`withUnits(createUnits({ weekStartsOn: "sunday" }))\`; the result's \`units\` are the units passed in. \`calendar(units)\` (\`@aleksejdix/minuta/calendar\`: grids, \`isWeekday\`, \`isWeekend\`) and \`intervals(units)\` (\`@aleksejdix/minuta/intervals\`: \`gap\`, \`clamp\`, \`merge\`, \`split\`, \`resize\`, \`move\`, \`snap\`) bind their entry's functions the same way.
-- \`Units\` is a partial map of unit specs; pass only the units you use (\`{ day, month }\`) to keep the bundle small.
+- Two entries: \`@aleksejdix/minuta\` has every function; \`@aleksejdix/minuta/temporal\` has \`temporalReady()\`. Where the runtime has no Temporal, \`await temporalReady()\` first.
+- The main entry is \`withUnits(createUnits())\`: weeks starting on Monday, moments in the runtime's zone, each date's own calendar. For other rules, \`withUnits(createUnits({ locale, weekStartsOn, weekend, timeZone, calendar }))\` returns every function with the same names; its \`units\` are the units passed in.
+- Names follow Temporal: \`round\` takes Temporal's \`smallestUnit\`, \`roundingIncrement\` and \`roundingMode\`; \`equals\` and \`compare\` work like Temporal's; \`toLocaleString\` formats; \`count\` returns a number of units (\`start.until(end)\` gives a \`Temporal.Duration\`).
 - No result is \`undefined\`, never \`null\` (\`clamp\` without overlap, \`merge([])\`, …).
 - Invalid input throws \`RangeError\`; the message starts with one of the error codes below and says how to fix it.
 - Nothing is mutated: every function returns new data.
@@ -54,34 +48,10 @@ function renderExport(docs: ExportDocs): string {
   return parts.join("\n\n");
 }
 
-function firstEntries(api: readonly ExportDocs[]): FirstEntry {
-  const first = new Map<string, string>();
-  for (const docs of api) {
-    if (!first.has(docs.name)) {
-      first.set(docs.name, docs.entry);
-    }
-  }
-  return (name) => first.get(name);
-}
-
-function renderReference(docs: ExportDocs, firstEntry: string): string {
-  return `### \`${docs.name}\`\n\nSame as \`${docs.name}\` in \`${entryName(firstEntry)}\`.`;
-}
-
-function renderEntry(
-  entry: string,
-  api: readonly ExportDocs[],
-  firstEntryOf: FirstEntry
-): string {
+function renderEntry(entry: string, api: readonly ExportDocs[]): string {
   const sections = api
     .filter((docs) => docs.entry === entry)
-    .map((docs) => {
-      const firstEntry = firstEntryOf(docs.name) ?? entry;
-      if (firstEntry === entry) {
-        return renderExport(docs);
-      }
-      return renderReference(docs, firstEntry);
-    });
+    .map((docs) => renderExport(docs));
   return [`## \`${entryName(entry)}\``, ...sections].join("\n\n");
 }
 
@@ -103,8 +73,7 @@ function renderLlms(
   api: readonly ExportDocs[],
   codes: readonly ErrorCode[]
 ): string {
-  const first = firstEntries(api);
-  const sections = entries.map((entry) => renderEntry(entry, api, first));
+  const sections = entries.map((entry) => renderEntry(entry, api));
   return `${[HEADER.trimEnd(), renderErrors(codes), ...sections].join("\n\n")}\n`;
 }
 

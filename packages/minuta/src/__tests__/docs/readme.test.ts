@@ -14,10 +14,6 @@ const IMPORT_FROM = /from "(?<specifier>@aleksejdix\/minuta(?:\/[a-z-]+)?)"/gu;
 
 const ENTRY_FILES: Readonly<Record<string, string>> = {
   "@aleksejdix/minuta": "index",
-  "@aleksejdix/minuta/calendar": "calendar",
-  "@aleksejdix/minuta/core": "core",
-  "@aleksejdix/minuta/format": "format",
-  "@aleksejdix/minuta/intervals": "intervals",
   "@aleksejdix/minuta/temporal": "temporal",
 };
 

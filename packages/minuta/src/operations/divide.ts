@@ -87,7 +87,7 @@ function earlierOf<Kind extends Value>(left: Kind, right: Kind): Kind {
 function assertWithinLimit(generated: number, maxPeriods: number): void {
   if (generated > maxPeriods) {
     throw new RangeError(
-      `${MinutaError.TooManyPeriods}: divideWith() generated over ${maxPeriods} periods. ` +
+      `${MinutaError.TooManyPeriods}: divide() generated over ${maxPeriods} periods. ` +
         "Use a larger unit or step, a shorter period, or raise the maxPeriods option."
     );
   }
@@ -205,8 +205,8 @@ function divideWith<Source extends Period, Name extends Unit>(
   options: DivideOptions = {}
 ): Chunks<Source, Name> {
   const { maxPeriods = DEFAULT_MAX_PERIODS, step = DEFAULT_STEP } = options;
-  assertPositiveInteger(step, "divideWith() step");
-  assertPositiveInteger(maxPeriods, "divideWith() maxPeriods");
+  assertPositiveInteger(step, "divide() step");
+  assertPositiveInteger(maxPeriods, "divide() maxPeriods");
   const chunks = divided(units, { maxPeriods, period, step, unit });
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- A date period divided by a date unit gives date periods, every other division time periods
   return chunks as Chunks<Source, Name>;
