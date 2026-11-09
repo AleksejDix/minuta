@@ -6,7 +6,7 @@ import {
 import { describe, expect, it } from "vitest";
 import type { VNode } from "vue";
 import { at } from "#src/test/temporal";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import { h } from "vue";
 import { mountRender } from "#src/test/mount";
 

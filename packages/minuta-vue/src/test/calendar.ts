@@ -3,7 +3,7 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "#src/components/index";
-import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta";
 import { h, nextTick } from "vue";
 import type { VNode } from "vue";
 import { date as dateOf } from "./temporal";

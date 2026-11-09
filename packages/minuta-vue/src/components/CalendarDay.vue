@@ -2,9 +2,8 @@
 import { activeDay, dayForKey } from "./day-navigation";
 import { computed, nextTick, useTemplateRef } from "vue";
 import type { CalendarDayProps } from "./types";
-import type { Period } from "@aleksejdix/minuta/core";
-import { formatPeriod } from "@aleksejdix/minuta/format";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import type { Period } from "@aleksejdix/minuta";
+import { toLocaleString } from "@aleksejdix/minuta";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -21,9 +20,11 @@ const minuta = useMinutaContext();
 const button = useTemplateRef<HTMLButtonElement>("button");
 
 // The labels of the day's own date, the same on the server and in the browser
-const dayNumber = computed(() => formatPeriod(day, locale, { day: "numeric" }));
+const dayNumber = computed(() =>
+  toLocaleString(day, locale, { day: "numeric" })
+);
 const fullDate = computed(() =>
-  formatPeriod(day, locale, {
+  toLocaleString(day, locale, {
     day: "numeric",
     month: "long",
     weekday: "long",
@@ -39,7 +40,7 @@ const isSelected = computed(() => {
   return selected !== undefined && minuta.same(selected, day, "day");
 });
 const isDisabled = computed(() => calendar.isDisabled(day));
-const isWeekend = computed(() => isWeekendWith(minuta.units.value, day));
+const isWeekend = computed(() => minuta.isWeekend(day));
 // Only one day of the grid is tabbable: focused, selected, today or the 1st
 const tabIndex = computed(() => {
   const active = activeDay(minuta, minuta.browsing.value, [

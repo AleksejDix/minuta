@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PlainDate } from "@aleksejdix/minuta/core";
+import type { PlainDate } from "@aleksejdix/minuta";
 import { date } from "#src/test/temporal";
 import { useMinuta } from "./use-minuta";
 

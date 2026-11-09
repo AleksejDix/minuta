@@ -8,8 +8,8 @@ import {
   tabbable,
 } from "#src/test/calendar";
 import { describe, expect, it } from "vitest";
-import type { Period } from "@aleksejdix/minuta/core";
-import { createUnits } from "@aleksejdix/minuta/core";
+import type { Period } from "@aleksejdix/minuta";
+import { createUnits } from "@aleksejdix/minuta";
 
 type KeyCase = Readonly<{
   expected: string;

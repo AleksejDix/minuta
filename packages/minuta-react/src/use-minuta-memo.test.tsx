@@ -1,6 +1,6 @@
-import type { Unit, Units, ZonedDateTime } from "@aleksejdix/minuta/core";
+import type { Unit, Units, ZonedDateTime } from "@aleksejdix/minuta";
 import { describe, expect, it } from "vitest";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import { renderHook } from "@testing-library/react";
 import { useMinuta } from "./use-minuta";
 import { zoned } from "./test-temporal";

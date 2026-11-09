@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { at, date, useFakeClock } from "./test-temporal";
 import { act } from "react";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import { renderHook } from "@testing-library/react";
 import { useMinuta } from "./use-minuta";
 

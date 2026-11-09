@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CalendarWeekdaysProps } from "./types";
 import { computed } from "vue";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { toLocaleString } from "@aleksejdix/minuta";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -16,8 +16,8 @@ const weekdays = computed(() =>
   minuta
     .divide(minuta.period(minuta.browsing.value.start, "week"), "day")
     .map((day) => ({
-      full: formatPeriod(day, locale, { weekday: "long" }),
-      short: formatPeriod(day, locale, { weekday: "short" }),
+      full: toLocaleString(day, locale, { weekday: "long" }),
+      short: toLocaleString(day, locale, { weekday: "short" }),
     }))
 );
 </script>

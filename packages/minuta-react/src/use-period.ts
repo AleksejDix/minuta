@@ -1,4 +1,4 @@
-import type { Period, Unit } from "@aleksejdix/minuta/core";
+import type { Period, Unit } from "@aleksejdix/minuta";
 import { useMemo } from "react";
 import { useMinutaContext } from "./minuta-context";
 

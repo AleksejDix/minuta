@@ -1,4 +1,4 @@
-import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta";
 
 /**
  * Props of `<CalendarRoot>`.

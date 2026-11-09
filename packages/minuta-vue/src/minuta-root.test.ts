@@ -9,7 +9,7 @@ import {
 } from "./test/mount";
 import { MinutaRoot } from "#src/index";
 import type { MinutaState } from "./types";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import { date } from "#src/test/temporal";
 import { useMinuta } from "./use-minuta";
 import { useMinutaContext } from "./minuta-context";

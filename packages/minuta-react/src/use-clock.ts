@@ -1,4 +1,4 @@
-import type { Minuta, ZonedDateTime } from "@aleksejdix/minuta/core";
+import type { Minuta, ZonedDateTime } from "@aleksejdix/minuta";
 import { useEffect, useState } from "react";
 import { currentMoment } from "./now";
 

@@ -1,6 +1,6 @@
 import type { MinutaOptions, MinutaState } from "./types";
-import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 import { useCallback, useMemo, useState } from "react";
 import { currentMoment } from "./now";
 import { useClock } from "./use-clock";

@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { toLocaleString } from "@aleksejdix/minuta";
 import { useCalendarContext } from "./calendar-context";
 import { useCallback } from "react";
 import { useMinutaContext } from "#src/minuta-context";
@@ -54,7 +54,7 @@ function CalendarHeader({
         {PREVIOUS_LABEL}
       </button>
       <h2 id={labelId} aria-live="polite">
-        {formatPeriod(browsing, locale, { timeZone: units.timeZone })}
+        {toLocaleString(browsing, locale, { timeZone: units.timeZone })}
       </h2>
       <button
         type="button"

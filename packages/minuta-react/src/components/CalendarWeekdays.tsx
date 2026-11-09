@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { toLocaleString } from "@aleksejdix/minuta";
 import { useMemo } from "react";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -28,8 +28,8 @@ function CalendarWeekdays({
   const labels = useMemo((): readonly WeekdayLabel[] => {
     const week = period(browsing.start, "week");
     return divide(week, "day").map((day) => ({
-      full: formatPeriod(day, locale, { weekday: "long" }),
-      short: formatPeriod(day, locale, { weekday: "short" }),
+      full: toLocaleString(day, locale, { weekday: "long" }),
+      short: toLocaleString(day, locale, { weekday: "short" }),
     }));
   }, [browsing, divide, locale, period]);
 

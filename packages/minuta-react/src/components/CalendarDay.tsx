@@ -1,8 +1,8 @@
 import type { JSX, KeyboardEvent, KeyboardEventHandler, Ref } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { Period } from "@aleksejdix/minuta/core";
+import type { Period } from "@aleksejdix/minuta";
 import { dayForKey } from "./day-navigation";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { toLocaleString } from "@aleksejdix/minuta";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -37,14 +37,14 @@ const SELECT_KEYS: ReadonlySet<string> = new Set(["Enter", " "]);
  */
 function dayLabels(day: Period, locale: string): DayLabels {
   return {
-    full: formatPeriod(day, locale, {
+    full: toLocaleString(day, locale, {
       day: "numeric",
       month: "long",
       weekday: "long",
       year: "numeric",
     }),
-    number: formatPeriod(day, locale, { day: "numeric" }),
-    weekday: formatPeriod(day, locale, { weekday: "short" }),
+    number: toLocaleString(day, locale, { day: "numeric" }),
+    weekday: toLocaleString(day, locale, { weekday: "short" }),
   };
 }
 

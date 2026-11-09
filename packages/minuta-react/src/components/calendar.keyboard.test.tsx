@@ -3,9 +3,9 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
-import type { Period } from "@aleksejdix/minuta/core";
+import type { Period } from "@aleksejdix/minuta";
 import type { RenderResult } from "@testing-library/react";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import { date } from "#src/test-temporal";
 
 type OnSelect = (day: Period) => void;

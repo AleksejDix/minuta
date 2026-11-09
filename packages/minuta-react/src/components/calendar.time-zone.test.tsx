@@ -4,7 +4,7 @@ import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import { at } from "#src/test-temporal";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 const MARCH_DAYS = 31;
 const FIRST_DAY = 1;
