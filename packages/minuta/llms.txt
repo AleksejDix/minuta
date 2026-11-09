@@ -484,7 +484,8 @@ units on `PlainDate`, time units on `ZonedDateTime`. Pass the result to
 `withUnits`, `calendar`, `intervals` or any `…With` function. Weeks
 start on Monday unless `weekStartsOn` says otherwise (`"sunday"` …
 `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
-the days `isWeekend` counts (Saturday and Sunday unless set); `timeZone`
+the days `isWeekend` counts (Saturday and Sunday unless set); `locale`
+takes both from a locale's week (`Intl.Locale#getWeekInfo`); `timeZone`
 is where dates become moments; `calendar` the calendar dates are read in. Where the runtime has no Temporal,
 `await temporalReady()` first.
 
@@ -493,6 +494,8 @@ import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(createUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
 time.period(Temporal.PlainDate.from("2026-03-18"), "week"); // [Mar 15, Mar 22)
+
+createUnits({ locale: "ar-EG" }).weekend; // [5, 6]: Friday and Saturday
 ```
 
 ### `UnitsOptions`
@@ -570,9 +573,16 @@ Same as `Minuta` in `@aleksejdix/minuta`.
 
 ```ts
 type WeekOptions = Readonly<{
-  /** First day of the week. Default: `"monday"` (ISO 8601). */
+  /**
+   * Locale whose week to follow: its first day and its weekend, as
+   * `Intl.Locale#getWeekInfo` gives them (`"en-US"` starts on Sunday,
+   * `"ar-EG"` on Saturday with a Friday–Saturday weekend). `weekStartsOn`
+   * and `weekend` win over it. Default: none, the ISO 8601 week.
+   */
+  locale?: string | undefined;
+  /** First day of the week. Default: `"monday"` (ISO 8601), or the locale's. */
   weekStartsOn?: Weekday | WeekdayNumber | undefined;
-  /** Days that `isWeekend` counts as weekend. Default: `["saturday", "sunday"]`. */
+  /** Days that `isWeekend` counts as weekend. Default: `["saturday", "sunday"]`, or the locale's. */
   weekend?: readonly (Weekday | WeekdayNumber)[] | undefined;
 }>;
 ```

@@ -204,3 +204,48 @@ describe("createUnits()", () => {
     expect(units.hour.kind).toBe("time");
   });
 });
+
+type LocaleWeek = Readonly<{
+  locale: string;
+  start: number;
+  weekend: readonly number[];
+}>;
+
+const LOCALE_WEEKS: readonly LocaleWeek[] = [
+  { locale: "de-CH", start: ONE, weekend: [SIX, ZERO] },
+  { locale: "en-US", start: ZERO, weekend: [SIX, ZERO] },
+  { locale: "ar-EG", start: SIX, weekend: [FIVE, SIX] },
+];
+
+describe("createUnits({ locale })", () => {
+  it.each(LOCALE_WEEKS)(
+    "takes the week of $locale",
+    { timeout: 5000 },
+    ({ locale, start, weekend }) => {
+      expect.hasAssertions();
+      const week = createUnits({ locale });
+      expect([week.weekStartsOn, week.weekend]).toStrictEqual([start, weekend]);
+    }
+  );
+
+  it("starts its weeks on the locale's first day", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const { week } = createUnits({ locale: "en-US" });
+    expect(week.startOf(date("2026-03-18")).toString()).toBe("2026-03-15");
+  });
+
+  it("lets weekStartsOn and weekend win", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    const week = createUnits({
+      locale: "en-US",
+      weekStartsOn: "monday",
+      weekend: ["sunday"],
+    });
+    expect([week.weekStartsOn, week.weekend]).toStrictEqual([ONE, [ZERO]]);
+  });
+
+  it("rejects a tag that is not a locale", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(() => createUnits({ locale: "not a locale" })).toThrow(RangeError);
+  });
+});
