@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CalendarHeaderProps } from "./types";
 import { computed } from "vue";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { toLocaleString } from "@aleksejdix/minuta";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -12,7 +12,7 @@ defineSlots<Record<string, never>>();
 const calendar = useCalendarContext();
 const minuta = useMinutaContext();
 const label = computed(() =>
-  formatPeriod(minuta.browsing.value, locale, {
+  toLocaleString(minuta.browsing.value, locale, {
     timeZone: minuta.units.value.timeZone,
   })
 );

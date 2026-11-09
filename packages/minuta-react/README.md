@@ -17,7 +17,7 @@ function MonthPager() {
   const minuta = useMinuta({ unit: "month" });
   return (
     <button onClick={() => minuta.browse(minuta.next(minuta.browsing))}>
-      {minuta.browsing.start.toDateString()}
+      {minuta.toLocaleString(minuta.browsing, "en-US")}
     </button>
   );
 }
@@ -25,16 +25,18 @@ function MonthPager() {
 
 Options (all optional):
 
-- `units` – unit specs, default `nativeUnits()` (weeks start on Monday). The
-  week start lives in the units: `nativeUnits({ weekStartsOn: "sunday" })`. Memoise
-  them (`useMemo`) so the operations are rebound only when they change.
+- `units` – unit specs, default `createUnits()` (weeks start on Monday). The
+  week rules live in the units: `createUnits({ locale: "en-US" })` or
+  `createUnits({ weekStartsOn: "sunday" })`. Memoise them (`useMemo`) so the
+  functions are rebound only when they change.
 - `date` – initially browsed date, default now
 - `now` – the moment that counts as "now", default the clock, re-read at the
   start of every new day so "today" never goes stale
 - `unit` – unit of the browsed period, default `"month"`
 
-Returns every operation of `withUnits(units)` (`period`, `next`, `previous`,
-`shift`, `divide`, `contains`, `same`, …; see the core README) plus:
+Returns every function of `withUnits(units)` (`period`, `next`, `previous`,
+`divide`, `contains`, `monthGrid`, `isWeekend`, `round`, …; see the minuta
+README) plus:
 
 - `units` – the bound units
 - `browsing: Period` – the browsed period of `unit`
@@ -57,7 +59,7 @@ import {
 
 function Year() {
   const year = usePeriod("year");
-  return <h2>{year.start.getFullYear()}</h2>;
+  return <h2>{year.start.year}</h2>;
 }
 
 function NextMonth() {
@@ -82,14 +84,14 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-react/components";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 
-const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
+const swiss = createUnits({ locale: "de-CH" });
+const { isWeekend } = withUnits(swiss);
 
 <CalendarRoot
-  units={sundayFirst}
-  isDisabled={(day) => isWeekendWith(sundayFirst, day)}
+  units={swiss}
+  isDisabled={isWeekend}
   onSelect={(day) => console.log(day.start)}
 >
   <CalendarHeader locale="de-CH" />

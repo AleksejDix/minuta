@@ -5,7 +5,7 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { RenderResult } from "@testing-library/react";
 import type { WeekStart } from "./week-start";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import { date } from "#src/test-temporal";
 
 const GRID_DAYS = 42;

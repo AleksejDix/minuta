@@ -3,13 +3,13 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "#src/components/index";
-import type { Period, TimeValue, Units } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue, Units } from "@aleksejdix/minuta";
 import { date as dateOf, now } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { h, nextTick } from "vue";
 import { itemAt, mountRender } from "#src/test/mount";
 import type { VNode } from "vue";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 const DAYS_IN_GRID = 42;
 const OUTSIDE_DAYS_MARCH_2024 = 11;

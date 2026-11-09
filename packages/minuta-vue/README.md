@@ -20,7 +20,7 @@ const minuta = useMinuta({ unit: "month" });
 
 <template>
   <button @click="minuta.browse(minuta.next(minuta.browsing.value))">
-    {{ minuta.browsing.value.start.toDateString() }}
+    {{ minuta.toLocaleString(minuta.browsing.value, "en-US") }}
   </button>
 </template>
 ```
@@ -28,15 +28,17 @@ const minuta = useMinuta({ unit: "month" });
 Options (all optional; pass a plain object, a ref or a getter such as
 `() => props` to keep them reactive):
 
-- `units` – unit specs, default `nativeUnits()` (weeks start on Monday). The
-  week start lives in the units: `nativeUnits({ weekStartsOn: "sunday" })`.
+- `units` – unit specs, default `createUnits()` (weeks start on Monday). The
+  week rules live in the units: `createUnits({ locale: "en-US" })` or
+  `createUnits({ weekStartsOn: "sunday" })`.
 - `date` – initially browsed date, default now
 - `now` – the moment that counts as "now", default the clock, re-read at the
   start of every new day so "today" never goes stale
 - `unit` – unit of the browsed period, default `"month"`
 
-Returns every operation of `withUnits(units)` (`period`, `next`, `previous`,
-`shift`, `divide`, `contains`, `same`, …; see the core README),
+Returns every function of `withUnits(units)` (`period`, `next`, `previous`,
+`divide`, `contains`, `monthGrid`, `isWeekend`, `round`, …; see the minuta
+README),
 always bound to the current units, plus:
 
 - `units` – computed, the bound units
@@ -84,17 +86,15 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-vue/components";
-import type { Period } from "@aleksejdix/minuta/core";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { nativeUnits } from "@aleksejdix/minuta/native";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 
-const sundayFirst = nativeUnits({ weekStartsOn: "sunday" });
-const isWeekend = (day: Period) => isWeekendWith(sundayFirst, day);
+const swiss = createUnits({ locale: "de-CH" });
+const { isWeekend } = withUnits(swiss);
 </script>
 
 <template>
   <CalendarRoot
-    :units="sundayFirst"
+    :units="swiss"
     :is-disabled="isWeekend"
     @select="(day) => console.log(day.start)"
   >

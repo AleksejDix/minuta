@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from "vue";
-import type { Minuta, ZonedDateTime } from "@aleksejdix/minuta/core";
+import type { Minuta, ZonedDateTime } from "@aleksejdix/minuta";
 import { shallowRef, watchEffect } from "vue";
 import { currentMoment } from "#src/now";
 

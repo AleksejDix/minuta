@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import type { Context } from "react";
-import type { Period } from "@aleksejdix/minuta/core";
+import type { Period } from "@aleksejdix/minuta";
 
 type CalendarContextValue = Readonly<{
   /** The one tabbable day of the browsed month */

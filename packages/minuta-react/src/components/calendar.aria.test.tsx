@@ -1,4 +1,4 @@
-import type { Period, TimeValue } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue } from "@aleksejdix/minuta";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { date as dateOf, now } from "#src/test-temporal";
@@ -6,8 +6,7 @@ import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { RenderResult } from "@testing-library/react";
-import { createUnits } from "@aleksejdix/minuta/core";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { isWeekend } from "@aleksejdix/minuta";
 
 type Setup = Readonly<{
   date?: TimeValue;
@@ -44,10 +43,6 @@ function selectedCells(container: HTMLElement): string[] {
   return [
     ...container.querySelectorAll<HTMLElement>('td[aria-selected="true"]'),
   ].map((cell) => cell.textContent);
-}
-
-function isWeekend(day: Period): boolean {
-  return isWeekendWith(createUnits(), day);
 }
 
 describe("calendar grid semantics", () => {

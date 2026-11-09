@@ -1,4 +1,4 @@
-import type { Minuta, Period, Unit } from "@aleksejdix/minuta/core";
+import type { Minuta, Period, Unit } from "@aleksejdix/minuta";
 
 /** The operations the keyboard navigation needs */
 type Operations = Pick<

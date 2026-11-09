@@ -4,7 +4,7 @@
  */
 
 import type { Temporal } from "temporal-polyfill";
-import type { ZonedDateTime } from "@aleksejdix/minuta/core";
+import type { ZonedDateTime } from "@aleksejdix/minuta";
 
 type TemporalApi = typeof Temporal;
 

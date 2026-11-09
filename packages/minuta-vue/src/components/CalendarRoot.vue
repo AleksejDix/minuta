@@ -2,7 +2,7 @@
 import { provide, shallowRef, useId } from "vue";
 import type { CalendarRootProps } from "./types";
 import MinutaRoot from "./MinutaRoot.vue";
-import type { Period } from "@aleksejdix/minuta/core";
+import type { Period } from "@aleksejdix/minuta";
 import { calendarContextKey } from "./calendar-context";
 
 const {

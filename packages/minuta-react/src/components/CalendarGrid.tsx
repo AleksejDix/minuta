@@ -2,8 +2,7 @@ import type { JSX, ReactNode } from "react";
 import { CalendarDay } from "./CalendarDay";
 import { CalendarWeek } from "./CalendarWeek";
 import { CalendarWeekdays } from "./CalendarWeekdays";
-import type { Period } from "@aleksejdix/minuta/core";
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
+import type { Period } from "@aleksejdix/minuta";
 import { useCalendarContext } from "./calendar-context";
 import { useMemo } from "react";
 import { useMinutaContext } from "#src/minuta-context";
@@ -48,11 +47,11 @@ function CalendarGrid({
   children,
   locale = DEFAULT_LOCALE,
 }: CalendarGridProps): JSX.Element {
-  const { browsing, units } = useMinutaContext();
+  const { browsing, monthGrid } = useMinutaContext();
   const { labelId } = useCalendarContext();
   const weeks = useMemo(
-    () => toWeeks(monthGridWith(units, browsing.start).periods),
-    [browsing, units]
+    () => toWeeks(monthGrid(browsing.start).periods),
+    [browsing, monthGrid]
   );
   const renderDay = useMemo(() => {
     if (children !== undefined) {

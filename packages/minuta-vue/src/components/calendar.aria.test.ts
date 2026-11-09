@@ -7,9 +7,8 @@ import {
   tabbable,
 } from "#src/test/calendar";
 import { describe, expect, it } from "vitest";
-import type { Period } from "@aleksejdix/minuta/core";
-import { createUnits } from "@aleksejdix/minuta/core";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import type { Period } from "@aleksejdix/minuta";
+import { isWeekend } from "@aleksejdix/minuta";
 import { nextTick } from "vue";
 import { now } from "#src/test/temporal";
 
@@ -51,10 +50,6 @@ function selectedCells(element: HTMLElement): string[] {
  * @param day - The day
  * @returns True on Saturday and Sunday
  */
-function isWeekend(day: Period): boolean {
-  return isWeekendWith(createUnits(), day);
-}
-
 describe("calendar grid semantics", () => {
   it("labels the grid with the month heading", { timeout: 5000 }, () => {
     expect.hasAssertions();

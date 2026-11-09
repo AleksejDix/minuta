@@ -1,10 +1,10 @@
-import type { Period, TimeValue } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue } from "@aleksejdix/minuta";
 import { computed, effect, ref, shallowRef } from "vue";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import type { MinutaState } from "./types";
 import type { ReactiveEffectRunner } from "vue";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import { useMinuta } from "./use-minuta";
 
 const MONTH_OFFSET = 1;

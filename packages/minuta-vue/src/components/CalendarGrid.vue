@@ -2,9 +2,8 @@
 import CalendarDay from "./CalendarDay.vue";
 import type { CalendarGridProps } from "./types";
 import CalendarWeekdays from "./CalendarWeekdays.vue";
-import type { Period } from "@aleksejdix/minuta/core";
+import type { Period } from "@aleksejdix/minuta";
 import { computed } from "vue";
-import { monthGridWith } from "@aleksejdix/minuta/calendar";
 import { useCalendarContext } from "./calendar-context";
 import { useMinutaContext } from "#src/minuta-context";
 
@@ -19,10 +18,7 @@ const DAYS_PER_WEEK = 7;
 const calendar = useCalendarContext();
 const minuta = useMinutaContext();
 const weeks = computed(() => {
-  const days = monthGridWith(
-    minuta.units.value,
-    minuta.browsing.value.start
-  ).periods;
+  const days = minuta.monthGrid(minuta.browsing.value.start).periods;
   const rows: Period[][] = [];
   for (let index = 0; index < days.length; index += DAYS_PER_WEEK) {
     rows.push(days.slice(index, index + DAYS_PER_WEEK));

@@ -4,7 +4,7 @@
  * installed), the way an app builds them.
  */
 
-import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta/core";
+import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta";
 import type { Temporal } from "temporal-polyfill";
 import { vi } from "vitest";
 

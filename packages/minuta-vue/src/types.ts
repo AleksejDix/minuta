@@ -7,7 +7,7 @@ import type {
   Unit,
   Units,
   ZonedDateTime,
-} from "@aleksejdix/minuta/core";
+} from "@aleksejdix/minuta";
 
 /**
  * Options of `useMinuta()` and the props of `<MinutaRoot>`.
@@ -51,4 +51,4 @@ type MinutaState = Omit<Minuta, "units"> &
   }>;
 
 export type { MinutaOptions, MinutaRootProps, MinutaState, Source };
-export type { Minuta, Period, Unit, Units } from "@aleksejdix/minuta/core";
+export type { Minuta, Period, Unit, Units } from "@aleksejdix/minuta";

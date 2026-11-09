@@ -1,7 +1,7 @@
-import type { Minuta, Period, TimeValue, Units } from "@aleksejdix/minuta/core";
+import type { Minuta, Period, TimeValue, Units } from "@aleksejdix/minuta";
 import type { MinutaOptions, MinutaState, Source } from "#src/types";
 import { computed, shallowRef, toValue } from "vue";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 import type { ComputedRef } from "vue";
 import { currentMoment } from "#src/now";
 import { useClock } from "#src/use-clock";

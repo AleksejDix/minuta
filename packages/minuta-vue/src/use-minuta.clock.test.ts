@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useFakeClock, zoned } from "#src/test/temporal";
 import type { MinutaState } from "#src/types";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 import { effectScope } from "vue";
 import { useMinuta } from "./use-minuta";
 

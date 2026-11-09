@@ -1,5 +1,5 @@
 import type { MinutaOptions, MinutaState } from "./types";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 import { describe, expect, it } from "vitest";
 import { now, zoned } from "./test-temporal";
 import type { RenderHookResult } from "@testing-library/react";

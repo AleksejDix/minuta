@@ -1,7 +1,7 @@
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 import { date, now, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import type { TimePeriod } from "@aleksejdix/minuta/core";
+import type { TimePeriod } from "@aleksejdix/minuta";
 import { isRef } from "vue";
 import { useMinuta } from "./use-minuta";
 

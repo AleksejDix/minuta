@@ -1,4 +1,4 @@
-import type { Period, TimeValue } from "@aleksejdix/minuta/core";
+import type { Period, TimeValue } from "@aleksejdix/minuta";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { date, now } from "#src/test-temporal";
