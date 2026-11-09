@@ -42,6 +42,7 @@
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
     "release": "npm run build && changeset publish",
     "check:node-esm": "node scripts/check-node-esm.ts",
+    "check:types": "node scripts/check-types.ts",
     "lint:packages": "for p in minuta minuta-react minuta-vue text-buffer input-state datefield input-dom fechita; do publint packages/$p || exit 1; done"
   },
   "devDependencies": {
