@@ -79,7 +79,8 @@ function datesIn(dates: DateSpecs, calendar: string | undefined): DateSpecs {
  * `withUnits`, `calendar`, `intervals` or any `…With` function. Weeks
  * start on Monday unless `weekStartsOn` says otherwise (`"sunday"` …
  * `"saturday"`, or 0 = Sunday … 6 = Saturday); `weekend` sets
- * the days `isWeekend` counts (Saturday and Sunday unless set); `timeZone`
+ * the days `isWeekend` counts (Saturday and Sunday unless set); `locale`
+ * takes both from a locale's week (`Intl.Locale#getWeekInfo`); `timeZone`
  * is where dates become moments; `calendar` the calendar dates are read in. Where the runtime has no Temporal,
  * `await temporalReady()` first.
  *
@@ -89,7 +90,9 @@ function datesIn(dates: DateSpecs, calendar: string | undefined): DateSpecs {
  * const time = withUnits(createUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
  * time.period(Temporal.PlainDate.from("2026-03-18"), "week"); // [Mar 15, Mar 22)
  *
- * @param options - Week start, weekend and time zone
+ * createUnits({ locale: "ar-EG" }).weekend; // [5, 6]: Friday and Saturday
+ *
+ * @param options - Week start, weekend, locale, time zone and calendar
  * @returns A spec for every unit, with the settings
  */
 function createUnits(options: UnitsOptions = {}): AllUnits {
