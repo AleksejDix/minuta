@@ -69,11 +69,11 @@ mean by "today".
 ## Choosing a zone
 
 Pass an IANA zone name to
-[`createUnits`](../../api/minuta-core/create-units/). Then every function
+[`createUnits`](../../api/minuta/create-units/). Then every function
 turns dates into moments in that zone, wherever it runs:
 
 ```ts
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
 
@@ -92,8 +92,8 @@ A misspelled zone name is not checked by `createUnits`. It throws a
 Everything that turns dates into moments follows the zone of the units, not
 the computer's:
 
-- `period`, `divide`, `duration`, … with hour, minute and second units,
-- day grids of a date ([`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)),
+- `period`, `divide`, `count`, … with hour, minute and second units,
+- day grids of a date ([`dayGrid`](../../api/minuta/day-grid/)),
 - periods of an `Instant` — 22:00 UTC on Friday is a Saturday in Tokyo.
 
 ## The `timeZone` setting
@@ -101,7 +101,7 @@ the computer's:
 All units from `createUnits` carry the zone name:
 
 ```ts
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 createUnits().timeZone; // → "Europe/Zurich" (on a computer in Zurich)
 createUnits({ timeZone: "Asia/Tokyo" }).timeZone; // → "Asia/Tokyo"
@@ -116,18 +116,18 @@ A date period's `start` and `end` are `PlainDate`s. Their fields — `day`,
 `month`, `dayOfWeek`, `toString()` — are the same everywhere. A time
 period's `ZonedDateTime`s read in their own zone, not the computer's.
 
-- **To display**, use [`formatPeriod`](../../api/minuta-format/format-period/).
+- **To display**, use [`toLocaleString`](../../api/minuta/to-locale-string/).
   A moment is shown in its own zone:
 
   ```ts
-  import { formatPeriod } from "@aleksejdix/minuta/format";
+  import { toLocaleString } from "@aleksejdix/minuta";
 
   const hour = tokyo.period(
     Temporal.Instant.from("2026-03-20T20:00:00Z"),
     "hour"
   );
 
-  formatPeriod(hour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
+  toLocaleString(hour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
   ```
 
 - **To compare**, use minuta: `contains(month, day)` or
@@ -145,12 +145,12 @@ back once a year. In Europe/Zurich in 2026:
 minuta follows the real clock:
 
 ```ts
-import { duration, period } from "@aleksejdix/minuta";
+import { count, period } from "@aleksejdix/minuta";
 
 // On a computer in Europe/Zurich
-duration(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23
-duration(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour"); // → 25
-duration(period(Temporal.PlainDate.from("2026-06-01"), "day"), "hour"); // → 24
+count(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23
+count(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour"); // → 25
+count(period(Temporal.PlainDate.from("2026-06-01"), "day"), "hour"); // → 24
 ```
 
 The rules behind it:
@@ -161,11 +161,11 @@ The rules behind it:
   real minutes. On Oct 25 there are two different hour periods that both
   start at 02:00 on the clock, one at +02:00 and one at +01:00.
 
-[`dayGridWith`](../../api/minuta-calendar/day-grid-with/) lists the real
+[`dayGrid`](../../api/minuta/day-grid/) lists the real
 hours of a day and tells you which clock hour was skipped (`gapHour`) or
 repeated (`ambiguousHour`).
 
-[`move`](../../api/minuta-intervals/move/) keeps a period's length: days for a
+[`move`](../../api/minuta/move/) keeps a period's length: days for a
 date period, exact time for a time period. A range of 24 real hours moved
 onto Mar 29 00:00 ends at 01:00 on Mar 30.
 
@@ -177,11 +177,11 @@ Asia/Kathmandu, work: hours start at full hours on their clock.
 A few zones change their clocks by 30 minutes instead of an hour, such as
 Australia/Lord_Howe. On those days one hour is cut in two at the clock
 change, so a day has 25 or 24 hour pieces. `gapHour` and `ambiguousHour`
-count whole clock hours, so `dayGridWith` may not report the half hour that
+count whole clock hours, so `dayGrid` may not report the half hour that
 was skipped or repeated.
 
 ## Related
 
 - [Units](../date-engines/) — `createUnits` and its options.
 - [Weeks and calendars](../weeks-and-calendars/) — week start, weekend, grids.
-- [`dayGridWith`](../../api/minuta-calendar/day-grid-with/) — the hours of a day.
+- [`dayGrid`](../../api/minuta/day-grid/) — the hours of a day.

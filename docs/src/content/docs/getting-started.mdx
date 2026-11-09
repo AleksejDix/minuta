@@ -117,13 +117,13 @@ clock changes are handled for you.
 ## 4. Ask questions
 
 ```ts
-import { contains, duration, same } from "@aleksejdix/minuta";
+import { contains, count, same } from "@aleksejdix/minuta";
 
 contains(month, today); //                                    → true
 contains(month, Temporal.PlainDate.from("2026-11-01")); //    → false, the end
 
-duration(month, "day"); //                                    → 31
-duration(period(today, "day"), "hour"); //                    → 24
+count(month, "day"); //                                       → 31
+count(period(today, "day"), "hour"); //                       → 24
 
 same(
   period(today, "day"),
@@ -144,15 +144,14 @@ same(
 
 ## 5. Label it
 
-`formatPeriod` from `@aleksejdix/minuta/format` writes a period the way the locale reads
-it:
+`toLocaleString` writes a period the way the locale reads it:
 
 ```ts
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { toLocaleString } from "@aleksejdix/minuta";
 
-formatPeriod(month, "en-US"); //               → "October 2026"
-formatPeriod(month, "de-CH"); //               → "Oktober 2026"
-formatPeriod(period(today, "day"), "en-US"); // → "October 12, 2026"
+toLocaleString(month, "en-US"); //               → "October 2026"
+toLocaleString(month, "de-CH"); //               → "Oktober 2026"
+toLocaleString(period(today, "day"), "en-US"); // → "October 12, 2026"
 ```
 
 ## What's next

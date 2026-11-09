@@ -4,9 +4,8 @@
  * with a second hand sweeping over them.
  */
 import type { Period, ZonedDateTime } from "@aleksejdix/minuta";
-import { contains, divide, period } from "@aleksejdix/minuta";
+import { contains, divide, period, toLocaleString } from "@aleksejdix/minuta";
 import type { Temporal } from "temporal-polyfill";
-import { formatPeriod } from "@aleksejdix/minuta/format";
 
 type TemporalApi = typeof Temporal;
 
@@ -118,13 +117,13 @@ function labelsMarkup(months: readonly Period[]): string {
         LABEL_RADIUS,
         index * step + step / HALF
       );
-      return `<text class="dial-label" x="${across}" y="${down}">${formatPeriod(month, "en-US", { month: "narrow" })}</text>`;
+      return `<text class="dial-label" x="${across}" y="${down}">${toLocaleString(month, "en-US", { month: "narrow" })}</text>`;
     })
     .join("");
 }
 
 function centerMarkup(now: ZonedDateTime): string {
-  const month = formatPeriod(period(now, "month"), "en-US");
+  const month = toLocaleString(period(now, "month"), "en-US");
   return `<text class="dial-date" x="${String(CENTER)}" y="${String(CENTER)}">${String(now.day)}</text>
 <text class="dial-caption" x="${String(CENTER)}" y="${String(CENTER + TEXT_LINE)}">${month}</text>
 <text class="dial-time" x="${String(CENTER)}" y="${String(CENTER + TEXT_LINE * HALF)}"></text>`;
@@ -156,7 +155,7 @@ function rings(now: ZonedDateTime): Ring[] {
 
 function dialMarkup(now: ZonedDateTime): string {
   const all = rings(now);
-  const label = formatPeriod(period(now, "day"), "en-US", {
+  const label = toLocaleString(period(now, "day"), "en-US", {
     dateStyle: "full",
   });
   return `<svg viewBox="0 0 ${String(CENTER * HALF)} ${String(CENTER * HALF)}" role="img" aria-label="A dial of ${label}: the year's months, this month's days and today's hours">

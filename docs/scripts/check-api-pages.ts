@@ -21,10 +21,6 @@ const NONE = 0;
 
 const ENTRIES: readonly Entry[] = [
   { docs: "minuta", file: "index", pkg: "minuta" },
-  { docs: "minuta-core", file: "core", pkg: "minuta" },
-  { docs: "minuta-calendar", file: "calendar", pkg: "minuta" },
-  { docs: "minuta-intervals", file: "intervals", pkg: "minuta" },
-  { docs: "minuta-format", file: "format", pkg: "minuta" },
   { docs: "minuta-temporal", file: "temporal", pkg: "minuta" },
   { docs: "minuta-react", file: "index", pkg: "minuta-react" },
   { docs: "minuta-react", file: "components/index", pkg: "minuta-react" },
@@ -42,7 +38,7 @@ function entryPath(entry: Entry): string {
   return path.join(ROOT, "packages", entry.pkg, "src", `${entry.file}.ts`);
 }
 
-// `divideWith` → `divide-with`, `MinutaError` → `minuta-error`
+// `monthGrid` → `month-grid`, `MinutaError` → `minuta-error`
 function kebabCase(name: string): string {
   return name
     .replaceAll(/(?<lower>[a-z0-9])(?<upper>[A-Z])/gu, "$<lower>-$<upper>")

@@ -31,17 +31,17 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-react/components";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const sundayFirst = createUnits({ weekStartsOn: "sunday" });
+const { isWeekend } = withUnits(sundayFirst);
 
 export function BookingCalendar() {
   return (
     <CalendarRoot
       units={sundayFirst}
       date={Temporal.PlainDate.from("2024-01-15")}
-      isDisabled={(day) => isWeekendWith(sundayFirst, day)}
+      isDisabled={isWeekend}
       onSelect={(day) => console.log(day.start)}
     >
       <CalendarHeader />

@@ -15,7 +15,7 @@ import { MinutaError } from "@aleksejdix/minuta";
 ## Example
 
 ```ts
-import { MinutaError, divide, period } from "@aleksejdix/minuta";
+import { divide, MinutaError, period } from "@aleksejdix/minuta";
 
 const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
 
@@ -38,7 +38,7 @@ throws a normal `RangeError`. Its message starts with one of these codes,
 followed by a colon, what went wrong, and how to fix it:
 
 ```ts
-// RangeError: INVALID_OPTION: divideWith() step must be a positive whole
+// RangeError: INVALID_OPTION: divide() step must be a positive whole
 // number, got 0. Pass a count such as 1 or 15.
 ```
 
@@ -57,7 +57,7 @@ From the bad call to the code your `catch` checks:
       text: "Checks the options where they come in, finds the step invalid and picks the code.",
     },
     {
-      code: "RangeError: INVALID_OPTION: divideWith() step must be … got 0. …",
+      code: "RangeError: INVALID_OPTION: divide() step must be … got 0. …",
       layer: "RangeError",
       text: "A plain RangeError is thrown. Its message is the code, a colon, what went wrong and how to fix it.",
     },
@@ -76,28 +76,31 @@ class. Check `error instanceof RangeError` and the start of `error.message`.
 
 ## The codes
 
-| Key                            | Code                 | When                                                                                                     |
-| ------------------------------ | -------------------- | -------------------------------------------------------------------------------------------------------- |
-| `MinutaError.InvalidOption`    | `INVALID_OPTION`     | An option such as `step` or `maxPeriods` of [`divide`](../divide/) is not a positive whole number.       |
-| `MinutaError.TooManyPeriods`   | `TOO_MANY_PERIODS`   | [`divide`](../divide/) would create more pieces than `maxPeriods` allows.                                |
-| `MinutaError.UnitNotSupported` | `UNIT_NOT_SUPPORTED` | There is no such unit, e.g. `"fortnight"`, or the units you passed in `@aleksejdix/minuta/core` lack it. |
+| Key                            | Code                 | When                                                                                                                              |
+| ------------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `MinutaError.InvalidOption`    | `INVALID_OPTION`     | `step` or `maxPeriods` of [`divide`](../divide/), or `roundingIncrement` of [`round`](../round/), is not a positive whole number. |
+| `MinutaError.TooManyPeriods`   | `TOO_MANY_PERIODS`   | [`divide`](../divide/) would create more pieces than `maxPeriods` allows.                                                         |
+| `MinutaError.UnitNotSupported` | `UNIT_NOT_SUPPORTED` | There is no such unit, e.g. `"fortnight"`, or the units you passed to [`withUnits`](../with-units/) lack it.                      |
 
 There is no code for invalid dates: a Temporal value is always a valid date
 or moment.
 
 ## Which functions check what
 
-| Function                                                                                     | Codes it can throw                                         |
-| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [`period`](../period/), [`next`](../next/), [`previous`](../previous/), [`shift`](../shift/) | `UNIT_NOT_SUPPORTED`                                       |
-| [`divide`](../divide/)                                                                       | `INVALID_OPTION`, `TOO_MANY_PERIODS`, `UNIT_NOT_SUPPORTED` |
-| [`duration`](../duration/), [`same`](../same/)                                               | `UNIT_NOT_SUPPORTED`                                       |
-| [`range`](../range/), [`contains`](../contains/), [`overlaps`](../overlaps/)                 | none                                                       |
+| Function                                                                                                                                                                                     | Codes it can throw                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [`period`](../period/), [`next`](../next/), [`previous`](../previous/), [`shift`](../shift/)                                                                                                 | `UNIT_NOT_SUPPORTED`                                       |
+| [`divide`](../divide/)                                                                                                                                                                       | `INVALID_OPTION`, `TOO_MANY_PERIODS`, `UNIT_NOT_SUPPORTED` |
+| [`round`](../round/)                                                                                                                                                                         | `INVALID_OPTION`, `UNIT_NOT_SUPPORTED`                     |
+| [`count`](../count/), [`same`](../same/), [`merge`](../merge/), [`specFor`](../spec-for/)                                                                                                    | `UNIT_NOT_SUPPORTED`                                       |
+| [`monthGrid`](../month-grid/), [`yearGrid`](../year-grid/), [`dayGrid`](../day-grid/)                                                                                                        | `UNIT_NOT_SUPPORTED`, with units that lack one             |
+| [`range`](../range/), [`contains`](../contains/), [`overlaps`](../overlaps/), [`equals`](../equals/), [`compare`](../compare/), [`isWeekday`](../is-weekday/), [`isWeekend`](../is-weekend/) | none                                                       |
 
 `range` throws a plain `TypeError`, with no code, when you mix a
-`PlainDate` and a `ZonedDateTime`. Errors that Temporal itself throws, for
+`PlainDate` and a `ZonedDateTime`, and `round` when you round a date to a
+time unit. Errors that Temporal itself throws, for
 example for a string it cannot parse, have no minuta code either.
 
 ## Related
 
-- [`MinutaError` in `@aleksejdix/minuta/core`](../../minuta-core/overview/) — the same object, also exported there.
+- [`withUnits`](../with-units/) — units that lack a unit throw `UNIT_NOT_SUPPORTED`.

@@ -1,21 +1,17 @@
 ---
-title: dayGridWith
+title: dayGrid
 description: Get the real hours of a day — 24 on most days, 23 or 25 when the clocks change — each labelled with its clock hour.
 ---
 
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits, range, withUnits } from "@aleksejdix/minuta";
 import { instant } from "../../../../components/temporal";
-import { range } from "@aleksejdix/minuta";
-import { dayGridWith } from "@aleksejdix/minuta/calendar";
-import { divideWith } from "@aleksejdix/minuta/core";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const newYork = createUnits({ timeZone: "America/New_York" });
-export const spring = dayGridWith(newYork, instant("2024-03-10T12:00:00Z"));
-export const autumn = dayGridWith(newYork, instant("2024-11-03T12:00:00Z"));
+export const newYork = withUnits(createUnits({ timeZone: "America/New_York" }));
+export const spring = newYork.dayGrid(instant("2024-03-10T12:00:00Z"));
+export const autumn = newYork.dayGrid(instant("2024-11-03T12:00:00Z"));
 export const fullDay = (grid) =>
-  divideWith(
-    newYork,
+  newYork.divide(
     range(grid.periods[0].start, grid.periods[0].start.add({ hours: 24 })),
     "hour"
   );
@@ -25,21 +21,20 @@ Most days have 24 hours. The day the clocks go forward has 23, and the day
 they go back has 25.
 
 ```ts
-import { dayGridWith } from "@aleksejdix/minuta/calendar";
+import { dayGrid } from "@aleksejdix/minuta";
 ```
 
 ```ts
-dayGridWith(units, value);
+dayGrid(value);
 ```
 
 ## Example
 
 ```ts
-import { dayGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { dayGrid } from "@aleksejdix/minuta";
 
 // With the runtime in Europe/Zurich
-const grid = dayGridWith(createUnits(), Temporal.PlainDate.from("2026-06-01"));
+const grid = dayGrid(Temporal.PlainDate.from("2026-06-01"));
 
 grid.periods.length; // → 24
 grid.periods[0]; // → { start: 2026-06-01T00:00, end: 2026-06-01T01:00, unit: "hour", hour: 0 }
@@ -49,10 +44,9 @@ grid.ambiguousHour; // → undefined
 
 ## Parameters
 
-| Name    | What it is                                                                                              |
-| ------- | ------------------------------------------------------------------------------------------------------- |
-| `units` | The units to compute with, e.g. `createUnits()` or `createUnits({ timeZone })`. Needs `day` and `hour`. |
-| `value` | The day you want: a `PlainDate`, or any `PlainDateTime`, `ZonedDateTime` or `Instant` inside it.        |
+| Name    | What it is                                                                                       |
+| ------- | ------------------------------------------------------------------------------------------------ |
+| `value` | The day you want: a `PlainDate`, or any `PlainDateTime`, `ZonedDateTime` or `Instant` inside it. |
 
 ## Returns
 
@@ -74,10 +68,7 @@ from 01:59:59 straight to 03:00. The hour 2:00 never happens.
 
 ```ts
 // With the runtime in Europe/Zurich
-const spring = dayGridWith(
-  createUnits(),
-  Temporal.PlainDate.from("2026-03-29")
-);
+const spring = dayGrid(Temporal.PlainDate.from("2026-03-29"));
 
 spring.periods.length; // → 23
 spring.periods.map((slot) => slot.hour);
@@ -99,7 +90,7 @@ The grid ends one hour before 24 hours after midnight would:
       tone: "muted",
     },
     {
-      label: "dayGridWith(newYork, Mar 10)",
+      label: "newYork.dayGrid(Mar 10)",
       periods: spring.periods,
       tone: "accent",
     },
@@ -114,10 +105,7 @@ time and once more in winter time. Both are in the grid, as two different
 periods with `hour: 2`.
 
 ```ts
-const autumn = dayGridWith(
-  createUnits(),
-  Temporal.PlainDate.from("2026-10-25")
-);
+const autumn = dayGrid(Temporal.PlainDate.from("2026-10-25"));
 
 autumn.periods.length; // → 25
 autumn.periods.map((slot) => slot.hour);
@@ -140,7 +128,7 @@ twice. The grid has 25 bars and runs one hour past 24 hours after midnight:
       tone: "muted",
     },
     {
-      label: "dayGridWith(newYork, Nov 3)",
+      label: "newYork.dayGrid(Nov 3)",
       periods: autumn.periods,
       tone: "accent",
     },
@@ -153,13 +141,14 @@ happens twice tonight".
 ## Another time zone
 
 The hours are computed and labelled in the zone of a `ZonedDateTime` you
-pass, else in the `timeZone` of the units. `createUnits()` uses the
-runtime's zone. To show a day in another zone, set one with
-[`createUnits`](../../minuta-core/create-units/):
+pass, else in the runtime's zone. To show the days of another zone, take
+`dayGrid` from [`withUnits`](../with-units/) with a `timeZone`:
 
 ```ts
-const newYork = createUnits({ timeZone: "America/New_York" });
-const grid = dayGridWith(newYork, Temporal.PlainDate.from("2024-03-10"));
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+const newYork = withUnits(createUnits({ timeZone: "America/New_York" }));
+const grid = newYork.dayGrid(Temporal.PlainDate.from("2024-03-10"));
 
 grid.periods.length; // → 23
 grid.gapHour; // → 2
@@ -167,7 +156,7 @@ grid.periods[0].start.toString(); // → "2024-03-10T00:00:00-05:00[America/New_
 ```
 
 Or pass a moment in that zone:
-`dayGridWith(createUnits(), Temporal.ZonedDateTime.from("2024-03-10T12:00[America/New_York]"))`
+`dayGrid(Temporal.ZonedDateTime.from("2024-03-10T12:00[America/New_York]"))`
 gives the same 23 hours. If you build your own units without a `timeZone`,
 the runtime's zone is used.
 
@@ -180,14 +169,13 @@ there.
 
 ## Errors
 
-`dayGridWith` throws a `RangeError` starting with `UNIT_NOT_SUPPORTED` when
-`units` has no `day` or `hour`.
+`dayGrid` from `withUnits(units)` throws a `RangeError` starting with
+`UNIT_NOT_SUPPORTED` when `units` has no `day` or `hour`.
 
 ## Related
 
-- [`monthGridWith`](../month-grid-with/) — the days of a month view.
-- [`calendar`](../calendar/) — use it as `grids.dayGrid(value)` with `calendar(units)`.
-- [`duration`](../../minuta/duration/) — count the hours of a day without
+- [`monthGrid`](../month-grid/) — the days of a month view.
+- [`count`](../count/) — count the hours of a day without
   creating them.
 - [Time zones](../../../concepts/time-zones/) — DST and zone-aware units
   explained.

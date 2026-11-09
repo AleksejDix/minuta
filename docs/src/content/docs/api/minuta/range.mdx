@@ -59,7 +59,7 @@ Two dates make a period of dates, two `ZonedDateTime`s a period of moments.
 not include Mar 31 itself:
 
 ```ts
-import { contains, duration, range } from "@aleksejdix/minuta";
+import { contains, count, range } from "@aleksejdix/minuta";
 
 const q1 = range(
   Temporal.PlainDate.from("2026-01-01"),
@@ -67,14 +67,14 @@ const q1 = range(
 );
 
 contains(q1, Temporal.PlainDate.from("2026-03-31")); // → false
-duration(q1, "day"); // → 89
+count(q1, "day"); // → 89
 ```
 
 To include the whole last day, end the range at the day after it. The `end`
 of a day [`period`](../period/) is exactly that:
 
 ```ts
-import { duration, period, range } from "@aleksejdix/minuta";
+import { count, period, range } from "@aleksejdix/minuta";
 
 const q1 = range(
   Temporal.PlainDate.from("2026-01-01"),
@@ -82,7 +82,7 @@ const q1 = range(
 );
 // → { start: 2026-01-01, end: 2026-04-01, unit: "custom" }
 
-duration(q1, "day"); // → 90
+count(q1, "day"); // → 90
 ```
 
 <Timeline

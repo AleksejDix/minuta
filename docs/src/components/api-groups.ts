@@ -4,10 +4,6 @@
  */
 const API_GROUPS: readonly (readonly [string, string])[] = [
   ["minuta", "minuta"],
-  ["minuta-core", "minuta/core"],
-  ["minuta-calendar", "minuta/calendar"],
-  ["minuta-intervals", "minuta/intervals"],
-  ["minuta-format", "minuta/format"],
   ["minuta-temporal", "minuta/temporal"],
   ["minuta-react", "minuta-react"],
   ["minuta-vue", "minuta-vue"],

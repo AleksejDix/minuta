@@ -3,11 +3,15 @@ title: divide
 description: Split a period into smaller periods — a month into days, a day into hours, an hour into 15-minute slots.
 ---
 
-import { plainDate } from "../../../../components/temporal";
-import { divide, period } from "@aleksejdix/minuta";
+import { plainDate, zonedDateTime } from "../../../../components/temporal";
+import { divide, period, range } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(plainDate("2026-03-01"), "month");
+export const late = range(
+  zonedDateTime("2026-03-01T09:07[Europe/Zurich]"),
+  zonedDateTime("2026-03-01T10:00[Europe/Zurich]")
+);
 
 Split a period into smaller periods: a month into days, a day into hours, an
 hour into 15-minute slots.
@@ -54,8 +58,9 @@ divide(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour").length;
 // → 23 in Europe/Zurich
 ```
 
-For a fixed zone, use `divideWith` with `createUnits({ timeZone: "UTC" })`,
-or divide a range of two `ZonedDateTime`s, which keeps their zone. A day
+For a fixed zone, divide with
+`withUnits(createUnits({ timeZone: "UTC" })).divide`, or divide a range of
+two `ZonedDateTime`s, which keeps their zone. A day
 made from a `ZonedDateTime` is a date, so it uses the units' zone.
 
 ## Options
@@ -74,6 +79,51 @@ const nine = period(
 divide(nine, "minute", { step: 15 });
 // → 4 periods: 9:00–9:15, 9:15–9:30, 9:30–9:45, 9:45–10:00
 ```
+
+## Steps count from the start of the period
+
+Pieces with a `step` start at the beginning of `period` (rounded down to the
+unit), not at round clock times:
+
+```ts
+divide(
+  range(
+    Temporal.ZonedDateTime.from("2026-03-01T09:07[Europe/Zurich]"),
+    Temporal.ZonedDateTime.from("2026-03-01T10:00[Europe/Zurich]")
+  ),
+  "minute",
+  { step: 15 }
+);
+// → 9:07–9:22, 9:22–9:37, 9:37–9:52, 9:52–10:00
+```
+
+<Timeline
+  caption="15-minute steps from 9:07: the pieces start at the range's start, not at 9:00 or 9:15. The last one is cut at 10:00."
+  tracks={[
+    { label: "range(9:07, 10:00)", periods: [late], tone: "muted" },
+    {
+      label: "{ step: 15 }",
+      periods: divide(late, "minute", { step: 15 }),
+      tone: "accent",
+    },
+  ]}
+/>
+
+To start at round times, [`round`](../round/) the start first.
+
+## Hours follow the clock change
+
+Hours are real elapsed hours, so a day with a clock change has fewer or more
+of them. In Europe/Zurich:
+
+```ts
+divide(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour").length; // → 23
+divide(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour").length; // → 25
+```
+
+On Oct 25 the hour from 2:00 to 3:00 comes twice, once in summer time and
+once in winter time. The two pieces look the same on the wall clock but are
+an hour apart (`00:00Z` and `01:00Z`).
 
 ## Pieces at the edges are cut to fit
 
@@ -106,8 +156,9 @@ divide(march, "week");
 Pieces made with a `step` larger than 1 are always `"custom"` too: 15 minutes
 is not one whole unit.
 
-Weeks start on Monday here. To start them on Sunday, use `divideWith` from
-`@aleksejdix/minuta/core` with `createUnits({ weekStartsOn: "sunday" })`.
+Weeks start on Monday here. To start them on Sunday, take `divide` from
+[`withUnits`](../with-units/):
+`withUnits(createUnits({ weekStartsOn: "sunday" })).divide(march, "week")`.
 
 ## Errors
 
@@ -120,12 +171,15 @@ Weeks start on Monday here. To start them on Sunday, use `divideWith` from
 
 ```ts
 divide(period(Temporal.PlainDate.from("2026-01-01"), "year"), "second");
-// RangeError: TOO_MANY_PERIODS: divideWith() generated over 100000 periods. …
+// RangeError: TOO_MANY_PERIODS: divide() generated over 100000 periods. …
+
+divide(march, "day", { step: 1.5 });
+// RangeError: INVALID_OPTION: divide() step must be a positive whole number, got 1.5. …
 ```
 
 ## Related
 
-- `period` — create the period to divide.
-- `duration` — count the units without creating them.
-- `divideWith` (`@aleksejdix/minuta/core`) — the same, with your own units and week start.
-- `monthGridWith` (`@aleksejdix/minuta/calendar`) — a month as a calendar grid of weeks.
+- [`period`](../period/) — create the period to divide.
+- [`count`](../count/) — count the units without creating them.
+- [`withUnits`](../with-units/) — the same, with your own week start, time zone or calendar.
+- [`monthGrid`](../month-grid/) — a month as a calendar grid of weeks.

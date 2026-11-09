@@ -4,8 +4,7 @@ description: Hijri, Hebrew, Persian, Japanese and every other calendar Temporal 
 ---
 
 import { plainDate } from "../../../components/temporal";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import { createUnits, toLocaleString, withUnits } from "@aleksejdix/minuta";
 import CalendarsDemo from "../../../components/demos/CalendarsDemo.astro";
 import Timeline from "../../../components/diagrams/Timeline.astro";
 
@@ -17,7 +16,7 @@ export const isoYear = withUnits(createUnits()).period(
   "year"
 );
 export const monthIn = (calendar, locale) =>
-  formatPeriod(
+  toLocaleString(
     withUnits(createUnits({ calendar })).period(day, "month"),
     locale
   );
@@ -33,8 +32,7 @@ calendar's month, a year the calendar's year, a quarter three of its months.
 There are two ways, and both give the same periods:
 
 ```ts
-import { period } from "@aleksejdix/minuta";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, period, withUnits } from "@aleksejdix/minuta";
 
 // 1. Pass a date in that calendar: periods keep it
 period(Temporal.PlainDate.from("2026-03-18").withCalendar("hebrew"), "month");
@@ -76,7 +74,7 @@ Coptic calendars work too; try them in the demo above.
 - Ethiopic and Coptic years always have 13 months: twelve of 30 days and
   Pagume, 5 or 6 days.
 
-`duration(year, "month")`, `divide(year, "month")` and the grids count what
+`count(year, "month")`, `divide(year, "month")` and the grids count what
 the calendar has.
 
 ## Quarters in years with 13 months
@@ -112,12 +110,24 @@ fifth.
 />
 
 ```ts
+import {
+  createUnits,
+  range,
+  toLocaleString,
+  withUnits,
+} from "@aleksejdix/minuta";
+
 const hebrew = withUnits(createUnits({ calendar: "hebrew" }));
 const quarters = hebrew.divide(
   hebrew.period(Temporal.PlainDate.from("2024-01-15"), "year"),
   "quarter"
 );
-quarters.map((quarter) => formatRange(quarter, "en-US", { month: "long" }));
+quarters.map((quarter) =>
+  toLocaleString(range(quarter.start, quarter.end), "en-US", {
+    month: "long",
+    year: "numeric",
+  })
+);
 // → ["Tishri – Kislev 5784", "Tevet – Adar II 5784", "Nisan – Sivan 5784", "Tamuz – Elul 5784"]
 ```
 
@@ -131,13 +141,14 @@ const year = period(
   Temporal.PlainDate.from("2019-06-01").withCalendar("japanese"),
   "year"
 );
-formatRange(year, "ja-JP"); // → "平成31年～令和元年"
+toLocaleString(range(year.start, year.end), "ja-JP", { year: "numeric" });
+// → "平成31年～令和元年"
 ```
 
 ## Labels
 
-[`formatPeriod`](../../api/minuta-format/format-period/#other-calendars) and
-`formatRange` show a period in its calendar: "Adar I 5784",
+[`toLocaleString`](../../api/minuta/to-locale-string/) shows a period in its
+calendar: "Adar I 5784",
 "Ramadan 1447 AH". Pass `calendar` in the options to label it in another one.
 
 ## Weeks stay weeks
@@ -159,7 +170,7 @@ The Julian calendar is not part of Temporal, so it is not here yet.
 
 ## Related
 
-- [`createUnits`](../../api/minuta-core/create-units/#calendars) — the
+- [`createUnits`](../../api/minuta/create-units/#calendars) — the
   `calendar` option.
 - [Weeks and calendars](../weeks-and-calendars/) — week starts, weekends and
   grids.

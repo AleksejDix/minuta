@@ -18,8 +18,9 @@ import {
   next as nextPeriod,
   period,
   previous as previousPeriod,
+  range,
+  toLocaleString,
 } from "@aleksejdix/minuta";
-import { formatRange } from "@aleksejdix/minuta/format";
 
 const DAYS_BY_HAND = 30;
 const MONTHS = 12;
@@ -72,8 +73,8 @@ function showProblem(root: HTMLElement, date: Readonly<Date>): void {
 
 function showAnswer(root: HTMLElement, date: PlainDate): void {
   const month = nextPeriod(period(date, "month"));
-  part(root, "next-month", HTMLElement).textContent = formatRange(
-    month,
+  part(root, "next-month", HTMLElement).textContent = toLocaleString(
+    range(month.start, month.end),
     "en-US",
     { day: "numeric", month: "short", weekday: "short", year: "numeric" }
   );

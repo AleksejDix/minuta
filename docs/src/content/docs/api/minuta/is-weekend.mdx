@@ -1,44 +1,48 @@
 ---
-title: isWeekendWith
+title: isWeekend
 description: Check whether a period lies completely on weekend days — Saturday and Sunday, or the weekend you set.
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { divide, period, range } from "@aleksejdix/minuta";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import {
+  createUnits,
+  divide,
+  isWeekend,
+  period,
+  range,
+  withUnits,
+} from "@aleksejdix/minuta";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const march = period(plainDate("2026-03-01"), "month");
 export const days = divide(march, "day");
 export const week = period(plainDate("2026-03-18"), "week");
+export const fridayOff = withUnits(
+  createUnits({ weekend: ["friday", "saturday"] })
+);
 
 Check whether a period lies completely on weekend days. The weekend is
-Saturday and Sunday unless you set other days in the units.
+Saturday and Sunday unless you set other days with `withUnits`.
 
 ```ts
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
+import { isWeekend } from "@aleksejdix/minuta";
 ```
 
 ```ts
-isWeekendWith(units, period);
+isWeekend(period);
 ```
 
 ## Example
 
 ```ts
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
-import { period } from "@aleksejdix/minuta";
+import { isWeekend, period } from "@aleksejdix/minuta";
 
-const units = createUnits();
-
-isWeekendWith(units, period(Temporal.PlainDate.from("2026-03-21"), "day")); // → true  (a Saturday)
-isWeekendWith(units, period(Temporal.PlainDate.from("2026-03-18"), "day")); // → false (a Wednesday)
+isWeekend(period(Temporal.PlainDate.from("2026-03-21"), "day")); // → true  (a Saturday)
+isWeekend(period(Temporal.PlainDate.from("2026-03-18"), "day")); // → false (a Wednesday)
 ```
 
-In a month view, the shaded days are the ones `isWeekendWith(units, day)`
+In a month view, the shaded days are the ones `isWeekend(day)`
 returns `true` for: every Saturday and Sunday of March 2026, here with Sat
 Mar 21 selected.
 
@@ -46,10 +50,9 @@ Mar 21 selected.
 
 ## Parameters
 
-| Name     | What it is                                                                     |
-| -------- | ------------------------------------------------------------------------------ |
-| `units`  | The units to compute with, e.g. `createUnits()`. Only their `weekend` is used. |
-| `period` | The period to check: a day, an hour, a range of days, …                        |
+| Name     | What it is                                              |
+| -------- | ------------------------------------------------------- |
+| `period` | The period to check: a day, an hour, a range of days, … |
 
 ## Returns
 
@@ -58,18 +61,22 @@ Mar 21 selected.
 
 ## Another weekend
 
-Not every country rests on Saturday and Sunday. Set the weekend when you
-create the units. Days are named in lowercase English; numbers work too
-(0 = Sunday … 6 = Saturday).
+Not every country rests on Saturday and Sunday. Set the weekend in
+[`createUnits`](../create-units/) and take `isWeekend` from
+[`withUnits`](../with-units/). Days are named in lowercase English; numbers
+work too (0 = Sunday … 6 = Saturday). `createUnits({ locale: "ar-EG" })`
+takes the weekend from a locale.
 
 ```ts
-const units = createUnits({ weekend: ["friday", "saturday"] });
+import { createUnits, period, withUnits } from "@aleksejdix/minuta";
 
-isWeekendWith(units, period(Temporal.PlainDate.from("2026-03-20"), "day")); // → true  (a Friday)
-isWeekendWith(units, period(Temporal.PlainDate.from("2026-03-22"), "day")); // → false (a Sunday)
+const time = withUnits(createUnits({ weekend: ["friday", "saturday"] }));
+
+time.isWeekend(period(Temporal.PlainDate.from("2026-03-20"), "day")); // → true  (a Friday)
+time.isWeekend(period(Temporal.PlainDate.from("2026-03-22"), "day")); // → false (a Sunday)
 ```
 
-The days of March 2026 for which `isWeekendWith` returns `true`, with the
+The days of March 2026 for which `isWeekend` returns `true`, with the
 default weekend and with Friday and Saturday. Every weekend moves one day
 earlier:
 
@@ -79,20 +86,18 @@ earlier:
     { label: "march", periods: [march], tone: "muted" },
     {
       label: '["saturday", "sunday"]',
-      periods: days.filter((day) => isWeekendWith(createUnits(), day)),
+      periods: days.filter((day) => isWeekend(day)),
       tone: "accent",
     },
     {
       label: '["friday", "saturday"]',
-      periods: days.filter((day) =>
-        isWeekendWith(createUnits({ weekend: ["friday", "saturday"] }), day)
-      ),
+      periods: days.filter((day) => fridayOff.isWeekend(day)),
       tone: "accent",
     },
   ]}
 />
 
-With `weekend: []` there is no weekend, and `isWeekendWith` is always
+With `weekend: []` there is no weekend, and `isWeekend` is always
 `false`.
 
 ## Periods longer than a day
@@ -101,13 +106,10 @@ The check looks at every day the period touches, even partly. All of them
 must be weekend days.
 
 ```ts
-import { range } from "@aleksejdix/minuta";
-
-const units = createUnits();
+import { isWeekend, period, range } from "@aleksejdix/minuta";
 
 // Sat Mar 21 00:00 – Sun Mar 22 23:00
-isWeekendWith(
-  units,
+isWeekend(
   range(
     Temporal.ZonedDateTime.from("2026-03-21T00:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-22T23:00[Europe/Zurich]")
@@ -116,8 +118,7 @@ isWeekendWith(
 // → true
 
 // Fri Mar 20 18:00 – Sat Mar 21 10:00: Friday is not weekend
-isWeekendWith(
-  units,
+isWeekend(
   range(
     Temporal.ZonedDateTime.from("2026-03-20T18:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-21T10:00[Europe/Zurich]")
@@ -125,9 +126,8 @@ isWeekendWith(
 );
 // → false
 
-isWeekendWith(units, period(Temporal.PlainDate.from("2026-03-18"), "week")); // → false
-isWeekendWith(
-  units,
+isWeekend(period(Temporal.PlainDate.from("2026-03-18"), "week")); // → false
+isWeekend(
   period(Temporal.ZonedDateTime.from("2026-03-21T10:00[Europe/Zurich]"), "hour")
 ); // → true (Saturday 10:00)
 ```
@@ -140,9 +140,7 @@ lies inside them; the second one starts on Friday evening and sticks out:
   tracks={[
     {
       label: "weekend days",
-      periods: divide(week, "day").filter((day) =>
-        isWeekendWith(createUnits(), day)
-      ),
+      periods: divide(week, "day").filter((day) => isWeekend(day)),
       tone: "muted",
     },
     {
@@ -164,7 +162,7 @@ lies inside them; the second one starts on Friday evening and sticks out:
 />
 
 A period that has both weekend days and working days is neither: both
-`isWeekendWith` and [`isWeekdayWith`](../is-weekday-with/) return `false`
+`isWeekend` and [`isWeekday`](../is-weekday/) return `false`
 for it.
 
 ## Time zones
@@ -175,25 +173,24 @@ when the period is made. 22:00 UTC on Friday Mar 20 2026 is already Saturday
 morning in Tokyo:
 
 ```ts
-import { periodWith } from "@aleksejdix/minuta/core";
+import { createUnits, isWeekend, period, withUnits } from "@aleksejdix/minuta";
 
-const tokyo = createUnits({ timeZone: "Asia/Tokyo" });
+const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
 const moment = Temporal.Instant.from("2026-03-20T22:00:00Z");
 
-isWeekendWith(tokyo, periodWith(tokyo, moment, "day")); // → true  (Saturday in Tokyo)
-isWeekendWith(createUnits(), period(moment, "day")); // → false (Friday 23:00 in Zurich)
+tokyo.isWeekend(tokyo.period(moment, "day")); // → true  (Saturday in Tokyo)
+isWeekend(period(moment, "day")); // → false (Friday 23:00 in Zurich)
 ```
 
 ## Errors
 
-`isWeekendWith` does not throw: it needs no unit specs, only the `weekend`
+`isWeekend` does not throw: it needs no unit specs, only the `weekend`
 setting (Saturday and Sunday when the units have none). It does not check
 the period: pass a valid one, e.g. from `period()`.
 
 ## Related
 
-- [`isWeekdayWith`](../is-weekday-with/) — the opposite check: only working days.
-- [`calendar`](../calendar/) — use it as `grids.isWeekend(period)` with `calendar(units)`.
-- [`monthGridWith`](../month-grid-with/) — the days to mark in a month view.
+- [`isWeekday`](../is-weekday/) — the opposite check: only working days.
+- [`monthGrid`](../month-grid/) — the days to mark in a month view.
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start
   and weekend explained.

@@ -1,14 +1,18 @@
 ---
 /*
  * A month as a calendar grid, computed at build time with minuta's
- * `monthGridWith`: 6 weeks of 7 days, days outside the month muted,
+ * `monthGrid`: 6 weeks of 7 days, days outside the month muted,
  * weekend days marked, one day optionally selected.
  */
-import type { DatePeriod, Weekday } from "@aleksejdix/minuta/core";
-import { contains, period, same } from "@aleksejdix/minuta";
-import { isWeekendWith, monthGridWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
-import { formatPeriod } from "@aleksejdix/minuta/format";
+import type { DatePeriod, Weekday } from "@aleksejdix/minuta";
+import {
+  contains,
+  createUnits,
+  period,
+  same,
+  toLocaleString,
+  withUnits,
+} from "@aleksejdix/minuta";
 import { plainDate } from "./dates";
 
 type Props = Readonly<{
@@ -77,9 +81,9 @@ function isMarked(day: DatePeriod): boolean {
   return marks.some((iso) => same(day, dayOf(iso), "day"));
 }
 
-const units = createUnits({ weekStartsOn });
+const time = withUnits(createUnits({ weekStartsOn }));
 const monthStart = plainDate(`${month}-01`);
-const grid = monthGridWith(units, monthStart);
+const grid = time.monthGrid(monthStart);
 const thisMonth = period(monthStart, "month");
 
 
@@ -98,7 +102,7 @@ function isSelected(day: DatePeriod): boolean {
 
 const headers = grid.periods
   .slice(FIRST, DAYS_A_WEEK)
-  .map((day) => formatPeriod(day, locale, { weekday: "short" }));
+  .map((day) => toLocaleString(day, locale, { weekday: "short" }));
 const weeks = Array.from(
   { length: grid.periods.length / DAYS_A_WEEK },
   (_unused, row) =>
@@ -110,13 +114,13 @@ const weeks = Array.from(
         marked: isMarked(day),
         outside: !contains(thisMonth, day.start),
         selected: isSelected(day),
-        weekend: isWeekendWith(units, day),
+        weekend: time.isWeekend(day),
       }))
 );
 ---
 
 <figure class="month-grid not-content">
-  <figcaption>{formatPeriod(thisMonth, locale)}</figcaption>
+  <figcaption>{toLocaleString(thisMonth, locale)}</figcaption>
   <table>
     <thead>
       <tr>{headers.map((name) => <th>{name}</th>)}</tr>

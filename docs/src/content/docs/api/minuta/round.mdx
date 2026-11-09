@@ -1,0 +1,304 @@
+---
+title: round
+description: Round a date or moment to a neat boundary — the nearest quarter hour, the next midnight, the start of the week.
+---
+
+import { plainDate, zonedDateTime } from "../../../../components/temporal";
+import { divide, period, round } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = zonedDateTime("2026-03-15T10:37[Europe/Zurich]");
+export const march = period(plainDate("2026-03-01"), "month");
+
+Round a date or a moment to a neat boundary: the nearest quarter hour, the
+next midnight, the start of the week. It takes the options of Temporal's
+`round()`, and also rounds to weeks, months, quarters and years.
+
+```ts
+import { round } from "@aleksejdix/minuta";
+```
+
+```ts
+round(value, unit);
+round(value, { smallestUnit, roundingIncrement?, roundingMode? });
+```
+
+## Example
+
+```ts
+import { round } from "@aleksejdix/minuta";
+
+const date = Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"); // Sun Mar 15, 10:37
+
+round(date, "hour"); // → 11:00
+round(date, { smallestUnit: "minute", roundingIncrement: 15 }); // → 10:30
+round(date, {
+  smallestUnit: "minute",
+  roundingIncrement: 15,
+  roundingMode: "ceil",
+}); // → 10:45
+round(date, { smallestUnit: "day", roundingMode: "ceil" }); // → 2026-03-16T00:00
+round(Temporal.PlainDate.from("2026-03-18"), {
+  smallestUnit: "week",
+  roundingMode: "floor",
+}); // → 2026-03-16, a Monday
+```
+
+<Timeline
+  caption="The hour from 10:00 in steps of 15 minutes. 10:37 lies between the boundaries 10:30 and 10:45: the default, halfExpand, picks the nearer 10:30; ceil picks 10:45."
+  marks={[
+    { date, label: "10:37" },
+    {
+      date: round(date, { smallestUnit: "minute", roundingIncrement: 15 }),
+      label: "10:30",
+    },
+    {
+      date: round(date, {
+        smallestUnit: "minute",
+        roundingIncrement: 15,
+        roundingMode: "ceil",
+      }),
+      label: "10:45",
+    },
+  ]}
+  tracks={[
+    {
+      label: "roundingIncrement: 15",
+      periods: divide(period(date, "hour"), "minute", { step: 15 }),
+      tone: "muted",
+    },
+  ]}
+/>
+
+## Parameters
+
+| Name      | What it is                                                                         |
+| --------- | ---------------------------------------------------------------------------------- |
+| `value`   | The date (`PlainDate`) or moment (`ZonedDateTime`) to round.                       |
+| `unit`    | Whose boundaries to round to: `"minute"`, `"hour"`, `"day"`, `"week"`, …           |
+| `options` | Instead of `unit`: `smallestUnit` with its options, see [Options](#options) below. |
+
+A unit alone is the same as `{ smallestUnit: unit }`, as Temporal's
+`round("hour")` takes it.
+
+## Options
+
+| Option              | Default        | What it does                                                                                       |
+| ------------------- | -------------- | -------------------------------------------------------------------------------------------------- |
+| `smallestUnit`      | required       | The unit whose boundaries to round to.                                                             |
+| `roundingIncrement` | `1`            | How many units lie between boundaries. `15` with `"minute"` gives :00, :15, :30, :45.              |
+| `roundingMode`      | `"halfExpand"` | Which boundary to pick, see [Rounding modes](#rounding-modes). The default is the nearer, ties up. |
+
+## Returns
+
+A boundary of the same kind as `value`. A date rounds to dates, so only to
+date units (`"day"` and larger). A moment rounds to moments in its own zone;
+for date units, to the start of a day. When `value` already is a boundary,
+you get it back, whatever the mode.
+
+## Rounding modes
+
+The nine modes of Temporal. A value always lies after the boundary below it,
+so `trunc` works like `floor` and `expand` like `ceil`, as in Temporal's own
+`round()` of a time. The `half…` modes take the nearer boundary and differ
+only on a tie, exactly in the middle:
+
+| `roundingMode` | Picks                                      | 10:37, 15 minutes | 10:30, hour | 11:30, hour |
+| -------------- | ------------------------------------------ | ----------------- | ----------- | ----------- |
+| `ceil`         | the boundary after                         | 10:45             | 11:00       | 12:00       |
+| `expand`       | the boundary after                         | 10:45             | 11:00       | 12:00       |
+| `floor`        | the boundary before                        | 10:30             | 10:00       | 11:00       |
+| `trunc`        | the boundary before                        | 10:30             | 10:00       | 11:00       |
+| `halfExpand`   | the nearer one; a tie goes up (default)    | 10:30             | 11:00       | 12:00       |
+| `halfCeil`     | the nearer one; a tie goes up              | 10:30             | 11:00       | 12:00       |
+| `halfFloor`    | the nearer one; a tie goes down            | 10:30             | 10:00       | 11:00       |
+| `halfTrunc`    | the nearer one; a tie goes down            | 10:30             | 10:00       | 11:00       |
+| `halfEven`     | the nearer one; a tie goes to the even one | 10:30             | 10:00       | 12:00       |
+
+For `halfEven`, a boundary is even when it is an even number of increments
+from where they are counted (see [below](#where-increments-are-counted-from)):
+10:00 is hour 10 of the day, 12:00 hour 12.
+
+## Nearest, and ties
+
+The default, `"halfExpand"`, picks the nearer boundary. Exactly in the
+middle, it rounds up:
+
+```ts
+round(Temporal.ZonedDateTime.from("2026-03-15T10:30[Europe/Zurich]"), "hour"); // → 11:00
+round(Temporal.ZonedDateTime.from("2026-03-15T12:00[Europe/Zurich]"), "day"); // → 2026-03-16T00:00
+round(
+  Temporal.ZonedDateTime.from("2026-03-15T10:37:30[Europe/Zurich]"),
+  "minute"
+); // → 10:38
+```
+
+Distances are real time: days for dates, nanoseconds for moments. Feb 15
+2026 lies 14 days after Feb 1 and 14 days before Mar 1, a tie:
+
+```ts
+round(Temporal.PlainDate.from("2026-02-15"), "month"); // → 2026-03-01
+round(Temporal.PlainDate.from("2026-02-15"), {
+  smallestUnit: "month",
+  roundingMode: "halfFloor",
+}); // → 2026-02-01
+```
+
+## Where increments are counted from
+
+Increments start again in every larger unit, so they follow the clock and
+the calendar:
+
+| `smallestUnit`     | Increments counted from |
+| ------------------ | ----------------------- |
+| `second`           | the start of the minute |
+| `minute`           | the start of the hour   |
+| `hour`             | the start of the day    |
+| `day`              | the start of the month  |
+| `month`, `quarter` | the start of the year   |
+| `week`, `year`     | 1970                    |
+
+```ts
+round(Temporal.ZonedDateTime.from("2026-03-15T10:37[Europe/Zurich]"), {
+  smallestUnit: "hour",
+  roundingIncrement: 6,
+  roundingMode: "floor",
+});
+// → 06:00 (boundaries at 0:00, 6:00, 12:00, 18:00)
+
+round(Temporal.PlainDate.from("2026-05-20"), {
+  smallestUnit: "month",
+  roundingIncrement: 3,
+  roundingMode: "floor",
+});
+// → 2026-04-01 (boundaries at Jan, Apr, Jul, Oct)
+
+round(Temporal.PlainDate.from("2026-05-20"), {
+  smallestUnit: "year",
+  roundingIncrement: 10,
+  roundingMode: "floor",
+});
+// → 2020-01-01 (decades)
+
+round(Temporal.PlainDate.from("2026-03-18"), {
+  smallestUnit: "week",
+  roundingIncrement: 2,
+  roundingMode: "floor",
+});
+// → 2026-03-09, a Monday (every second week, counted from 1970)
+```
+
+Temporal's own `round()` only takes increments that divide the larger unit
+evenly, such as 15 minutes. minuta takes any whole number.
+
+## The last increment is cut short
+
+When an increment does not divide the larger unit evenly, the last one ends
+where the larger unit ends. Days in increments of 7 from the start of March
+are Mar 1, 8, 15, 22 and 29. The next one would be Apr 5, but April 1 comes
+first:
+
+```ts
+round(Temporal.PlainDate.from("2026-03-30"), {
+  smallestUnit: "day",
+  roundingIncrement: 7,
+  roundingMode: "ceil",
+});
+// → 2026-04-01
+```
+
+<Timeline
+  caption="The 7-day increments of March start on Mar 1, 8, 15, 22 and 29; the last one is only 3 days long. Rounding Mar 30 up (ceil) lands on Apr 1, where the next month starts."
+  marks={[
+    { date: plainDate("2026-03-30"), label: "Mar 30" },
+    {
+      date: round(plainDate("2026-03-30"), {
+        smallestUnit: "day",
+        roundingIncrement: 7,
+        roundingMode: "ceil",
+      }),
+      label: "Apr 1",
+    },
+  ]}
+  tracks={[
+    { label: "march", periods: [march], tone: "muted" },
+    {
+      label: "7 days from Mar 1",
+      periods: divide(march, "day", { step: 7 }),
+      tone: "accent",
+    },
+  ]}
+/>
+
+```ts
+round(Temporal.ZonedDateTime.from("2026-03-15T22:37[Europe/Zurich]"), {
+  smallestUnit: "hour",
+  roundingIncrement: 5,
+  roundingMode: "ceil",
+});
+// → 2026-03-16T00:00 (not 25:00)
+```
+
+## Clock changes
+
+Hours are real hours. On Mar 29 2026 in Europe/Zurich the clock skips 2:00,
+so rounding to the hour around it lands on 3:00:
+
+```ts
+round(Temporal.ZonedDateTime.from("2026-03-29T01:40[Europe/Zurich]"), "hour"); // → 03:00 summer time
+```
+
+Increments of hours count real hours since midnight. On that day 3:00 is
+only 2 hours after midnight, so with `roundingIncrement: 3` the boundaries
+are 0:00, 4:00, 7:00 … instead of 0:00, 3:00, 6:00:
+
+```ts
+round(Temporal.ZonedDateTime.from("2026-03-29T05:10[Europe/Zurich]"), {
+  smallestUnit: "hour",
+  roundingIncrement: 3,
+  roundingMode: "floor",
+});
+// → 04:00
+```
+
+## Week start
+
+Weeks start on Monday here. For another week start, round with the
+functions of [`withUnits`](../with-units/):
+
+```ts
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+withUnits(createUnits({ weekStartsOn: "sunday" })).round(
+  Temporal.PlainDate.from("2026-03-18"),
+  { smallestUnit: "week", roundingMode: "floor" }
+);
+// → 2026-03-15, a Sunday
+```
+
+## Errors
+
+`round` throws a `RangeError` whose message starts with a code:
+
+| Code                 | When                                                                                    |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| `INVALID_OPTION`     | `roundingIncrement` is not a positive whole number (0, 1.5, -1).                        |
+| `UNIT_NOT_SUPPORTED` | The units have no spec for `smallestUnit` or for the larger unit increments count from. |
+
+```ts
+round(date, { smallestUnit: "minute", roundingIncrement: 0 });
+// RangeError: INVALID_OPTION: round() roundingIncrement must be a positive whole number, got 0. …
+```
+
+A date with a time unit throws a `TypeError`: dates have no hours.
+
+```ts
+round(Temporal.PlainDate.from("2026-03-18"), "hour");
+// TypeError: A date rounds to date units, not to "hour": round a ZonedDateTime instead.
+```
+
+## Related
+
+- [`period`](../period/) — the whole unit around a date, start and end.
+- [`move`](../move/) — move a period to the rounded date.
+- [`resize`](../resize/) — move an edge to the rounded date.

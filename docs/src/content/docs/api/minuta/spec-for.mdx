@@ -4,7 +4,7 @@ description: Look up the rules for one unit (start, add, count) in a set of unit
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { createUnits, periodWith, specFor } from "@aleksejdix/minuta/core";
+import { createUnits, period, specFor } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = plainDate("2026-03-18");
@@ -15,7 +15,7 @@ Look up the rules for one unit in a set of units, for example to find the
 start of a week or to add a month with exactly the rules minuta uses.
 
 ```ts
-import { specFor } from "@aleksejdix/minuta/core";
+import { specFor } from "@aleksejdix/minuta";
 ```
 
 ```ts
@@ -25,7 +25,7 @@ specFor(units, unit);
 ## Example
 
 ```ts
-import { createUnits, specFor } from "@aleksejdix/minuta/core";
+import { createUnits, specFor } from "@aleksejdix/minuta";
 
 const week = specFor(createUnits(), "week");
 
@@ -97,8 +97,8 @@ month.
     {
       label: "months",
       periods: [
-        periodWith(createUnits(), plainDate("2026-01-01"), "month"),
-        periodWith(createUnits(), plainDate("2026-02-01"), "month"),
+        period(plainDate("2026-01-01"), "month"),
+        period(plainDate("2026-02-01"), "month"),
       ],
       tone: "muted",
     },
@@ -107,7 +107,7 @@ month.
 
 ## When to use it
 
-Most code never needs `specFor`: use [`periodWith`](../period-with/) or
+Most code never needs `specFor`: use [`period`](../period/) or
 [`withUnits`](../with-units/) instead. It is useful when you write a function
 or a unit of your own, and want the same lookup, and the same error, as the
 built-in operations.
@@ -131,6 +131,6 @@ specFor({ day, month }, "hour");
 
 ## Related
 
-- [`periodWith`](../period-with/) — the period of a unit that contains a date.
+- [`period`](../period/) — the period of a unit that contains a date.
 - [`createUnits`](../create-units/) — where units come from, and how to add your own.
-- [`MinutaError`](../../minuta/minuta-error/) — all error codes.
+- [`MinutaError`](../minuta-error/) — all error codes.

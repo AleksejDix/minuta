@@ -6,15 +6,13 @@ sidebar:
 ---
 
 import { plainDate } from "../../../components/temporal";
-import { createUnits, divideWith, periodWith } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 import Timeline from "../../../components/diagrams/Timeline.astro";
 
-export const weeksOfMarch = (units) =>
-  divideWith(
-    units,
-    periodWith(units, plainDate("2026-03-01"), "month"),
-    "week"
-  );
+export const weeksOfMarch = (units) => {
+  const time = withUnits(units);
+  return time.divide(time.period(plainDate("2026-03-01"), "month"), "week");
+};
 
 minuta does not hard-code what a week or a month is. It asks the **units**:
 a small set of rules for each unit of time, computed with
@@ -27,7 +25,7 @@ Monday, one with weeks from Sunday. Only the units change, and every week
 moves with them:
 
 <Timeline
-  caption='divideWith(units, march, "week") with Monday and Sunday weeks. The hatched pieces are the first and last weeks, cut at the edges of March.'
+  caption='withUnits(units).divide(march, "week") with Monday and Sunday weeks. The hatched pieces are the first and last weeks, cut at the edges of March.'
   tracks={[
     {
       label: 'createUnits({ weekStartsOn: "monday" })',
@@ -58,7 +56,7 @@ units (`"hour"`, `"minute"`, `"second"`) have `kind: "time"` and work on
 called **units**. It is a plain object:
 
 ```ts
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 const units = createUnits();
 
@@ -80,12 +78,12 @@ The settings travel with the specs:
 
 ## `createUnits` makes units
 
-[`createUnits`](../../api/minuta-core/create-units/) makes units with your
+[`createUnits`](../../api/minuta/create-units/) makes units with your
 settings. Days are named (`"sunday"`), and the numbers 0 = Sunday …
 6 = Saturday work too:
 
 ```ts
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 createUnits({
   timeZone: "America/New_York",
@@ -115,44 +113,39 @@ period(Temporal.PlainDate.from("2026-03-18"), "week");
 
 Use it when Monday weeks and the runtime's zone are what you need.
 
-## `@aleksejdix/minuta/core`: bring your own units
+## `withUnits`: bring your own units
 
-[`@aleksejdix/minuta/core`](../../api/minuta-core/overview/) has the same operations
-without units built in. There are two ways to use it.
-
-**Bind once with `withUnits`.** You get an object with every operation, all
-using your units. This is the usual way:
+[`withUnits`](../../api/minuta/with-units/) binds every function to your
+units at once. You get an object with the same names as the main entry:
+`period`, `divide`, `round`, `monthGrid`, `isWeekend` and all the others.
 
 ```ts
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
 time.period(Temporal.PlainDate.from("2026-03-18"), "week");
 // → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
+
+time.monthGrid(Temporal.PlainDate.from("2026-03-18")).periods[0].start;
+// → 2026-03-01, the grid starts on a Sunday
 ```
 
-**Pass the units to each call.** Every unit-aware function has a `…With`
-form that takes the units first. Pass only the units you use:
+Units are a partial map, so you can pass only the units you use. A missing
+one throws:
 
 ```ts
-import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const { day, month } = createUnits();
-const units = { day, month };
+const time = withUnits({ day, month });
 
-nextWith(
-  units,
-  periodWith(units, Temporal.PlainDate.from("2026-03-18"), "month")
-);
+time.next(time.period(Temporal.PlainDate.from("2026-03-18"), "month"));
 // → { start: 2026-04-01, end: 2026-05-01, unit: "month" }
 
-periodWith(units, Temporal.PlainDate.from("2026-03-18"), "week");
+time.period(Temporal.PlainDate.from("2026-03-18"), "week");
 // RangeError: UNIT_NOT_SUPPORTED: no "week" spec in the units passed (available: day, month). …
 ```
-
-See [`withUnits`](../../api/minuta-core/with-units/) and
-[`periodWith`](../../api/minuta-core/period-with/).
 
 ## Another time zone
 
@@ -161,34 +154,17 @@ moments: when a day is divided into hours, or an `Instant` becomes a
 period. Here a day is split in New York, even on a server in Europe:
 
 ```ts
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const newYork = withUnits(createUnits({ timeZone: "America/New_York" }));
 
 const day = newYork.period(Temporal.PlainDate.from("2026-03-08"), "day");
 // → { start: 2026-03-08, end: 2026-03-09, unit: "day" }
 
-newYork.duration(day, "hour"); // → 23, the clocks go forward in New York that day
+newYork.count(day, "hour"); // → 23, the clocks go forward in New York that day
 ```
 
 See [Time zones](../time-zones/) for more.
-
-## Calendar and intervals use the same units
-
-Calendar grids ([`@aleksejdix/minuta/calendar`](../../api/minuta-calendar/overview/)) and interval helpers
-([`@aleksejdix/minuta/intervals`](../../api/minuta-intervals/overview/))
-bind to the same units, with `calendar(units)` and `intervals(units)`, so
-they use the same week start, weekend and time zone as everything else:
-
-```ts
-import { calendar } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
-
-const grids = calendar(createUnits({ weekStartsOn: "sunday" }));
-
-grids.monthGrid(Temporal.PlainDate.from("2026-03-18")).periods[0].start;
-// → 2026-03-01, the grid starts on a Sunday
-```
 
 ## Other calendars
 
@@ -203,8 +179,8 @@ functions, and put it next to the built-in units. This fortnight counts
 two-week blocks from Monday, January 5, 2026:
 
 ```ts
-import { createUnits, nextWith, periodWith } from "@aleksejdix/minuta/core";
-import type { DateSpec } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+import type { DateSpec } from "@aleksejdix/minuta";
 
 const base = createUnits();
 const anchor = Temporal.PlainDate.from("2026-01-05");
@@ -219,23 +195,19 @@ const fortnight: DateSpec = {
   diff: (from, to) => Math.trunc(base.week.diff(from, to) / 2),
 };
 
-const units = Object.assign({ fortnight }, base);
+const time = withUnits({ ...base, fortnight });
 
-const sprint = periodWith(
-  units,
-  Temporal.PlainDate.from("2026-03-18"),
-  "fortnight"
-);
+const sprint = time.period(Temporal.PlainDate.from("2026-03-18"), "fortnight");
 // → { start: 2026-03-16, end: 2026-03-30, unit: "fortnight" }
 
-nextWith(units, sprint).start; // → 2026-03-30
+time.next(sprint).start; // → 2026-03-30
 ```
 
 In TypeScript, add the name and its kind to `UnitRegistry`, so
 `"fortnight"` is accepted as a unit:
 
 ```ts
-declare module "@aleksejdix/minuta/core" {
+declare module "@aleksejdix/minuta" {
   interface UnitRegistry {
     fortnight: "date";
   }
@@ -245,13 +217,13 @@ declare module "@aleksejdix/minuta/core" {
 :::note
 `diff` must count _complete_ units, rounded toward zero, the same way `add`
 steps. The built-in units guarantee this; your own units must follow it
-too, or `duration` gives wrong counts.
+too, or `count` gives wrong counts.
 :::
 
 ## Keep one set of units
 
 A period does not remember which units made it. Use the same units from
 start to finish. Moving a Monday week with Sunday units gives a Sunday week
-(see [`nextWith`](../../api/minuta-core/next-with/#use-the-same-units-as-the-period)).
+(see [`next`](../../api/minuta/next/)).
 Binding once with `withUnits`, in one module that the rest of the app imports,
 is the simplest way to keep them consistent.

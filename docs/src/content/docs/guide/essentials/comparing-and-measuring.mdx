@@ -1,6 +1,6 @@
 ---
 title: Comparing and measuring
-description: Answer everyday questions with same, contains, overlaps and duration — is this today, do these bookings clash, how many days are in this month?
+description: Answer everyday questions with same, contains, overlaps and count — is this today, do these bookings clash, how many days are in this month?
 sidebar:
   order: 4
 ---
@@ -33,7 +33,9 @@ this month have? Each question has one function.
 | Is this date or period inside that one?   | [`contains`](../../../api/minuta/contains/) |
 | Are these two in the same day, week, …?   | [`same`](../../../api/minuta/same/)         |
 | Do these two share any time?              | [`overlaps`](../../../api/minuta/overlaps/) |
-| How many whole days, hours, … fit inside? | [`duration`](../../../api/minuta/duration/) |
+| Are these two the very same period?       | [`equals`](../../../api/minuta/equals/)     |
+| Which comes first?                        | [`compare`](../../../api/minuta/compare/)   |
+| How many whole days, hours, … fit inside? | [`count`](../../../api/minuta/count/)       |
 | How long is it, in exact time?            | `period.start.until(period.end)`            |
 
 All examples run in Europe/Zurich, with weeks from Monday to Sunday.
@@ -100,6 +102,24 @@ same(week, period(Temporal.PlainDate.from("2026-04-01"), "month"), "month"); // 
 
 To ask whether the whole week lies in a month, use `contains`.
 :::
+
+## The very same period, and in order
+
+[`equals`](../../../api/minuta/equals/) asks whether two periods are
+identical: the same unit, start and end, like Temporal's `equals`.
+[`compare`](../../../api/minuta/compare/) orders periods by start, then by
+end, like Temporal's `compare`, so it sorts a list:
+
+```ts
+import { compare, equals, next, period, range } from "@aleksejdix/minuta";
+
+const march = period(Temporal.PlainDate.from("2026-03-18"), "month");
+
+equals(march, period(Temporal.PlainDate.from("2026-03-01"), "month")); // → true
+equals(march, range(march.start, march.end)); // → false, a month and a custom period
+
+[next(march), march].sort(compare); // → [march, april]
+```
 
 ## Does this event fall in the week?
 
@@ -206,39 +226,39 @@ overlap their neighbours either: each ends where the next begins.
 
 ## How many days are in this month?
 
-[`duration`](../../../api/minuta/duration/) counts how many whole units fit
+[`count`](../../../api/minuta/count/) counts how many whole units fit
 into a period:
 
 ```ts
-import { duration, period, range } from "@aleksejdix/minuta";
+import { count, period, range } from "@aleksejdix/minuta";
 
-duration(period(Temporal.PlainDate.from("2026-03-18"), "month"), "day"); // → 31
-duration(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // → 28
-duration(period(Temporal.PlainDate.from("2028-02-01"), "month"), "day"); // → 29, a leap year
+count(period(Temporal.PlainDate.from("2026-03-18"), "month"), "day"); // → 31
+count(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // → 28
+count(period(Temporal.PlainDate.from("2028-02-01"), "month"), "day"); // → 29, a leap year
 
-duration(period(Temporal.PlainDate.from("2026-01-01"), "year"), "day"); //  → 365
-duration(period(Temporal.PlainDate.from("2026-01-01"), "year"), "week"); // → 52
+count(period(Temporal.PlainDate.from("2026-01-01"), "year"), "day"); //  → 365
+count(period(Temporal.PlainDate.from("2026-01-01"), "year"), "week"); // → 52
 ```
 
 It counts on the calendar, so a day is not always 24 hours:
 
 ```ts
-duration(period(Temporal.PlainDate.from("2026-03-18"), "day"), "hour"); // → 24
-duration(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23, clocks go forward
+count(period(Temporal.PlainDate.from("2026-03-18"), "day"), "hour"); // → 24
+count(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23, clocks go forward
 ```
 
 Only **whole** units count. A 90-minute meeting is one hour, and March is four
 weeks (31 days is not five):
 
 ```ts
-duration(
+count(
   range(
     Temporal.ZonedDateTime.from("2026-03-01T09:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-01T10:30[Europe/Zurich]")
   ),
   "hour"
 ); // → 1
-duration(period(Temporal.PlainDate.from("2026-03-18"), "month"), "week"); // → 4
+count(period(Temporal.PlainDate.from("2026-03-18"), "month"), "week"); // → 4
 ```
 
 Counting starts at the period's start, not at a unit border: from 14:00 one
@@ -267,7 +287,7 @@ night.start.until(night.end, { largestUnit: "hour" }).hours; // → 23, the cloc
 ```
 
 Use `until` for "how much time passes" (a timer, a progress bar). Use
-`duration` for "how many days or hours on the calendar" (a label like "31
+`count` for "how many days or hours on the calendar" (a label like "31
 days").
 
 ## The surprise: range excludes its end
@@ -276,7 +296,7 @@ A range stops at the value you pass, and that value is not part of it. A
 trip "from the 18th to the 25th" made like this leaves out the 25th:
 
 ```ts
-import { contains, duration, period, range } from "@aleksejdix/minuta";
+import { contains, count, period, range } from "@aleksejdix/minuta";
 
 const trip = range(
   Temporal.PlainDate.from("2026-03-18"),
@@ -285,7 +305,7 @@ const trip = range(
 // → { start: 2026-03-18, end: 2026-03-25, unit: "custom" }
 
 contains(trip, Temporal.PlainDate.from("2026-03-25")); // → false
-duration(trip, "day"); // → 7
+count(trip, "day"); // → 7
 ```
 
 To include the whole last day, end the range where that day ends. The `end`
@@ -299,7 +319,7 @@ const wholeTrip = range(
 // → { start: 2026-03-18, end: 2026-03-26, unit: "custom" }
 
 contains(wholeTrip, Temporal.PlainDate.from("2026-03-25")); // → true
-duration(wholeTrip, "day"); // → 8
+count(wholeTrip, "day"); // → 8
 ```
 
 <Timeline
@@ -337,5 +357,5 @@ them.
 - Reference: [`contains`](../../../api/minuta/contains/),
   [`same`](../../../api/minuta/same/),
   [`overlaps`](../../../api/minuta/overlaps/),
-  [`duration`](../../../api/minuta/duration/),
+  [`count`](../../../api/minuta/count/),
   [`range`](../../../api/minuta/range/).

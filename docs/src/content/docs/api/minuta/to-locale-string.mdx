@@ -1,0 +1,278 @@
+---
+title: toLocaleString
+description: Turn a period into text in any language — "March 2026", "15. März 2026", "Mar 9 – 15, 2026" — picked by the period's unit.
+---
+
+import { plainDate, zonedDateTime } from "../../../../components/temporal";
+import { divide, period, range, toLocaleString } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = zonedDateTime("2026-03-15T14:05:09[Europe/Zurich]");
+export const labelled = (units) =>
+  units.map((unit) => ({
+    label: `${unit}: ${toLocaleString(period(date, unit), "en-US")}`,
+    periods: [period(date, unit)],
+    tone: "accent",
+  }));
+export const ranges = [
+  range(plainDate("2026-03-01"), plainDate("2026-04-01")),
+  range(plainDate("2026-03-30"), plainDate("2026-04-06")),
+  range(plainDate("2025-12-29"), plainDate("2026-01-05")),
+];
+export const q2 = period(plainDate("2026-05-01"), "quarter");
+
+Turn a period into text for people to read, in any language: "March 2026",
+"15. März 2026", "Mar 9 – 15, 2026". Like Temporal's `toLocaleString()`,
+with a format picked by the period's unit.
+
+```ts
+import { toLocaleString } from "@aleksejdix/minuta";
+```
+
+```ts
+toLocaleString(period, locales?, options?)
+```
+
+## Example
+
+```ts
+import { period, toLocaleString } from "@aleksejdix/minuta";
+
+const date = Temporal.ZonedDateTime.from("2026-03-15T14:05:09[Europe/Zurich]");
+
+toLocaleString(period(date, "month"), "en-US"); // → "March 2026"
+toLocaleString(period(date, "month"), "de-CH"); // → "März 2026"
+toLocaleString(period(date, "day"), "en-US"); // → "March 15, 2026"
+toLocaleString(period(date, "week"), "en-US"); // → "Mar 9 – 15, 2026"
+```
+
+## Parameters
+
+| Name      | What it is                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| `period`  | The period to show.                                                                                       |
+| `locales` | Optional. A BCP 47 tag or a list of them: `"en-US"`, `"de-CH"`, `"ja-JP"`, … The runtime's when left out. |
+| `options` | Optional. `Intl.DateTimeFormat` options that replace or add to the defaults, see [Options](#options).     |
+
+## Returns
+
+The text, a string. It is made by the browser's or Node's built-in
+`Intl.DateTimeFormat`, so minuta ships no language data. The text is the
+same with native Temporal and the polyfill, on a server and in the browser.
+
+## One format per unit
+
+The unit of the period decides what the text shows. For Sun Mar 15 2026,
+14:05:09:
+
+| Unit      | `"en-US"`          | `"de-CH"`          | `"ja-JP"`              |
+| --------- | ------------------ | ------------------ | ---------------------- |
+| `year`    | 2026               | 2026               | 2026年                 |
+| `quarter` | Jan 2026           | Jan. 2026          | 2026年1月              |
+| `month`   | March 2026         | März 2026          | 2026年3月              |
+| `week`    | Mar 9 – 15, 2026   | 9.–15. März 2026   | 2026/03/09～2026/03/15 |
+| `day`     | March 15, 2026     | 15. März 2026      | 2026年3月15日          |
+| `hour`    | Mar 15, 2:00 PM    | 15. März, 14:00    | 3月15日 14:00          |
+| `minute`  | Mar 15, 2:05 PM    | 15. März, 14:05    | 3月15日 14:05          |
+| `second`  | Mar 15, 2:05:09 PM | 15. März, 14:05:09 | 3月15日 14:05:09       |
+
+The periods around that moment, each labelled with its `"en-US"` text. The
+larger units first:
+
+<Timeline
+  caption="The year, the quarter and the month that contain Mar 15 2026, each with the text toLocaleString gives it."
+  tracks={labelled(["year", "quarter", "month"])}
+/>
+
+And the smaller ones, on the scale of one week:
+
+<Timeline
+  caption="The week, the day and the hour of Mar 15 2026, 14:05. The week is shown as a range; the day and the hour by their start."
+  tracks={labelled(["week", "day", "hour"])}
+/>
+
+## Ranges
+
+Weeks and `"custom"` periods are shown as a range from start to end. Parts
+that start and end share, such as the month or the year, are written only
+once (`Intl.DateTimeFormat#formatRange`):
+
+```ts
+import { range, toLocaleString } from "@aleksejdix/minuta";
+
+const day = (iso) => Temporal.PlainDate.from(iso);
+
+toLocaleString(range(day("2026-03-01"), day("2026-04-01")), "de-CH");
+// → "1.–31. März 2026"
+
+toLocaleString(range(day("2026-03-30"), day("2026-04-06")), "de-CH");
+// → "30. März – 5. Apr. 2026"
+
+toLocaleString(range(day("2025-12-29"), day("2026-01-05")), "de-CH");
+// → "29. Dez. 2025 – 4. Jan. 2026"
+```
+
+<Timeline
+  caption="Inside one month, the month and the year appear once; across a month, only the year; across a year, nothing is shared."
+  tracks={ranges.map((piece) => ({
+    label: toLocaleString(piece, "de-CH"),
+    periods: [piece],
+    tone: "accent",
+  }))}
+/>
+
+A period of dates shows its last day, the day before its excluded `end`. A
+period of moments shows its start and its end, where 10:00–11:00 reads
+right.
+
+A custom period of dates shows day, short month and year. A custom period of
+moments shows its times:
+
+```ts
+const workday = range(
+  Temporal.ZonedDateTime.from("2026-03-15T09:00[Europe/Zurich]"),
+  Temporal.ZonedDateTime.from("2026-03-15T17:00[Europe/Zurich]")
+);
+
+toLocaleString(workday, "en-US");
+// → "Mar 15, 9:00 AM – 5:00 PM"
+
+toLocaleString(workday, "en-US", { hour: "numeric", minute: "2-digit" });
+// → "9:00 AM – 5:00 PM"
+```
+
+When start and end look the same in the shown fields, there is no dash at
+all: `toLocaleString(range(day("2026-03-15"), day("2026-03-16")), "en-US")`
+is "Mar 15, 2026".
+
+## A month or a quarter as a range
+
+A month, a quarter or a year shows its start. A quarter is named by the
+month it starts in, which may not be what you want: Q2 2026 becomes
+"Apr 2026". To show any period as a range, format a `range` with the same
+start and end:
+
+```ts
+import { period, range, toLocaleString } from "@aleksejdix/minuta";
+
+const q2 = period(Temporal.PlainDate.from("2026-05-01"), "quarter");
+
+toLocaleString(q2, "en-US"); // → "Apr 2026"
+toLocaleString(range(q2.start, q2.end), "en-US"); // → "Apr 1 – Jun 30, 2026"
+toLocaleString(range(q2.start, q2.end), "en-US", {
+  month: "short",
+  year: "numeric",
+}); // → "Apr – Jun 2026"
+```
+
+<Timeline
+  caption="One quarter, two texts: the quarter names only its first month, the range with month and year the first and the last."
+  tracks={[
+    { label: "its months", periods: divide(q2, "month"), tone: "muted" },
+    {
+      label: `q2: ${toLocaleString(q2, "en-US")}`,
+      periods: [q2],
+      tone: "accent",
+    },
+    {
+      label: `range: ${toLocaleString(range(q2.start, q2.end), "en-US", { month: "short", year: "numeric" })}`,
+      periods: [q2],
+      tone: "accent",
+    },
+  ]}
+/>
+
+## Options
+
+`options` are the options of
+[`Intl.DateTimeFormat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options).
+Options that pick fields (`year`, `month`, `day`, `weekday`, `hour`,
+`dateStyle`, `timeStyle` …) replace the defaults of the period's unit: list
+every field you want. Other options, such as `hourCycle` or `timeZone`, are
+added to the defaults.
+
+```ts
+toLocaleString(period(date, "month"), "en-US", { month: "short" });
+// → "Mar"
+
+toLocaleString(period(date, "day"), "en-US", { weekday: "long" });
+// → "Sunday"
+
+toLocaleString(period(date, "day"), "en-US", { dateStyle: "full" });
+// → "Sunday, March 15, 2026"
+```
+
+## Time zones
+
+A period of moments is written in its own time zone, the zone of its
+`ZonedDateTime`s, wherever the code runs. A period of dates has no zone: it
+shows the same day everywhere.
+
+```ts
+const tokyo = Temporal.ZonedDateTime.from("2026-03-21T05:00[Asia/Tokyo]");
+
+toLocaleString(period(tokyo, "day"), "en-US"); // → "March 21, 2026"
+toLocaleString(period(tokyo, "hour"), "en-US"); // → "Mar 21, 5:00 AM"
+```
+
+To show moments in another zone, pass `timeZone`. It has no effect on a
+period of dates.
+
+```ts
+toLocaleString(period(tokyo, "hour"), "en-US", { timeZone: "Europe/Zurich" });
+// → "Mar 20, 9:00 PM"
+```
+
+## Other calendars
+
+A period made in another calendar is shown in that calendar: a Hebrew month
+reads "Adar I 5784", a Hijri month "Ramadan 1447 AH". See
+[calendars](../create-units/#calendars). The `calendar` option picks another
+one for the text only.
+
+```ts
+import { createUnits, toLocaleString, withUnits } from "@aleksejdix/minuta";
+
+const ramadan = withUnits(createUnits({ calendar: "islamic-umalqura" })).period(
+  Temporal.PlainDate.from("2026-03-18"),
+  "month"
+);
+toLocaleString(ramadan, "en-US"); // → "Ramadan 1447 AH"
+toLocaleString(ramadan, "en-US", { calendar: "gregory", dateStyle: "long" }); // → "February 18, 2026"
+```
+
+For an ISO period, the locale can ask for another calendar system with
+`-u-ca-`. Only the text changes; the period is still the same Gregorian
+month.
+
+```ts
+toLocaleString(period(date, "month"), "en-US-u-ca-buddhist"); // → "March 2569 BE"
+```
+
+In a locale whose calendar has other month borders, the text is the month
+of the period's **start**: for March 2026, `"fa-IR"` gives "۱۴۰۴ اسفند",
+the Persian month in which March 1 falls.
+
+## Custom units
+
+A period with a unit minuta has no format for (a unit you added yourself) is
+shown like a custom period of dates, but only with its start: "Mar 1, 2026".
+Format `range(p.start, p.end)` to show start and end.
+
+## Errors
+
+`toLocaleString` throws the errors of `Intl.DateTimeFormat`:
+
+| Error        | When                                                            |
+| ------------ | --------------------------------------------------------------- |
+| `RangeError` | A locale is not a valid tag, or an option has an invalid value. |
+| `TypeError`  | `options` conflict, e.g. `dateStyle` together with `month`.     |
+
+It does not check the order: a period whose end is before its start is
+formatted as it is.
+
+## Related
+
+- [`period`](../period/) — make the period to show.
+- [`range`](../range/) — make a period from two dates or moments, shown as a range.
+- [Time zones](../../../concepts/time-zones/) — periods of dates and of moments.

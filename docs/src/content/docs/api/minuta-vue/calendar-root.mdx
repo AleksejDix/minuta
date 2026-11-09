@@ -32,12 +32,11 @@ import {
   CalendarHeader,
   CalendarRoot,
 } from "@aleksejdix/minuta-vue/components";
-import { isWeekendWith } from "@aleksejdix/minuta/calendar";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 import "@aleksejdix/minuta-vue/style.css";
 
 const sundayFirst = createUnits({ weekStartsOn: "sunday" });
-const isWeekend = (day) => isWeekendWith(sundayFirst, day);
+const { isWeekend } = withUnits(sundayFirst);
 const start = Temporal.PlainDate.from("2024-01-15");
 </script>
 

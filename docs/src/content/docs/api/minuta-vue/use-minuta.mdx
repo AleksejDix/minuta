@@ -4,7 +4,7 @@ description: A Vue composable that binds every minuta function to your units and
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { createUnits, withUnits } from "@aleksejdix/minuta/core";
+import { createUnits, withUnits } from "@aleksejdix/minuta";
 import Flow from "../../../../components/diagrams/Flow.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -98,7 +98,7 @@ changing it later does not move the browsed period. Call `browse()` for that.
 
 ```js
 import { shallowRef } from "vue";
-import { createUnits } from "@aleksejdix/minuta/core";
+import { createUnits } from "@aleksejdix/minuta";
 
 const units = shallowRef(createUnits());
 const minuta = useMinuta(() => ({ units: units.value }));
@@ -121,13 +121,16 @@ An object with reactive state and every bound function.
 | `previous` | `previous(period)` — the period right before it, same unit.                                     |
 | `shift`    | `shift(period, steps)` — move a period by whole units, back with a negative number.             |
 | `divide`   | `divide(period, unit)` — split a period into smaller ones. See [divide](../../minuta/divide/).  |
-| `duration` | `duration(period, unit)` — how many whole units fit into a period.                              |
+| `count`    | `count(period, unit)` — how many whole units fit into a period.                                 |
 | `contains` | `contains(period, target)` — whether a date, moment or period lies fully inside the period.     |
 | `same`     | `same(a, b, unit)` — whether two periods fall into the same `unit`.                             |
 | `overlaps` | `overlaps(a, b)` — whether two periods share any time.                                          |
 | `range`    | `range(start, end)` — a custom period between two dates or two moments.                         |
 
-The functions are the core functions without the units argument. When the
+The functions are those of [`withUnits(units)`](../../minuta/with-units/), with the
+same names as the main entry. The table lists the common ones; `round`,
+`merge`, `equals`, `compare`, `monthGrid`, `isWeekend`, `toLocaleString` and
+the rest are there too. When the
 units change, `minuta.period`, `minuta.next`, … use the new units. This holds
 for destructured functions too: `const { period } = minuta` keeps following
 the current units.

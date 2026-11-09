@@ -1,0 +1,108 @@
+---
+title: equals
+description: Check whether two periods are identical — the same unit, start and end, calendar and time zone included, like Temporal's equals().
+---
+
+import { plainDate, zonedDateTime } from "../../../../components/temporal";
+import { period, range } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const march = period(plainDate("2026-03-15"), "month");
+export const marchRange = range(march.start, march.end);
+
+Check whether two periods are identical: the same unit, the same start and
+the same end. Like Temporal's `equals()`, the calendar and the time zone
+count too.
+
+```ts
+import { equals } from "@aleksejdix/minuta";
+```
+
+```ts
+equals(first, second);
+```
+
+## Example
+
+```ts
+import { equals, period, range } from "@aleksejdix/minuta";
+
+const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+
+equals(march, period(Temporal.PlainDate.from("2026-03-31"), "month")); // → true
+equals(march, range(march.start, march.end)); // → false: a month and a custom period
+```
+
+<Timeline
+  caption="The month of March and a range over the same days cover the same time, but one has the unit month and the other custom (hatched): they are not equal."
+  tracks={[
+    { label: 'period(date, "month")', periods: [march], tone: "accent" },
+    {
+      label: "range(march.start, march.end)",
+      periods: [marchRange],
+      tone: "accent",
+    },
+  ]}
+/>
+
+## Parameters
+
+| Name     | What it is        |
+| -------- | ----------------- |
+| `first`  | One period.       |
+| `second` | The other period. |
+
+## Returns
+
+`true` when both periods have the same `unit`, and their starts and their
+ends are equal values, otherwise `false`.
+
+## The same values, not the same time
+
+Dates are equal when they are the same date in the same calendar. Moments
+are equal when they are the same instant in the same time zone and
+calendar, as `Temporal.ZonedDateTime#equals` checks. So two hours that start
+at the same instant in different zones are not equal:
+
+```ts
+const zurich = period(
+  Temporal.ZonedDateTime.from("2026-03-16T10:00[Europe/Zurich]"),
+  "hour"
+);
+const utc = period(
+  Temporal.ZonedDateTime.from("2026-03-16T09:00[UTC]"),
+  "hour"
+);
+
+equals(zurich, utc); // → false, different zones
+compare(zurich, utc); // → 0, the same time
+```
+
+A day of dates and the hours of that day are never equal: one holds dates,
+the other moments.
+
+To ask whether the two cover the same time, use [`compare`](../compare/):
+it returns `0`.
+
+## Identical, or in the same week
+
+`equals` checks the whole period. To check whether two periods fall in the
+same day, week or month, use [`same`](../same/):
+
+```ts
+const monday = period(Temporal.PlainDate.from("2026-03-16"), "day");
+const friday = period(Temporal.PlainDate.from("2026-03-20"), "day");
+
+same(monday, friday, "week"); // → true
+equals(monday, friday); // → false
+```
+
+## Errors
+
+`equals` does not throw. It needs no units.
+
+## Related
+
+- [`compare`](../compare/) — order two periods, `0` for the same time.
+- [`same`](../same/) — do two periods fall in the same unit?
+- [`contains`](../contains/) — is a period inside another?

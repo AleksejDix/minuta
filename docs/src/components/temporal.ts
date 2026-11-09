@@ -4,7 +4,7 @@
  * (the build does that in astro.config.ts). The MDX pages use these.
  */
 
-import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta/core";
+import type { PlainDate, ZonedDateTime } from "@aleksejdix/minuta";
 import type { Temporal } from "temporal-polyfill";
 
 type TemporalApi = typeof Temporal;
