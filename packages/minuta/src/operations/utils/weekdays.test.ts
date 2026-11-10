@@ -1,6 +1,6 @@
+import { period as between, periodWith } from "#src/operations/period";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { periodWith, range } from "#src/operations/period";
 import { createUnits } from "#src/create-units";
 import { isWeekdayWith } from "./is-weekday";
 import { isWeekendWith } from "./is-weekend";
@@ -37,7 +37,7 @@ describe("isWeekdayWith() and isWeekendWith()", () => {
 describe("isWeekdayWith() and isWeekendWith(): longer periods", () => {
   it("checks every day a longer period touches", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const saturdayAndSunday = range(date("2026-03-21"), date("2026-03-23"));
+    const saturdayAndSunday = between(date("2026-03-21"), date("2026-03-23"));
     const week = periodWith(units, date("2026-03-18"), "week");
     expect(isWeekendWith(units, saturdayAndSunday)).toBe(true);
     expect(isWeekdayWith(units, week)).toBe(false);
@@ -55,7 +55,7 @@ describe("isWeekdayWith() and isWeekendWith(): longer periods", () => {
         zoned("2026-03-21T08:00[Asia/Tokyo]"),
         "hour"
       );
-      const untilMidnight = range(
+      const untilMidnight = between(
         zoned("2026-03-20T22:00[Europe/Zurich]"),
         zoned("2026-03-21T00:00[Europe/Zurich]")
       );

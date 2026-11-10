@@ -1,6 +1,6 @@
+import { period as between, periodWith } from "./period";
 import { date, text, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { periodWith, range } from "./period";
 import type { TimeValue } from "#src/types";
 import { createUnits } from "#src/create-units";
 
@@ -140,18 +140,18 @@ describe("periodWith(): repeated hours", () => {
   );
 });
 
-describe("range()", () => {
+describe("period(start, end)", () => {
   it("spans from start to end, end excluded", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const span = range(date("2026-01-01"), date("2026-04-01"));
+    const span = between(date("2026-01-01"), date("2026-04-01"));
     expect(text(span)).toBe("2026-01-01/2026-04-01 custom");
   });
 
   it("refuses an end before the start", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    expect(() => range(date("2026-04-01"), date("2025-12-01"))).toThrow(
+    expect(() => between(date("2026-04-01"), date("2025-12-01"))).toThrow(
       new RangeError(
-        "range() needs the start first: 2026-04-01 is after 2025-12-01."
+        "period() needs the start first: 2026-04-01 is after 2025-12-01."
       )
     );
   });
@@ -159,7 +159,7 @@ describe("range()", () => {
   it("makes an empty period from equal values", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const moment = zoned(`2026-03-18T10:00${ZURICH}`);
-    const empty = range(moment, moment);
+    const empty = between(moment, moment);
     expect(empty.start.toString()).toBe(empty.end.toString());
   });
 
@@ -171,8 +171,8 @@ describe("range()", () => {
       // 10:00 in Tokyo is 01:00 UTC, an hour after 01:00 in Zurich
       const tokyo = zoned("2026-03-18T10:00[Asia/Tokyo]");
       const zurich = zoned(`2026-03-18T01:00${ZURICH}`);
-      expect(range(zurich, tokyo).start).toBe(zurich);
-      expect(() => range(tokyo, zurich)).toThrow(RangeError);
+      expect(between(zurich, tokyo).start).toBe(zurich);
+      expect(() => between(tokyo, zurich)).toThrow(RangeError);
     }
   );
 });

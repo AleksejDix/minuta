@@ -13,9 +13,7 @@ import type { Chunks, DivideOptions } from "#src/operations/divide";
 import type {
   DateUnit,
   Period,
-  PeriodOf,
   PlainDate,
-  TimeValue,
   Unit,
   ZonedDateTime,
 } from "#src/types";
@@ -24,7 +22,6 @@ import {
   divideWith,
   mergeWith,
   nextWith,
-  periodWith,
   previousWith,
   roundWith,
   sameWith,
@@ -106,25 +103,6 @@ function next<Source extends Period>(source: Source): Source {
 }
 
 /**
- * The period of `unit` that contains `value`. Weeks start on Monday,
- * moments lie in the runtime's zone.
- *
- * @example
- * period(Temporal.PlainDate.from("2026-03-15"), "month"); // { start: 2026-03-01, end: 2026-04-01, unit: "month" }
- * period(Temporal.PlainDate.from("2026-03-18"), "week"); // Monday Mar 16 up to Monday Mar 23
- *
- * @param value - Any value inside the period
- * @param unit - Unit of the period
- * @returns The period of `unit` containing `value`
- */
-function period<Name extends Unit>(
-  value: TimeValue,
-  unit: Name
-): PeriodOf<Name> {
-  return periodWith(units, value, unit);
-}
-
-/**
  * The previous period of the same unit. Weeks start on Monday.
  *
  * @example
@@ -195,7 +173,17 @@ function shift<Source extends Period>(source: Source, steps: number): Source {
   return shiftWith(units, source, steps);
 }
 
-export { count, divide, merge, next, period, previous, round, same, shift };
+export { count, divide, merge, next, previous, round, same, shift };
+export {
+  day,
+  hour,
+  minute,
+  month,
+  quarter,
+  second,
+  week,
+  year,
+} from "#src/default-periods";
 export {
   dayGrid,
   isWeekday,
@@ -209,11 +197,8 @@ export {
   contains,
   equals,
   gap,
-  move,
   overlaps,
-  range,
-  resize,
-  split,
+  period,
 } from "#src/operations/index";
 export { toLocaleString } from "#src/format/format";
 export { createUnits } from "#src/create-units";

@@ -22,8 +22,8 @@ describe("withUnits()", () => {
     () => {
       expect.hasAssertions();
       const time = withUnits(units);
-      const day = time.period(date("2026-03-15"), "day");
-      const hour = time.period(zoned("2026-03-15T10:00[UTC]"), "hour");
+      const day = time.day(date("2026-03-15"));
+      const hour = time.hour(zoned("2026-03-15T10:00[UTC]"));
       expectTypeOf(day).toEqualTypeOf<DatePeriod>();
       expectTypeOf(time.next(day)).toEqualTypeOf<DatePeriod>();
       expectTypeOf(time.divide(hour, "minute")).items.toHaveProperty("start");

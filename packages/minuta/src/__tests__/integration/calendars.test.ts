@@ -2,10 +2,11 @@ import {
   count,
   createUnits,
   divide,
+  month,
   period,
-  range,
   toLocaleString,
   withUnits,
+  year,
 } from "#src/index";
 import { describe, expect, it } from "vitest";
 import type { DatePeriod } from "#src/types";
@@ -36,19 +37,19 @@ function isoText(span: DatePeriod): string {
 // The month codes a period's months start with
 function monthCodes(span: DatePeriod): string {
   return divide(span, "month")
-    .map((month) => month.start.monthCode)
+    .map((piece) => piece.start.monthCode)
     .join(" ");
 }
 
-// The Hebrew year `year`, from the month with `monthCode`
-function hebrewMonth(year: number, monthCode: string): DatePeriod {
+// The Hebrew year `hebrewYear`, from the month with `monthCode`
+function hebrewMonth(hebrewYear: number, monthCode: string): DatePeriod {
   const first = getTemporal().PlainDate.from({
     calendar: "hebrew",
     day: 1,
     monthCode,
-    year,
+    year: hebrewYear,
   });
-  return period(first, "month");
+  return month(first);
 }
 
 describe("periods in the date's own calendar", () => {
@@ -58,8 +59,8 @@ describe("periods in the date's own calendar", () => {
     const nextYear = hebrewMonth(COMMON_YEAR, "M01");
     expect(adarI.start.calendarId).toBe("hebrew");
     expect(count(adarI, "day")).toBe(LONG_MONTH);
-    expect(count(period(adarI.start, "year"), "month")).toBe(THIRTEEN);
-    expect(count(period(nextYear.start, "year"), "month")).toBe(TWELVE);
+    expect(count(year(adarI.start), "month")).toBe(THIRTEEN);
+    expect(count(year(nextYear.start), "month")).toBe(TWELVE);
   });
 
   it(
@@ -67,8 +68,8 @@ describe("periods in the date's own calendar", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const year = period(hebrewMonth(LEAP_YEAR, "M01").start, "year");
-      const quarters = divide(year, "quarter");
+      const leapYear = year(hebrewMonth(LEAP_YEAR, "M01").start);
+      const quarters = divide(leapYear, "quarter");
       expect(quarters).toHaveLength(QUARTERS);
       expect(quarters.map((quarter) => monthCodes(quarter))).toStrictEqual([
         "M01 M02 M03",
@@ -85,10 +86,10 @@ describe("periods in the date's own calendar", () => {
     () => {
       expect.hasAssertions();
       const june = getTemporal().PlainDate.from("2019-06-01");
-      const year2019 = period(june.withCalendar("japanese"), "year");
+      const year2019 = year(june.withCalendar("japanese"));
       expect(isoText(year2019)).toBe("2019-01-01/2020-01-01");
       expect(
-        toLocaleString(range(year2019.start, year2019.end), "ja-JP", {
+        toLocaleString(period(year2019.start, year2019.end), "ja-JP", {
           year: "numeric",
         })
       ).toBe("平成31年～令和元年");
@@ -99,15 +100,15 @@ describe("periods in the date's own calendar", () => {
 describe("createUnits({ calendar }): Hijri", () => {
   it("reads every date in the calendar", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const ramadan = hijri.period(today, "month");
+    const ramadan = hijri.month(today);
     expect(ramadan.start.calendarId).toBe("islamic-umalqura");
     expect(isoText(ramadan)).toBe("2026-02-18/2026-03-20");
   });
 
   it("divides a year into its 12 lunar months", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const months = hijri.divide(hijri.period(today, "year"), "month");
-    const lengths = months.map((month) => count(month, "day"));
+    const months = hijri.divide(hijri.year(today), "month");
+    const lengths = months.map((piece) => count(piece, "day"));
     expect(months).toHaveLength(TWELVE);
     expect(Math.min(...lengths)).toBe(SHORT_MONTH);
     expect(Math.max(...lengths)).toBe(LONG_MONTH);
@@ -132,9 +133,7 @@ describe("createUnits({ calendar }): Persian and Hebrew", () => {
   it("starts a Persian year on Nowruz", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const persian = withUnits(createUnits({ calendar: "persian" }));
-    expect(isoText(persian.period(today, "year"))).toBe(
-      "2025-03-21/2026-03-21"
-    );
+    expect(isoText(persian.year(today))).toBe("2025-03-21/2026-03-21");
   });
 
   it("rounds to the calendar's units", { timeout: 5000 }, () => {
@@ -155,7 +154,7 @@ describe("createUnits({ calendar }): Persian and Hebrew", () => {
     () => {
       expect.hasAssertions();
       const time = withUnits(createUnits({ calendar: "hebrew" }));
-      const quarters = time.divide(time.period(today, "year"), "quarter");
+      const quarters = time.divide(time.year(today), "quarter");
       const after = quarters.map((quarter) => time.next(quarter).start);
       expect(after.map((start) => start.monthCode).at(LAST)).toBe("M01");
     }
@@ -167,9 +166,7 @@ describe("formatting in the period's calendar", () => {
     expect.hasAssertions();
     const adarI = hebrewMonth(LEAP_YEAR, "M05L");
     expect(toLocaleString(adarI, "en-US")).toBe("Adar I 5784");
-    expect(toLocaleString(hijri.period(today, "month"), "en-US")).toBe(
-      "Ramadan 1447 AH"
-    );
+    expect(toLocaleString(hijri.month(today), "en-US")).toBe("Ramadan 1447 AH");
   });
 
   it("lets the options pick another calendar", { timeout: 5000 }, () => {

@@ -76,20 +76,6 @@ The next period of the same unit. Weeks start on Monday.
 next(period(Temporal.PlainDate.from("2026-03-15"), "month")); // April 2026
 ```
 
-### `period`
-
-```ts
-period(value: TimeValue, unit: Name): PeriodOf<Name>
-```
-
-The period of `unit` that contains `value`. Weeks start on Monday,
-moments lie in the runtime's zone.
-
-```ts
-period(Temporal.PlainDate.from("2026-03-15"), "month"); // { start: 2026-03-01, end: 2026-04-01, unit: "month" }
-period(Temporal.PlainDate.from("2026-03-18"), "week"); // Monday Mar 16 up to Monday Mar 23
-```
-
 ### `previous`
 
 ```ts
@@ -146,6 +132,105 @@ Move a period by `steps` of its own unit; negative moves back.
 
 ```ts
 shift(period(Temporal.PlainDate.from("2026-03-15"), "month"), 3); // June 2026
+```
+
+### `day`
+
+```ts
+day(value: TimeValue): DatePeriod
+```
+
+The day that contains `value`: its calendar date, a moment's in its own
+zone.
+
+```ts
+day(Temporal.ZonedDateTime.from("2026-03-18T23:30[Asia/Tokyo]")); // 2026-03-18 up to 2026-03-19
+```
+
+### `hour`
+
+```ts
+hour(value: TimeValue): TimePeriod
+```
+
+The hour that contains `value`, in the moment's zone; a date is its first
+hour in the runtime's zone.
+
+```ts
+hour(Temporal.ZonedDateTime.from("2026-03-18T10:30[Europe/Zurich]")); // 10:00 up to 11:00
+```
+
+### `minute`
+
+```ts
+minute(value: TimeValue): TimePeriod
+```
+
+The minute that contains `value`.
+
+```ts
+minute(Temporal.ZonedDateTime.from("2026-03-18T10:30:45[Europe/Zurich]")); // 10:30 up to 10:31
+```
+
+### `month`
+
+```ts
+month(value: TimeValue): DatePeriod
+```
+
+The month that contains `value`.
+
+```ts
+month(Temporal.PlainDate.from("2026-03-15")); // 2026-03-01 up to 2026-04-01
+```
+
+### `quarter`
+
+```ts
+quarter(value: TimeValue): DatePeriod
+```
+
+The quarter that contains `value`.
+
+```ts
+quarter(Temporal.PlainDate.from("2026-05-15")); // 2026-04-01 up to 2026-07-01
+```
+
+### `second`
+
+```ts
+second(value: TimeValue): TimePeriod
+```
+
+The second that contains `value`.
+
+```ts
+second(Temporal.ZonedDateTime.from("2026-03-18T10:30:45.5[Europe/Zurich]")); // 10:30:45 up to 10:30:46
+```
+
+### `week`
+
+```ts
+week(value: TimeValue): DatePeriod
+```
+
+The week that contains `value`, from Monday (ISO 8601). For another week
+start, use `withUnits(createUnits({ weekStartsOn }))`.
+
+```ts
+week(Temporal.PlainDate.from("2026-03-18")); // Monday 2026-03-16 up to 2026-03-23
+```
+
+### `year`
+
+```ts
+year(value: TimeValue): DatePeriod
+```
+
+The year that contains `value`.
+
+```ts
+year(Temporal.PlainDate.from("2026-03-15")); // 2026-01-01 up to 2027-01-01
 ```
 
 ### `dayGrid`
@@ -297,23 +382,6 @@ gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainD
 gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainDate.from("2026-03-03"), "day")); // undefined: they touch
 ```
 
-### `move`
-
-```ts
-move(period: DatePeriod, target: PlainDate): DatePeriod
-move(period: TimePeriod, target: ZonedDateTime): TimePeriod
-move(period: Period, target: PlainDate | ZonedDateTime): Period
-```
-
-Relocate a period to start at `target`, keeping its length: days for a
-date period, exact time for a time period.
-
-```ts
-const appointment = range(Temporal.ZonedDateTime.from("2026-03-29T09:00[Europe/Zurich]"), Temporal.ZonedDateTime.from("2026-03-29T10:00[Europe/Zurich]"));
-move(appointment, Temporal.ZonedDateTime.from("2026-04-02T14:00[Europe/Zurich]"));
-// → { start: Apr 2 14:00, end: Apr 2 15:00, unit: "custom" }
-```
-
 ### `overlaps`
 
 ```ts
@@ -329,58 +397,21 @@ overlaps(march, april); // false: they touch
 overlaps(march, period(Temporal.PlainDate.from("2026-03-31"), "week")); // true
 ```
 
-### `range`
+### `period`
 
 ```ts
-range(start: PlainDate, end: PlainDate): DatePeriod
-range(start: ZonedDateTime, end: ZonedDateTime): TimePeriod
-range(start: PlainDate | ZonedDateTime, end: PlainDate | ZonedDateTime): DatePeriod | TimePeriod
+period(start: PlainDate, end: PlainDate): DatePeriod
+period(start: ZonedDateTime, end: ZonedDateTime): TimePeriod
+period(start: PlainDate | ZonedDateTime, end: PlainDate | ZonedDateTime): DatePeriod | TimePeriod
 ```
 
-A custom period from `start` (included) to `end` (excluded). Equal
+The period from `start` (included) to `end` (excluded), unit `"custom"`. Equal
 values make an empty period; an end before the start is an error, as
 nothing is swapped behind your back.
 
 ```ts
-range(Temporal.PlainDate.from("2026-01-01"), Temporal.PlainDate.from("2026-04-01"));
+period(Temporal.PlainDate.from("2026-01-01"), Temporal.PlainDate.from("2026-04-01"));
 // { start: 2026-01-01, end: 2026-04-01, unit: "custom" }: January to March
-```
-
-### `resize`
-
-```ts
-resize(period: DatePeriod, edge: "start" | "end", value: PlainDate): DatePeriod | undefined
-resize(period: TimePeriod, edge: "start" | "end", value: ZonedDateTime): TimePeriod | undefined
-resize(period: Period, edge: "start" | "end", value: PlainDate | ZonedDateTime): Period | undefined
-```
-
-Move one edge of a period while keeping the other fixed.
-
-Returns undefined if the new edge crosses the fixed edge. Meeting it is
-fine: the result is an empty period.
-
-```ts
-const meeting = range(Temporal.ZonedDateTime.from("2026-03-29T09:00[Europe/Zurich]"), Temporal.ZonedDateTime.from("2026-03-29T10:00[Europe/Zurich]"));
-resize(meeting, "end", Temporal.ZonedDateTime.from("2026-03-29T11:30[Europe/Zurich]"));
-// → { start: 9:00, end: 11:30, unit: "custom" }
-```
-
-### `split`
-
-```ts
-split(period: DatePeriod, at: PlainDate): [DatePeriod, DatePeriod] | undefined
-split(period: TimePeriod, at: ZonedDateTime): [TimePeriod, TimePeriod] | undefined
-split(period: Period, at: PlainDate | ZonedDateTime): [Period, Period] | undefined
-```
-
-Split a period where the second part starts. Both parts are `"custom"`
-periods: half a month is not a month. The first part ends where the
-second begins, so every moment belongs to exactly one of them.
-
-```ts
-split(march, Temporal.PlainDate.from("2026-03-15"));
-// [2026-03-01 – 2026-03-15, 2026-03-15 – 2026-04-01]
-split(march, Temporal.PlainDate.from("2027-01-01")); // undefined
 ```
 
 ### `toLocaleString`
@@ -488,54 +519,18 @@ your week start, weekend, time zone, calendar or locale.
 import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ locale: "he-IL", calendar: "hebrew" }));
-time.monthGrid(Temporal.Now.plainDateISO()); // Sunday-first weeks of a Hebrew month
+time.month(Temporal.Now.plainDateISO()); // this Hebrew month
+time.monthGrid(Temporal.Now.plainDateISO()); // its Sunday-first weeks
 time.units; // the units passed in
 ```
 
 ### `Minuta`
 
 ```ts
-type Minuta = Readonly<{
-  clamp: typeof clamp;
-  compare: typeof compare;
-  contains: typeof contains;
-  count: (period: Period, unit: Unit) => number;
-  dayGrid: (value: TimeValue) => DayGrid;
-  divide: <Source extends Period, Name extends Unit>(
-    period: Source,
-    unit: Name,
-    options?: DivideOptions
-  ) => Chunks<Source, Name>;
-  equals: typeof equals;
-  gap: typeof gap;
-  isWeekday: (period: Period) => boolean;
-  isWeekend: (period: Period) => boolean;
-  merge: <Source extends Period>(
-    periods: readonly Source[],
-    unit?: Unit
-  ) => Source | undefined;
-  monthGrid: (value: TimeValue) => MonthGrid;
-  move: typeof move;
-  next: <Source extends Period>(period: Source) => Source;
-  overlaps: typeof overlaps;
-  period: <Name extends Unit>(value: TimeValue, unit: Name) => PeriodOf<Name>;
-  previous: <Source extends Period>(period: Source) => Source;
-  range: typeof range;
-  resize: typeof resize;
-  round: Round;
-  same: (first: Period, second: Period, unit: Unit) => boolean;
-  shift: <Source extends Period>(period: Source, steps: number) => Source;
-  split: typeof split;
-  toLocaleString: typeof toLocaleString;
-  /** The units every member is bound to */
-  units: Units;
-  yearGrid: (value: TimeValue) => YearGrid;
-}>;
+type Minuta = UnitPeriods & Functions;
 ```
 
-Every function, bound to one set of units. Written out rather than
-derived, so the generic signatures keep their type parameters: a day's
-`period` is a `DatePeriod`, `next` of a `TimePeriod` a `TimePeriod`.
+Every function and a member per unit, bound to one set of units.
 
 ### `Round`
 

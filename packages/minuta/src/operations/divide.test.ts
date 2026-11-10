@@ -1,7 +1,7 @@
 import type { Period, Unit } from "#src/types";
+import { period as between, periodWith } from "./period";
 import { date, text, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { periodWith, range } from "./period";
 import { compare } from "#src/values";
 import { createUnits } from "#src/create-units";
 import { divideWith } from "./divide";
@@ -147,7 +147,7 @@ describe("divideWith(): clipped chunks", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const span = range(
+      const span = between(
         zoned("2026-03-18T10:00[Asia/Tokyo]"),
         zoned("2026-03-20T09:00[Asia/Tokyo]")
       );
@@ -161,7 +161,7 @@ describe("divideWith(): clipped chunks", () => {
 describe("divideWith(): spans and empty periods", () => {
   it("divides nothing out of an empty period", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const empty = range(date("2026-03-18"), date("2026-03-18"));
+    const empty = between(date("2026-03-18"), date("2026-03-18"));
     expect(divideWith(units, empty, "day")).toStrictEqual([]);
   });
 });
@@ -240,7 +240,7 @@ describe("divideWith(): days of a time period across a clock change", () => {
     { timeout: 5000 },
     ({ from, hours, to }) => {
       expect.hasAssertions();
-      const span = range(
+      const span = between(
         zoned(`${from}[Europe/Zurich]`),
         zoned(`${to}[Europe/Zurich]`)
       );

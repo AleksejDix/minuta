@@ -1,6 +1,6 @@
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { periodWith, range } from "./period";
+import { period, periodWith } from "./period";
 import type { DatePeriod } from "#src/types";
 import { compare } from "./compare";
 import { createUnits } from "#src/create-units";
@@ -12,7 +12,7 @@ const AFTER = 1;
 const EQUAL = 0;
 
 function span(from: string, to: string): DatePeriod {
-  return range(date(from), date(to));
+  return period(date(from), date(to));
 }
 
 describe("equals()", () => {

@@ -1,8 +1,8 @@
 import type { DatePeriod, DateUnit, TimePeriod } from "#src/types";
+import { period as between, periodWith } from "./period";
 import { date, text, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { nextWith, previousWith, shiftWith } from "./shift";
-import { periodWith, range } from "./period";
 import { createUnits } from "#src/create-units";
 
 const units = createUnits({ timeZone: "Europe/Zurich" });
@@ -24,7 +24,7 @@ function periodOf(value: string, unit: DateUnit): DatePeriod {
 }
 
 function zurich(from: string, to: string): TimePeriod {
-  return range(zoned(`${from}${ZURICH}`), zoned(`${to}${ZURICH}`));
+  return between(zoned(`${from}${ZURICH}`), zoned(`${to}${ZURICH}`));
 }
 
 describe("nextWith() and previousWith(): date units", () => {
@@ -201,7 +201,7 @@ describe("shiftWith(): custom periods", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const span = range(date("2026-03-10"), date("2026-03-13"));
+      const span = between(date("2026-03-10"), date("2026-03-13"));
       expect(text(shiftWith(units, span, ONE))).toBe(
         "2026-03-13/2026-03-16 custom"
       );

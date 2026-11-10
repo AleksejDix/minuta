@@ -10,8 +10,8 @@ import type {
   Period,
   TimePeriod,
 } from "#src/types";
+import { period as between, periodWith } from "#src/operations/period";
 import { date, text, zoned } from "./temporal";
-import { periodWith, range } from "#src/operations/period";
 import { createUnits } from "#src/create-units";
 
 /** Temporal units in Zurich. */
@@ -36,7 +36,7 @@ function periodOf(value: string, unit: DateUnit): DatePeriod {
  * @returns The custom date period
  */
 function days(from: string, to: string): DatePeriod {
-  return range(date(from), date(to));
+  return between(date(from), date(to));
 }
 
 /**
@@ -47,7 +47,10 @@ function days(from: string, to: string): DatePeriod {
  * @returns The custom time period
  */
 function zurich(from: string, to: string): TimePeriod {
-  return range(zoned(`${from}[Europe/Zurich]`), zoned(`${to}[Europe/Zurich]`));
+  return between(
+    zoned(`${from}[Europe/Zurich]`),
+    zoned(`${to}[Europe/Zurich]`)
+  );
 }
 
 /**
@@ -63,17 +66,4 @@ function shown(period: Period | undefined): string {
   return text(period);
 }
 
-/**
- * Results as text.
- *
- * @param periods - Periods, or nothing
- * @returns Each period's text, or `["none"]`
- */
-function shownAll(periods: readonly Period[] | undefined): string[] {
-  if (periods === undefined) {
-    return ["none"];
-  }
-  return periods.map((period) => text(period));
-}
-
-export { days, periodOf, shown, shownAll, zurich, zurichUnits };
+export { days, periodOf, shown, zurich, zurichUnits };
