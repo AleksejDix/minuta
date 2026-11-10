@@ -1,6 +1,6 @@
 import type { DatePeriod, PlainDate, TimeValue, Units } from "#src/types";
-import { specFor, timeZoneOf } from "#src/units";
 import { divideWith } from "#src/operations/divide";
+import { specFor } from "#src/units";
 import { toPlainDate } from "#src/values";
 import { weekdayOf } from "#src/operations/utils/days-touched";
 
@@ -32,7 +32,7 @@ type YearGrid = Readonly<{
 function yearGridWith(units: Units, value: TimeValue): YearGrid {
   const year = specFor(units, "year");
   const week = specFor(units, "week");
-  const yearStart = year.startOf(toPlainDate(value, timeZoneOf(units)));
+  const yearStart = year.startOf(toPlainDate(value));
   const lastDay = year.add(yearStart, ONE).subtract({ days: ONE });
   const gridStart = week.startOf(yearStart);
   const grid: DatePeriod = {

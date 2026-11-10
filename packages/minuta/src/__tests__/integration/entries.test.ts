@@ -1,8 +1,8 @@
 import { createUnits, withUnits } from "#src/index";
 import { describe, expect, it } from "vitest";
 import type { TimeValue } from "#src/types";
-import { dateTime } from "#src/test/temporal";
 import { readFile } from "node:fs/promises";
+import { zoned } from "#src/test/temporal";
 
 // Every function: the main entry's exports and the members of withUnits
 const FUNCTIONS: readonly string[] = [
@@ -64,9 +64,9 @@ function subpathsOf(manifest: unknown): string[] {
 }
 
 const GRID_DATES: readonly TimeValue[] = [
-  dateTime("2024-01-01T00:00:00"),
-  dateTime("2024-03-31T12:00:00"),
-  dateTime("2024-12-31T23:59:59.999"),
+  zoned("2024-01-01T00:00:00[Europe/Zurich]"),
+  zoned("2024-03-31T12:00:00[Europe/Zurich]"),
+  zoned("2024-12-31T23:59:59.999[Europe/Zurich]"),
 ];
 
 /**

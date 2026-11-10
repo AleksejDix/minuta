@@ -97,14 +97,12 @@ type PeriodOf<Name extends Unit> = Name extends DateUnit
   : TimePeriod;
 
 /**
- * A value a period can be made from. Date units read its calendar date;
- * time units its moment, in the units' time zone unless it carries its own.
+ * A value a period can be made from: a date or a moment, the two kinds a
+ * period is made of. Date units read its calendar date; time units its
+ * moment, a date's start of day in the units' time zone. No `Instant` or
+ * `PlainDateTime`: give it a zone with Temporal, so none is guessed.
  */
-type TimeValue =
-  | Readonly<Temporal.Instant>
-  | PlainDate
-  | Readonly<Temporal.PlainDateTime>
-  | ZonedDateTime;
+type TimeValue = PlainDate | ZonedDateTime;
 
 // ── Specs ──
 

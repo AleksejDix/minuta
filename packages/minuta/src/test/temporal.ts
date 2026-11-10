@@ -28,16 +28,6 @@ function zoned(iso: string): Temporal.ZonedDateTime {
 }
 
 /**
- * A date and wall-clock time without a zone.
- *
- * @param iso - e.g. `"2026-03-18T10:00"`
- * @returns The PlainDateTime
- */
-function dateTime(iso: string): Temporal.PlainDateTime {
-  return Temporal.PlainDateTime.from(iso);
-}
-
-/**
  * A period as `start/end unit`: `"2026-03-01/2026-04-01 month"`. Moments
  * show their offset and zone.
  *
@@ -48,4 +38,4 @@ function text(period: Period): string {
   return `${period.start.toString()}/${period.end.toString()} ${period.unit}`;
 }
 
-export { date, dateTime, text, zoned };
+export { date, text, zoned };

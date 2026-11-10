@@ -41,7 +41,7 @@ function periodWith<Name extends Unit>(
   const spec: DateSpec | TimeSpec = specFor(units, unit);
   const timeZone = timeZoneOf(units);
   if (spec.kind === "date") {
-    const start = spec.startOf(toPlainDate(value, timeZone));
+    const start = spec.startOf(toPlainDate(value));
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- A date spec belongs to a date unit, whose period is a DatePeriod
     return { end: spec.add(start, ONE), start, unit } as PeriodOf<Name>;
   }
@@ -51,17 +51,19 @@ function periodWith<Name extends Unit>(
 }
 
 /**
- * A custom period from `start` (included) to `end` (excluded). Forgiving:
- * values given in reverse order are swapped. Equal values make an empty
- * period.
+ * A custom period from `start` (included) to `end` (excluded). Equal
+ * values make an empty period; an end before the start is an error, as
+ * nothing is swapped behind your back.
  *
  * @example
  * range(Temporal.PlainDate.from("2026-01-01"), Temporal.PlainDate.from("2026-04-01"));
  * // { start: 2026-01-01, end: 2026-04-01, unit: "custom" }: January to March
  *
- * @param start - One edge of the range
- * @param end - The other edge, of the same kind
+ * @param start - The first moment or date, included
+ * @param end - The end, excluded, of the same kind
  * @returns The custom period
+ * @throws {RangeError} When `end` comes before `start`
+ * @throws {TypeError} When one is a date and the other a moment
  */
 function range(start: PlainDate, end: PlainDate): DatePeriod;
 function range(start: ZonedDateTime, end: ZonedDateTime): TimePeriod;
@@ -69,15 +71,16 @@ function range(
   start: PlainDate | ZonedDateTime,
   end: PlainDate | ZonedDateTime
 ): DatePeriod | TimePeriod {
-  let [first, last] = [start, end];
-  if (compare(first, last) > AFTER) {
-    [first, last] = [last, first];
+  if (compare(start, end) > AFTER) {
+    throw new RangeError(
+      `range() needs the start first: ${start.toString()} is after ${end.toString()}.`
+    );
   }
-  if (isPlainDate(first) && isPlainDate(last)) {
-    return { end: last, start: first, unit: "custom" };
+  if (isPlainDate(start) && isPlainDate(end)) {
+    return { end, start, unit: "custom" };
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- compare() has thrown unless both are moments
-  return { end: last, start: first, unit: "custom" } as TimePeriod;
+  return { end, start, unit: "custom" } as TimePeriod;
 }
 
 export { periodWith, range };

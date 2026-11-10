@@ -11,7 +11,7 @@ import {
 import { describe, expect, it } from "vitest";
 import type { Minuta } from "#src/with-units";
 import { createUnits } from "#src/create-units";
-import { dateTime } from "#src/test/temporal";
+import { zoned } from "#src/test/temporal";
 
 const UNITS: readonly Unit[] = [
   "year",
@@ -35,12 +35,12 @@ const DIVISIONS: readonly (readonly [Unit, Unit])[] = [
 ];
 
 const DATES: readonly TimeValue[] = [
-  dateTime("2024-01-01T00:00:00"),
-  dateTime("2024-02-29T12:34:56.789"),
-  dateTime("2024-03-31T02:30:00"),
-  dateTime("2024-10-27T02:30:00"),
-  dateTime("2024-12-31T23:59:59.999"),
-  dateTime("2025-06-15T08:00:00"),
+  zoned("2024-01-01T00:00:00[Europe/Zurich]"),
+  zoned("2024-02-29T12:34:56.789[Europe/Zurich]"),
+  zoned("2024-03-31T02:30:00[Europe/Zurich]"),
+  zoned("2024-10-27T02:30:00[Europe/Zurich]"),
+  zoned("2024-12-31T23:59:59.999[Europe/Zurich]"),
+  zoned("2025-06-15T08:00:00[Europe/Zurich]"),
 ];
 
 const BACK_A_YEAR_OF_MONTHS = -13;

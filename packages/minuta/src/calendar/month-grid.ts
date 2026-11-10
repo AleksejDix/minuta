@@ -1,6 +1,6 @@
 import type { DatePeriod, PlainDate, TimeValue, Units } from "#src/types";
-import { specFor, timeZoneOf } from "#src/units";
 import { divideWith } from "#src/operations/divide";
+import { specFor } from "#src/units";
 import { toPlainDate } from "#src/values";
 import { weekdayOf } from "#src/operations/utils/days-touched";
 
@@ -30,9 +30,7 @@ const GRID_DAYS = 42;
  * @returns The 42 day periods with grid metadata
  */
 function monthGridWith(units: Units, value: TimeValue): MonthGrid {
-  const monthStart = specFor(units, "month").startOf(
-    toPlainDate(value, timeZoneOf(units))
-  );
+  const monthStart = specFor(units, "month").startOf(toPlainDate(value));
   const gridStart = specFor(units, "week").startOf(monthStart);
   const grid: DatePeriod = {
     end: gridStart.add({ days: GRID_DAYS }),

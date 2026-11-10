@@ -284,12 +284,12 @@ equals(period(today, "month"), range(march1, april1)); // false: a month and a c
 ### `gap`
 
 ```ts
-gap(from: TimePoint, to: TimePoint): Period | undefined
+gap(first: Period, second: Period): Period | undefined
 ```
 
-The time between two dates, moments or periods: from where the earlier
-one ends to where the later one starts. A date counts as its whole day, a
-moment as an instant. Order does not matter.
+The time between two periods: from where the earlier one ends to where
+the later one starts. Order does not matter. For a date, pass its day:
+`period(date, "day")`.
 
 ```ts
 gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainDate.from("2026-03-05"), "day"));
@@ -337,9 +337,9 @@ range(start: ZonedDateTime, end: ZonedDateTime): TimePeriod
 range(start: PlainDate | ZonedDateTime, end: PlainDate | ZonedDateTime): DatePeriod | TimePeriod
 ```
 
-A custom period from `start` (included) to `end` (excluded). Forgiving:
-values given in reverse order are swapped. Equal values make an empty
-period.
+A custom period from `start` (included) to `end` (excluded). Equal
+values make an empty period; an end before the start is an error, as
+nothing is swapped behind your back.
 
 ```ts
 range(Temporal.PlainDate.from("2026-01-01"), Temporal.PlainDate.from("2026-04-01"));
@@ -887,15 +887,13 @@ The units made of moments: `"hour"`, `"minute"`, `"second"`, and your own.
 ### `TimeValue`
 
 ```ts
-type TimeValue =
-  | Readonly<Temporal.Instant>
-  | PlainDate
-  | Readonly<Temporal.PlainDateTime>
-  | ZonedDateTime;
+type TimeValue = PlainDate | ZonedDateTime;
 ```
 
-A value a period can be made from. Date units read its calendar date;
-time units its moment, in the units' time zone unless it carries its own.
+A value a period can be made from: a date or a moment, the two kinds a
+period is made of. Date units read its calendar date; time units its
+moment, a date's start of day in the units' time zone. No `Instant` or
+`PlainDateTime`: give it a zone with Temporal, so none is guessed.
 
 ### `Unit`
 
