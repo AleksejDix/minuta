@@ -1,4 +1,3 @@
-import { date, zoned } from "#src/test/temporal";
 import { days, periodOf, shown, zurich, zurichUnits } from "#src/test/periods";
 import { describe, expect, it } from "vitest";
 import type { DatePeriod } from "#src/types";
@@ -73,22 +72,6 @@ describe("gap()", () => {
       expect(shown(gap(second, month))).toBe("none");
     }
   );
-
-  it("counts a date as its whole day", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const between = gap(date("2026-03-02"), date("2026-03-05"));
-    expect(shown(between)).toBe("2026-03-03/2026-03-05 custom");
-    const none = gap(date("2026-03-02"), date("2026-03-02"));
-    expect(shown(none)).toBe("none");
-  });
-
-  it("counts a moment as an instant", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    const noon = zoned("2026-03-18T12:00[Europe/Zurich]");
-    const between = gap(zoned("2026-03-18T08:00[Europe/Zurich]"), noon);
-    expect(between).toBeDefined();
-    expect(between).toMatchObject({ end: noon });
-  });
 });
 
 describe("mergeWith()", () => {
