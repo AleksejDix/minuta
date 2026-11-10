@@ -191,7 +191,11 @@ function walkBack(units: Units, period: Period, count: number): Period[] {
 }
 
 function dayOf(units: Units, weird: WeirdDay): Period {
-  return periodWith(units, Temporal.Instant.from(weird.at), "day");
+  return periodWith(
+    units,
+    Temporal.Instant.from(weird.at).toZonedDateTimeISO(weird.zone),
+    "day"
+  );
 }
 
 describe.each(WEIRD_DAYS)("weird time: $zone $what", (weird) => {

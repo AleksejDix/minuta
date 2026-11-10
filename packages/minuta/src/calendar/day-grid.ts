@@ -87,7 +87,7 @@ function zoneOf(units: Units, value: TimeValue): string {
  */
 function dayGridWith(units: Units, value: TimeValue): DayGrid {
   const timeZone = zoneOf(units, value);
-  const day = periodWith(units, toPlainDate(value, timeZone), "day");
+  const day = periodWith(units, toPlainDate(value), "day");
   const periods: HourSlot[] = divideWith(
     units,
     zonedPeriod(day, timeZone),

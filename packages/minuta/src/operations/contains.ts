@@ -1,41 +1,22 @@
 import type { Period, PlainDate, ZonedDateTime } from "#src/types";
-import { compare, isPlainDate, isZoned } from "#src/values";
-import type { Temporal } from "temporal-polyfill";
+import { compare, isPlainDate } from "#src/values";
 import { sameKind } from "./kinds";
 
 const EQUAL = 0;
 const ONE_DAY = 1;
 
-/** What `contains` can look for: a date, a moment, a date and time, or a period. */
-type Target =
-  | Period
-  | PlainDate
-  | Readonly<Temporal.PlainDateTime>
-  | ZonedDateTime;
+/** What `contains` can look for: a date, a moment or a period. */
+type Target = Period | PlainDate | ZonedDateTime;
 
-/**
- * The target as a period: a date is its day, a moment an empty period at
- * that moment, a date and time its moment in the period's zone or its date.
- *
- * @param period - The containing period
- * @param target - What to look for
- * @returns The target as a period
- */
-function asPeriod(period: Period, target: Target): Period {
+// The target as a period: a date is its day, a moment an empty period at it
+function asPeriod(target: Target): Period {
   if ("start" in target) {
     return target;
   }
   if (isPlainDate(target)) {
     return { end: target.add({ days: ONE_DAY }), start: target, unit: "day" };
   }
-  if (isZoned(target)) {
-    return { end: target, start: target, unit: "custom" };
-  }
-  if (isZoned(period.start)) {
-    const moment = target.toZonedDateTime(period.start.timeZoneId);
-    return { end: moment, start: moment, unit: "custom" };
-  }
-  return asPeriod(period, target.toPlainDate());
+  return { end: target, start: target, unit: "custom" };
 }
 
 /**
@@ -52,7 +33,7 @@ function asPeriod(period: Period, target: Target): Period {
  * @returns True when the target lies fully within the period
  */
 function contains(period: Period, target: Target): boolean {
-  const asTarget = asPeriod(period, target);
+  const asTarget = asPeriod(target);
   const [outer, inner] = sameKind(period, asTarget);
   const isMoment = compare(inner.start, inner.end) === EQUAL;
   if (isMoment) {

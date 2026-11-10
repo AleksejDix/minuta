@@ -1,7 +1,6 @@
-import { date, dateTime, text, zoned } from "#src/test/temporal";
+import { date, text, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
-import { Temporal } from "temporal-polyfill/full";
 import type { TimeValue } from "#src/types";
 import { createUnits } from "#src/create-units";
 
@@ -45,16 +44,13 @@ describe("periodWith(): date units", () => {
       expect.hasAssertions();
       const values: readonly TimeValue[] = [
         date("2026-03-18"),
-        dateTime("2026-03-18T23:30"),
         zoned("2026-03-18T23:30[Asia/Tokyo]"),
-        // 23:30 UTC is already Mar 19 in Zurich
-        Temporal.Instant.from("2026-03-18T23:30:00Z"),
       ];
       expect(
         values.map((value: TimeValue) =>
           periodWith(units, value, "day").start.toString()
         )
-      ).toStrictEqual(["2026-03-18", "2026-03-18", "2026-03-18", "2026-03-19"]);
+      ).toStrictEqual(["2026-03-18", "2026-03-18"]);
     }
   );
 });
@@ -110,7 +106,11 @@ describe("periodWith(): zones and clock changes", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const skipped = periodWith(units, dateTime("2026-03-29T02:30"), "hour");
+      const skipped = periodWith(
+        units,
+        zoned(`2026-03-29T02:30${ZURICH}`),
+        "hour"
+      );
       expect(skipped.start.toString()).toBe(
         `2026-03-29T03:00:00+02:00${ZURICH}`
       );
@@ -147,10 +147,13 @@ describe("range()", () => {
     expect(text(span)).toBe("2026-01-01/2026-04-01 custom");
   });
 
-  it("swaps values given in reverse order", { timeout: 5000 }, () => {
+  it("refuses an end before the start", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const span = range(date("2026-04-01"), date("2025-12-01"));
-    expect(text(span)).toBe("2025-12-01/2026-04-01 custom");
+    expect(() => range(date("2026-04-01"), date("2025-12-01"))).toThrow(
+      new RangeError(
+        "range() needs the start first: 2026-04-01 is after 2025-12-01."
+      )
+    );
   });
 
   it("makes an empty period from equal values", { timeout: 5000 }, () => {
@@ -168,7 +171,8 @@ describe("range()", () => {
       // 10:00 in Tokyo is 01:00 UTC, an hour after 01:00 in Zurich
       const tokyo = zoned("2026-03-18T10:00[Asia/Tokyo]");
       const zurich = zoned(`2026-03-18T01:00${ZURICH}`);
-      expect(range(tokyo, zurich).start).toBe(zurich);
+      expect(range(zurich, tokyo).start).toBe(zurich);
+      expect(() => range(tokyo, zurich)).toThrow(RangeError);
     }
   );
 });

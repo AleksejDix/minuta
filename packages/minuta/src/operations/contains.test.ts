@@ -1,5 +1,5 @@
 import type { DatePeriod, TimePeriod } from "#src/types";
-import { date, dateTime, zoned } from "#src/test/temporal";
+import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
 import { periodWith, range } from "./period";
 import { contains } from "./contains";
@@ -82,16 +82,6 @@ describe("contains(): moments", () => {
       expect(contains(march, zoned("2026-04-01T00:00[Europe/Zurich]"))).toBe(
         false
       );
-    }
-  );
-
-  it(
-    "places a date and time in a time period's zone",
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-      expect(contains(hour, dateTime("2026-03-18T10:30"))).toBe(true);
-      expect(contains(march, dateTime("2026-03-18T10:30"))).toBe(true);
     }
   );
 });

@@ -30,8 +30,8 @@ function sameWith(
   if (spec.kind === "date") {
     return (
       compare(
-        spec.startOf(toPlainDate(first.start, timeZone)),
-        spec.startOf(toPlainDate(second.start, timeZone))
+        spec.startOf(toPlainDate(first.start)),
+        spec.startOf(toPlainDate(second.start))
       ) === EQUAL
     );
   }

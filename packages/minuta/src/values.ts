@@ -12,11 +12,9 @@ import type {
   TimeValue,
   ZonedDateTime,
 } from "#src/types";
-import type { Temporal } from "temporal-polyfill";
 import { getTemporal } from "#src/temporal-api";
 
 const TAG_PLAIN_DATE = "Temporal.PlainDate";
-const TAG_PLAIN_DATE_TIME = "Temporal.PlainDateTime";
 const TAG_ZONED = "Temporal.ZonedDateTime";
 
 // The runtime's zone, read without Temporal so it works at import time
@@ -35,12 +33,6 @@ function isPlainDate(value: unknown): value is PlainDate {
   return tagOf(value) === TAG_PLAIN_DATE;
 }
 
-function isPlainDateTime(
-  value: unknown
-): value is Readonly<Temporal.PlainDateTime> {
-  return tagOf(value) === TAG_PLAIN_DATE_TIME;
-}
-
 function isZoned(value: unknown): value is ZonedDateTime {
   return tagOf(value) === TAG_ZONED;
 }
@@ -57,42 +49,32 @@ function isDatePeriod(period: Period): period is DatePeriod {
 
 /**
  * The calendar date of a value: its own date, or the date of its moment in
- * `timeZone` (an `Instant` has no zone of its own).
+ * the moment's own zone.
  *
- * @param value - Any accepted value
- * @param timeZone - The zone an `Instant` is read in
+ * @param value - A date or a moment
  * @returns The calendar date
  */
-function toPlainDate(value: TimeValue, timeZone: string): PlainDate {
+function toPlainDate(value: TimeValue): PlainDate {
   if (isPlainDate(value)) {
     return value;
   }
-  if (isPlainDateTime(value) || isZoned(value)) {
-    return value.toPlainDate();
-  }
-  return value.toZonedDateTimeISO(timeZone).toPlainDate();
+  return value.toPlainDate();
 }
 
 /**
- * The moment of a value. A `ZonedDateTime` keeps its zone; the others are
- * placed in `timeZone`. A date becomes the start of its day, which is not
- * midnight where the clocks skip it.
+ * The moment of a value. A `ZonedDateTime` keeps its zone; a date becomes
+ * the start of its day in `timeZone`, which is not midnight where the clocks
+ * skip it.
  *
- * @param value - Any accepted value
- * @param timeZone - The zone values without one are placed in
+ * @param value - A date or a moment
+ * @param timeZone - The zone a date is placed in
  * @returns The moment
  */
 function toZoned(value: TimeValue, timeZone: string): ZonedDateTime {
   if (isZoned(value)) {
     return value;
   }
-  if (isPlainDate(value)) {
-    return value.toZonedDateTime({ timeZone });
-  }
-  if (isPlainDateTime(value)) {
-    return value.toZonedDateTime(timeZone);
-  }
-  return value.toZonedDateTimeISO(timeZone);
+  return value.toZonedDateTime({ timeZone });
 }
 
 /**
