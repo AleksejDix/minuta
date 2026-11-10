@@ -23,15 +23,16 @@ const DEFAULT_LOCALE = "en-US";
 function CalendarWeekdays({
   locale = DEFAULT_LOCALE,
 }: CalendarWeekdaysProps): JSX.Element {
-  const { browsing, divide, period } = useMinutaContext();
+  const { browsing, divide, week } = useMinutaContext();
 
-  const labels = useMemo((): readonly WeekdayLabel[] => {
-    const week = period(browsing.start, "week");
-    return divide(week, "day").map((day) => ({
-      full: toLocaleString(day, locale, { weekday: "long" }),
-      short: toLocaleString(day, locale, { weekday: "short" }),
-    }));
-  }, [browsing, divide, locale, period]);
+  const labels = useMemo(
+    (): readonly WeekdayLabel[] =>
+      divide(week(browsing.start), "day").map((day) => ({
+        full: toLocaleString(day, locale, { weekday: "long" }),
+        short: toLocaleString(day, locale, { weekday: "short" }),
+      })),
+    [browsing, divide, locale, week]
+  );
 
   return (
     <thead className="weekday-grid">

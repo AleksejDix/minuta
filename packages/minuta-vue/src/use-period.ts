@@ -18,9 +18,7 @@ import { useMinutaContext } from "#src/minuta-context";
  */
 function usePeriod(unit: Source<Unit>): ComputedRef<Period> {
   const minuta = useMinutaContext();
-  return computed(() =>
-    minuta.period(minuta.browsing.value.start, toValue(unit))
-  );
+  return computed(() => minuta[toValue(unit)](minuta.browsing.value.start));
 }
 
 export { usePeriod };

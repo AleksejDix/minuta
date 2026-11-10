@@ -62,9 +62,9 @@ function useMinuta(options: Source<MinutaOptions> = {}): MinutaState {
   const clock = useClock(operations, () => toValue(options).now !== undefined);
   const nowDate = computed(() => toValue(options).now ?? clock.value);
   const browsing = computed(() =>
-    operations.value.period(browsedDate.value, unit.value)
+    operations.value[unit.value](browsedDate.value)
   );
-  const now = computed(() => operations.value.period(nowDate.value, "second"));
+  const now = computed(() => operations.value.second(nowDate.value));
 
   /**
    * Browse the period containing the start of `period`.

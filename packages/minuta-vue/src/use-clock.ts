@@ -31,7 +31,7 @@ function useClock(
     if (isControlled()) {
       return;
     }
-    const today = operations.value.period(clock.value, "day");
+    const today = operations.value.day(clock.value);
     const tomorrow = operations.value.next(today).start;
     const nextDay = tomorrow.toZonedDateTime({
       timeZone: clock.value.timeZoneId,

@@ -46,7 +46,7 @@ const tabIndex = computed(() => {
   const active = activeDay(minuta, minuta.browsing.value, [
     calendar.focused.value,
     calendar.selected.value,
-    minuta.period(minuta.now.value.start, "day"),
+    minuta.day(minuta.now.value.start),
   ]);
   if (minuta.same(active, day, "day")) {
     return TABBABLE;

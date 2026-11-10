@@ -7,13 +7,13 @@ import { CalendarGrid } from "./CalendarGrid";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarRoot } from "./CalendarRoot";
 import type { RenderResult } from "@testing-library/react";
-import { period } from "@aleksejdix/minuta";
+import { day } from "@aleksejdix/minuta";
 
 type OnSelect = (day: Period) => void;
 
 const ONE = 1;
 const SELECTED_DAY = 20;
-const JANUARY_15: Period = period(date("2024-01-15"), "day");
+const JANUARY_15: Period = day(date("2024-01-15"));
 
 function renderCalendar(value: TimeValue, onSelect?: OnSelect): RenderResult {
   return render(
@@ -32,13 +32,13 @@ function only(elements: readonly HTMLElement[]): HTMLElement {
   return first;
 }
 
-function dayButton(day: number): HTMLElement {
+function dayButton(dayOfMonth: number): HTMLElement {
   return only(
     screen
       .getAllByRole("button")
       .filter(
         (button: HTMLElement) =>
-          button.textContent.startsWith(String(day)) &&
+          button.textContent.startsWith(String(dayOfMonth)) &&
           !button.classList.contains("is-outside")
       )
   );
@@ -96,7 +96,7 @@ describe("<CalendarDay> selection", () => {
 
     fireEvent.click(dayButton(SELECTED_DAY));
 
-    expect(onSelect).toHaveBeenCalledWith(period(date("2024-01-20"), "day"));
+    expect(onSelect).toHaveBeenCalledWith(day(date("2024-01-20")));
   });
 
   it("should mark the clicked day as selected", { timeout: 5000 }, () => {

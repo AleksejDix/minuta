@@ -37,10 +37,10 @@ function useMinuta(options: MinutaOptions = {}): MinutaState {
   const clock = useClock(ops, nowOption !== undefined);
   const nowDate = nowOption ?? clock;
   const browsing = useMemo(
-    () => ops.period(browsedDate, unit),
+    () => ops[unit](browsedDate),
     [ops, browsedDate, unit]
   );
-  const now = useMemo(() => ops.period(nowDate, "second"), [ops, nowDate]);
+  const now = useMemo(() => ops.second(nowDate), [ops, nowDate]);
   const browse = useCallback((period: Period) => {
     setBrowsedDate(period.start);
   }, []);

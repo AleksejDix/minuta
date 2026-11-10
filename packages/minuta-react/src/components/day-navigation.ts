@@ -1,10 +1,7 @@
 import type { Minuta, Period, Unit } from "@aleksejdix/minuta";
 
 /** The operations the keyboard navigation needs */
-type Operations = Pick<
-  Minuta,
-  "contains" | "divide" | "period" | "same" | "shift"
->;
+type Operations = Pick<Minuta, "contains" | "divide" | "same" | "shift" | Unit>;
 
 /** The parts of a keyboard event that pick the target day */
 type DayKey = Readonly<{ key: string; shiftKey: boolean }>;
@@ -66,7 +63,7 @@ function shiftWithin(
   part: Readonly<{ period: Period; unit: Unit }>,
   move: Readonly<{ steps: number; unit: Unit }>
 ): Period {
-  const parent = operations.period(part.period.start, move.unit);
+  const parent = operations[move.unit](part.period.start);
   return partAt(operations, operations.shift(parent, move.steps), {
     index: indexIn(operations, parent, part),
     unit: part.unit,
@@ -86,7 +83,7 @@ function shiftDayBy(
   day: Period,
   move: Readonly<{ steps: number; unit: "month" | "year" }>
 ): Period {
-  const month = operations.period(day.start, "month");
+  const month = operations.month(day.start);
   const target = shiftWithin(
     operations,
     { period: month, unit: "month" },
@@ -99,7 +96,7 @@ function shiftDayBy(
 }
 
 function weekDay(operations: Operations, day: Period, index: number): Period {
-  const week = operations.period(day.start, "week");
+  const week = operations.week(day.start);
   return operations.divide(week, "day").at(index) ?? day;
 }
 
@@ -188,7 +185,7 @@ function activeDay(
     (candidate) =>
       candidate !== undefined && operations.contains(browsing, candidate.start)
   );
-  return inMonth ?? operations.period(browsing.start, "day");
+  return inMonth ?? operations.day(browsing.start);
 }
 
 export { activeDay, dayForKey };

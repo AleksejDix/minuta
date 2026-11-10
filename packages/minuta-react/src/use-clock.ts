@@ -30,7 +30,7 @@ function useClock(operations: Minuta, isControlled: boolean): ZonedDateTime {
     if (isControlled) {
       return keepClock;
     }
-    const tomorrow = operations.next(operations.period(clock, "day")).start;
+    const tomorrow = operations.next(operations.day(clock)).start;
     const nextDay = tomorrow.toZonedDateTime({ timeZone: clock.timeZoneId });
     const timer = setTimeout(
       () => {

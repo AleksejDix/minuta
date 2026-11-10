@@ -32,9 +32,7 @@ describe("useMinutaContext()", () => {
     const { result } = probeInRoot(useMinutaContext, { date: testDate });
 
     expect(result.browsing.value.start).toStrictEqual(date("2024-03-01"));
-    expect(result.period(testDate, "week").start.dayOfWeek % WEEK_LENGTH).toBe(
-      MONDAY
-    );
+    expect(result.week(testDate).start.dayOfWeek % WEEK_LENGTH).toBe(MONDAY);
   });
 
   it("shares one state between all parts", { timeout: 5000 }, () => {

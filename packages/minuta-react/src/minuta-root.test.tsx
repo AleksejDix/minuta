@@ -38,7 +38,7 @@ describe("<MinutaRoot>", () => {
 
       expect(result.current.units).toBe(UNITS);
       expect(result.current.browsing).toStrictEqual(
-        withUnits(UNITS).period(createTestDate(), "week")
+        withUnits(UNITS).week(createTestDate())
       );
       expect(result.current.browsing.start.dayOfWeek % WEEK).toBe(SUNDAY);
     }
