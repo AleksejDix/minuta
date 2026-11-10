@@ -17,8 +17,8 @@ function sameValue(
  * "in the same week", use `same`.
  *
  * @example
- * equals(period(today, "month"), period(today, "month")); // true
- * equals(period(today, "month"), range(march1, april1)); // false: a month and a custom period
+ * equals(month(today), month(today)); // true
+ * equals(month(today), period(march1, april1)); // false: a month and a custom period
  *
  * @param first - One period
  * @param second - The other period

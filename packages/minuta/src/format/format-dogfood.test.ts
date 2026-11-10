@@ -4,13 +4,14 @@ import {
   contains,
   createUnits,
   divide,
+  equals,
   gap,
   merge,
+  month,
   next as nextPeriod,
   period,
   previous,
   round,
-  same,
   shift,
   withUnits,
 } from "#src/index";
@@ -120,7 +121,7 @@ describe("dogfood divide()", () => {
     expect.hasAssertions();
     const q1 = unitPeriod("2024-01-15", "quarter");
     expect(
-      divide(q1, "month").map((month: DatePeriod) => format(month))
+      divide(q1, "month").map((piece: DatePeriod) => format(piece))
     ).toStrictEqual(["January 2024", "February 2024", "March 2024"]);
   });
 
@@ -187,19 +188,19 @@ describe("dogfood contains()", () => {
   });
 });
 
-describe("dogfood same() and clamp()", () => {
+describe("dogfood equals() of months and clamp()", () => {
   it("two days in same month", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const day1 = unitPeriod("2024-03-05", "day");
     const day2 = unitPeriod("2024-03-20", "day");
-    expect(same(day1, day2, "month")).toBe(true);
+    expect(equals(month(day1.start), month(day2.start))).toBe(true);
   });
 
   it("two days in different months", { timeout: 5000 }, () => {
     expect.hasAssertions();
     const day1 = unitPeriod("2024-03-31", "day");
     const day2 = unitPeriod("2024-04-01", "day");
-    expect(same(day1, day2, "month")).toBe(false);
+    expect(equals(month(day1.start), month(day2.start))).toBe(false);
   });
 
   it("clamps a wide period to bounds", { timeout: 5000 }, () => {

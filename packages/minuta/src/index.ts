@@ -24,7 +24,6 @@ import {
   nextWith,
   previousWith,
   roundWith,
-  sameWith,
   shiftWith,
 } from "#src/operations/index";
 import type { RoundTo } from "#src/operations/round-options";
@@ -35,8 +34,8 @@ import { units } from "#src/default-units";
  * on Monday.
  *
  * @example
- * divide(period(Temporal.PlainDate.from("2026-03-01"), "month"), "day"); // 31 day periods
- * divide(period(Temporal.Now.zonedDateTimeISO(), "hour"), "minute", { step: 15 }); // 4 periods
+ * divide(month(Temporal.PlainDate.from("2026-03-01")), "day"); // 31 day periods
+ * divide(hour(Temporal.Now.zonedDateTimeISO()), "minute", { step: 15 }); // 4 periods
  *
  * @param source - Period to divide
  * @param unit - Unit of the chunks
@@ -56,8 +55,8 @@ function divide<Source extends Period, Name extends Unit>(
  * number, where `start.until(end)` gives a `Temporal.Duration`.
  *
  * @example
- * count(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour"); // 24
- * count(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // 28
+ * count(day(Temporal.PlainDate.from("2026-10-08")), "hour"); // 24
+ * count(month(Temporal.PlainDate.from("2026-02-01")), "day"); // 28
  *
  * @param source - The period to measure
  * @param unit - The unit to count
@@ -93,7 +92,7 @@ function merge<Source extends Period>(
  * The next period of the same unit. Weeks start on Monday.
  *
  * @example
- * next(period(Temporal.PlainDate.from("2026-03-15"), "month")); // April 2026
+ * next(month(Temporal.PlainDate.from("2026-03-15"))); // April 2026
  *
  * @param source - Current period
  * @returns The following period of the same unit
@@ -106,7 +105,7 @@ function next<Source extends Period>(source: Source): Source {
  * The previous period of the same unit. Weeks start on Monday.
  *
  * @example
- * previous(period(Temporal.PlainDate.from("2026-03-15"), "month")); // February 2026
+ * previous(month(Temporal.PlainDate.from("2026-03-15"))); // February 2026
  *
  * @param source - Current period
  * @returns The preceding period of the same unit
@@ -144,26 +143,10 @@ function round(
 }
 
 /**
- * Whether two periods fall into the same `unit`, by their starts. For
- * identical periods, use `equals`.
- *
- * @example
- * same(period(Temporal.PlainDate.from("2026-03-16"), "day"), period(Temporal.PlainDate.from("2026-03-20"), "day"), "week"); // true
- *
- * @param first - One period
- * @param second - The other period
- * @param unit - Granularity of the comparison
- * @returns Whether both periods are in the same unit
- */
-function same(first: Period, second: Period, unit: Unit): boolean {
-  return sameWith(units, first, second, unit);
-}
-
-/**
  * Move a period by `steps` of its own unit; negative moves back.
  *
  * @example
- * shift(period(Temporal.PlainDate.from("2026-03-15"), "month"), 3); // June 2026
+ * shift(month(Temporal.PlainDate.from("2026-03-15")), 3); // June 2026
  *
  * @param source - Period to move
  * @param steps - How many periods to move
@@ -173,7 +156,7 @@ function shift<Source extends Period>(source: Source, steps: number): Source {
   return shiftWith(units, source, steps);
 }
 
-export { count, divide, merge, next, previous, round, same, shift };
+export { count, divide, merge, next, previous, round, shift };
 export {
   day,
   hour,

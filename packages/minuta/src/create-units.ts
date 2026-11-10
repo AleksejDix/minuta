@@ -88,7 +88,7 @@ function datesIn(dates: DateSpecs, calendar: string | undefined): DateSpecs {
  * import { createUnits, withUnits } from "@aleksejdix/minuta/core";
  *
  * const time = withUnits(createUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
- * time.period(Temporal.PlainDate.from("2026-03-18"), "week"); // [Mar 15, Mar 22)
+ * time.week(Temporal.PlainDate.from("2026-03-18")); // [Mar 15, Mar 22)
  *
  * createUnits({ locale: "ar-EG" }).weekend; // [5, 6]: Friday and Saturday
  *

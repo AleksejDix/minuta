@@ -172,7 +172,7 @@ function rangeText(
  * format of its unit: the month and year for a month, a weekday and a day
  * for a day, a range for weeks and custom periods (shared parts collapsed by
  * `Intl.DateTimeFormat#formatRange`; a date period shows its last day, not
- * its exclusive end). For a month as a range, format `range(month.start,
+ * its exclusive end). For a month as a range, format `period(month.start,
  * month.end)`. The same text everywhere: on native Temporal and the
  * polyfill, on a server and in the browser.
  *
@@ -181,7 +181,7 @@ function rangeText(
  * toLocaleString(day, "en-US"); // "March 15, 2026"
  * toLocaleString(day, "en-US", { weekday: "short" }); // "Sun"
  * toLocaleString(week, "ja-JP"); // "2026/03/09～2026/03/15"
- * toLocaleString(range(march.start, march.end), "de-CH"); // "1.–31. März 2026"
+ * toLocaleString(period(march.start, march.end), "de-CH"); // "1.–31. März 2026"
  *
  * @param period - Period to format
  * @param locales - BCP 47 locale(s); the runtime's when left out

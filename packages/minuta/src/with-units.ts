@@ -33,7 +33,6 @@ import {
   periodWith,
   previousWith,
   roundWith,
-  sameWith,
   shiftWith,
   period as span,
 } from "#src/operations/index";
@@ -87,7 +86,6 @@ type Functions = Readonly<{
   period: typeof span;
   previous: <Source extends Period>(period: Source) => Source;
   round: Round;
-  same: (first: Period, second: Period, unit: Unit) => boolean;
   shift: <Source extends Period>(period: Source, steps: number) => Source;
   toLocaleString: typeof toLocaleString;
   /** The units every member is bound to */
@@ -128,7 +126,7 @@ function unitPeriods(units: Units): UnitPeriods {
  * your week start, weekend, time zone, calendar or locale.
  *
  * @example
- * import { createUnits, withUnits } from "@aleksejdix/minuta";
+ * import { createUnits, month, withUnits } from "@aleksejdix/minuta";
  *
  * const time = withUnits(createUnits({ locale: "he-IL", calendar: "hebrew" }));
  * time.month(Temporal.Now.plainDateISO()); // this Hebrew month
@@ -172,7 +170,6 @@ function withUnits(units: Units): Minuta {
     period: span,
     previous: (period) => previousWith(units, period),
     round,
-    same: (first, second, unit) => sameWith(units, first, second, unit),
     shift: (period, steps) => shiftWith(units, period, steps),
     toLocaleString,
     units,

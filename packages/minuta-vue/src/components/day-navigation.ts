@@ -1,7 +1,10 @@
 import type { Minuta, Period, Unit } from "@aleksejdix/minuta";
 
 /** The operations the keyboard navigation needs */
-type Operations = Pick<Minuta, "contains" | "divide" | "same" | "shift" | Unit>;
+type Operations = Pick<
+  Minuta,
+  "contains" | "divide" | "equals" | "shift" | Unit
+>;
 
 /** The parts of a keyboard event that pick the target day */
 type DayKey = Readonly<{ key: string; shiftKey: boolean }>;
@@ -29,7 +32,10 @@ function indexIn(
   return operations
     .divide(parent, part.unit)
     .findIndex((candidate) =>
-      operations.same(candidate, part.period, part.unit)
+      operations.equals(
+        operations[part.unit](candidate.start),
+        operations[part.unit](part.period.start)
+      )
     );
 }
 

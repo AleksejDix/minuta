@@ -9,7 +9,6 @@ export { mergeWith } from "./merge";
 export { overlaps } from "./overlaps";
 export { period, periodWith } from "./period";
 export { roundWith } from "./round";
-export { sameWith } from "./same";
 export { nextWith, previousWith, shiftWith } from "./shift";
 export { isWeekdayWith } from "./utils/is-weekday";
 export { isWeekendWith } from "./utils/is-weekend";
