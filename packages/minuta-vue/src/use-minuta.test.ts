@@ -46,9 +46,7 @@ describe("useMinuta() defaults", () => {
       expect.hasAssertions();
       const minuta = useMinuta({ date: testDate });
 
-      expect(
-        minuta.period(testDate, "week").start.dayOfWeek % WEEK_LENGTH
-      ).toBe(MONDAY);
+      expect(minuta.week(testDate).start.dayOfWeek % WEEK_LENGTH).toBe(MONDAY);
       expect(Object.keys(minuta.units.value)).toStrictEqual(
         Object.keys(createUnits())
       );
@@ -59,9 +57,7 @@ describe("useMinuta() defaults", () => {
     expect.hasAssertions();
     const minuta = useMinuta({ date: testDate });
 
-    expect(minuta.browsing.value).toStrictEqual(
-      minuta.period(testDate, "month")
-    );
+    expect(minuta.browsing.value).toStrictEqual(minuta.month(testDate));
   });
 
   it("defaults the date and now to the current date", { timeout: 5000 }, () => {
@@ -76,7 +72,7 @@ describe("useMinuta() defaults", () => {
       before.epochMilliseconds - SECOND_MS
     );
     expect(nowTime).toBeLessThanOrEqual(after.epochMilliseconds);
-    expect(minuta.browsing.value).toStrictEqual(minuta.period(after, "month"));
+    expect(minuta.browsing.value).toStrictEqual(minuta.month(after));
   });
 });
 
@@ -88,9 +84,9 @@ describe("useMinuta() options", () => {
         date: testDate,
         units: createUnits({ weekStartsOn }),
       });
-      expect(
-        minuta.period(testDate, "week").start.dayOfWeek % WEEK_LENGTH
-      ).toBe(weekStartsOn);
+      expect(minuta.week(testDate).start.dayOfWeek % WEEK_LENGTH).toBe(
+        weekStartsOn
+      );
     }
   });
 
@@ -101,7 +97,7 @@ describe("useMinuta() options", () => {
     const minuta = useMinuta({ date: testDate, units });
 
     expect(minuta.units.value).toBe(units);
-    expect(() => minuta.period(testDate, "week")).toThrow("UNIT_NOT_SUPPORTED");
+    expect(() => minuta.week(testDate)).toThrow("UNIT_NOT_SUPPORTED");
   });
 
   it("browses the period of the given unit", { timeout: 5000 }, () => {
@@ -134,12 +130,12 @@ describe("useMinuta() operations", () => {
     const units = createUnits({ weekStartsOn: SUNDAY });
     const minuta = useMinuta({ date: testDate, units });
     const bound = withUnits(units);
-    const week = bound.period(testDate, "week");
+    const week = bound.week(testDate);
 
     expect(Object.keys(minuta)).toStrictEqual(
       expect.arrayContaining(Object.keys(bound)) as unknown
     );
-    expect(minuta.period(testDate, "week")).toStrictEqual(week);
+    expect(minuta.week(testDate)).toStrictEqual(week);
     expect(minuta.divide(week, "day")).toHaveLength(DAYS_PER_WEEK);
     expect(minuta.next(week)).toStrictEqual(bound.next(week));
   });

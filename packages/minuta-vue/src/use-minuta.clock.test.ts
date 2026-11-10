@@ -44,7 +44,7 @@ describe("useMinuta() clock", () => {
     expect.hasAssertions();
     const { minuta, stop } = scopedMinuta();
     vi.advanceTimersByTime(TWO_SECONDS);
-    const tomorrow = minuta.period(NEXT_DAY, "day");
+    const tomorrow = minuta.day(NEXT_DAY);
     expect(minuta.contains(tomorrow, minuta.now.value.start)).toBe(true);
     stop();
   });

@@ -28,7 +28,7 @@ describe("useMinuta() operations", () => {
     const units = createUnits();
     const expected = withUnits(units);
     const { result } = renderMinuta({ date: createTestDate(), units });
-    const month = expected.period(createTestDate(), "month");
+    const month = expected.month(createTestDate());
 
     expect(Object.keys(result.current)).toStrictEqual(
       expect.arrayContaining(Object.keys(expected))
@@ -47,7 +47,7 @@ describe("useMinuta() operations", () => {
       expect.hasAssertions();
       const { result } = renderMinuta({ date: createTestDate() });
 
-      const week = result.current.period(createTestDate(), "week");
+      const week = result.current.week(createTestDate());
       expect(week.start.dayOfWeek).toBe(MONDAY);
     }
   );
@@ -58,7 +58,7 @@ describe("useMinuta() operations", () => {
     const { result } = renderMinuta({ date: createTestDate(), units });
 
     expect(result.current.units).toBe(units);
-    const week = result.current.period(createTestDate(), "week");
+    const week = result.current.week(createTestDate());
     expect(week.start.dayOfWeek % WEEK).toBe(SUNDAY);
   });
 });
@@ -72,7 +72,7 @@ describe("useMinuta() browsing period", () => {
       const { result } = renderMinuta({ date: createTestDate() });
 
       expect(result.current.browsing).toStrictEqual(
-        withUnits(createUnits()).period(createTestDate(), "month")
+        withUnits(createUnits()).month(createTestDate())
       );
     }
   );

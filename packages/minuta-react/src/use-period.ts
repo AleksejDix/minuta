@@ -14,10 +14,7 @@ import { useMinutaContext } from "./minuta-context";
  */
 function usePeriod(unit: Unit): Period {
   const minuta = useMinutaContext();
-  return useMemo(
-    () => minuta.period(minuta.browsing.start, unit),
-    [minuta, unit]
-  );
+  return useMemo(() => minuta[unit](minuta.browsing.start), [minuta, unit]);
 }
 
 export { usePeriod };

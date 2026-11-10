@@ -171,7 +171,7 @@ describe("combined computed workflow", () => {
     expect(combined.value).toStrictEqual({ month: 0, year: 2024 });
     const initialUpdates = updates.length;
 
-    result.minuta.browse(result.minuta.period(date("2025-06-15"), "day"));
+    result.minuta.browse(result.minuta.day(date("2025-06-15")));
 
     expect(combined.value).toStrictEqual({ month: 5, year: 2025 });
     expect(updates.length).toBeGreaterThan(initialUpdates);

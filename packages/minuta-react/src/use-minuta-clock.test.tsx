@@ -28,7 +28,7 @@ describe("useMinuta() clock", () => {
     act(() => {
       vi.advanceTimersByTime(TWO_SECONDS);
     });
-    const tomorrow = result.current.period(NEXT_DAY, "day");
+    const tomorrow = result.current.day(NEXT_DAY);
     expect(result.current.contains(tomorrow, result.current.now.start)).toBe(
       true
     );

@@ -13,12 +13,10 @@ useCalendarContext();
 const minuta = useMinutaContext();
 // The column headers of the grid: short labels abbreviating the full weekday
 const weekdays = computed(() =>
-  minuta
-    .divide(minuta.period(minuta.browsing.value.start, "week"), "day")
-    .map((day) => ({
-      full: toLocaleString(day, locale, { weekday: "long" }),
-      short: toLocaleString(day, locale, { weekday: "short" }),
-    }))
+  minuta.divide(minuta.week(minuta.browsing.value.start), "day").map((day) => ({
+    full: toLocaleString(day, locale, { weekday: "long" }),
+    short: toLocaleString(day, locale, { weekday: "short" }),
+  }))
 );
 </script>
 

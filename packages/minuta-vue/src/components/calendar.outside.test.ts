@@ -18,6 +18,7 @@ describe("calendar parts outside CalendarRoot", () => {
   it.each([CalendarHeader, CalendarWeekdays, CalendarGrid])(
     "throws for part %#",
     { timeout: 5000 },
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Vue's component types are mutable objects
     (part) => {
       expect.hasAssertions();
       const warn = silenceVueWarnings();

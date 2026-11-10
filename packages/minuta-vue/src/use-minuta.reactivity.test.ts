@@ -71,9 +71,7 @@ describe("useMinuta() browsing", () => {
 
     const [, lastBrowsing] = runs;
     expect(runs).toHaveLength(TWO_RUNS);
-    expect(lastBrowsing).toStrictEqual(
-      minuta.period(date("2024-02-01"), "month")
-    );
+    expect(lastBrowsing).toStrictEqual(minuta.month(date("2024-02-01")));
   });
 
   it(
@@ -83,7 +81,7 @@ describe("useMinuta() browsing", () => {
       expect.hasAssertions();
       const minuta = useMinuta({ date: testDate });
 
-      minuta.browse(minuta.period(date("2024-03-20"), "day"));
+      minuta.browse(minuta.day(date("2024-03-20")));
 
       expect(minuta.browsing.value.unit).toBe("month");
       expect(minuta.browsing.value.start.month - MONTH_OFFSET).toBe(MARCH);
@@ -104,7 +102,7 @@ describe("useMinuta() derived state", () => {
       );
       expect([year.value, month.value]).toStrictEqual([YEAR_2024, JANUARY]);
 
-      minuta.browse(minuta.period(date("2025-06-15"), "day"));
+      minuta.browse(minuta.day(date("2025-06-15")));
 
       expect([year.value, month.value]).toStrictEqual([YEAR_2025, JUNE]);
     }
@@ -204,9 +202,7 @@ describe("useMinuta() reactive units and unit", () => {
     units.value = createUnits({ weekStartsOn: SUNDAY });
 
     expect(minuta.browsing.value.start).toStrictEqual(date("2023-12-31"));
-    expect(minuta.period(moment, "week").start.dayOfWeek % WEEK_LENGTH).toBe(
-      SUNDAY
-    );
+    expect(minuta.week(moment).start.dayOfWeek % WEEK_LENGTH).toBe(SUNDAY);
   });
 
   it("recomputes browsing when the unit changes", { timeout: 5000 }, () => {
@@ -216,9 +212,7 @@ describe("useMinuta() reactive units and unit", () => {
 
     unit.value = "year";
 
-    expect(minuta.browsing.value).toStrictEqual(
-      minuta.period(testDate, "year")
-    );
+    expect(minuta.browsing.value).toStrictEqual(minuta.year(testDate));
     expect(minuta.browsing.value.start.month - MONTH_OFFSET).toBe(JANUARY);
     expect(minuta.next(minuta.browsing.value).start.year).toBe(YEAR_2025);
   });
@@ -230,11 +224,11 @@ describe("useMinuta() destructured operations", () => {
     const moment = zoned("2024-01-03T12:00:00[Europe/Zurich]");
     const units = shallowRef(createUnits({ weekStartsOn: MONDAY }));
     const minuta = useMinuta(() => ({ units: units.value }));
-    const { period } = minuta;
+    const { week } = minuta;
 
     units.value = createUnits({ weekStartsOn: SUNDAY });
 
-    expect(period(moment, "week").start.dayOfWeek % WEEK_LENGTH).toBe(SUNDAY);
-    expect(minuta.period).toBe(period);
+    expect(week(moment).start.dayOfWeek % WEEK_LENGTH).toBe(SUNDAY);
+    expect(minuta.week).toBe(week);
   });
 });

@@ -86,7 +86,7 @@ describe("useMinuta() browsing another period", () => {
     () => {
       expect.hasAssertions();
       const { result } = renderMinuta();
-      const otherPeriod = result.current.period(date("2025-01-01"), "month");
+      const otherPeriod = result.current.month(date("2025-01-01"));
 
       act(() => {
         result.current.browse(result.current.next(otherPeriod));
@@ -103,14 +103,14 @@ describe("useMinuta() browsing another period", () => {
     () => {
       expect.hasAssertions();
       const { result } = renderMinuta({ unit: "month" });
-      const day = result.current.period(date("2024-03-20"), "day");
+      const day = result.current.day(date("2024-03-20"));
 
       act(() => {
         result.current.browse(day);
       });
 
       expect(result.current.browsing).toStrictEqual(
-        result.current.period(day.start, "month")
+        result.current.month(day.start)
       );
     }
   );

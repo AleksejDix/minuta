@@ -37,7 +37,7 @@ function CalendarSelection({
   const { focus, focused, remember, takeFocus } = useRovingFocus();
   const labelId = useId();
 
-  const { browse, browsing, now, period } = minuta;
+  const { browse, browsing, now } = minuta;
   const select = useCallback(
     (day: Period) => {
       remember(day);
@@ -54,12 +54,8 @@ function CalendarSelection({
   );
   const active = useMemo(
     () =>
-      activeDay(minuta, browsing, [
-        focused,
-        selected,
-        period(now.start, "day"),
-      ]),
-    [browsing, focused, minuta, now, period, selected]
+      activeDay(minuta, browsing, [focused, selected, minuta.day(now.start)]),
+    [browsing, focused, minuta, now, selected]
   );
   const calendar = useMemo(
     () => ({ active, focus, isDisabled, labelId, select, selected, takeFocus }),

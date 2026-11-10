@@ -30,7 +30,7 @@ describe("useMinuta() browsing across a leap year", () => {
         unit: "day",
       });
 
-      minuta.browse(minuta.period(targetDate, "day"));
+      minuta.browse(minuta.day(targetDate));
 
       const { end, start } = minuta.browsing.value;
       // The day starts on its date and ends where the next one starts
