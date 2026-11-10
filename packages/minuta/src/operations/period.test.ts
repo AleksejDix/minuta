@@ -147,6 +147,16 @@ describe("period(start, end)", () => {
     expect(text(span)).toBe("2026-01-01/2026-04-01 custom");
   });
 
+  it("points a unit name at its own function", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    // @ts-expect-error -- The 1.x call: period(value, unit)
+    expect(() => between(date("2026-03-15"), "month")).toThrow(
+      new TypeError(
+        "period(start, end) takes two dates or two moments. For the month that contains a value, call month(value)."
+      )
+    );
+  });
+
   it("refuses an end before the start", { timeout: 5000 }, () => {
     expect.hasAssertions();
     expect(() => between(date("2026-04-01"), date("2025-12-01"))).toThrow(

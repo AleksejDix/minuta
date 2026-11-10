@@ -63,7 +63,8 @@ function periodWith<Name extends Unit>(
  * @param end - The end, excluded, of the same kind
  * @returns The custom period
  * @throws {RangeError} When `end` comes before `start`
- * @throws {TypeError} When one is a date and the other a moment
+ * @throws {TypeError} When one is a date and the other a moment, or `end`
+ *   is a unit name: `month(date)` is the month that contains a date
  */
 function period(start: PlainDate, end: PlainDate): DatePeriod;
 function period(start: ZonedDateTime, end: ZonedDateTime): TimePeriod;
@@ -71,6 +72,11 @@ function period(
   start: PlainDate | ZonedDateTime,
   end: PlainDate | ZonedDateTime
 ): DatePeriod | TimePeriod {
+  if (typeof end === "string") {
+    throw new TypeError(
+      `period(start, end) takes two dates or two moments. For the ${String(end)} that contains a value, call ${String(end)}(value).`
+    );
+  }
   if (compare(start, end) > AFTER) {
     throw new RangeError(
       `period() needs the start first: ${start.toString()} is after ${end.toString()}.`
