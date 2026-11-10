@@ -36,7 +36,26 @@ const fortnight: DateSpec = {
 const own: Units = { fortnight };
 const units = Object.assign(own, builtIn);
 const time = withUnits(units);
-const sprint = time["fortnight"](date("2026-03-18"));
+const sprint = time.fortnight(date("2026-03-18"));
+
+describe("a member per unit", () => {
+  it("is there for a unit of your own", { timeout: 5000 }, () => {
+    expect.hasAssertions();
+    expect(time.fortnight).toBeTypeOf("function");
+    expect(withUnits(builtIn).fortnight).toBeUndefined();
+  });
+
+  it(
+    "fails as UNIT_NOT_SUPPORTED for a built-in unit without its spec",
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+      expect(() => withUnits({ fortnight }).week(date("2026-03-18"))).toThrow(
+        /^UNIT_NOT_SUPPORTED: no "week" spec/u
+      );
+    }
+  );
+});
 
 describe("a custom unit", () => {
   it("makes periods aligned to its own boundaries", { timeout: 5000 }, () => {
