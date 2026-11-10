@@ -20,7 +20,7 @@ type CalendarWeekProps = Readonly<{
  * @returns The table row
  */
 function CalendarWeek({ renderDay, week }: CalendarWeekProps): JSX.Element {
-  const { same } = useMinutaContext();
+  const { day: dayOf, equals } = useMinutaContext();
   const { selected } = useCalendarContext();
 
   return (
@@ -29,7 +29,9 @@ function CalendarWeek({ renderDay, week }: CalendarWeekProps): JSX.Element {
         <td
           className="grid-cell"
           key={day.start.toString()}
-          aria-selected={selected !== undefined && same(selected, day, "day")}
+          aria-selected={
+            selected !== undefined && equals(dayOf(selected.start), day)
+          }
         >
           {renderDay(day)}
         </td>

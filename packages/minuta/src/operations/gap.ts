@@ -7,12 +7,12 @@ const EQUAL = 0;
 /**
  * The time between two periods: from where the earlier one ends to where
  * the later one starts. Order does not matter. For a date, pass its day:
- * `period(date, "day")`.
+ * `day(date)`.
  *
  * @example
- * gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainDate.from("2026-03-05"), "day"));
+ * gap(day(Temporal.PlainDate.from("2026-03-02")), day(Temporal.PlainDate.from("2026-03-05")));
  * // { start: 2026-03-03, end: 2026-03-05, unit: "custom" }: Mar 3 and 4
- * gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainDate.from("2026-03-03"), "day")); // undefined: they touch
+ * gap(day(Temporal.PlainDate.from("2026-03-02")), day(Temporal.PlainDate.from("2026-03-03"))); // undefined: they touch
  *
  * @param first - One period
  * @param second - The other one

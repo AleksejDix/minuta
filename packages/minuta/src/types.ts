@@ -87,7 +87,7 @@ type TimePeriod = Readonly<{
  * `start` included and `end` excluded.
  *
  * `periodWith(units, value, "month")` creates one aligned to a unit,
- * `range(start, end)` a custom one.
+ * `period(start, end)` a custom one.
  */
 type Period = DatePeriod | TimePeriod;
 

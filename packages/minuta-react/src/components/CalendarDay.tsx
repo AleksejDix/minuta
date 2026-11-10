@@ -87,13 +87,13 @@ function tabIndex(isActive: boolean): number {
  * @returns Its state
  */
 function useDayState(day: Period): DayState {
-  const { browsing, contains, now, same } = useMinutaContext();
+  const { browsing, contains, day: dayOf, equals, now } = useMinutaContext();
   const { active, isDisabled, selected } = useCalendarContext();
   return {
-    isActive: same(active, day, "day"),
+    isActive: equals(dayOf(active.start), day),
     isDisabled: isDisabled(day),
     isOutside: !contains(browsing, day.start),
-    isSelected: selected !== undefined && same(selected, day, "day"),
+    isSelected: selected !== undefined && equals(dayOf(selected.start), day),
     isToday: contains(day, now.start),
   };
 }
@@ -138,7 +138,7 @@ function useDayKeys(day: Period): KeyboardEventHandler<HTMLButtonElement> {
         select(day);
       } else if (target !== undefined) {
         event.preventDefault();
-        if (!minuta.same(target, day, "day")) {
+        if (!minuta.equals(minuta.day(target.start), day)) {
           focus(target);
         }
       }

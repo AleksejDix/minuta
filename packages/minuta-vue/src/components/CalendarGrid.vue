@@ -34,7 +34,9 @@ const weeks = computed(() => {
  */
 function isSelected(day: Period): boolean {
   const selected = calendar.selected.value;
-  return selected !== undefined && minuta.same(selected, day, "day");
+  return (
+    selected !== undefined && minuta.equals(minuta.day(selected.start), day)
+  );
 }
 </script>
 

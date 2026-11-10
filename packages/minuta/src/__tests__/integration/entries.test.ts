@@ -28,7 +28,6 @@ const FUNCTIONS: readonly string[] = [
   "previous",
   "quarter",
   "round",
-  "same",
   "second",
   "shift",
   "toLocaleString",

@@ -11,7 +11,7 @@ const EQUAL = 0;
  *
  * @example
  * overlaps(march, april); // false: they touch
- * overlaps(march, period(Temporal.PlainDate.from("2026-03-31"), "week")); // true
+ * overlaps(march, week(Temporal.PlainDate.from("2026-03-31"))); // true
  *
  * @param first - The first period
  * @param second - The second period

@@ -10,7 +10,7 @@ import { specFor, timeSpecFor, timeZoneOf } from "#src/units";
  *
  * @example
  * countWith(units, march, "day"); // 31
- * countWith(units, period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // 23 in Zurich
+ * countWith(units, day(Temporal.PlainDate.from("2026-03-29")), "hour"); // 23 in Zurich
  *
  * @param units - Available unit specs
  * @param period - The period to measure

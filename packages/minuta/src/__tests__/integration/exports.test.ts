@@ -9,7 +9,6 @@ import {
   period,
   previous,
   quarter,
-  same,
   second,
   shift,
   week,
@@ -181,23 +180,6 @@ describe("default entry vs withUnits(createUnits()): divide()", () => {
         expect(divide(parent, childUnit, { step: DIVIDE_STEP })).toStrictEqual(
           explicit.divide(parent, childUnit, { step: DIVIDE_STEP })
         );
-      }
-    }
-  });
-});
-
-describe("default entry vs withUnits(createUnits()): comparisons", () => {
-  it("same() gives the same answers", { timeout: 5000 }, () => {
-    expect.hasAssertions();
-    for (const firstDate of DATES) {
-      const left = explicit.minute(firstDate);
-      for (const secondDate of DATES) {
-        const right = explicit.minute(secondDate);
-        for (const unit of UNITS) {
-          expect(same(left, right, unit)).toBe(
-            explicit.same(left, right, unit)
-          );
-        }
       }
     }
   });

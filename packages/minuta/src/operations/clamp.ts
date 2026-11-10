@@ -13,8 +13,8 @@ const EQUAL = 0;
  * zone.
  *
  * @example
- * const selection = range(Temporal.PlainDate.from("2026-01-05"), Temporal.PlainDate.from("2026-01-25"));
- * const allowed = range(Temporal.PlainDate.from("2026-01-10"), Temporal.PlainDate.from("2026-01-20"));
+ * const selection = period(Temporal.PlainDate.from("2026-01-05"), Temporal.PlainDate.from("2026-01-25"));
+ * const allowed = period(Temporal.PlainDate.from("2026-01-10"), Temporal.PlainDate.from("2026-01-20"));
  * clamp(selection, allowed);
  * // → { start: 2026-01-10, end: 2026-01-20, unit: "custom" }
  *

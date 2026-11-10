@@ -20,7 +20,7 @@ type RovingFocus = Readonly<{
  * @returns The focused day and the functions that move it
  */
 function useRovingFocus(): RovingFocus {
-  const { browse, browsing, contains, same } = useMinutaContext();
+  const { browse, browsing, contains, day: dayOf, equals } = useMinutaContext();
   const [focused, setFocused] = useState<Period>();
   const request = useRef<Period | null>(null);
 
@@ -37,13 +37,13 @@ function useRovingFocus(): RovingFocus {
   const takeFocus = useCallback(
     (day: Period) => {
       const requested = request.current;
-      if (requested === null || !same(requested, day, "day")) {
+      if (requested === null || !equals(dayOf(requested.start), day)) {
         return false;
       }
       request.current = null;
       return true;
     },
-    [same]
+    [dayOf, equals]
   );
 
   return useMemo(

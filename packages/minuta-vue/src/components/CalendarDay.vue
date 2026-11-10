@@ -37,7 +37,9 @@ const isOutside = computed(
 const isToday = computed(() => minuta.contains(day, minuta.now.value.start));
 const isSelected = computed(() => {
   const selected = calendar.selected.value;
-  return selected !== undefined && minuta.same(selected, day, "day");
+  return (
+    selected !== undefined && minuta.equals(minuta.day(selected.start), day)
+  );
 });
 const isDisabled = computed(() => calendar.isDisabled(day));
 const isWeekend = computed(() => minuta.isWeekend(day));
@@ -48,7 +50,7 @@ const tabIndex = computed(() => {
     calendar.selected.value,
     minuta.day(minuta.now.value.start),
   ]);
-  if (minuta.same(active, day, "day")) {
+  if (minuta.equals(minuta.day(active.start), day)) {
     return TABBABLE;
   }
   return NOT_TABBABLE;
@@ -128,7 +130,7 @@ async function navigate(event: KeyboardEvent): Promise<void> {
     choose();
   } else if (target !== undefined) {
     event.preventDefault();
-    if (!minuta.same(target, day, "day")) {
+    if (!minuta.equals(minuta.day(target.start), day)) {
       await moveFocus(target);
     }
   }

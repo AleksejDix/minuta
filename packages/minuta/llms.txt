@@ -29,8 +29,8 @@ How many complete `unit`s fit into a period, calendar- and DST-aware: a
 number, where `start.until(end)` gives a `Temporal.Duration`.
 
 ```ts
-count(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour"); // 24
-count(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // 28
+count(day(Temporal.PlainDate.from("2026-10-08")), "hour"); // 24
+count(month(Temporal.PlainDate.from("2026-02-01")), "day"); // 28
 ```
 
 ### `divide`
@@ -43,8 +43,8 @@ Split a period into chunks of `unit`, clipped to the period. Weeks start
 on Monday.
 
 ```ts
-divide(period(Temporal.PlainDate.from("2026-03-01"), "month"), "day"); // 31 day periods
-divide(period(Temporal.Now.zonedDateTimeISO(), "hour"), "minute", { step: 15 }); // 4 periods
+divide(month(Temporal.PlainDate.from("2026-03-01")), "day"); // 31 day periods
+divide(hour(Temporal.Now.zonedDateTimeISO()), "minute", { step: 15 }); // 4 periods
 ```
 
 ### `merge`
@@ -73,7 +73,7 @@ next(source: Source): Source
 The next period of the same unit. Weeks start on Monday.
 
 ```ts
-next(period(Temporal.PlainDate.from("2026-03-15"), "month")); // April 2026
+next(month(Temporal.PlainDate.from("2026-03-15"))); // April 2026
 ```
 
 ### `previous`
@@ -85,7 +85,7 @@ previous(source: Source): Source
 The previous period of the same unit. Weeks start on Monday.
 
 ```ts
-previous(period(Temporal.PlainDate.from("2026-03-15"), "month")); // February 2026
+previous(month(Temporal.PlainDate.from("2026-03-15"))); // February 2026
 ```
 
 ### `round`
@@ -109,19 +109,6 @@ round(Temporal.PlainDate.from("2026-03-18"), { smallestUnit: "week", roundingMod
 round(Temporal.PlainDate.from("2026-03-18"), "month"); // 2026-04-01 (halfExpand)
 ```
 
-### `same`
-
-```ts
-same(first: Period, second: Period, unit: Unit): boolean
-```
-
-Whether two periods fall into the same `unit`, by their starts. For
-identical periods, use `equals`.
-
-```ts
-same(period(Temporal.PlainDate.from("2026-03-16"), "day"), period(Temporal.PlainDate.from("2026-03-20"), "day"), "week"); // true
-```
-
 ### `shift`
 
 ```ts
@@ -131,7 +118,7 @@ shift(source: Source, steps: number): Source
 Move a period by `steps` of its own unit; negative moves back.
 
 ```ts
-shift(period(Temporal.PlainDate.from("2026-03-15"), "month"), 3); // June 2026
+shift(month(Temporal.PlainDate.from("2026-03-15")), 3); // June 2026
 ```
 
 ### `day`
@@ -260,7 +247,7 @@ Whether every day the period touches is a working day: not Saturday or
 Sunday (the units' `weekend` with `withUnits`).
 
 ```ts
-isWeekday(period(Temporal.PlainDate.from("2026-03-18"), "day")); // true (a Wednesday)
+isWeekday(day(Temporal.PlainDate.from("2026-03-18"))); // true (a Wednesday)
 ```
 
 ### `isWeekend`
@@ -273,7 +260,7 @@ Whether every day the period touches is a Saturday or a Sunday (the units'
 `weekend` with `withUnits`).
 
 ```ts
-isWeekend(period(Temporal.PlainDate.from("2026-03-21"), "day")); // true (a Saturday)
+isWeekend(day(Temporal.PlainDate.from("2026-03-21"))); // true (a Saturday)
 ```
 
 ### `monthGrid`
@@ -315,8 +302,8 @@ Next to a time period, a date period becomes moments in that period's
 zone.
 
 ```ts
-const selection = range(Temporal.PlainDate.from("2026-01-05"), Temporal.PlainDate.from("2026-01-25"));
-const allowed = range(Temporal.PlainDate.from("2026-01-10"), Temporal.PlainDate.from("2026-01-20"));
+const selection = period(Temporal.PlainDate.from("2026-01-05"), Temporal.PlainDate.from("2026-01-25"));
+const allowed = period(Temporal.PlainDate.from("2026-01-10"), Temporal.PlainDate.from("2026-01-20"));
 clamp(selection, allowed);
 // → { start: 2026-01-10, end: 2026-01-20, unit: "custom" }
 ```
@@ -362,8 +349,8 @@ unit and the same start and end, calendar and time zone included. For
 "in the same week", use `same`.
 
 ```ts
-equals(period(today, "month"), period(today, "month")); // true
-equals(period(today, "month"), range(march1, april1)); // false: a month and a custom period
+equals(month(today), month(today)); // true
+equals(month(today), period(march1, april1)); // false: a month and a custom period
 ```
 
 ### `gap`
@@ -374,12 +361,12 @@ gap(first: Period, second: Period): Period | undefined
 
 The time between two periods: from where the earlier one ends to where
 the later one starts. Order does not matter. For a date, pass its day:
-`period(date, "day")`.
+`day(date)`.
 
 ```ts
-gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainDate.from("2026-03-05"), "day"));
+gap(day(Temporal.PlainDate.from("2026-03-02")), day(Temporal.PlainDate.from("2026-03-05")));
 // { start: 2026-03-03, end: 2026-03-05, unit: "custom" }: Mar 3 and 4
-gap(period(Temporal.PlainDate.from("2026-03-02"), "day"), period(Temporal.PlainDate.from("2026-03-03"), "day")); // undefined: they touch
+gap(day(Temporal.PlainDate.from("2026-03-02")), day(Temporal.PlainDate.from("2026-03-03"))); // undefined: they touch
 ```
 
 ### `overlaps`
@@ -394,7 +381,7 @@ period becomes moments in that period's zone.
 
 ```ts
 overlaps(march, april); // false: they touch
-overlaps(march, period(Temporal.PlainDate.from("2026-03-31"), "week")); // true
+overlaps(march, week(Temporal.PlainDate.from("2026-03-31"))); // true
 ```
 
 ### `period`
@@ -424,7 +411,7 @@ A period as locale-aware text, like Temporal's `toLocaleString()`, in the
 format of its unit: the month and year for a month, a weekday and a day
 for a day, a range for weeks and custom periods (shared parts collapsed by
 `Intl.DateTimeFormat#formatRange`; a date period shows its last day, not
-its exclusive end). For a month as a range, format `range(month.start,
+its exclusive end). For a month as a range, format `period(month.start,
 month.end)`. The same text everywhere: on native Temporal and the
 polyfill, on a server and in the browser.
 
@@ -433,7 +420,7 @@ toLocaleString(march, "de-CH"); // "März 2026"
 toLocaleString(day, "en-US"); // "March 15, 2026"
 toLocaleString(day, "en-US", { weekday: "short" }); // "Sun"
 toLocaleString(week, "ja-JP"); // "2026/03/09～2026/03/15"
-toLocaleString(range(march.start, march.end), "de-CH"); // "1.–31. März 2026"
+toLocaleString(period(march.start, march.end), "de-CH"); // "1.–31. März 2026"
 ```
 
 ### `createUnits`
@@ -456,7 +443,7 @@ is where dates become moments; `calendar` the calendar dates are read in. Where 
 import { createUnits, withUnits } from "@aleksejdix/minuta/core";
 
 const time = withUnits(createUnits({ timeZone: "UTC", weekStartsOn: "sunday" }));
-time.period(Temporal.PlainDate.from("2026-03-18"), "week"); // [Mar 15, Mar 22)
+time.week(Temporal.PlainDate.from("2026-03-18")); // [Mar 15, Mar 22)
 
 createUnits({ locale: "ar-EG" }).weekend; // [5, 6]: Friday and Saturday
 ```
@@ -516,7 +503,7 @@ Bind every function to `units`: the same names as the main entry, with
 your week start, weekend, time zone, calendar or locale.
 
 ```ts
-import { createUnits, withUnits } from "@aleksejdix/minuta";
+import { createUnits, month, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ locale: "he-IL", calendar: "hebrew" }));
 time.month(Temporal.Now.plainDateISO()); // this Hebrew month
@@ -795,7 +782,7 @@ The primitive: every time range is a Period. Plain, deeply readonly data,
 `start` included and `end` excluded.
 
 `periodWith(units, value, "month")` creates one aligned to a unit,
-`range(start, end)` a custom one.
+`period(start, end)` a custom one.
 
 ### `PeriodOf`
 

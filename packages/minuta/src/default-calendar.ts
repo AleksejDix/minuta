@@ -30,7 +30,7 @@ function dayGrid(value: TimeValue): DayGrid {
  * Sunday (the units' `weekend` with `withUnits`).
  *
  * @example
- * isWeekday(period(Temporal.PlainDate.from("2026-03-18"), "day")); // true (a Wednesday)
+ * isWeekday(day(Temporal.PlainDate.from("2026-03-18"))); // true (a Wednesday)
  *
  * @param source - The period to check
  * @returns True when the period touches no weekend day
@@ -44,7 +44,7 @@ function isWeekday(source: Period): boolean {
  * `weekend` with `withUnits`).
  *
  * @example
- * isWeekend(period(Temporal.PlainDate.from("2026-03-21"), "day")); // true (a Saturday)
+ * isWeekend(day(Temporal.PlainDate.from("2026-03-21"))); // true (a Saturday)
  *
  * @param source - The period to check
  * @returns True when the period lies within the weekend
