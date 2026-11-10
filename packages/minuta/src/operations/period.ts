@@ -51,12 +51,12 @@ function periodWith<Name extends Unit>(
 }
 
 /**
- * A custom period from `start` (included) to `end` (excluded). Equal
+ * The period from `start` (included) to `end` (excluded), unit `"custom"`. Equal
  * values make an empty period; an end before the start is an error, as
  * nothing is swapped behind your back.
  *
  * @example
- * range(Temporal.PlainDate.from("2026-01-01"), Temporal.PlainDate.from("2026-04-01"));
+ * period(Temporal.PlainDate.from("2026-01-01"), Temporal.PlainDate.from("2026-04-01"));
  * // { start: 2026-01-01, end: 2026-04-01, unit: "custom" }: January to March
  *
  * @param start - The first moment or date, included
@@ -65,15 +65,15 @@ function periodWith<Name extends Unit>(
  * @throws {RangeError} When `end` comes before `start`
  * @throws {TypeError} When one is a date and the other a moment
  */
-function range(start: PlainDate, end: PlainDate): DatePeriod;
-function range(start: ZonedDateTime, end: ZonedDateTime): TimePeriod;
-function range(
+function period(start: PlainDate, end: PlainDate): DatePeriod;
+function period(start: ZonedDateTime, end: ZonedDateTime): TimePeriod;
+function period(
   start: PlainDate | ZonedDateTime,
   end: PlainDate | ZonedDateTime
 ): DatePeriod | TimePeriod {
   if (compare(start, end) > AFTER) {
     throw new RangeError(
-      `range() needs the start first: ${start.toString()} is after ${end.toString()}.`
+      `period() needs the start first: ${start.toString()} is after ${end.toString()}.`
     );
   }
   if (isPlainDate(start) && isPlainDate(end)) {
@@ -83,4 +83,4 @@ function range(
   return { end, start, unit: "custom" } as TimePeriod;
 }
 
-export { periodWith, range };
+export { period, periodWith };

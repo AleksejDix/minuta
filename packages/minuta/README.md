@@ -30,10 +30,9 @@ minute or second is made of moments in a time zone
 That is the whole model.
 
 ```ts
-import { divide, period } from "@aleksejdix/minuta";
+import { divide, year } from "@aleksejdix/minuta";
 
-const year = period(Temporal.PlainDate.from("2026-01-01"), "year");
-const months = divide(year, "month"); // 12 periods
+const months = divide(year(Temporal.PlainDate.from("2026-01-01")), "month"); // 12 periods
 const march = months[2]; // { start: 2026-03-01, end: 2026-04-01, unit: "month" }
 const days = march === undefined ? [] : divide(march, "day"); // 31 periods
 ```
@@ -44,16 +43,16 @@ calendar.
 
 ## Functions
 
-| Family    | Functions                                                                                             |
-| --------- | ----------------------------------------------------------------------------------------------------- |
-| Create    | `period(value, unit)` · `range(start, end)`                                                           |
-| Navigate  | `next(period)` · `previous(period)` · `shift(period, steps)`                                          |
-| Compose   | `divide(period, unit, { step })` · `merge(periods, unit?)` · `split(period, at)`                      |
-| Edit      | `clamp(period, bounds)` · `gap(a, b)` · `move(period, start)` · `resize(period, edge, value)`         |
-| Compare   | `contains(period, value)` · `overlaps(a, b)` · `same(a, b, unit)` · `equals(a, b)` · `compare(a, b)`  |
-| Measure   | `count(period, unit)` · `round(value, { smallestUnit, roundingIncrement, roundingMode })`             |
-| Calendars | `monthGrid(value)` · `yearGrid(value)` · `dayGrid(value)` · `isWeekday(period)` · `isWeekend(period)` |
-| Text      | `toLocaleString(period, locales?, options?)`                                                          |
+| Family    | Functions                                                                                                                                                   |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Create    | `period(start, end)` · `year(value)` · `quarter(value)` · `month(value)` · `week(value)` · `day(value)` · `hour(value)` · `minute(value)` · `second(value)` |
+| Navigate  | `next(period)` · `previous(period)` · `shift(period, steps)`                                                                                                |
+| Compose   | `divide(period, unit, { step })` · `merge(periods, unit?)`                                                                                                  |
+| Edit      | `clamp(period, bounds)` · `gap(a, b)`                                                                                                                       |
+| Compare   | `contains(period, value)` · `overlaps(a, b)` · `same(a, b, unit)` · `equals(a, b)` · `compare(a, b)`                                                        |
+| Measure   | `count(period, unit)` · `round(value, { smallestUnit, roundingIncrement, roundingMode })`                                                                   |
+| Calendars | `monthGrid(value)` · `yearGrid(value)` · `dayGrid(value)` · `isWeekday(period)` · `isWeekend(period)`                                                       |
+| Text      | `toLocaleString(period, locales?, options?)`                                                                                                                |
 
 Where Temporal has a word, minuta uses it: `round` takes Temporal's options
 and rounding modes, `equals` and `compare` work like Temporal's,
@@ -62,31 +61,33 @@ and rounding modes, `equals` and `compare` work like Temporal's,
 
 ```ts
 import {
+  year,
   compare,
   contains,
   count,
+  day,
+  month,
   next,
-  period,
   previous,
-  range,
+  period,
   round,
   shift,
 } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-15"));
 next(march); // April
 previous(march); // February
 shift(march, 3); // June
 contains(march, Temporal.PlainDate.from("2026-03-20")); // true
 contains(march, Temporal.PlainDate.from("2026-04-01")); // false: the end is excluded
 
-range(
+period(
   Temporal.PlainDate.from("2026-01-01"),
   Temporal.PlainDate.from("2026-04-01")
 ); // January to March
 
 count(march, "day"); // 31
-count(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // 23 in Europe/Zurich (DST)
+count(day(Temporal.PlainDate.from("2026-03-29")), "hour"); // 23 in Europe/Zurich (DST)
 [next(march), march].sort(compare); // March, April
 
 round(Temporal.Now.zonedDateTimeISO(), {
@@ -110,15 +111,15 @@ Rules and data are separate. Units are plain data made by `createUnits`;
 `withUnits` binds every function to them, with the same names:
 
 ```ts
-import { createUnits, withUnits } from "@aleksejdix/minuta";
+import { year, createUnits, day, month, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(
   createUnits({ locale: "ar-EG", timeZone: "Africa/Cairo" })
 );
 const today = Temporal.Now.plainDateISO();
 
-time.period(today, "week"); // starts on Saturday
-time.isWeekend(time.period(Temporal.PlainDate.from("2026-03-20"), "day")); // true: a Friday
+time.week(today); // starts on Saturday
+time.isWeekend(time.day(Temporal.PlainDate.from("2026-03-20"))); // true: a Friday
 time.monthGrid(today).periods; // always 42 days: no layout jumps
 time.yearGrid(today).periods; // whole weeks covering the year
 time.dayGrid(today).periods; // the day's real hours in Cairo: 23, 24 or 25
@@ -141,12 +142,19 @@ cannot drift apart. Your own helpers take the bound object:
 
 ```ts
 import type { DatePeriod, Minuta } from "@aleksejdix/minuta";
-import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+import {
+  year,
+  createUnits,
+  day,
+  month,
+  period,
+  withUnits,
+} from "@aleksejdix/minuta";
 
 const workdaysIn = (time: Minuta, month: DatePeriod) =>
   time.divide(month, "day").filter((day) => time.isWeekday(day));
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
 workdaysIn(withUnits(createUnits({ locale: "de-CH" })), march); // 22 day periods
 ```
 
@@ -160,17 +168,17 @@ in your units.
 ## Text
 
 ```ts
-import { period, range, toLocaleString } from "@aleksejdix/minuta";
+import { year, day, month, toLocaleString, period } from "@aleksejdix/minuta";
 
-toLocaleString(period(Temporal.PlainDate.from("2026-03-15"), "month"), "de-CH"); // "März 2026"
+toLocaleString(month(Temporal.PlainDate.from("2026-03-15")), "de-CH"); // "März 2026"
 toLocaleString(
-  range(
+  period(
     Temporal.PlainDate.from("2026-03-30"),
     Temporal.PlainDate.from("2026-04-06")
   ),
   "de-CH"
 ); // "30. März – 5. Apr. 2026"
-toLocaleString(period(Temporal.PlainDate.from("2026-03-15"), "day"), "en-US", {
+toLocaleString(day(Temporal.PlainDate.from("2026-03-15")), "en-US", {
   weekday: "short",
 }); // "Sun"
 ```

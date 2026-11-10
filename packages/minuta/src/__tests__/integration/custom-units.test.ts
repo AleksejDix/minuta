@@ -36,7 +36,7 @@ const fortnight: DateSpec = {
 const own: Units = { fortnight };
 const units = Object.assign(own, builtIn);
 const time = withUnits(units);
-const sprint = time.period(date("2026-03-18"), "fortnight");
+const sprint = time["fortnight"](date("2026-03-18"));
 
 describe("a custom unit", () => {
   it("makes periods aligned to its own boundaries", { timeout: 5000 }, () => {

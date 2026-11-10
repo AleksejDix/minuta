@@ -1,6 +1,6 @@
 import type { Period } from "#src/types";
 import { isDatePeriod } from "#src/values";
-import { range } from "#src/operations/period";
+import { period as span } from "#src/operations/period";
 import { toLocaleString } from "#src/format/format";
 
 /**
@@ -34,9 +34,9 @@ function format(period: Period, locale: string = TEST_LOCALE): string {
  */
 function formatAsRange(period: Period, locale: string = TEST_LOCALE): string {
   if (isDatePeriod(period)) {
-    return toLocaleString(range(period.start, period.end), locale);
+    return toLocaleString(span(period.start, period.end), locale);
   }
-  return toLocaleString(range(period.start, period.end), locale);
+  return toLocaleString(span(period.start, period.end), locale);
 }
 
 export { format, formatAsRange };

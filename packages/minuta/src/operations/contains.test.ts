@@ -1,7 +1,7 @@
 import type { DatePeriod, TimePeriod } from "#src/types";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { periodWith, range } from "./period";
+import { period, periodWith } from "./period";
 import { contains } from "./contains";
 import { createUnits } from "#src/create-units";
 import { overlaps } from "./overlaps";
@@ -23,7 +23,7 @@ function hourAt(iso: string): TimePeriod {
 }
 
 function tokyo(from: string, to: string): TimePeriod {
-  return range(zoned(`${from}[Asia/Tokyo]`), zoned(`${to}[Asia/Tokyo]`));
+  return period(zoned(`${from}[Asia/Tokyo]`), zoned(`${to}[Asia/Tokyo]`));
 }
 
 describe("contains(): dates", () => {
@@ -46,7 +46,7 @@ describe("contains(): dates", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const twoDays = range(
+      const twoDays = period(
         zoned("2026-03-18T00:00[Europe/Zurich]"),
         zoned("2026-03-20T00:00[Europe/Zurich]")
       );

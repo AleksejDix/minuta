@@ -1,19 +1,27 @@
-import type { TimeValue, Unit } from "#src/types";
+import type { BuiltInUnit, Period, TimeValue } from "#src/types";
 import {
+  day,
   next as defaultNext,
   divide,
+  hour,
+  minute,
+  month,
   period,
   previous,
+  quarter,
   same,
+  second,
   shift,
+  week,
   withUnits,
+  year,
 } from "#src/index";
 import { describe, expect, it } from "vitest";
 import type { Minuta } from "#src/with-units";
 import { createUnits } from "#src/create-units";
 import { zoned } from "#src/test/temporal";
 
-const UNITS: readonly Unit[] = [
+const UNITS: readonly BuiltInUnit[] = [
   "year",
   "quarter",
   "month",
@@ -24,7 +32,7 @@ const UNITS: readonly Unit[] = [
   "second",
 ];
 
-const DIVISIONS: readonly (readonly [Unit, Unit])[] = [
+const DIVISIONS: readonly (readonly [BuiltInUnit, BuiltInUnit])[] = [
   ["year", "quarter"],
   ["year", "month"],
   ["month", "week"],
@@ -72,6 +80,16 @@ const INTERNAL_DETAILS: readonly string[] = [
 ];
 
 const explicit = withUnits(createUnits());
+const OWN: Readonly<Record<BuiltInUnit, (value: TimeValue) => Period>> = {
+  day,
+  hour,
+  minute,
+  month,
+  quarter,
+  second,
+  week,
+  year,
+};
 
 /**
  * Load a module namespace as a name → value map.
@@ -105,12 +123,12 @@ describe("export verification: index.ts", () => {
   });
 });
 
-describe("default entry vs withUnits(createUnits()): period()", () => {
-  it("period() gives the same periods", { timeout: 5000 }, () => {
+describe("default entry vs withUnits(createUnits()): unit periods", () => {
+  it("year() … second() give the same periods", { timeout: 5000 }, () => {
     expect.hasAssertions();
     for (const date of DATES) {
       for (const unit of UNITS) {
-        expect(period(date, unit)).toStrictEqual(explicit.period(date, unit));
+        expect(OWN[unit](date)).toStrictEqual(explicit[unit](date));
       }
     }
   });
@@ -118,8 +136,8 @@ describe("default entry vs withUnits(createUnits()): period()", () => {
   it("weeks start on Monday", { timeout: 5000 }, () => {
     expect.hasAssertions();
     for (const date of DATES) {
-      expect(period(date, "week").start.dayOfWeek).toBe(MONDAY);
-      expect(explicit.period(date, "week").start.dayOfWeek).toBe(MONDAY);
+      expect(week(date).start.dayOfWeek).toBe(MONDAY);
+      expect(explicit.week(date).start.dayOfWeek).toBe(MONDAY);
     }
   });
 });
@@ -129,7 +147,7 @@ describe("default entry vs withUnits(createUnits()): navigation", () => {
     expect.hasAssertions();
     for (const date of DATES) {
       for (const unit of UNITS) {
-        const current = explicit.period(date, unit);
+        const current = explicit[unit](date);
         expect(defaultNext(current)).toStrictEqual(explicit.next(current));
         expect(previous(current)).toStrictEqual(explicit.previous(current));
       }
@@ -140,7 +158,7 @@ describe("default entry vs withUnits(createUnits()): navigation", () => {
     expect.hasAssertions();
     for (const date of DATES) {
       for (const unit of UNITS) {
-        const current = explicit.period(date, unit);
+        const current = explicit[unit](date);
         for (const steps of SHIFT_STEPS) {
           expect(shift(current, steps)).toStrictEqual(
             explicit.shift(current, steps)
@@ -156,7 +174,7 @@ describe("default entry vs withUnits(createUnits()): divide()", () => {
     expect.hasAssertions();
     for (const date of DATES) {
       for (const [parentUnit, childUnit] of DIVISIONS) {
-        const parent = explicit.period(date, parentUnit);
+        const parent = explicit[parentUnit](date);
         expect(divide(parent, childUnit)).toStrictEqual(
           explicit.divide(parent, childUnit)
         );
@@ -172,12 +190,12 @@ describe("default entry vs withUnits(createUnits()): comparisons", () => {
   it("same() gives the same answers", { timeout: 5000 }, () => {
     expect.hasAssertions();
     for (const firstDate of DATES) {
-      const first = explicit.period(firstDate, "minute");
+      const left = explicit.minute(firstDate);
       for (const secondDate of DATES) {
-        const second = explicit.period(secondDate, "minute");
+        const right = explicit.minute(secondDate);
         for (const unit of UNITS) {
-          expect(same(first, second, unit)).toBe(
-            explicit.same(first, second, unit)
+          expect(same(left, right, unit)).toBe(
+            explicit.same(left, right, unit)
           );
         }
       }
@@ -192,7 +210,8 @@ describe("export verification: index.ts against Minuta", () => {
     async () => {
       expect.hasAssertions();
       // A type error here means the default entry drifted from withUnits
-      const bound: Omit<Minuta, "units"> = await import("#src/index");
+      const bound: Omit<Minuta, "fortnight" | "units"> =
+        await import("#src/index");
       expect(bound.period).toBe(period);
     }
   );

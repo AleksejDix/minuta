@@ -1,7 +1,7 @@
 import type { DatePeriod, DateUnit, TimePeriod } from "#src/types";
+import { period as between, periodWith } from "./period";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { periodWith, range } from "./period";
 import { countWith } from "./count";
 import { createUnits } from "#src/create-units";
 
@@ -27,7 +27,10 @@ function periodOf(value: string, unit: DateUnit): DatePeriod {
 }
 
 function zurich(from: string, to: string): TimePeriod {
-  return range(zoned(`${from}[Europe/Zurich]`), zoned(`${to}[Europe/Zurich]`));
+  return between(
+    zoned(`${from}[Europe/Zurich]`),
+    zoned(`${to}[Europe/Zurich]`)
+  );
 }
 
 describe("countWith(): calendar units", () => {
@@ -84,7 +87,7 @@ describe("countWith(): calendar units", () => {
 describe("countWith(): partial, empty and zoned periods", () => {
   it("counts only complete units", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const twoMonths = range(date("2026-03-01"), date("2026-04-30"));
+    const twoMonths = between(date("2026-03-01"), date("2026-04-30"));
     expect(countWith(units, twoMonths, "month")).toBe(ONE);
     expect(
       countWith(units, zurich("2026-03-18T10:00", "2026-03-18T12:59"), "hour")
@@ -93,7 +96,7 @@ describe("countWith(): partial, empty and zoned periods", () => {
 
   it("returns 0 for an empty period", { timeout: 5000 }, () => {
     expect.hasAssertions();
-    const empty = range(date("2026-03-18"), date("2026-03-18"));
+    const empty = between(date("2026-03-18"), date("2026-03-18"));
     expect(countWith(units, empty, "day")).toBe(ZERO);
   });
 
@@ -118,7 +121,7 @@ describe("countWith(): partial, empty and zoned periods", () => {
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
-      const span = range(
+      const span = between(
         zoned("2026-03-18T10:00[Asia/Tokyo]"),
         zoned("2026-03-20T09:00[Asia/Tokyo]")
       );

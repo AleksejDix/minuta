@@ -38,6 +38,16 @@ const SETTINGS: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * The names of the units a set of units has specs for.
+ *
+ * @param units - Any units
+ * @returns The unit names, without the settings
+ */
+function unitNames(units: Units): string[] {
+  return Object.keys(units).filter((name) => !SETTINGS.has(name));
+}
+
+/**
  * The spec for `unit`.
  *
  * @example
@@ -52,10 +62,7 @@ function specFor<Name extends Unit>(units: Units, unit: Name): SpecOf<Name> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Units maps each name to SpecOf<name>; indexing by a generic name loses that
   const spec = units[unit] as SpecOf<Name> | undefined;
   if (spec === undefined) {
-    const available =
-      Object.keys(units)
-        .filter((name) => !SETTINGS.has(name))
-        .join(", ") || "none";
+    const available = unitNames(units).join(", ") || "none";
     throw new RangeError(
       `${MinutaError.UnitNotSupported}: no "${unit}" spec in the units passed (available: ${available}). ` +
         `Pass a full set such as createUnits(), or add a "${unit}" spec to your units.`
@@ -198,5 +205,6 @@ export {
   specFor,
   timeSpecFor,
   timeZoneOf,
+  unitNames,
 };
 export type { MinutaErrorCode };

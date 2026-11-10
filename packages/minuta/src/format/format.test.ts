@@ -1,6 +1,6 @@
+import { period as between, periodWith } from "#src/operations/period";
 import { date, zoned } from "#src/test/temporal";
 import { describe, expect, it } from "vitest";
-import { periodWith, range } from "#src/operations/period";
 import type { DateUnit } from "#src/types";
 import { createUnits } from "#src/create-units";
 import { toLocaleString } from "./format";
@@ -98,7 +98,7 @@ describe("toLocaleString(): custom periods", () => {
     { timeout: 5000 },
     ({ expected, from, locale, to }) => {
       expect.hasAssertions();
-      const span = range(date(from), date(to));
+      const span = between(date(from), date(to));
       expect(plain(toLocaleString(span, locale))).toBe(expected);
     }
   );
@@ -115,7 +115,7 @@ describe("toLocaleString(): moments", () => {
         zoned("2026-03-18T10:00[Europe/Zurich]"),
         "hour"
       );
-      const span = range(hour.start, hour.end);
+      const span = between(hour.start, hour.end);
       const text = toLocaleString(span, "en-US", { hourCycle: "h23" });
       expect(plain(text)).toBe("Mar 18, 10:00 – 11:00");
     }

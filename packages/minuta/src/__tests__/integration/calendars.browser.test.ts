@@ -51,7 +51,7 @@ describe("every built-in calendar, on native Temporal", () => {
     (calendar) => {
       expect.hasAssertions();
       const time = withUnits(createUnits({ calendar }));
-      const month = time.period(today, "month");
+      const month = time.month(today);
       expect(month.start.calendarId).toBe(calendar);
       expect(contains(month, today)).toBe(true);
       expect(time.next(month).start.equals(month.end)).toBe(true);
@@ -64,7 +64,7 @@ describe("every built-in calendar, on native Temporal", () => {
     (calendar) => {
       expect.hasAssertions();
       const time = withUnits(createUnits({ calendar }));
-      const year = time.period(today, "year");
+      const year = time.year(today);
       const quarters = time.divide(year, "quarter");
       expect(time.divide(year, "month")).toHaveLength(year.start.monthsInYear);
       expect(quarters).toHaveLength(QUARTERS);
@@ -84,9 +84,9 @@ describe("every built-in calendar, on native Temporal", () => {
       expect.hasAssertions();
       const units = createUnits({ calendar });
       expect(withUnits(units).monthGrid(today).periods).toHaveLength(GRID_DAYS);
-      expect(
-        toLocaleString(withUnits(units).period(today, "month"), "en-US")
-      ).not.toBe("");
+      expect(toLocaleString(withUnits(units).month(today), "en-US")).not.toBe(
+        ""
+      );
     }
   );
 });
@@ -98,7 +98,7 @@ describe("years with 13 months", () => {
     () => {
       expect.hasAssertions();
       const time = withUnits(createUnits({ calendar: "ethiopic" }));
-      const year = time.period(today, "year");
+      const year = time.year(today);
       expect(count(year, "month")).toBe(THIRTEEN);
       expect(
         time
@@ -115,10 +115,7 @@ describe("years with 13 months", () => {
     () => {
       expect.hasAssertions();
       const time = withUnits(createUnits({ calendar: "chinese" }));
-      const year = time.period(
-        getTemporal().PlainDate.from("2025-08-01"),
-        "year"
-      );
+      const year = time.year(getTemporal().PlainDate.from("2025-08-01"));
       expect(count(year, "month")).toBe(THIRTEEN);
       expect(
         time.divide(year, "quarter").map((quarter) => monthCodes(quarter))
