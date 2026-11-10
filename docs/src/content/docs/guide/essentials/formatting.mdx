@@ -174,7 +174,7 @@ the shorter the label:
 Custom periods from `range` are shown as a range too:
 
 ```ts
-import { range } from "@aleksejdix/minuta";
+import { period, range } from "@aleksejdix/minuta";
 
 toLocaleString(
   range(
@@ -323,9 +323,51 @@ toLocaleString(
 
 See [Time zones](../../../concepts/time-zones/) for the full picture.
 
+## Text for storage and URLs
+
+`toLocaleString` writes text for people. To store a period, or put it in a
+URL or an API, write it as an ISO 8601 interval: `start/end`. Temporal
+already writes and reads each edge, so this takes no minuta function:
+
+```ts
+import { period, range } from "@aleksejdix/minuta";
+
+const toText = (period) => `${period.start}/${period.end}`;
+
+// The `/` between the edges, not the one in a zone such as [Europe/Zurich]
+const BETWEEN = /\/(?![^[]*\])/u;
+
+function fromText(text) {
+  const [start, end] = text.split(BETWEEN);
+  const read = start.includes("T")
+    ? Temporal.ZonedDateTime.from
+    : Temporal.PlainDate.from;
+  return range(read(start), read(end));
+}
+
+toText(period(Temporal.PlainDate.from("2026-03-18"), "month"));
+// → "2026-03-01/2026-04-01"
+toText(
+  period(Temporal.ZonedDateTime.from("2026-03-18T14:30[Europe/Zurich]"), "hour")
+);
+// → "2026-03-18T14:00:00+01:00[Europe/Zurich]/2026-03-18T15:00:00+01:00[Europe/Zurich]"
+```
+
+Three things to know:
+
+- Do not split at every `/`: time zone names have one too.
+- A moment needs its time zone in brackets, which `ZonedDateTime` writes; a
+  calendar annotation such as `[u-ca=hebrew]` keeps a date in its calendar.
+- The text names a range, not a unit, so `fromText` gives a `"custom"`
+  period. [`merge`](../../../api/minuta/merge/) gives it back the unit it
+  lines up with: `merge([fromText("2026-03-01/2026-04-01")], "month")`.
+
+ISO 8601 also allows a duration for one edge, `2026-03-01/P1M`.
+`Temporal.Duration.from` reads it; add it to the start with `start.add`.
+
 ## Next
 
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start,
   weekends and calendar grids.
 - Reference: [`toLocaleString`](../../../api/minuta/to-locale-string/),
-  [`range`](../../../api/minuta/range/).
+  [`range`](../../../api/minuta/range/), [`merge`](../../../api/minuta/merge/).
