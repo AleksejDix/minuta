@@ -4,8 +4,8 @@
  * a test checks the two against each other, so they cannot drift apart.
  */
 
-import type { Chunks, DivideOptions } from "#src/operations/divide";
 import type {
+  BuiltInUnit,
   DateUnit,
   Period,
   PeriodOf,
@@ -15,6 +15,7 @@ import type {
   Units,
   ZonedDateTime,
 } from "#src/types";
+import type { Chunks, DivideOptions } from "#src/operations/divide";
 import type { DayGrid, MonthGrid, YearGrid } from "#src/calendar/index";
 import {
   clamp,
@@ -97,9 +98,22 @@ type Functions = Readonly<{
 /** Every function and a member per unit, bound to one set of units. */
 type Minuta = UnitPeriods & Functions;
 
-// A member per unit the units have a spec for, built-in or your own
+// The built-in units: members even without a spec, so they fail as UNIT_NOT_SUPPORTED
+const BUILT_IN: readonly BuiltInUnit[] = [
+  "year",
+  "quarter",
+  "month",
+  "week",
+  "day",
+  "hour",
+  "minute",
+  "second",
+];
+
+// A member per built-in unit and per unit the units have a spec for
 function unitPeriods(units: Units): UnitPeriods {
-  const members = unitNames(units).map((name) => [
+  const names = new Set<string>([...BUILT_IN, ...unitNames(units)]);
+  const members = [...names].map((name) => [
     name,
     (value: TimeValue): Period =>
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- A name with a spec in the units is one of its units
