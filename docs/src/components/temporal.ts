@@ -41,14 +41,4 @@ function zonedDateTime(iso: string): ZonedDateTime {
   return temporal().ZonedDateTime.from(iso);
 }
 
-/**
- * An instant, which minuta reads in the units' time zone.
- *
- * @param iso - e.g. `"2026-03-18T10:00:00Z"`
- * @returns The Instant
- */
-function instant(iso: string): Readonly<Temporal.Instant> {
-  return temporal().Instant.from(iso);
-}
-
-export { instant, plainDate, zonedDateTime };
+export { plainDate, zonedDateTime };

@@ -64,7 +64,7 @@ where the next one starts, wherever the pin sits inside it.
 
 | Name    | What it is                                                                                                       |
 | ------- | ---------------------------------------------------------------------------------------------------------------- |
-| `value` | Any `PlainDate`, `PlainDateTime`, `ZonedDateTime` or `Instant` inside the period you want.                       |
+| `value` | A `PlainDate` or a `ZonedDateTime` inside the period you want.                                                   |
 | `unit`  | The size of the period: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`, `"minute"` or `"second"`. |
 
 ## Returns
@@ -111,15 +111,23 @@ period(Temporal.PlainDate.from("2026-03-29"), "day");
 // → { start: 2026-03-29, end: 2026-03-30, unit: "day" }
 ```
 
-Time units need a zone. A `ZonedDateTime` keeps its own. A `PlainDateTime` or
-an `Instant` is placed in the units' time zone, which is the runtime's by
-default. An `Instant` is also read in that zone for date units, so its day
-depends on it:
+Time units need a zone. A `ZonedDateTime` keeps its own. A `PlainDate` starts
+at the beginning of its day in the units' time zone, which is the runtime's
+by default.
+
+`period` takes no `Instant` or `PlainDateTime`, so it never guesses a zone.
+Give the value one first with Temporal. The zone decides the day:
 
 ```ts
-period(Temporal.Instant.from("2026-03-18T23:35:00Z"), "day");
-// → { start: 2026-03-19, end: 2026-03-20, unit: "day" } (in Europe/Zurich)
+const moment = Temporal.Instant.from("2026-03-18T23:35:00Z");
+
+period(moment.toZonedDateTimeISO("Europe/Zurich"), "day");
+// → { start: 2026-03-19, end: 2026-03-20, unit: "day" }
+period(moment.toZonedDateTimeISO("America/New_York"), "day");
+// → { start: 2026-03-18, end: 2026-03-19, unit: "day" }
 ```
+
+A `PlainDateTime` gets its zone with `toZonedDateTime("Europe/Zurich")`.
 
 To compute in a fixed time zone instead, use
 `withUnits(createUnits({ timeZone: "UTC" }))`, or pass `ZonedDateTime`s in

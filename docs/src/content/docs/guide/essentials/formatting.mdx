@@ -292,11 +292,12 @@ A date period has no zone, so its label is the same everywhere, and
 `ZonedDateTime`s, not the computer's:
 
 ```ts
-import { createUnits, toLocaleString, withUnits } from "@aleksejdix/minuta";
+import { period, toLocaleString } from "@aleksejdix/minuta";
 
-const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
-const tokyoHour = tokyo.period(
-  Temporal.Instant.from("2026-03-20T20:00:00Z"),
+const tokyoHour = period(
+  Temporal.Instant.from("2026-03-20T20:00:00Z").toZonedDateTimeISO(
+    "Asia/Tokyo"
+  ),
   "hour"
 );
 

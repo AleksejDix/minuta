@@ -173,13 +173,12 @@ when the period is made. 22:00 UTC on Friday Mar 20 2026 is already Saturday
 morning in Tokyo:
 
 ```ts
-import { createUnits, isWeekend, period, withUnits } from "@aleksejdix/minuta";
+import { isWeekend, period } from "@aleksejdix/minuta";
 
-const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
 const moment = Temporal.Instant.from("2026-03-20T22:00:00Z");
 
-tokyo.isWeekend(tokyo.period(moment, "day")); // → true  (Saturday in Tokyo)
-isWeekend(period(moment, "day")); // → false (Friday 23:00 in Zurich)
+isWeekend(period(moment.toZonedDateTimeISO("Asia/Tokyo"), "day")); // → true  (Saturday in Tokyo)
+isWeekend(period(moment.toZonedDateTimeISO("Europe/Zurich"), "day")); // → false (Friday 23:00 in Zurich)
 ```
 
 ## Errors

@@ -46,10 +46,10 @@ contains(march, period(Temporal.PlainDate.from("2026-04-01"), "day"));
 
 ## Parameters
 
-| Name     | What it is                                                                                |
-| -------- | ----------------------------------------------------------------------------------------- |
-| `period` | The outer period.                                                                         |
-| `target` | What to look for: a `PlainDate`, a `PlainDateTime`, a `ZonedDateTime`, or another period. |
+| Name     | What it is                                                             |
+| -------- | ---------------------------------------------------------------------- |
+| `period` | The outer period.                                                      |
+| `target` | What to look for: a `PlainDate`, a `ZonedDateTime`, or another period. |
 
 ## Returns
 
@@ -63,8 +63,8 @@ contains(march, period(Temporal.PlainDate.from("2026-04-01"), "day"));
   [`overlaps`](../overlaps/) to ask "do they share any time?".
 
 A period contains itself. Next to a period of moments, a date becomes moments
-in that period's time zone. A `PlainDateTime` is read in the period's zone,
-or as its date next to a period of dates.
+in that period's time zone. For a `PlainDateTime`, give it a zone first, e.g.
+`dateTime.toZonedDateTime("Europe/Zurich")`.
 
 ## The end is excluded
 

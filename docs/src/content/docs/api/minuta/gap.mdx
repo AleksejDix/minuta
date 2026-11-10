@@ -1,6 +1,6 @@
 ---
 title: gap
-description: Get the free time between two dates or periods — e.g. the break between two meetings.
+description: Get the free time between two periods — e.g. the break between two meetings.
 ---
 
 import { plainDate } from "../../../../components/temporal";
@@ -11,15 +11,15 @@ export const mar2 = period(plainDate("2026-03-02"), "day");
 export const mar3 = period(plainDate("2026-03-03"), "day");
 export const mar5 = period(plainDate("2026-03-05"), "day");
 
-Get the free time between two dates or periods, such as the break between
-two meetings or the days between two bookings.
+Get the free time between two periods, such as the break between two
+meetings or the days between two bookings.
 
 ```ts
 import { gap } from "@aleksejdix/minuta";
 ```
 
 ```ts
-gap(from, to);
+gap(first, second);
 ```
 
 ## Example
@@ -44,14 +44,14 @@ gap(
 
 ## Parameters
 
-| Name   | What it is                        |
-| ------ | --------------------------------- |
-| `from` | One date, moment or period.       |
-| `to`   | The other date, moment or period. |
+| Name     | What it is        |
+| -------- | ----------------- |
+| `first`  | One period.       |
+| `second` | The other period. |
 
-Dates are `Temporal.PlainDate`, moments `Temporal.ZonedDateTime`. You can mix
-them: a period and a moment work too. Next to moments, a date's day becomes
-moments in their zone.
+Both are periods. For a single date, pass its day: `period(date, "day")`.
+You can mix a period of dates and a period of moments: next to moments, the
+dates become moments in their zone.
 
 ## Returns
 
@@ -100,27 +100,16 @@ gap(
 
 ## Dates and moments
 
-A date counts as its whole day, a moment as a single instant:
+`gap` takes periods only. Turn a date into its day, as in the example
+above, or a moment into its hour, with [`period`](../period/):
 
 ```ts
-gap(
-  Temporal.PlainDate.from("2026-03-02"),
-  Temporal.PlainDate.from("2026-03-05")
-);
-// → { start: 2026-03-03, end: 2026-03-05, unit: "custom" }
-
-gap(
-  Temporal.ZonedDateTime.from("2026-03-02T09:00[Europe/Zurich]"),
-  Temporal.ZonedDateTime.from("2026-03-02T10:00[Europe/Zurich]")
-);
-// → 09:00 – 10:00
-
 gap(
   period(
     Temporal.ZonedDateTime.from("2026-03-02T09:00[Europe/Zurich]"),
     "hour"
   ),
-  Temporal.ZonedDateTime.from("2026-03-02T12:00[Europe/Zurich]")
+  period(Temporal.ZonedDateTime.from("2026-03-02T12:00[Europe/Zurich]"), "hour")
 );
 // → 10:00 – 12:00 (the hour from 9:00 ends at 10:00)
 ```
