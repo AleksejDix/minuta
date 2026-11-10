@@ -41,25 +41,45 @@ period(Temporal.ZonedDateTime.from("2026-03-21T05:00[Asia/Tokyo]"), "day");
 // → { start: 2026-03-21, end: 2026-03-22, unit: "day" }
 ```
 
-## The units decide where dates become moments
+## A moment needs its zone
 
-Sometimes minuta has to turn a date into moments, or a moment without a
-zone into a date:
+An `Instant` is an exact moment with no zone, like 20:00 UTC on Mar 20 2026. A `PlainDateTime` is a wall-clock time with no zone. Neither says
+which day it is: 20:00 UTC is still Mar 20 in Zurich, but already Mar 21 in
+Tokyo.
 
-- dividing a day into hours, or making an hour period from a `PlainDate`,
-- reading a `Temporal.Instant` or a `Temporal.PlainDateTime`.
-
-Then it uses the units' `timeZone`. The default `minuta` entry and
-`createUnits()` use the zone of the computer the code runs on, so an
-`Instant` can give different days on different computers:
+So minuta does not take them. It never guesses a zone. Give the value one
+with Temporal first, and the day follows that zone:
 
 ```ts
 import { period } from "@aleksejdix/minuta";
 
-period(Temporal.Instant.from("2026-03-20T20:00:00Z"), "day").start;
-// → 2026-03-20 on a computer in Europe/Zurich (21:00 there)
-// → 2026-03-21 on a computer in Asia/Tokyo    (05:00 there)
-// → 2026-03-20 on a computer in UTC
+const moment = Temporal.Instant.from("2026-03-20T20:00:00Z");
+
+period(moment.toZonedDateTimeISO("Europe/Zurich"), "day").start;
+// → 2026-03-20 (21:00 there)
+period(moment.toZonedDateTimeISO("Asia/Tokyo"), "day").start;
+// → 2026-03-21 (05:00 there)
+period(moment.toZonedDateTimeISO("UTC"), "day").start;
+// → 2026-03-20
+```
+
+A `PlainDateTime` gets its zone the same way:
+`Temporal.PlainDateTime.from("2026-03-20T21:00").toZonedDateTime("Europe/Zurich")`.
+
+## The units decide where dates become moments
+
+Sometimes minuta has to turn a date into moments: when it divides a day
+into hours, or makes an hour period from a `PlainDate`. Then it uses the
+units' `timeZone`. The default `minuta` entry and `createUnits()` use the
+zone of the computer the code runs on, so a date's hours can differ from
+computer to computer:
+
+```ts
+import { period } from "@aleksejdix/minuta";
+
+period(Temporal.PlainDate.from("2026-03-20"), "hour").start;
+// → 2026-03-20T00:00[Europe/Zurich] on a computer in Europe/Zurich
+// → 2026-03-20T00:00[Asia/Tokyo] on a computer in Asia/Tokyo
 ```
 
 In a browser that is usually what you want: users see their own days. On a
@@ -77,8 +97,8 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
 
-tokyo.period(Temporal.Instant.from("2026-03-20T20:00:00Z"), "day").start;
-// → 2026-03-21, on any computer
+tokyo.period(Temporal.PlainDate.from("2026-03-20"), "hour").start;
+// → 2026-03-20T00:00[Asia/Tokyo], on any computer
 ```
 
 For a fixed zone everywhere, `createUnits({ timeZone: "UTC" })`. Or pass
@@ -93,8 +113,7 @@ Everything that turns dates into moments follows the zone of the units, not
 the computer's:
 
 - `period`, `divide`, `count`, … with hour, minute and second units,
-- day grids of a date ([`dayGrid`](../../api/minuta/day-grid/)),
-- periods of an `Instant` — 22:00 UTC on Friday is a Saturday in Tokyo.
+- day grids of a date ([`dayGrid`](../../api/minuta/day-grid/)).
 
 ## The `timeZone` setting
 
@@ -120,10 +139,12 @@ period's `ZonedDateTime`s read in their own zone, not the computer's.
   A moment is shown in its own zone:
 
   ```ts
-  import { toLocaleString } from "@aleksejdix/minuta";
+  import { period, toLocaleString } from "@aleksejdix/minuta";
 
-  const hour = tokyo.period(
-    Temporal.Instant.from("2026-03-20T20:00:00Z"),
+  const hour = period(
+    Temporal.Instant.from("2026-03-20T20:00:00Z").toZonedDateTimeISO(
+      "Asia/Tokyo"
+    ),
     "hour"
   );
 

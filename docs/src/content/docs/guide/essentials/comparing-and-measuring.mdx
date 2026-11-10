@@ -347,8 +347,8 @@ always ends in the right place. Use `range` for spans that are not one whole
 unit, and end them at the first date or moment that should be left out.
 :::
 
-`range` is forgiving about order: if the start is after the end, it swaps
-them.
+`range` takes the start first. An end before the start throws a
+`RangeError`: nothing is swapped behind your back.
 
 ## Next
 

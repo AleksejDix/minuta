@@ -64,6 +64,9 @@ minuta now uses it: `round`, `count`, `equals`, `compare`, `toLocaleString`.
 | `same(a, b, "custom")`                                                          | [`equals(a, b)`](../api/minuta/equals/)                                                   |
 | `formatPeriod(period, locale, options)`, `formatRange(period, locale, options)` | [`toLocaleString(period, locales, options)`](../api/minuta/to-locale-string/)             |
 | `length(period)`                                                                | `period.start.until(period.end)`                                                          |
+| `period(instant, unit)`, any `Instant` or `PlainDateTime` input                 | `period(instant.toZonedDateTimeISO(zone), unit)`: give it a zone first                    |
+| `gap(date, date)`                                                               | `gap(period(date, "day"), period(date, "day"))`                                           |
+| `range(end, start)` swaps                                                       | `range(start, end)`; an end before the start throws                                       |
 | datefield `toDate`, `fromDate`                                                  | `toPlainDate`, `toPlainDateTime`, `toPlainTime`, `fromTemporal`                           |
 | fechita `result.date`                                                           | `result.value` and `result.kind`                                                          |
 
@@ -106,8 +109,17 @@ period(Temporal.Now.zonedDateTimeISO(), "hour");
 // → start and end are ZonedDateTime, in their zone
 ```
 
-`period` takes a `PlainDate`, a `PlainDateTime`, a `ZonedDateTime` or an
-`Instant` (read in the units' time zone).
+`period` takes a `PlainDate` or a `ZonedDateTime`. An `Instant` or a
+`PlainDateTime` needs a zone first, so minuta never guesses one:
+`instant.toZonedDateTimeISO("Asia/Tokyo")` or
+`dateTime.toZonedDateTime("Europe/Zurich")`.
+
+Two functions are stricter too:
+
+- [`gap`](../api/minuta/gap/) takes two periods. For a date, pass its day:
+  `gap(period(a, "day"), period(b, "day"))`.
+- [`range`](../api/minuta/range/) no longer swaps its values. An end before
+  the start throws a `RangeError`.
 
 ## 3. Ends are exclusive
 

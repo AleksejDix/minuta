@@ -40,8 +40,8 @@ range(
 
 | Name    | What it is                                                     |
 | ------- | -------------------------------------------------------------- |
-| `start` | One edge of the period: a `PlainDate` or a `ZonedDateTime`.    |
-| `end`   | The other edge, of the same kind: both dates, or both moments. |
+| `start` | The first edge, included: a `PlainDate` or a `ZonedDateTime`.  |
+| `end`   | The last edge, excluded, of the same kind. Not before `start`. |
 
 ## Returns
 
@@ -113,25 +113,26 @@ from 9:00 to 10:00 is exactly one hour, and it only touches a range that
 starts at 10:00. [`overlaps`](../overlaps/) says `false` for the two.
 :::
 
-## Values in the wrong order are swapped
+## The start comes first
 
-`range` is forgiving. If `start` is later than `end`, it swaps them:
+`range` does not swap its values. An `end` before the `start` is an error:
 
 ```ts
 range(
   Temporal.PlainDate.from("2026-04-01"),
-  Temporal.PlainDate.from("2026-01-01")
+  Temporal.PlainDate.from("2025-12-01")
 );
-// → { start: 2026-01-01, end: 2026-04-01, unit: "custom" }
+// → RangeError: range() needs the start first: 2026-04-01 is after 2025-12-01.
 ```
 
-A range may also start and end at the same value. It is then empty.
+A range may start and end at the same value. It is then empty.
 
 ## Errors
 
-`range` throws a `TypeError` when `start` and `end` are of different kinds,
-a `PlainDate` and a `ZonedDateTime`. Convert one first, e.g. with
-`date.toZonedDateTime(timeZone)` or `moment.toPlainDate()`.
+- `RangeError` when `end` comes before `start`.
+- `TypeError` when `start` and `end` are of different kinds, a `PlainDate`
+  and a `ZonedDateTime`. Convert one first, e.g. with
+  `date.toZonedDateTime(timeZone)` or `moment.toPlainDate()`.
 
 ## Related
 

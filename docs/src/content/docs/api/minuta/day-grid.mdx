@@ -4,12 +4,12 @@ description: Get the real hours of a day — 24 on most days, 23 or 25 when the 
 ---
 
 import { createUnits, range, withUnits } from "@aleksejdix/minuta";
-import { instant } from "../../../../components/temporal";
+import { plainDate } from "../../../../components/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const newYork = withUnits(createUnits({ timeZone: "America/New_York" }));
-export const spring = newYork.dayGrid(instant("2024-03-10T12:00:00Z"));
-export const autumn = newYork.dayGrid(instant("2024-11-03T12:00:00Z"));
+export const spring = newYork.dayGrid(plainDate("2024-03-10"));
+export const autumn = newYork.dayGrid(plainDate("2024-11-03"));
 export const fullDay = (grid) =>
   newYork.divide(
     range(grid.periods[0].start, grid.periods[0].start.add({ hours: 24 })),
@@ -44,9 +44,9 @@ grid.ambiguousHour; // → undefined
 
 ## Parameters
 
-| Name    | What it is                                                                                       |
-| ------- | ------------------------------------------------------------------------------------------------ |
-| `value` | The day you want: a `PlainDate`, or any `PlainDateTime`, `ZonedDateTime` or `Instant` inside it. |
+| Name    | What it is                                                         |
+| ------- | ------------------------------------------------------------------ |
+| `value` | The day you want: a `PlainDate`, or any `ZonedDateTime` inside it. |
 
 ## Returns
 
