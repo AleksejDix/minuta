@@ -30,7 +30,7 @@ Where the runtime has no Temporal yet (Safari, Node 24), call
 There are three layers, each one small:
 
 1. **The minuta core** does the date math. It is plain functions with no
-   state: `period`, `next`, `divide`, … See [divide](../../minuta/divide/).
+   state: `month`, `next`, `divide`, … See [divide](../../minuta/divide/).
 2. **A hook and a root.** [`useMinuta`](../use-minuta/) binds every core
    function to your units and keeps the _browsed period_ in state.
    [`MinutaRoot`](../minuta-root/) calls that hook once and shares the result

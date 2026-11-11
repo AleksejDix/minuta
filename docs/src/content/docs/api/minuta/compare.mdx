@@ -4,14 +4,14 @@ description: Order two periods by their start, then by their end, like Temporal'
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { compare, period, range } from "@aleksejdix/minuta";
+import { compare, day, period, week } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const appointments = [
-  range(plainDate("2026-03-18"), plainDate("2026-03-20")),
-  period(plainDate("2026-03-16"), "week"),
-  period(plainDate("2026-03-16"), "day"),
-  range(plainDate("2026-03-12"), plainDate("2026-03-17")),
+  period(plainDate("2026-03-18"), plainDate("2026-03-20")),
+  week(plainDate("2026-03-16")),
+  day(plainDate("2026-03-16")),
+  period(plainDate("2026-03-12"), plainDate("2026-03-17")),
 ];
 export const sorted = [...appointments].sort(compare);
 
@@ -29,9 +29,9 @@ compare(first, second);
 ## Example
 
 ```ts
-import { compare, next, period } from "@aleksejdix/minuta";
+import { compare, month, next } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-15"));
 const april = next(march);
 
 [april, march].sort(compare); // → [march, april]
@@ -65,16 +65,16 @@ A negative number when `first` comes first, a positive number when
 `second` does, and `0` when both have the same start and the same end.
 
 ```ts
-const monday = period(Temporal.PlainDate.from("2026-03-16"), "day");
-const week = period(Temporal.PlainDate.from("2026-03-16"), "week");
+const monday = day(Temporal.PlainDate.from("2026-03-16"));
+const thisWeek = week(Temporal.PlainDate.from("2026-03-16"));
 
-compare(monday, week); // → -1: the same start, the day ends first
+compare(monday, thisWeek); // → -1: the same start, the day ends first
 ```
 
 ## Only the times count
 
 `compare` looks at where the periods start and end, not at their units,
-calendars or zones. A month and a range over the same days compare as `0`,
+calendars or zones. A month and a custom period over the same days compare as `0`,
 and so do two hours at the same instant in different zones. To check that
 two periods are identical, use [`equals`](../equals/).
 
@@ -84,13 +84,12 @@ A date period and a time period can be compared. The dates become moments
 in the zone of the time period: a day starts at its midnight there.
 
 ```ts
-const day = period(Temporal.PlainDate.from("2026-03-16"), "day");
-const firstHour = period(
-  Temporal.ZonedDateTime.from("2026-03-16T00:00[Europe/Zurich]"),
-  "hour"
+const monday16 = day(Temporal.PlainDate.from("2026-03-16"));
+const firstHour = hour(
+  Temporal.ZonedDateTime.from("2026-03-16T00:00[Europe/Zurich]")
 );
 
-compare(day, firstHour); // → 1: the same start, the hour ends first
+compare(monday16, firstHour); // → 1: the same start, the hour ends first
 ```
 
 ## Errors

@@ -4,12 +4,12 @@ description: Look up the rules for one unit (start, add, count) in a set of unit
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { createUnits, period, specFor } from "@aleksejdix/minuta";
+import { createUnits, month, specFor } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = plainDate("2026-03-18");
-export const week = specFor(createUnits(), "week");
-export const month = specFor(createUnits(), "month");
+export const weekSpec = specFor(createUnits(), "week");
+export const monthSpec = specFor(createUnits(), "month");
 
 Look up the rules for one unit in a set of units, for example to find the
 start of a week or to add a month with exactly the rules minuta uses.
@@ -41,8 +41,8 @@ week.startOf(Temporal.PlainDate.from("2026-03-18"));
       label: "startOf(date) – add(startOf(date), 1)",
       periods: [
         {
-          end: week.add(week.startOf(date), 1),
-          start: week.startOf(date),
+          end: weekSpec.add(weekSpec.startOf(date), 1),
+          start: weekSpec.startOf(date),
           unit: "week",
         },
       ],
@@ -91,15 +91,12 @@ month.
   caption="month.add(Jan 31, 1): the pin moves from Jan 31 to Feb 28, the last day of February, not into March."
   marks={[
     { date: plainDate("2026-01-31"), label: "Jan 31" },
-    { date: month.add(plainDate("2026-01-31"), 1), label: "Feb 28" },
+    { date: monthSpec.add(plainDate("2026-01-31"), 1), label: "Feb 28" },
   ]}
   tracks={[
     {
       label: "months",
-      periods: [
-        period(plainDate("2026-01-01"), "month"),
-        period(plainDate("2026-02-01"), "month"),
-      ],
+      periods: [month(plainDate("2026-01-01")), month(plainDate("2026-02-01"))],
       tone: "muted",
     },
   ]}
@@ -107,7 +104,7 @@ month.
 
 ## When to use it
 
-Most code never needs `specFor`: use [`period`](../period/) or
+Most code never needs `specFor`: use [`month`](../month/) and the other unit functions, or
 [`withUnits`](../with-units/) instead. It is useful when you write a function
 or a unit of your own, and want the same lookup, and the same error, as the
 built-in operations.
@@ -131,6 +128,6 @@ specFor({ day, month }, "hour");
 
 ## Related
 
-- [`period`](../period/) — the period of a unit that contains a date.
+- [`month`](../month/), [`week`](../week/) … — the period of a unit that contains a date.
 - [`createUnits`](../create-units/) — where units come from, and how to add your own.
 - [`MinutaError`](../minuta-error/) — all error codes.

@@ -4,11 +4,11 @@ description: A Vue composable that reads the minuta state of the nearest MinutaR
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { divide, period } from "@aleksejdix/minuta";
+import { divide, month } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const february = period(plainDate("2024-02-10"), "month");
+export const february = month(plainDate("2024-02-10"));
 
 A composable that reads the minuta state of the nearest
 [`MinutaRoot`](../minuta-root/) (or [`CalendarRoot`](../calendar-root/))
@@ -73,7 +73,7 @@ February, from Feb 1, not from Feb 10.
 
 The same object that [`useMinuta`](../use-minuta/#returns) returns:
 `browsing`, `now` and `units` as computed refs, `browse`, and every bound
-function (`period`, `next`, `previous`, `shift`, `divide`, …).
+function (`month`, `week`, …, `next`, `previous`, `shift`, `divide`, …).
 
 Every component that calls `useMinutaContext()` under the same root gets the
 same object. When one of them calls `browse()`, everything that reads

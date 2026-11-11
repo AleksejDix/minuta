@@ -6,15 +6,15 @@ sidebar:
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { divide, period, range } from "@aleksejdix/minuta";
+import { divide, hour, month, period, week } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-18"), "month");
-export const open = range(
+export const march = month(plainDate("2026-03-18"));
+export const open = period(
   zonedDateTime("2026-03-18T09:00[Europe/Zurich]"),
   zonedDateTime("2026-03-18T17:00[Europe/Zurich]")
 );
-export const meeting = range(
+export const meeting = period(
   zonedDateTime("2026-03-18T09:10[Europe/Zurich]"),
   zonedDateTime("2026-03-18T10:40[Europe/Zurich]")
 );
@@ -30,9 +30,9 @@ All examples run in Europe/Zurich, with weeks from Monday to Sunday.
 Get the month, then divide it into days:
 
 ```ts
-import { divide, period } from "@aleksejdix/minuta";
+import { divide, month } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-18"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-18"));
 const days = divide(march, "day");
 
 days.length; // → 31
@@ -53,9 +53,9 @@ The same call works for every pair of units:
 ```ts
 const date = Temporal.PlainDate.from("2026-03-18");
 
-divide(period(date, "day"), "hour").length; //   → 24
-divide(period(date, "year"), "month").length; // → 12
-divide(period(date, "year"), "quarter");
+divide(day(date), "hour").length; //   → 24
+divide(year(date), "month").length; // → 12
+divide(year(date), "quarter");
 // → [2026-01-01, 2026-04-01), [2026-04-01, 2026-07-01),
 //   [2026-07-01, 2026-10-01), [2026-10-01, 2027-01-01), unit "quarter"
 ```
@@ -65,8 +65,8 @@ The pieces are real calendar units. On the nights the clocks change, a day has
 zone; its hours are moments in the units' zone (here Europe/Zurich):
 
 ```ts
-divide(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour").length; // → 23
-divide(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour").length; // → 25
+divide(day(Temporal.PlainDate.from("2026-03-29")), "hour").length; // → 23
+divide(day(Temporal.PlainDate.from("2026-10-25")), "hour").length; // → 25
 ```
 
 :::tip
@@ -81,8 +81,8 @@ A booking page shows slots of 15 or 30 minutes. Pass `step` to make each piece
 span several units:
 
 ```ts
-const day = period(Temporal.PlainDate.from("2026-03-18"), "day");
-const slots = divide(day, "minute", { step: 15 });
+const wednesday = day(Temporal.PlainDate.from("2026-03-18"));
+const slots = divide(wednesday, "minute", { step: 15 });
 
 slots.length; // → 96
 slots[0]; //     → { start: 00:00, end: 00:15, unit: "custom" }
@@ -95,7 +95,7 @@ Pieces made with a `step` above 1 are always custom, even when they happen to
 line up with a calendar unit:
 
 ```ts
-divide(period(Temporal.PlainDate.from("2026-03-18"), "year"), "month", {
+divide(year(Temporal.PlainDate.from("2026-03-18")), "month", {
   step: 3,
 })[0];
 // → { start: 2026-01-01, end: 2026-04-01, unit: "custom" }
@@ -106,12 +106,12 @@ If you want real quarters, divide by `"quarter"` instead.
 ## Only the opening hours
 
 You often want slots for part of a day, such as 9:00 to 17:00. Make that part
-with [`range`](../../../api/minuta/range/), then divide it:
+with [`period`](../../../api/minuta/period/), then divide it:
 
 ```ts
-import { divide, range } from "@aleksejdix/minuta";
+import { divide, period } from "@aleksejdix/minuta";
 
-const open = range(
+const open = period(
   Temporal.ZonedDateTime.from("2026-03-18T09:00[Europe/Zurich]"),
   Temporal.ZonedDateTime.from("2026-03-18T17:00[Europe/Zurich]")
 );
@@ -132,7 +132,7 @@ divide(open, "hour");
   ]}
 />
 
-A range does not include its end, so a range up to 17:00 ends with the hour
+A period does not include its end, so a period up to 17:00 ends with the hour
 from 16:00. There is no extra piece at 17:00.
 
 ## Weeks of a month: the edges are cut
@@ -160,7 +160,7 @@ meeting from 9:10 to 10:40 divided by hour gives two cut pieces:
 
 ```ts
 divide(
-  range(
+  period(
     Temporal.ZonedDateTime.from("2026-03-18T09:10[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-18T10:40[Europe/Zurich]")
   ),
@@ -176,8 +176,8 @@ divide(
     {
       label: "hours",
       periods: [
-        period(zonedDateTime("2026-03-18T09:00[Europe/Zurich]"), "hour"),
-        period(zonedDateTime("2026-03-18T10:00[Europe/Zurich]"), "hour"),
+        hour(zonedDateTime("2026-03-18T09:00[Europe/Zurich]")),
+        hour(zonedDateTime("2026-03-18T10:00[Europe/Zurich]")),
       ],
       tone: "muted",
     },
@@ -204,12 +204,12 @@ week of the first day and the week of the last day, then divide it. The last
 day is the day before `march.end`, because the end is excluded:
 
 ```ts
-import { divide, period, range } from "@aleksejdix/minuta";
+import { divide, period, week } from "@aleksejdix/minuta";
 
 const lastDay = march.end.subtract({ days: 1 }); // → 2026-03-31
 
 const weeks = divide(
-  range(period(march.start, "week").start, period(lastDay, "week").end),
+  period(week(march.start).start, week(lastDay).end),
   "week"
 );
 // → Mon Feb 23 – Sun Mar 1   "week"
@@ -232,9 +232,9 @@ Every piece is now a whole `"week"`, so `next` steps them by a week.
     {
       label: "whole weeks",
       periods: divide(
-        range(
-          period(march.start, "week").start,
-          period(march.end.subtract({ days: 1 }), "week").end
+        period(
+          week(march.start).start,
+          week(march.end.subtract({ days: 1 })).end
         ),
         "week"
       ),
@@ -253,7 +253,7 @@ because it is not a whole month:
 divide(march, "month");
 // → [{ start: 2026-03-01, end: 2026-04-01, unit: "month" }]
 
-divide(period(Temporal.PlainDate.from("2026-03-18"), "day"), "month");
+divide(day(Temporal.PlainDate.from("2026-03-18")), "month");
 // → [{ start: 2026-03-18, end: 2026-03-19, unit: "custom" }]
 ```
 
@@ -264,7 +264,7 @@ long before that: by default it throws once it would make more than
 100 000 pieces.
 
 ```ts
-divide(period(Temporal.PlainDate.from("2026-01-01"), "year"), "second");
+divide(year(Temporal.PlainDate.from("2026-01-01")), "second");
 // RangeError: TOO_MANY_PERIODS: divide() generated over 100000 periods. …
 ```
 
@@ -272,7 +272,7 @@ Set your own limit with `maxPeriods`, lower to protect a screen, or higher
 when you really need more:
 
 ```ts
-divide(period(Temporal.PlainDate.from("2026-01-01"), "year"), "minute", {
+divide(year(Temporal.PlainDate.from("2026-01-01")), "minute", {
   maxPeriods: 1000,
 });
 // RangeError: TOO_MANY_PERIODS: divide() generated over 1000 periods. …
@@ -307,6 +307,6 @@ week start and weekends.
 - [Comparing and measuring](../comparing-and-measuring/) — is this today, do
   these overlap, how long is it?
 - Reference: [`divide`](../../../api/minuta/divide/),
-  [`range`](../../../api/minuta/range/),
+  [`period`](../../../api/minuta/period/),
   [`count`](../../../api/minuta/count/),
   [`monthGrid`](../../../api/minuta/month-grid/).

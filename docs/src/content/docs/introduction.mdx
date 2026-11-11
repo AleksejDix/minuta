@@ -4,7 +4,7 @@ description: What minuta is, the idea behind it, and which package you need.
 ---
 
 import { zonedDateTime } from "../../components/temporal";
-import { period } from "@aleksejdix/minuta";
+import { day, month, quarter, week, year } from "@aleksejdix/minuta";
 import Timeline from "../../components/diagrams/Timeline.astro";
 
 export const moment = zonedDateTime("2026-10-12T09:30[Europe/Zurich]");
@@ -20,9 +20,9 @@ gives you a **period**: a stretch of time with a start, an end and a unit.
 The start is included, the end is not: October ends where November starts.
 
 ```ts
-import { period } from "@aleksejdix/minuta";
+import { month } from "@aleksejdix/minuta";
 
-const october = period(Temporal.PlainDate.from("2026-10-12"), "month");
+const october = month(Temporal.PlainDate.from("2026-10-12"));
 // → { start: 2026-10-01, end: 2026-11-01, unit: "month" }
 ```
 
@@ -34,19 +34,19 @@ Every moment sits inside a period of every unit — here, Monday Oct 12 2026 at
   marks={[{ date: moment, label: "Oct 12, 9:30" }]}
   tracks={[
     {
-      label: 'period(moment, "year")',
-      periods: [period(moment, "year")],
+      label: "year(moment)",
+      periods: [year(moment)],
       tone: "muted",
     },
-    { label: '"quarter"', periods: [period(moment, "quarter")], tone: "muted" },
-    { label: '"month"', periods: [period(moment, "month")] },
-    { label: '"week"', periods: [period(moment, "week")] },
-    { label: '"day"', periods: [period(moment, "day")], tone: "accent" },
+    { label: "quarter(moment)", periods: [quarter(moment)], tone: "muted" },
+    { label: "month(moment)", periods: [month(moment)] },
+    { label: "week(moment)", periods: [week(moment)] },
+    { label: "day(moment)", periods: [day(moment)], tone: "accent" },
   ]}
 />
 
 Every operation works on periods. You split them (`divide`), step through them
-(`next`, `previous`, `shift`), compare them (`same`, `contains`, `overlaps`)
+(`next`, `previous`, `shift`), compare them (`equals`, `contains`, `overlaps`)
 and count them (`count`). The rest — calendars, intervals, formatting,
 date fields — builds on that one idea.
 

@@ -92,12 +92,12 @@ the 42 days are not in March: the grey numbers in the
 To find them, check each day against the month with `contains`:
 
 ```ts
-import { contains, monthGrid, period } from "@aleksejdix/minuta";
+import { contains, month, monthGrid } from "@aleksejdix/minuta";
 
 const grid = monthGrid(Temporal.PlainDate.from("2026-03-15"));
-const month = period(grid.monthStart, "month");
+const march = month(grid.monthStart);
 
-grid.periods.filter((day) => !contains(month, day)).length;
+grid.periods.filter((day) => !contains(march, day)).length;
 // → 11
 ```
 

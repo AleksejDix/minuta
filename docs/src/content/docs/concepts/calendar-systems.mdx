@@ -10,16 +10,10 @@ import Timeline from "../../../components/diagrams/Timeline.astro";
 
 export const day = plainDate("2026-03-18");
 export const hebrew = withUnits(createUnits({ calendar: "hebrew" }));
-export const leapYear = hebrew.period(plainDate("2024-01-15"), "year");
-export const isoYear = withUnits(createUnits()).period(
-  plainDate("2024-01-15"),
-  "year"
-);
+export const leapYear = hebrew.year(plainDate("2024-01-15"));
+export const isoYear = withUnits(createUnits()).year(plainDate("2024-01-15"));
 export const monthIn = (calendar, locale) =>
-  toLocaleString(
-    withUnits(createUnits({ calendar })).period(day, "month"),
-    locale
-  );
+  toLocaleString(withUnits(createUnits({ calendar })).month(day), locale);
 
 A `Date` knows one calendar, the Gregorian. Temporal knows many, and every
 Temporal date carries its calendar. minuta follows it: a month is the
@@ -32,14 +26,14 @@ calendar's month, a year the calendar's year, a quarter three of its months.
 There are two ways, and both give the same periods:
 
 ```ts
-import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+import { createUnits, month, withUnits } from "@aleksejdix/minuta";
 
 // 1. Pass a date in that calendar: periods keep it
-period(Temporal.PlainDate.from("2026-03-18").withCalendar("hebrew"), "month");
+month(Temporal.PlainDate.from("2026-03-18").withCalendar("hebrew"));
 
 // 2. Read every date in one calendar
 const hijri = withUnits(createUnits({ calendar: "islamic-umalqura" }));
-hijri.period(Temporal.PlainDate.from("2026-03-18"), "month");
+hijri.month(Temporal.PlainDate.from("2026-03-18"));
 // → Ramadan 1447: { start: 2026-02-18, end: 2026-03-20 } in ISO terms
 ```
 
@@ -112,18 +106,18 @@ fifth.
 ```ts
 import {
   createUnits,
-  range,
+  period,
   toLocaleString,
   withUnits,
 } from "@aleksejdix/minuta";
 
 const hebrew = withUnits(createUnits({ calendar: "hebrew" }));
 const quarters = hebrew.divide(
-  hebrew.period(Temporal.PlainDate.from("2024-01-15"), "year"),
+  hebrew.year(Temporal.PlainDate.from("2024-01-15")),
   "quarter"
 );
 quarters.map((quarter) =>
-  toLocaleString(range(quarter.start, quarter.end), "en-US", {
+  toLocaleString(period(quarter.start, quarter.end), "en-US", {
     month: "long",
     year: "numeric",
   })
@@ -137,11 +131,12 @@ A Japanese year is the whole year, even when an era starts in it. 2019 runs
 from January 1 to December 31, from Heisei 31 into Reiwa 1:
 
 ```ts
-const year = period(
-  Temporal.PlainDate.from("2019-06-01").withCalendar("japanese"),
-  "year"
+const year2019 = year(
+  Temporal.PlainDate.from("2019-06-01").withCalendar("japanese")
 );
-toLocaleString(range(year.start, year.end), "ja-JP", { year: "numeric" });
+toLocaleString(period(year2019.start, year2019.end), "ja-JP", {
+  year: "numeric",
+});
 // → "平成31年～令和元年"
 ```
 

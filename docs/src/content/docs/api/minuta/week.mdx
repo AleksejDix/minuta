@@ -1,0 +1,94 @@
+---
+title: week
+description: Get the whole week that a date or a moment falls in — from Monday by default, or from the week start you choose.
+---
+
+import { plainDate } from "../../../../components/temporal";
+import { createUnits, week, withUnits } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = plainDate("2026-03-18");
+export const sunday = withUnits(createUnits({ weekStartsOn: "sunday" }));
+export const saturday = withUnits(createUnits({ locale: "ar-EG" }));
+
+Get the whole week that a date or a moment falls in: seven days from the
+week's first day.
+
+```ts
+import { week } from "@aleksejdix/minuta";
+```
+
+```ts
+week(value);
+```
+
+## Example
+
+```ts
+import { week } from "@aleksejdix/minuta";
+
+week(Temporal.PlainDate.from("2026-03-18"));
+// → { start: 2026-03-16, end: 2026-03-23, unit: "week" }: Monday to Sunday
+```
+
+## Parameters
+
+| Name    | What it is                                                   |
+| ------- | ------------------------------------------------------------ |
+| `value` | A `PlainDate` or a `ZonedDateTime` anywhere inside the week. |
+
+## Returns
+
+A `DatePeriod` with the unit `"week"`: `start` is the week's first day,
+`end` the first day of the next week. The end is excluded. A week can cross
+a month or a year: the week of Jan 1 2026 runs from Mon Dec 29 2025.
+
+## The week start
+
+The main entry's weeks start on Monday (ISO 8601). For another first day,
+bind the units with [`withUnits`](../with-units/): set `weekStartsOn`, or
+let a `locale` choose.
+
+```ts
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+const date = Temporal.PlainDate.from("2026-03-18");
+
+withUnits(createUnits({ weekStartsOn: "sunday" })).week(date);
+// → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
+
+withUnits(createUnits({ locale: "ar-EG" })).week(date);
+// → { start: 2026-03-14, end: 2026-03-21, unit: "week" }: from Saturday
+
+withUnits(createUnits({ locale: "de-CH" })).week(date);
+// → { start: 2026-03-16, end: 2026-03-23, unit: "week" }: from Monday
+```
+
+<Timeline
+  caption="The same Wednesday, three week starts: the week moves, the pin stays inside it."
+  marks={[{ date, label: "Wed Mar 18" }]}
+  tracks={[
+    { label: "week(date)", periods: [week(date)], tone: "accent" },
+    { label: "sunday.week(date)", periods: [sunday.week(date)], tone: "ink" },
+    {
+      label: "saturday.week(date)",
+      periods: [saturday.week(date)],
+      tone: "ink",
+    },
+  ]}
+/>
+
+See [Weeks and calendars](../../../concepts/weeks-and-calendars/) and
+[`createUnits`](../create-units/).
+
+## Errors
+
+The main entry's `week` does not throw for a date or a moment. From
+[`withUnits`](../with-units/), units without a `week` spec give
+`UNIT_NOT_SUPPORTED`.
+
+## Related
+
+- [`monthGrid`](../month-grid/) and [`yearGrid`](../year-grid/) — whole weeks for a calendar view.
+- [`divide`](../divide/) — a month into its weeks, cut at its edges.
+- [`day`](../day/) and [`month`](../month/) — the units inside and around a week.

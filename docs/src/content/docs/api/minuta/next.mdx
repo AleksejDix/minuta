@@ -4,11 +4,11 @@ description: Get the period right after a period — the next day, the next week
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { divide, next, period, range } from "@aleksejdix/minuta";
+import { divide, month, next, period, week } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-15"), "month");
-export const slot = range(
+export const march = month(plainDate("2026-03-15"));
+export const slot = period(
   zonedDateTime("2026-03-02T09:00[Europe/Zurich]"),
   zonedDateTime("2026-03-02T10:00[Europe/Zurich]")
 );
@@ -28,9 +28,9 @@ next(period);
 ## Example
 
 ```ts
-import { next, period } from "@aleksejdix/minuta";
+import { month, next } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-15"));
 
 next(march);
 // → { start: 2026-04-01, end: 2026-05-01, unit: "month" }
@@ -46,9 +46,9 @@ next(march);
 
 ## Parameters
 
-| Name     | What it is                                        |
-| -------- | ------------------------------------------------- |
-| `period` | The current period, e.g. a month from `period()`. |
+| Name     | What it is                                       |
+| -------- | ------------------------------------------------ |
+| `period` | The current period, e.g. a month from `month()`. |
 
 ## Returns
 
@@ -65,29 +65,27 @@ time. A day period holds dates, so a clock change cannot move it. In
 Europe/Zurich, Mar 29 2026 has only 23 hours, and it is still the next day:
 
 ```ts
-next(period(Temporal.PlainDate.from("2026-03-28"), "day"));
+next(day(Temporal.PlainDate.from("2026-03-28")));
 // → { start: 2026-03-29, end: 2026-03-30, unit: "day" }
 ```
 
 The hour after 1:00 on that day is 3:00, because 2:00 does not exist:
 
 ```ts
-next(
-  period(Temporal.ZonedDateTime.from("2026-03-29T01:00[Europe/Zurich]"), "hour")
-);
+next(hour(Temporal.ZonedDateTime.from("2026-03-29T01:00[Europe/Zurich]")));
 // → { start: 2026-03-29T03:00+02:00, end: 2026-03-29T04:00+02:00, unit: "hour" }
 ```
 
 ## Custom periods move by their own length
 
-A period with the unit `"custom"` (from [`range`](../range/), or a piece cut
+A period with the unit `"custom"` (from [`period`](../period/), or a piece cut
 by [`divide`](../divide/)) has no unit to step by. `next` moves it forward by
 exactly its own length, so the new period starts where the old one ends.
 
 ```ts
-import { next, range } from "@aleksejdix/minuta";
+import { next, period } from "@aleksejdix/minuta";
 
-const slot = range(
+const slot = period(
   Temporal.ZonedDateTime.from("2026-03-02T09:00[Europe/Zurich]"),
   Temporal.ZonedDateTime.from("2026-03-02T10:00[Europe/Zurich]")
 );
@@ -109,7 +107,7 @@ moments moves by elapsed time, not on the calendar. A custom week of moments
 that ends after a clock change ends an hour off:
 
 ```ts
-const week = range(
+const week = period(
   Temporal.ZonedDateTime.from("2026-03-23T00:00[Europe/Zurich]"),
   Temporal.ZonedDateTime.from("2026-03-30T00:00[Europe/Zurich]")
 );
@@ -118,13 +116,13 @@ next(week);
 // → { start: 2026-03-30T00:00+02:00, end: 2026-04-05T23:00+02:00, unit: "custom" }
 ```
 
-The same week made of dates, `range(2026-03-23, 2026-03-30)`, moves to
+The same week made of dates, `period(2026-03-23, 2026-03-30)`, moves to
 Mar 30 – Apr 6, exactly seven days.
 
 The first and last pieces of a [`divide`](../divide/) are often custom too.
 `next` of the clipped two-day week Mon Mar 30 – Tue Mar 31 gives Wed Apr 1 –
 Thu Apr 2, not the next week. To step by whole units, use a period from
-[`period`](../period/).
+[`week`](../week/) or another unit function.
 
 <Timeline
   caption="The clipped week at the end of March is two days long, so its next is the next two days, not the week after."
@@ -136,8 +134,8 @@ Thu Apr 2, not the next week. To step by whole units, use a period from
     },
     { label: "next(lastPiece)", periods: [next(lastPiece)], tone: "accent" },
     {
-      label: 'period(lastPiece.start, "week")',
-      periods: [period(lastPiece.start, "week")],
+      label: "week(lastPiece.start)",
+      periods: [week(lastPiece.start)],
       tone: "muted",
     },
   ]}
@@ -155,5 +153,4 @@ Thu Apr 2, not the next week. To step by whole units, use a period from
 
 - [`previous`](../previous/) — the period before.
 - [`shift`](../shift/) — move by any number of periods.
-- [`same`](../same/) — check whether two periods are in the same unit.
 - [`withUnits`](../with-units/) — the same, with your own week start, time zone or calendar.

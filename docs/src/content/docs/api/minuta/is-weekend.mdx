@@ -8,16 +8,17 @@ import {
   createUnits,
   divide,
   isWeekend,
+  month,
   period,
-  range,
+  week,
   withUnits,
 } from "@aleksejdix/minuta";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-01"), "month");
+export const march = month(plainDate("2026-03-01"));
 export const days = divide(march, "day");
-export const week = period(plainDate("2026-03-18"), "week");
+export const thisWeek = week(plainDate("2026-03-18"));
 export const fridayOff = withUnits(
   createUnits({ weekend: ["friday", "saturday"] })
 );
@@ -36,10 +37,10 @@ isWeekend(period);
 ## Example
 
 ```ts
-import { isWeekend, period } from "@aleksejdix/minuta";
+import { day, isWeekend } from "@aleksejdix/minuta";
 
-isWeekend(period(Temporal.PlainDate.from("2026-03-21"), "day")); // → true  (a Saturday)
-isWeekend(period(Temporal.PlainDate.from("2026-03-18"), "day")); // → false (a Wednesday)
+isWeekend(day(Temporal.PlainDate.from("2026-03-21"))); // → true  (a Saturday)
+isWeekend(day(Temporal.PlainDate.from("2026-03-18"))); // → false (a Wednesday)
 ```
 
 In a month view, the shaded days are the ones `isWeekend(day)`
@@ -68,12 +69,12 @@ work too (0 = Sunday … 6 = Saturday). `createUnits({ locale: "ar-EG" })`
 takes the weekend from a locale.
 
 ```ts
-import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+import { createUnits, day, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ weekend: ["friday", "saturday"] }));
 
-time.isWeekend(period(Temporal.PlainDate.from("2026-03-20"), "day")); // → true  (a Friday)
-time.isWeekend(period(Temporal.PlainDate.from("2026-03-22"), "day")); // → false (a Sunday)
+time.isWeekend(day(Temporal.PlainDate.from("2026-03-20"))); // → true  (a Friday)
+time.isWeekend(day(Temporal.PlainDate.from("2026-03-22"))); // → false (a Sunday)
 ```
 
 The days of March 2026 for which `isWeekend` returns `true`, with the
@@ -106,11 +107,11 @@ The check looks at every day the period touches, even partly. All of them
 must be weekend days.
 
 ```ts
-import { isWeekend, period, range } from "@aleksejdix/minuta";
+import { hour, isWeekend, period, week } from "@aleksejdix/minuta";
 
 // Sat Mar 21 00:00 – Sun Mar 22 23:00
 isWeekend(
-  range(
+  period(
     Temporal.ZonedDateTime.from("2026-03-21T00:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-22T23:00[Europe/Zurich]")
   )
@@ -119,17 +120,15 @@ isWeekend(
 
 // Fri Mar 20 18:00 – Sat Mar 21 10:00: Friday is not weekend
 isWeekend(
-  range(
+  period(
     Temporal.ZonedDateTime.from("2026-03-20T18:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-21T10:00[Europe/Zurich]")
   )
 );
 // → false
 
-isWeekend(period(Temporal.PlainDate.from("2026-03-18"), "week")); // → false
-isWeekend(
-  period(Temporal.ZonedDateTime.from("2026-03-21T10:00[Europe/Zurich]"), "hour")
-); // → true (Saturday 10:00)
+isWeekend(week(Temporal.PlainDate.from("2026-03-18"))); // → false
+isWeekend(hour(Temporal.ZonedDateTime.from("2026-03-21T10:00[Europe/Zurich]"))); // → true (Saturday 10:00)
 ```
 
 The week of Mar 16 2026 with its two weekend days on top. The first range
@@ -140,24 +139,24 @@ lies inside them; the second one starts on Friday evening and sticks out:
   tracks={[
     {
       label: "weekend days",
-      periods: divide(week, "day").filter((day) => isWeekend(day)),
+      periods: divide(thisWeek, "day").filter((day) => isWeekend(day)),
       tone: "muted",
     },
     {
       label: "Sat 00:00 – Sun 23:00: true",
-      periods: [range(plainDate("2026-03-21"), plainDate("2026-03-23"))],
+      periods: [period(plainDate("2026-03-21"), plainDate("2026-03-23"))],
       tone: "accent",
     },
     {
       label: "Fri 18:00 – Sat 10:00: false",
       periods: [
-        range(
+        period(
           zonedDateTime("2026-03-20T18:00[Europe/Zurich]"),
           zonedDateTime("2026-03-21T10:00[Europe/Zurich]")
         ),
       ],
     },
-    { label: "the week: false", periods: [week] },
+    { label: "the week: false", periods: [thisWeek] },
   ]}
 />
 
@@ -173,12 +172,12 @@ when the period is made. 22:00 UTC on Friday Mar 20 2026 is already Saturday
 morning in Tokyo:
 
 ```ts
-import { isWeekend, period } from "@aleksejdix/minuta";
+import { day, isWeekend } from "@aleksejdix/minuta";
 
 const moment = Temporal.Instant.from("2026-03-20T22:00:00Z");
 
-isWeekend(period(moment.toZonedDateTimeISO("Asia/Tokyo"), "day")); // → true  (Saturday in Tokyo)
-isWeekend(period(moment.toZonedDateTimeISO("Europe/Zurich"), "day")); // → false (Friday 23:00 in Zurich)
+isWeekend(day(moment.toZonedDateTimeISO("Asia/Tokyo"))); // → true  (Saturday in Tokyo)
+isWeekend(day(moment.toZonedDateTimeISO("Europe/Zurich"))); // → false (Friday 23:00 in Zurich)
 ```
 
 ## Errors

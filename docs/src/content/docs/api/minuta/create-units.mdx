@@ -22,7 +22,7 @@ export const hijriMonths = earlyMonths(hijri);
 
 export const weeksOfMarch = (units) => {
   const time = withUnits(units);
-  return time.divide(time.period(plainDate("2026-03-01"), "month"), "week");
+  return time.divide(time.month(plainDate("2026-03-01")), "week");
 };
 
 Makes the **units**: one rule set per unit of time (`year`, `quarter`,
@@ -50,7 +50,7 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
-time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+time.week(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 ```
 
@@ -109,7 +109,7 @@ read in that calendar first, so ISO dates give Hijri months too:
 ```ts
 const hijri = withUnits(createUnits({ calendar: "islamic-umalqura" }));
 
-const ramadan = hijri.period(Temporal.PlainDate.from("2026-03-18"), "month");
+const ramadan = hijri.month(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-02-18[u-ca=islamic-umalqura], end: 2026-03-20[…], unit: "month" }
 hijri.count(ramadan, "day"); // → 30
 ```

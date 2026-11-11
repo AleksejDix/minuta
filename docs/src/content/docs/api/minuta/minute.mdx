@@ -1,0 +1,63 @@
+---
+title: minute
+description: Get the whole minute that a moment falls in, in its own time zone — from its first second up to the next minute.
+---
+
+import { zonedDateTime } from "../../../../components/temporal";
+import { hour, minute } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const moment = zonedDateTime("2026-03-18T10:30:45[Europe/Zurich]");
+
+Get the whole minute that a moment falls in.
+
+```ts
+import { minute } from "@aleksejdix/minuta";
+```
+
+```ts
+minute(value);
+```
+
+## Example
+
+```ts
+import { minute } from "@aleksejdix/minuta";
+
+minute(Temporal.ZonedDateTime.from("2026-03-18T10:30:45[Europe/Zurich]"));
+// → { start: 2026-03-18T10:30+01:00[Europe/Zurich], end: 2026-03-18T10:31+01:00[…], unit: "minute" }
+```
+
+<Timeline
+  caption="10:30:45 falls in the minute from 10:30 up to 10:31, one of the 60 minutes of its hour."
+  marks={[{ date: moment, label: "10:30:45" }]}
+  tracks={[
+    { label: "hour(moment)", periods: [hour(moment)], tone: "muted" },
+    { label: "minute(moment)", periods: [minute(moment)], tone: "accent" },
+  ]}
+/>
+
+## Parameters
+
+| Name    | What it is                                                                  |
+| ------- | --------------------------------------------------------------------------- |
+| `value` | A `ZonedDateTime` inside the minute, or a `PlainDate` for its first minute. |
+
+## Returns
+
+A `TimePeriod` with the unit `"minute"`: `start` and `end` are
+`ZonedDateTime`s in the value's zone, one minute apart. The end is excluded.
+A `PlainDate` starts at the beginning of its day in the units' time zone,
+as for [`hour`](../hour/).
+
+## Errors
+
+The main entry's `minute` does not throw for a date or a moment. From
+[`withUnits`](../with-units/), units without a `minute` spec give
+`UNIT_NOT_SUPPORTED`.
+
+## Related
+
+- [`hour`](../hour/) and [`second`](../second/) — the units around and inside a minute.
+- [`divide`](../divide/) — an hour into 15-minute slots with `{ step: 15 }`.
+- [`round`](../round/) — a moment to the nearest minute, without a period.

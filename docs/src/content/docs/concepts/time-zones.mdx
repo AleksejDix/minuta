@@ -27,9 +27,9 @@ Pick a day and a zone. **Mar 29 2026** is the night the clocks go forward in Eur
 A day made from a `PlainDate` is the same day on every computer:
 
 ```ts
-import { period } from "@aleksejdix/minuta";
+import { day } from "@aleksejdix/minuta";
 
-period(Temporal.PlainDate.from("2026-03-20"), "day");
+day(Temporal.PlainDate.from("2026-03-20"));
 // → { start: 2026-03-20, end: 2026-03-21, unit: "day" }, everywhere
 ```
 
@@ -37,7 +37,7 @@ A `ZonedDateTime` brings its own zone. Its period is computed in that zone,
 whatever the computer's zone is:
 
 ```ts
-period(Temporal.ZonedDateTime.from("2026-03-21T05:00[Asia/Tokyo]"), "day");
+day(Temporal.ZonedDateTime.from("2026-03-21T05:00[Asia/Tokyo]"));
 // → { start: 2026-03-21, end: 2026-03-22, unit: "day" }
 ```
 
@@ -51,15 +51,15 @@ So minuta does not take them. It never guesses a zone. Give the value one
 with Temporal first, and the day follows that zone:
 
 ```ts
-import { period } from "@aleksejdix/minuta";
+import { day } from "@aleksejdix/minuta";
 
 const moment = Temporal.Instant.from("2026-03-20T20:00:00Z");
 
-period(moment.toZonedDateTimeISO("Europe/Zurich"), "day").start;
+day(moment.toZonedDateTimeISO("Europe/Zurich")).start;
 // → 2026-03-20 (21:00 there)
-period(moment.toZonedDateTimeISO("Asia/Tokyo"), "day").start;
+day(moment.toZonedDateTimeISO("Asia/Tokyo")).start;
 // → 2026-03-21 (05:00 there)
-period(moment.toZonedDateTimeISO("UTC"), "day").start;
+day(moment.toZonedDateTimeISO("UTC")).start;
 // → 2026-03-20
 ```
 
@@ -75,9 +75,9 @@ zone of the computer the code runs on, so a date's hours can differ from
 computer to computer:
 
 ```ts
-import { period } from "@aleksejdix/minuta";
+import { hour } from "@aleksejdix/minuta";
 
-period(Temporal.PlainDate.from("2026-03-20"), "hour").start;
+hour(Temporal.PlainDate.from("2026-03-20")).start;
 // → 2026-03-20T00:00[Europe/Zurich] on a computer in Europe/Zurich
 // → 2026-03-20T00:00[Asia/Tokyo] on a computer in Asia/Tokyo
 ```
@@ -97,7 +97,7 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const tokyo = withUnits(createUnits({ timeZone: "Asia/Tokyo" }));
 
-tokyo.period(Temporal.PlainDate.from("2026-03-20"), "hour").start;
+tokyo.hour(Temporal.PlainDate.from("2026-03-20")).start;
 // → 2026-03-20T00:00[Asia/Tokyo], on any computer
 ```
 
@@ -112,7 +112,7 @@ A misspelled zone name is not checked by `createUnits`. It throws a
 Everything that turns dates into moments follows the zone of the units, not
 the computer's:
 
-- `period`, `divide`, `count`, … with hour, minute and second units,
+- `hour`, `minute`, `second`, and `divide`, `count`, … with those units,
 - day grids of a date ([`dayGrid`](../../api/minuta/day-grid/)).
 
 ## The `timeZone` setting
@@ -139,20 +139,19 @@ period's `ZonedDateTime`s read in their own zone, not the computer's.
   A moment is shown in its own zone:
 
   ```ts
-  import { period, toLocaleString } from "@aleksejdix/minuta";
+  import { hour, toLocaleString } from "@aleksejdix/minuta";
 
-  const hour = period(
+  const tokyoHour = hour(
     Temporal.Instant.from("2026-03-20T20:00:00Z").toZonedDateTimeISO(
       "Asia/Tokyo"
-    ),
-    "hour"
+    )
   );
 
-  toLocaleString(hour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
+  toLocaleString(tokyoHour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
   ```
 
 - **To compare**, use minuta: `contains(month, day)` or
-  `same(a, b, "month")`.
+  `equals(month(a.start), month(b.start))`.
 
 ## Clock changes (DST)
 
@@ -166,12 +165,12 @@ back once a year. In Europe/Zurich in 2026:
 minuta follows the real clock:
 
 ```ts
-import { count, period } from "@aleksejdix/minuta";
+import { count, day } from "@aleksejdix/minuta";
 
 // On a computer in Europe/Zurich
-count(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23
-count(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour"); // → 25
-count(period(Temporal.PlainDate.from("2026-06-01"), "day"), "hour"); // → 24
+count(day(Temporal.PlainDate.from("2026-03-29")), "hour"); // → 23
+count(day(Temporal.PlainDate.from("2026-10-25")), "hour"); // → 25
+count(day(Temporal.PlainDate.from("2026-06-01")), "hour"); // → 24
 ```
 
 The rules behind it:
@@ -186,9 +185,10 @@ The rules behind it:
 hours of a day and tells you which clock hour was skipped (`gapHour`) or
 repeated (`ambiguousHour`).
 
-[`move`](../../api/minuta/move/) keeps a period's length: days for a
-date period, exact time for a time period. A range of 24 real hours moved
-onto Mar 29 00:00 ends at 01:00 on Mar 30.
+[`next`](../../api/minuta/next/) moves a custom period by its own length:
+days for a date period, exact time for a time period. The next period after
+24 real hours from Mar 28 00:00 starts on Mar 29 00:00 and ends at 01:00 on
+Mar 30.
 
 ## Zones with unusual offsets
 

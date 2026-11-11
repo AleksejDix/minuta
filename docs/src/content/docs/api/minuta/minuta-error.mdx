@@ -15,9 +15,9 @@ import { MinutaError } from "@aleksejdix/minuta";
 ## Example
 
 ```ts
-import { divide, MinutaError, period } from "@aleksejdix/minuta";
+import { divide, MinutaError, month } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
 
 try {
   divide(march, "day", { step: 0 });
@@ -87,17 +87,19 @@ or moment.
 
 ## Which functions check what
 
-| Function                                                                                                                                                                                     | Codes it can throw                                         |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [`period`](../period/), [`next`](../next/), [`previous`](../previous/), [`shift`](../shift/)                                                                                                 | `UNIT_NOT_SUPPORTED`                                       |
-| [`divide`](../divide/)                                                                                                                                                                       | `INVALID_OPTION`, `TOO_MANY_PERIODS`, `UNIT_NOT_SUPPORTED` |
-| [`round`](../round/)                                                                                                                                                                         | `INVALID_OPTION`, `UNIT_NOT_SUPPORTED`                     |
-| [`count`](../count/), [`same`](../same/), [`merge`](../merge/), [`specFor`](../spec-for/)                                                                                                    | `UNIT_NOT_SUPPORTED`                                       |
-| [`monthGrid`](../month-grid/), [`yearGrid`](../year-grid/), [`dayGrid`](../day-grid/)                                                                                                        | `UNIT_NOT_SUPPORTED`, with units that lack one             |
-| [`range`](../range/), [`contains`](../contains/), [`overlaps`](../overlaps/), [`equals`](../equals/), [`compare`](../compare/), [`isWeekday`](../is-weekday/), [`isWeekend`](../is-weekend/) | none                                                       |
+| Function                                                                                                                                                                                       | Codes it can throw                                         |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [`year`](../year/), [`quarter`](../quarter/), [`month`](../month/), [`week`](../week/), [`day`](../day/), [`hour`](../hour/), [`minute`](../minute/), [`second`](../second/)                   | `UNIT_NOT_SUPPORTED`, with units that lack one             |
+| [`next`](../next/), [`previous`](../previous/), [`shift`](../shift/)                                                                                                                           | `UNIT_NOT_SUPPORTED`                                       |
+| [`divide`](../divide/)                                                                                                                                                                         | `INVALID_OPTION`, `TOO_MANY_PERIODS`, `UNIT_NOT_SUPPORTED` |
+| [`round`](../round/)                                                                                                                                                                           | `INVALID_OPTION`, `UNIT_NOT_SUPPORTED`                     |
+| [`count`](../count/), [`merge`](../merge/), [`specFor`](../spec-for/)                                                                                                                          | `UNIT_NOT_SUPPORTED`                                       |
+| [`monthGrid`](../month-grid/), [`yearGrid`](../year-grid/), [`dayGrid`](../day-grid/)                                                                                                          | `UNIT_NOT_SUPPORTED`, with units that lack one             |
+| [`period`](../period/), [`contains`](../contains/), [`overlaps`](../overlaps/), [`equals`](../equals/), [`compare`](../compare/), [`isWeekday`](../is-weekday/), [`isWeekend`](../is-weekend/) | none                                                       |
 
-`range` throws a plain `TypeError`, with no code, when you mix a
-`PlainDate` and a `ZonedDateTime`, and `round` when you round a date to a
+`period` throws a plain `RangeError`, with no code, when the end comes
+before the start, and a plain `TypeError` when you mix a `PlainDate` and a
+`ZonedDateTime`. `round` throws a plain `TypeError` when you round a date to a
 time unit. Errors that Temporal itself throws, for
 example for a string it cannot parse, have no minuta code either.
 

@@ -4,12 +4,12 @@ description: Get the free time between two periods — e.g. the break between tw
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { gap, period } from "@aleksejdix/minuta";
+import { day, gap } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const mar2 = period(plainDate("2026-03-02"), "day");
-export const mar3 = period(plainDate("2026-03-03"), "day");
-export const mar5 = period(plainDate("2026-03-05"), "day");
+export const mar2 = day(plainDate("2026-03-02"));
+export const mar3 = day(plainDate("2026-03-03"));
+export const mar5 = day(plainDate("2026-03-05"));
 
 Get the free time between two periods, such as the break between two
 meetings or the days between two bookings.
@@ -25,11 +25,11 @@ gap(first, second);
 ## Example
 
 ```ts
-import { gap, period } from "@aleksejdix/minuta";
+import { day, gap } from "@aleksejdix/minuta";
 
 gap(
-  period(Temporal.PlainDate.from("2026-03-02"), "day"),
-  period(Temporal.PlainDate.from("2026-03-05"), "day")
+  day(Temporal.PlainDate.from("2026-03-02")),
+  day(Temporal.PlainDate.from("2026-03-05"))
 );
 // → { start: 2026-03-03, end: 2026-03-05, unit: "custom" }
 ```
@@ -49,7 +49,7 @@ gap(
 | `first`  | One period.       |
 | `second` | The other period. |
 
-Both are periods. For a single date, pass its day: `period(date, "day")`.
+Both are periods. For a single date, pass its day: `day(date)`.
 You can mix a period of dates and a period of moments: next to moments, the
 dates become moments in their zone.
 
@@ -66,8 +66,8 @@ where the later one starts. Its unit is always `"custom"`.
 
 ```ts
 gap(
-  period(Temporal.PlainDate.from("2026-03-05"), "day"),
-  period(Temporal.PlainDate.from("2026-03-02"), "day")
+  day(Temporal.PlainDate.from("2026-03-05")),
+  day(Temporal.PlainDate.from("2026-03-02"))
 );
 // → { start: 2026-03-03, end: 2026-03-05, unit: "custom" }, the same as above
 ```
@@ -78,14 +78,14 @@ Mar 2 ends where Mar 3 starts. Nothing lies between them:
 
 ```ts
 gap(
-  period(Temporal.PlainDate.from("2026-03-02"), "day"),
-  period(Temporal.PlainDate.from("2026-03-03"), "day")
+  day(Temporal.PlainDate.from("2026-03-02")),
+  day(Temporal.PlainDate.from("2026-03-03"))
 );
 // → undefined (they touch)
 
 gap(
-  period(Temporal.PlainDate.from("2026-03-02"), "day"),
-  period(Temporal.PlainDate.from("2026-03-01"), "month")
+  day(Temporal.PlainDate.from("2026-03-02")),
+  month(Temporal.PlainDate.from("2026-03-01"))
 );
 // → undefined (March contains Mar 2)
 ```
@@ -101,15 +101,12 @@ gap(
 ## Dates and moments
 
 `gap` takes periods only. Turn a date into its day, as in the example
-above, or a moment into its hour, with [`period`](../period/):
+above, or a moment into its hour, with [`hour`](../hour/):
 
 ```ts
 gap(
-  period(
-    Temporal.ZonedDateTime.from("2026-03-02T09:00[Europe/Zurich]"),
-    "hour"
-  ),
-  period(Temporal.ZonedDateTime.from("2026-03-02T12:00[Europe/Zurich]"), "hour")
+  hour(Temporal.ZonedDateTime.from("2026-03-02T09:00[Europe/Zurich]")),
+  hour(Temporal.ZonedDateTime.from("2026-03-02T12:00[Europe/Zurich]"))
 );
 // → 10:00 – 12:00 (the hour from 9:00 ends at 10:00)
 ```

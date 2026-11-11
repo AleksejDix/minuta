@@ -6,20 +6,26 @@ sidebar:
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { period, toLocaleString } from "@aleksejdix/minuta";
+import {
+  createUnits,
+  toLocaleString,
+  week,
+  withUnits,
+} from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const moment = zonedDateTime("2026-03-18T14:30[Europe/Zurich]");
+export const time = withUnits(createUnits());
 export const labelled = (units) =>
   units.map((unit) => ({
-    label: `${unit}: ${toLocaleString(period(moment, unit), "en-US")}`,
-    periods: [period(moment, unit)],
+    label: `${unit}: ${toLocaleString(time[unit](moment), "en-US")}`,
+    periods: [time[unit](moment)],
     tone: "accent",
   }));
 export const weeks = [
-  period(plainDate("2025-12-31"), "week"),
-  period(plainDate("2026-03-02"), "week"),
-  period(plainDate("2026-03-31"), "week"),
+  week(plainDate("2025-12-31")),
+  week(plainDate("2026-03-02")),
+  week(plainDate("2026-03-31")),
 ];
 
 A period is data. Sooner or later you show it to a person: "March 2026" above
@@ -43,9 +49,9 @@ Pass the period and a locale to
 [`toLocaleString`](../../../api/minuta/to-locale-string/):
 
 ```ts
-import { next, period, toLocaleString } from "@aleksejdix/minuta";
+import { month, next, toLocaleString } from "@aleksejdix/minuta";
 
-const shown = period(Temporal.PlainDate.from("2026-03-18"), "month");
+const shown = month(Temporal.PlainDate.from("2026-03-18"));
 
 toLocaleString(shown, "en-US"); //       → "March 2026"
 toLocaleString(next(shown), "en-US"); // → "April 2026"
@@ -92,13 +98,13 @@ not as a quarter. To show all three months, format it as a range, with the
 fields you want:
 
 ```ts
-import { period, range, toLocaleString } from "@aleksejdix/minuta";
+import { period, quarter, toLocaleString } from "@aleksejdix/minuta";
 
-const q2 = period(Temporal.PlainDate.from("2026-05-01"), "quarter");
+const q2 = quarter(Temporal.PlainDate.from("2026-05-01"));
 
 toLocaleString(q2, "en-US"); // → "Apr 2026"
-toLocaleString(range(q2.start, q2.end), "en-US"); // → "Apr 1 – Jun 30, 2026"
-toLocaleString(range(q2.start, q2.end), "en-US", {
+toLocaleString(period(q2.start, q2.end), "en-US"); // → "Apr 1 – Jun 30, 2026"
+toLocaleString(period(q2.start, q2.end), "en-US", {
   month: "short",
   year: "numeric",
 }); // → "Apr – Jun 2026"
@@ -113,11 +119,11 @@ Options that pick fields (`weekday`, `day`, `month`, `year` …) **replace** the
 defaults, so name every field you want:
 
 ```ts
-const day = period(Temporal.PlainDate.from("2026-03-18"), "day");
+const wednesday = day(Temporal.PlainDate.from("2026-03-18"));
 
-toLocaleString(day, "en-US"); // → "March 18, 2026"
-toLocaleString(day, "en-US", { weekday: "long" }); // → "Wednesday"
-toLocaleString(day, "en-US", {
+toLocaleString(wednesday, "en-US"); // → "March 18, 2026"
+toLocaleString(wednesday, "en-US", { weekday: "long" }); // → "Wednesday"
+toLocaleString(wednesday, "en-US", {
   weekday: "long",
   month: "long",
   day: "numeric",
@@ -131,8 +137,8 @@ reader's language:
 ```ts
 const cell = { day: "numeric" } as const;
 
-toLocaleString(day, "en-US", cell); // → "18"
-toLocaleString(day, "ja-JP", cell); // → "18日"
+toLocaleString(wednesday, "en-US", cell); // → "18"
+toLocaleString(wednesday, "ja-JP", cell); // → "18日"
 ```
 
 The same works for the weekday names above the grid:
@@ -140,8 +146,8 @@ The same works for the weekday names above the grid:
 ```ts
 const weekday = { weekday: "short" } as const;
 
-toLocaleString(day, "en-US", weekday); // → "Wed"
-toLocaleString(day, "de-CH", weekday); // → "Mi"
+toLocaleString(wednesday, "en-US", weekday); // → "Wed"
+toLocaleString(wednesday, "de-CH", weekday); // → "Mi"
 ```
 
 ## Weeks and other ranges
@@ -150,12 +156,12 @@ A week is shown as a range from its first to its last day (the day before
 `end`). Shared parts, such as the month and year, are written only once:
 
 ```ts
-const week = period(Temporal.PlainDate.from("2026-03-02"), "week");
+const marchWeek = week(Temporal.PlainDate.from("2026-03-02"));
 
-toLocaleString(week, "en-US"); // → "Mar 2 – 8, 2026"
-toLocaleString(period(Temporal.PlainDate.from("2026-03-31"), "week"), "en-US");
+toLocaleString(marchWeek, "en-US"); // → "Mar 2 – 8, 2026"
+toLocaleString(week(Temporal.PlainDate.from("2026-03-31")), "en-US");
 // → "Mar 30 – Apr 5, 2026"
-toLocaleString(period(Temporal.PlainDate.from("2025-12-31"), "week"), "en-US");
+toLocaleString(week(Temporal.PlainDate.from("2025-12-31")), "en-US");
 // → "Dec 29, 2025 – Jan 4, 2026"
 ```
 
@@ -164,20 +170,20 @@ the shorter the label:
 
 <Timeline
   caption="A week across two years, a week inside one month and a week across two months, each labelled with toLocaleString in en-US."
-  tracks={weeks.map((week) => ({
-    label: toLocaleString(week, "en-US"),
-    periods: [week],
+  tracks={weeks.map((piece) => ({
+    label: toLocaleString(piece, "en-US"),
+    periods: [piece],
     tone: "accent",
   }))}
 />
 
-Custom periods from `range` are shown as a range too:
+Custom periods from `period` are shown as a range too:
 
 ```ts
-import { period, range } from "@aleksejdix/minuta";
+import { period, toLocaleString } from "@aleksejdix/minuta";
 
 toLocaleString(
-  range(
+  period(
     Temporal.PlainDate.from("2026-03-30"),
     Temporal.PlainDate.from("2026-04-06")
   ),
@@ -186,20 +192,19 @@ toLocaleString(
 // → "Mar 30 – Apr 5, 2026", the last day before the end
 ```
 
-To show any period as "start – end", whatever its unit, format a `range`
-with the same start and end. When start and end look the same in the shown
+To show any period as "start – end", whatever its unit, format a custom
+`period` with the same start and end. When start and end look the same in the shown
 fields, it collapses to one:
 
 ```ts
-const hour = period(
-  Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
-  "hour"
+const twoPm = hour(
+  Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]")
 );
-toLocaleString(range(hour.start, hour.end), "en-US");
+toLocaleString(period(twoPm.start, twoPm.end), "en-US");
 // → "Mar 18, 2:00 – 3:00 PM"
 
-const day = period(Temporal.PlainDate.from("2026-03-18"), "day");
-toLocaleString(range(day.start, day.end), "en-US");
+const wednesday = day(Temporal.PlainDate.from("2026-03-18"));
+toLocaleString(period(wednesday.start, wednesday.end), "en-US");
 // → "Mar 18, 2026"
 ```
 
@@ -208,11 +213,11 @@ date period shows its last day, so a day collapses to one date.
 
 ## Times in a range
 
-A custom range of moments shows its day and times by default. Name the
+A custom period of moments shows its day and times by default. Name the
 fields you want to show more or less:
 
 ```ts
-const meeting = range(
+const meeting = period(
   Temporal.ZonedDateTime.from("2026-03-18T09:00[Europe/Zurich]"),
   Temporal.ZonedDateTime.from("2026-03-18T10:30[Europe/Zurich]")
 );
@@ -237,15 +242,15 @@ The locale is a BCP 47 tag. The order of the parts, the month names and the
 punctuation all follow it:
 
 ```ts
-const march = period(Temporal.PlainDate.from("2026-03-18"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-18"));
 
 toLocaleString(march, "en-US"); // → "March 2026"
 toLocaleString(march, "de-CH"); // → "März 2026"
 toLocaleString(march, "fr-FR"); // → "mars 2026"
 toLocaleString(march, "ja-JP"); // → "2026年3月"
 
-toLocaleString(week, "de-CH"); // → "2.–8. März 2026"
-toLocaleString(week, "en-GB"); // → "2 – 8 Mar 2026"
+toLocaleString(marchWeek, "de-CH"); // → "2.–8. März 2026"
+toLocaleString(marchWeek, "en-GB"); // → "2 – 8 Mar 2026"
 ```
 
 The locale can also ask for another calendar system with `-u-ca-`. Only the
@@ -262,18 +267,15 @@ works. A few that come up often:
 
 ```ts
 toLocaleString(march, "en-US", { month: "short", year: "numeric" }); // → "Mar 2026"
-toLocaleString(day, "en-US", {
+toLocaleString(wednesday, "en-US", {
   month: "2-digit",
   day: "2-digit",
   year: "numeric",
 });
 // → "03/18/2026"
-toLocaleString(day, "en-US", { dateStyle: "full" }); // → "Wednesday, March 18, 2026"
+toLocaleString(wednesday, "en-US", { dateStyle: "full" }); // → "Wednesday, March 18, 2026"
 toLocaleString(
-  period(
-    Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
-    "hour"
-  ),
+  hour(Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]")),
   "en-US",
   { hourCycle: "h23" }
 );
@@ -292,13 +294,10 @@ A date period has no zone, so its label is the same everywhere, and
 `ZonedDateTime`s, not the computer's:
 
 ```ts
-import { period, toLocaleString } from "@aleksejdix/minuta";
+import { hour, toLocaleString } from "@aleksejdix/minuta";
 
-const tokyoHour = period(
-  Temporal.Instant.from("2026-03-20T20:00:00Z").toZonedDateTimeISO(
-    "Asia/Tokyo"
-  ),
-  "hour"
+const tokyoHour = hour(
+  Temporal.Instant.from("2026-03-20T20:00:00Z").toZonedDateTimeISO("Asia/Tokyo")
 );
 
 toLocaleString(tokyoHour, "en-US"); // → "Mar 21, 5:00 AM", on any computer
@@ -312,10 +311,7 @@ hour for a colleague in New York:
 
 ```ts
 toLocaleString(
-  period(
-    Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]"),
-    "hour"
-  ),
+  hour(Temporal.ZonedDateTime.from("2026-03-18T14:00[Europe/Zurich]")),
   "en-US",
   { timeZone: "America/New_York" }
 );
@@ -331,9 +327,9 @@ URL or an API, write it as an ISO 8601 interval: `start/end`. Temporal
 already writes and reads each edge, so this takes no minuta function:
 
 ```ts
-import { period, range } from "@aleksejdix/minuta";
+import { hour, month, period } from "@aleksejdix/minuta";
 
-const toText = (period) => `${period.start}/${period.end}`;
+const toText = (span) => `${span.start}/${span.end}`;
 
 // The `/` between the edges, not the one in a zone such as [Europe/Zurich]
 const BETWEEN = /\/(?![^[]*\])/u;
@@ -343,14 +339,12 @@ function fromText(text) {
   const read = start.includes("T")
     ? Temporal.ZonedDateTime.from
     : Temporal.PlainDate.from;
-  return range(read(start), read(end));
+  return period(read(start), read(end));
 }
 
-toText(period(Temporal.PlainDate.from("2026-03-18"), "month"));
+toText(month(Temporal.PlainDate.from("2026-03-18")));
 // → "2026-03-01/2026-04-01"
-toText(
-  period(Temporal.ZonedDateTime.from("2026-03-18T14:30[Europe/Zurich]"), "hour")
-);
+toText(hour(Temporal.ZonedDateTime.from("2026-03-18T14:30[Europe/Zurich]")));
 // → "2026-03-18T14:00:00+01:00[Europe/Zurich]/2026-03-18T15:00:00+01:00[Europe/Zurich]"
 ```
 
@@ -371,4 +365,4 @@ ISO 8601 also allows a duration for one edge, `2026-03-01/P1M`.
 - [Weeks and calendars](../../../concepts/weeks-and-calendars/) — week start,
   weekends and calendar grids.
 - Reference: [`toLocaleString`](../../../api/minuta/to-locale-string/),
-  [`range`](../../../api/minuta/range/), [`merge`](../../../api/minuta/merge/).
+  [`period`](../../../api/minuta/period/), [`merge`](../../../api/minuta/merge/).

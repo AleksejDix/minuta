@@ -1,0 +1,67 @@
+---
+title: second
+description: Get the whole second that a moment falls in, in its own time zone — the moment without its fraction, up to the next second.
+---
+
+import { zonedDateTime } from "../../../../components/temporal";
+import { divide, minute, second } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const moment = zonedDateTime("2026-03-18T10:30:45.5[Europe/Zurich]");
+
+Get the whole second that a moment falls in.
+
+```ts
+import { second } from "@aleksejdix/minuta";
+```
+
+```ts
+second(value);
+```
+
+## Example
+
+```ts
+import { second } from "@aleksejdix/minuta";
+
+second(Temporal.ZonedDateTime.from("2026-03-18T10:30:45.5[Europe/Zurich]"));
+// → { start: 2026-03-18T10:30:45+01:00[Europe/Zurich], end: 2026-03-18T10:30:46+01:00[…], unit: "second" }
+```
+
+<Timeline
+  caption="The minute from 10:30, cut into seconds. 10:30:45.5 falls in the second from 10:30:45."
+  marks={[{ date: moment, label: "10:30:45.5" }]}
+  tracks={[
+    {
+      label: 'divide(minute, "second")',
+      periods: divide(minute(moment), "second"),
+      tone: "muted",
+    },
+    { label: "second(moment)", periods: [second(moment)], tone: "accent" },
+  ]}
+/>
+
+## Parameters
+
+| Name    | What it is                                                                  |
+| ------- | --------------------------------------------------------------------------- |
+| `value` | A `ZonedDateTime` inside the second, or a `PlainDate` for its first second. |
+
+## Returns
+
+A `TimePeriod` with the unit `"second"`: `start` and `end` are
+`ZonedDateTime`s in the value's zone, one second apart. The end is excluded.
+A `PlainDate` starts at the beginning of its day in the units' time zone,
+as for [`hour`](../hour/).
+
+## Errors
+
+The main entry's `second` does not throw for a date or a moment. From
+[`withUnits`](../with-units/), units without a `second` spec give
+`UNIT_NOT_SUPPORTED`.
+
+## Related
+
+- [`minute`](../minute/) — the minute around a second.
+- [`divide`](../divide/) — a minute into its seconds.
+- [`round`](../round/) — a moment to the nearest second, without a period.

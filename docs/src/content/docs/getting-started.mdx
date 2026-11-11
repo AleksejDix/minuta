@@ -4,11 +4,11 @@ description: Your first periods in five minutes — create a month, split it int
 ---
 
 import { plainDate, zonedDateTime } from "../../components/temporal";
-import { contains, divide, next, period, previous } from "@aleksejdix/minuta";
+import { contains, divide, month, next, previous } from "@aleksejdix/minuta";
 import Timeline from "../../components/diagrams/Timeline.astro";
 
 export const today = zonedDateTime("2026-10-12T14:30[Europe/Zurich]");
-export const month = period(today, "month");
+export const october = month(today);
 
 This page walks through the core idea in five small steps. Install minuta
 first:
@@ -36,12 +36,15 @@ A period is a stretch of time around a date, in a unit. Ask for the month
 around October 12:
 
 ```ts
-import { period } from "@aleksejdix/minuta";
+import { month } from "@aleksejdix/minuta";
 
 const today = Temporal.ZonedDateTime.from("2026-10-12T14:30[Europe/Zurich]");
-const month = period(today, "month");
+const october = month(today);
 // → { start: 2026-10-01, end: 2026-11-01, unit: "month" }
 ```
+
+Name the result after what it holds, `october` here: `const month = month(today)`
+cannot work, `month` is already the function.
 
 The time of day doesn't matter: any date in October gives the same month. A
 month is made of `Temporal.PlainDate`s. The `start` belongs to it, the `end`
@@ -50,9 +53,7 @@ does not: the month ends where November starts.
 <Timeline
   caption="The pin is the date you passed; the bar is the month around it."
   marks={[{ date: today, label: "Oct 12, 14:30" }]}
-  tracks={[
-    { label: 'period(today, "month")', periods: [month], tone: "accent" },
-  ]}
+  tracks={[{ label: "month(today)", periods: [october], tone: "accent" }]}
 />
 
 ## 2. Split it
@@ -62,7 +63,7 @@ does not: the month ends where November starts.
 ```ts
 import { divide } from "@aleksejdix/minuta";
 
-const days = divide(month, "day");
+const days = divide(october, "day");
 // → 31 day periods: Oct 1, Oct 2, … Oct 31
 ```
 
@@ -70,7 +71,7 @@ Split into weeks and the edges are cut to fit the month. Those pieces get the
 unit `"custom"`, because they are not whole weeks:
 
 ```ts
-divide(month, "week");
+divide(october, "week");
 // → Oct 1–4    "custom"  (the week started in September)
 //   Oct 5–11   "week"
 //   Oct 12–18  "week"
@@ -81,11 +82,11 @@ divide(month, "week");
 <Timeline
   caption="The same month split two ways. Days fit exactly; the weeks at the edges are cut to the month and hatched, because they are custom pieces, not whole weeks."
   tracks={[
-    { label: "month", periods: [month], tone: "muted" },
-    { label: 'divide(month, "day")', periods: divide(month, "day") },
+    { label: "october", periods: [october], tone: "muted" },
+    { label: 'divide(october, "day")', periods: divide(october, "day") },
     {
-      label: 'divide(month, "week")',
-      periods: divide(month, "week"),
+      label: 'divide(october, "week")',
+      periods: divide(october, "week"),
       tone: "accent",
     },
   ]}
@@ -98,8 +99,8 @@ divide(month, "week");
 ```ts
 import { next, previous } from "@aleksejdix/minuta";
 
-next(month); //     → November 2026: { start: 2026-11-01, end: 2026-12-01 }
-previous(month); // → September 2026
+next(october); //     → November 2026: { start: 2026-11-01, end: 2026-12-01 }
+previous(october); // → September 2026
 ```
 
 No arithmetic on days: months of 28, 30 or 31 days, years with leap days and
@@ -108,38 +109,34 @@ clock changes are handled for you.
 <Timeline
   caption="previous and next are the neighbouring months: September has 30 days, November 30, October 31 — no day arithmetic involved."
   tracks={[
-    { label: "previous(month)", periods: [previous(month)] },
-    { label: "month", periods: [month], tone: "accent" },
-    { label: "next(month)", periods: [next(month)] },
+    { label: "previous(october)", periods: [previous(october)] },
+    { label: "october", periods: [october], tone: "accent" },
+    { label: "next(october)", periods: [next(october)] },
   ]}
 />
 
 ## 4. Ask questions
 
 ```ts
-import { contains, count, same } from "@aleksejdix/minuta";
+import { contains, count, day, equals, month } from "@aleksejdix/minuta";
 
-contains(month, today); //                                    → true
-contains(month, Temporal.PlainDate.from("2026-11-01")); //    → false, the end
+contains(october, today); //                                 → true
+contains(october, Temporal.PlainDate.from("2026-11-01")); // → false, the end
 
-count(month, "day"); //                                       → 31
-count(period(today, "day"), "hour"); //                       → 24
+count(october, "day"); //                                    → 31
+count(day(today), "hour"); //                                → 24
 
-same(
-  period(today, "day"),
-  period(Temporal.PlainDate.from("2026-10-30"), "day"),
-  "month"
-);
+equals(month(today), month(Temporal.PlainDate.from("2026-10-30")));
 // → true: both days are in October
 ```
 
 <Timeline
-  caption={`contains(month, today) is ${String(contains(month, today))}: the pin is inside the bar. Nov 1 is its end, which is not part of it, so the same question gives false.`}
+  caption={`contains(october, today) is ${String(contains(october, today))}: the pin is inside the bar. Nov 1 is its end, which is not part of it, so the same question gives false.`}
   marks={[
     { date: today, label: "today" },
     { date: plainDate("2026-11-01"), label: "Nov 1" },
   ]}
-  tracks={[{ label: "month", periods: [month], tone: "accent" }]}
+  tracks={[{ label: "october", periods: [october], tone: "accent" }]}
 />
 
 ## 5. Label it
@@ -147,11 +144,11 @@ same(
 `toLocaleString` writes a period the way the locale reads it:
 
 ```ts
-import { toLocaleString } from "@aleksejdix/minuta";
+import { day, toLocaleString } from "@aleksejdix/minuta";
 
-toLocaleString(month, "en-US"); //               → "October 2026"
-toLocaleString(month, "de-CH"); //               → "Oktober 2026"
-toLocaleString(period(today, "day"), "en-US"); // → "October 12, 2026"
+toLocaleString(october, "en-US"); //    → "October 2026"
+toLocaleString(october, "de-CH"); //    → "Oktober 2026"
+toLocaleString(day(today), "en-US"); // → "October 12, 2026"
 ```
 
 ## What's next

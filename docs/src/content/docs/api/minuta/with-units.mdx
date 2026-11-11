@@ -4,12 +4,12 @@ description: Bind every function to one set of units once — your week start, w
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { createUnits, next, period, withUnits } from "@aleksejdix/minuta";
+import { createUnits, next, week, withUnits } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = plainDate("2026-03-18");
 export const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
-export const week = time.period(date, "week");
+export const sundayWeek = time.week(date);
 
 Bind every function to one set of units once, and get them all back with
 the same names. This is how you get weeks from Sunday, a fixed time zone,
@@ -31,10 +31,10 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
-const week = time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+const sundayWeek = time.week(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 
-time.next(week);
+time.next(sundayWeek);
 // → { start: 2026-03-22, end: 2026-03-29, unit: "week" }
 ```
 
@@ -45,14 +45,14 @@ you need it.
   caption="The same two calls from the main entry (Monday weeks) and from time, bound to Sunday weeks."
   marks={[{ date, label: "Mar 18" }]}
   tracks={[
+    { label: "week(date)", periods: [week(date)], tone: "ink" },
+    { label: "next(…)", periods: [next(week(date))], tone: "ink" },
+    { label: "time.week(date)", periods: [sundayWeek], tone: "accent" },
     {
-      label: 'period(date, "week")',
-      periods: [period(date, "week")],
-      tone: "ink",
+      label: "time.next(sundayWeek)",
+      periods: [time.next(sundayWeek)],
+      tone: "accent",
     },
-    { label: "next(…)", periods: [next(period(date, "week"))], tone: "ink" },
-    { label: 'time.period(date, "week")', periods: [week], tone: "accent" },
-    { label: "time.next(week)", periods: [time.next(week)], tone: "accent" },
   ]}
 />
 
@@ -72,16 +72,16 @@ month, the time zone dates become moments in.
 An object with every function of `@aleksejdix/minuta`, with the same names
 and the same types, bound to `units`:
 
-| Family    | Functions                                                    |
-| --------- | ------------------------------------------------------------ |
-| Create    | `period`, `range`                                            |
-| Navigate  | `next`, `previous`, `shift`                                  |
-| Compose   | `divide`, `merge`, `split`                                   |
-| Edit      | `clamp`, `gap`, `move`, `resize`                             |
-| Compare   | `contains`, `overlaps`, `same`, `equals`, `compare`          |
-| Measure   | `count`, `round`                                             |
-| Calendars | `monthGrid`, `yearGrid`, `dayGrid`, `isWeekday`, `isWeekend` |
-| Text      | `toLocaleString`                                             |
+| Family    | Functions                                                                                                |
+| --------- | -------------------------------------------------------------------------------------------------------- |
+| Create    | `period`, and one member per unit: `year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`, `second` |
+| Navigate  | `next`, `previous`, `shift`                                                                              |
+| Compose   | `divide`, `merge`                                                                                        |
+| Edit      | `clamp`, `gap`                                                                                           |
+| Compare   | `contains`, `overlaps`, `equals`, `compare`                                                              |
+| Measure   | `count`, `round`                                                                                         |
+| Calendars | `monthGrid`, `yearGrid`, `dayGrid`, `isWeekday`, `isWeekend`                                             |
+| Text      | `toLocaleString`                                                                                         |
 
 `time.monthGrid(value)` takes the same arguments as
 [`monthGrid`](../month-grid/). Functions that need no units, such as
@@ -97,6 +97,50 @@ withUnits(units).units === units; // → true
 
 The main entry is `withUnits(createUnits())`, as separate functions.
 
+## A member per unit
+
+`time.month(value)` is the month that contains `value`, with the bound
+units: the same as [`month`](../month/) from the main entry, but with your
+week start, time zone or calendar. Every built-in unit has its member, from
+`time.year` to `time.second`.
+
+A unit of your own gets a member too. With a `fortnight` spec next to the
+built-in units (see
+[Your own units](../../../concepts/date-engines/#your-own-units)),
+`time.fortnight(date)` is the fortnight around `date`. In TypeScript, the
+member appears once the unit is in `UnitRegistry`:
+
+```ts
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+declare module "@aleksejdix/minuta" {
+  interface UnitRegistry {
+    fortnight: "date";
+  }
+}
+
+// fortnight: the DateSpec from "Your own units"
+const time = withUnits({ ...createUnits(), fortnight });
+
+time.fortnight(Temporal.PlainDate.from("2026-03-18"));
+// → { start: 2026-03-16, end: 2026-03-30, unit: "fortnight" }
+```
+
+For a unit held in a variable, index the object by it:
+
+```ts
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+import type { Unit } from "@aleksejdix/minuta";
+
+const time = withUnits(createUnits());
+
+const around = (unit: Unit) =>
+  time[unit](Temporal.PlainDate.from("2026-03-18"));
+
+around("week"); // → { start: 2026-03-16, end: 2026-03-23, unit: "week" }
+around("quarter"); // → { start: 2026-01-01, end: 2026-04-01, unit: "quarter" }
+```
+
 ## Your own helpers
 
 The type of the bound object is `Minuta`. Helpers that take it work with any
@@ -104,12 +148,12 @@ units:
 
 ```ts
 import type { DatePeriod, Minuta } from "@aleksejdix/minuta";
-import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+import { createUnits, month, withUnits } from "@aleksejdix/minuta";
 
-const workdaysIn = (time: Minuta, month: DatePeriod) =>
-  time.divide(month, "day").filter((day) => time.isWeekday(day));
+const workdaysIn = (time: Minuta, period: DatePeriod) =>
+  time.divide(period, "day").filter((day) => time.isWeekday(day));
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
 workdaysIn(withUnits(createUnits({ locale: "de-CH" })), march); // → 22 day periods
 ```
 
@@ -120,9 +164,9 @@ steps from the period's start and then rounds to a whole unit with _its_
 units. A Monday week moved with Sunday units comes out as a Sunday week:
 
 ```ts
-import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+import { createUnits, week, withUnits } from "@aleksejdix/minuta";
 
-const mondayWeek = period(Temporal.PlainDate.from("2026-03-18"), "week");
+const mondayWeek = week(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-16, end: 2026-03-23, unit: "week" }
 
 withUnits(createUnits({ weekStartsOn: "sunday" })).next(mondayWeek);
@@ -143,8 +187,8 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 const { day, month } = createUnits();
 const time = withUnits({ day, month });
 
-time.period(Temporal.PlainDate.from("2026-03-18"), "month"); // works
-time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+time.month(Temporal.PlainDate.from("2026-03-18")); // works
+time.week(Temporal.PlainDate.from("2026-03-18"));
 // RangeError: UNIT_NOT_SUPPORTED: no "week" spec in the units passed (available: day, month). …
 ```
 
@@ -156,7 +200,8 @@ Keep the full set for those.
 
 `withUnits` itself does not throw. The bound functions throw the same errors
 as those of the main entry; a unit missing from `units` gives
-`UNIT_NOT_SUPPORTED`.
+`UNIT_NOT_SUPPORTED`, also from its member: `withUnits({ day, month }).week(date)`
+throws.
 
 ## Related
 

@@ -4,15 +4,15 @@ description: Cut a period down to the part that lies inside some bounds — e.g.
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { clamp, period, range } from "@aleksejdix/minuta";
+import { clamp, day, month, period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const selection = range(
+export const selection = period(
   plainDate("2026-01-05"),
   plainDate("2026-01-25")
 );
-export const allowed = range(plainDate("2026-01-10"), plainDate("2026-01-20"));
-export const march = period(plainDate("2026-03-01"), "month");
+export const allowed = period(plainDate("2026-01-10"), plainDate("2026-01-20"));
+export const march = month(plainDate("2026-03-01"));
 
 Cut a period down to the part that lies inside some bounds. Use it to keep a
 selection within the allowed dates, or to find the overlap of two periods.
@@ -28,13 +28,13 @@ clamp(period, bounds);
 ## Example
 
 ```ts
-import { clamp, range } from "@aleksejdix/minuta";
+import { clamp, period } from "@aleksejdix/minuta";
 
-const selection = range(
+const selection = period(
   Temporal.PlainDate.from("2026-01-05"),
   Temporal.PlainDate.from("2026-01-25")
 );
-const allowed = range(
+const allowed = period(
   Temporal.PlainDate.from("2026-01-10"),
   Temporal.PlainDate.from("2026-01-20")
 );
@@ -77,14 +77,14 @@ so you can clamp days to a range of moments.
 ## No overlap gives undefined
 
 ```ts
-import { period } from "@aleksejdix/minuta";
+import { clamp, day, month } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
 
-clamp(period(Temporal.PlainDate.from("2026-03-15"), "day"), march);
+clamp(day(Temporal.PlainDate.from("2026-03-15")), march);
 // → { start: 2026-03-15, end: 2026-03-16, unit: "custom" }
 
-clamp(period(Temporal.PlainDate.from("2026-04-15"), "day"), march);
+clamp(day(Temporal.PlainDate.from("2026-04-15")), march);
 // → undefined (April 15 is not in March)
 ```
 
@@ -94,10 +94,10 @@ clamp(period(Temporal.PlainDate.from("2026-04-15"), "day"), march);
     { label: "march", periods: [march], tone: "muted" },
     {
       label: "clamp(mar15, march)",
-      periods: [clamp(period(plainDate("2026-03-15"), "day"), march)],
+      periods: [clamp(day(plainDate("2026-03-15")), march)],
       tone: "accent",
     },
-    { label: "apr15", periods: [period(plainDate("2026-04-15"), "day")] },
+    { label: "apr15", periods: [day(plainDate("2026-04-15"))] },
     { label: "clamp(apr15, march)", periods: [], tone: "accent" },
   ]}
 />
@@ -109,11 +109,11 @@ the other, they share no time, and the result is `undefined`:
 
 ```ts
 clamp(
-  range(
+  period(
     Temporal.PlainDate.from("2026-01-01"),
     Temporal.PlainDate.from("2026-01-10")
   ),
-  range(
+  period(
     Temporal.PlainDate.from("2026-01-10"),
     Temporal.PlainDate.from("2026-01-20")
   )
@@ -142,4 +142,4 @@ overlap. The names just say which one you think of as the limit.
 
 - [`overlaps`](../overlaps/) — only check whether two periods overlap.
 - [`gap`](../gap/) — the time between two periods that do not overlap.
-- [`resize`](../resize/) — move one edge of a period yourself.
+- [`period`](../period/) — move one edge of a period yourself: `period(p.start, date)`.

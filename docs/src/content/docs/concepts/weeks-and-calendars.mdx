@@ -30,9 +30,9 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 const monday = withUnits(createUnits());
 const sunday = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
-monday.period(Temporal.PlainDate.from("2026-03-18"), "week");
+monday.week(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-16, end: 2026-03-23, unit: "week" }, Monday to Sunday
-sunday.period(Temporal.PlainDate.from("2026-03-18"), "week");
+sunday.week(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-15, end: 2026-03-22, unit: "week" }, Sunday to Saturday
 ```
 
@@ -41,13 +41,13 @@ sunday.period(Temporal.PlainDate.from("2026-03-18"), "week");
   number: 0 = Sunday, 1 = Monday … 6 = Saturday.
 - The units store it as a number: `createUnits({ weekStartsOn: "sunday" }).weekStartsOn`
   is `0`.
-- The default `minuta` entry (`import { period } from "@aleksejdix/minuta"`) always
+- The default `minuta` entry (`import { month, week } from "@aleksejdix/minuta"`) always
   starts weeks on Monday. For another start, bind every function with
   `withUnits(createUnits({ … }))`: the same names.
 
 minuta never reads the week start from a locale on its own.
 
-Everything that deals with weeks follows it: `period(date, "week")`,
+Everything that deals with weeks follows it: `week(date)`,
 `divide(month, "week")`, `next` and `previous` of a week, month and year
 grids, `round(date, "week")`, and whether `merge` calls seven days a
 `"week"`.
@@ -63,8 +63,8 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ weekend: ["friday", "saturday"] }));
 
-time.isWeekend(time.period(Temporal.PlainDate.from("2026-03-20"), "day")); // → true  (Friday)
-time.isWeekend(time.period(Temporal.PlainDate.from("2026-03-22"), "day")); // → false (Sunday)
+time.isWeekend(time.day(Temporal.PlainDate.from("2026-03-20"))); // → true  (Friday)
+time.isWeekend(time.day(Temporal.PlainDate.from("2026-03-22"))); // → false (Sunday)
 ```
 
 - The default is Saturday and Sunday.
@@ -142,10 +142,10 @@ the locale of [`toLocaleString`](../../api/minuta/to-locale-string/). Add
 `-u-ca-` and a calendar name to the locale:
 
 ```ts
-import { period, toLocaleString } from "@aleksejdix/minuta";
+import { month, toLocaleString } from "@aleksejdix/minuta";
 
 toLocaleString(
-  period(Temporal.PlainDate.from("2026-03-15"), "month"),
+  month(Temporal.PlainDate.from("2026-03-15")),
   "en-US-u-ca-buddhist"
 );
 // → "March 2569 BE"

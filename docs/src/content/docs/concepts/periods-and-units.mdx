@@ -21,9 +21,9 @@ Pick a date. The top half does month math on a plain `Date`; the bottom half ask
 A period is a plain object with three fields:
 
 ```ts
-import { period } from "@aleksejdix/minuta";
+import { month } from "@aleksejdix/minuta";
 
-period(Temporal.PlainDate.from("2026-03-18"), "month");
+month(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-01, end: 2026-04-01, unit: "month" }
 ```
 
@@ -58,14 +58,15 @@ Units are calendar units, not fixed lengths. A month has 28 to 31 days. A day
 has 24 hours, except on the nights the clocks change, when it has 23 or 25:
 
 ```ts
-import { count, period } from "@aleksejdix/minuta";
+import { count, day, month } from "@aleksejdix/minuta";
 
-count(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day"); // → 28
-count(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23 in Europe/Zurich
+count(month(Temporal.PlainDate.from("2026-02-01")), "day"); // → 28
+count(day(Temporal.PlainDate.from("2026-03-29")), "hour"); // → 23 in Europe/Zurich
 ```
 
-[`period`](../../api/minuta/period/) gives you the whole unit that a date
-falls in. It does not matter which date or moment inside the unit you pass.
+[`month`](../../api/minuta/month/), [`week`](../../api/minuta/week/),
+[`day`](../../api/minuta/day/) and the other unit functions give you the
+whole unit that a date falls in. It does not matter which date or moment inside the unit you pass.
 
 How a unit behaves (where a week starts, which time zone hours are in) is set
 by the _units_ you compute with. See [Units](../date-engines/).
@@ -77,9 +78,9 @@ where the next period starts. March ends at April 1, a day ends at the next
 day:
 
 ```ts
-import { contains, next, period } from "@aleksejdix/minuta";
+import { contains, day, next } from "@aleksejdix/minuta";
 
-const today = period(Temporal.PlainDate.from("2026-03-18"), "day");
+const today = day(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-18, end: 2026-03-19, unit: "day" }
 
 contains(today, today.end); // → false
@@ -91,30 +92,30 @@ Neighbouring periods share a boundary value but never a moment. There is no
 ends: `today.start.until(today.end)` is one day (`P1D`).
 
 The same holds for periods you make yourself with
-[`range`](../../api/minuta/range/): `range(nineOClock, tenOClock)` is a clean
-one-hour slot. It touches a range that starts at 10:00, but does not overlap
-it.
+[`period`](../../api/minuta/period/): `period(nineOClock, tenOClock)` is a
+clean one-hour slot. It touches a period that starts at 10:00, but does not
+overlap it.
 
 ## Custom periods
 
 A period that is not exactly one whole unit has the unit **`"custom"`**. You
 get one from:
 
-- [`range`](../../api/minuta/range/) — any two dates or moments, such as a
+- [`period`](../../api/minuta/period/) — any two dates or moments, such as a
   meeting or a trip;
 - [`divide`](../../api/minuta/divide/) — pieces cut at the edges of the period
   you split, and pieces made with a `step` above 1.
 
 ```ts
-import { divide, period, range } from "@aleksejdix/minuta";
+import { divide, month, period } from "@aleksejdix/minuta";
 
-range(
+period(
   Temporal.ZonedDateTime.from("2026-03-02T09:00[Europe/Zurich]"),
   Temporal.ZonedDateTime.from("2026-03-02T10:00[Europe/Zurich]")
 );
 // → { start: 09:00, end: 10:00, unit: "custom" }
 
-divide(period(Temporal.PlainDate.from("2026-03-01"), "month"), "week")[0];
+divide(month(Temporal.PlainDate.from("2026-03-01")), "week")[0];
 // → { start: 2026-03-01, end: 2026-03-02, unit: "custom" }
 //   (the week started in February, so the piece in March is cut)
 ```
@@ -134,9 +135,9 @@ A period carries the whole answer: where it starts, where it ends, and what it
 is. That lets the functions stay small and composable:
 
 ```ts
-import { divide, next, period } from "@aleksejdix/minuta";
+import { divide, month, next } from "@aleksejdix/minuta";
 
-const thisMonth = period(Temporal.PlainDate.from("2026-03-18"), "month");
+const thisMonth = month(Temporal.PlainDate.from("2026-03-18"));
 const nextMonth = next(thisMonth);
 
 divide(nextMonth, "day");
@@ -150,5 +151,6 @@ changes) are handled once, inside the units.
 ## Related
 
 - [Units](../date-engines/) — where units come from, and how to change them.
-- [`period`](../../api/minuta/period/) and [`range`](../../api/minuta/range/) — make periods.
+- [`month`](../../api/minuta/month/), [`week`](../../api/minuta/week/) … and
+  [`period`](../../api/minuta/period/) — make periods.
 - [`divide`](../../api/minuta/divide/) — split them.
