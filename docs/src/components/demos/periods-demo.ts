@@ -4,6 +4,16 @@
  */
 import type { Period, PlainDate, Unit } from "@aleksejdix/minuta";
 import {
+  createUnits,
+  divide,
+  month,
+  next as nextPeriod,
+  period,
+  previous as previousPeriod,
+  toLocaleString,
+  withUnits,
+} from "@aleksejdix/minuta";
+import {
   dayLabel,
   demoRoots,
   fillList,
@@ -13,20 +23,15 @@ import {
   part,
   valueLabel,
 } from "./dom";
-import {
-  divide,
-  next as nextPeriod,
-  period,
-  previous as previousPeriod,
-  range,
-  toLocaleString,
-} from "@aleksejdix/minuta";
 
 const DAYS_BY_HAND = 30;
 const MONTHS = 12;
 const SHOWN_PIECES = 12;
 const FIRST = 0;
 const ONE = 1;
+
+// The main entry's units, for the unit the explorer picks
+const time = withUnits(createUnits());
 
 const SMALLER: ReadonlyMap<Unit, readonly Unit[]> = new Map<Unit, Unit[]>([
   ["day", ["hour"]],
@@ -72,9 +77,9 @@ function showProblem(root: HTMLElement, date: Readonly<Date>): void {
 }
 
 function showAnswer(root: HTMLElement, date: PlainDate): void {
-  const month = nextPeriod(period(date, "month"));
+  const nextMonth = nextPeriod(month(date));
   part(root, "next-month", HTMLElement).textContent = toLocaleString(
-    range(month.start, month.end),
+    period(nextMonth.start, nextMonth.end),
     "en-US",
     { day: "numeric", month: "short", weekday: "short", year: "numeric" }
   );
@@ -108,7 +113,7 @@ function fillSubUnits(root: HTMLElement, unit: Unit): void {
 
 // The explorer's period, stepped with the buttons
 function mountExplorer(root: HTMLElement): (date: PlainDate) => void {
-  let current: Period = period(now(), "month");
+  let current: Period = month(now());
   part(root, "previous", HTMLButtonElement).addEventListener("click", () => {
     current = previousPeriod(current);
     showPeriod(root, current);
@@ -123,7 +128,7 @@ function mountExplorer(root: HTMLElement): (date: PlainDate) => void {
   return (date) => {
     const unit = unitNamed(part(root, "unit", HTMLSelectElement).value);
     fillSubUnits(root, unit);
-    current = period(date, unit);
+    current = time[unit](date);
     showPeriod(root, current);
   };
 }

@@ -4,13 +4,13 @@ description: Check whether two periods share any time, for example to find clash
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { period, range } from "@aleksejdix/minuta";
+import { month, period, week } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const booking = range(plainDate("2026-03-01"), plainDate("2026-03-10"));
-export const other = range(plainDate("2026-03-05"), plainDate("2026-03-20"));
-export const march = period(plainDate("2026-03-01"), "month");
-export const april = period(plainDate("2026-04-01"), "month");
+export const booking = period(plainDate("2026-03-01"), plainDate("2026-03-10"));
+export const other = period(plainDate("2026-03-05"), plainDate("2026-03-20"));
+export const march = month(plainDate("2026-03-01"));
+export const april = month(plainDate("2026-04-01"));
 
 Check whether two periods share any time, for example two bookings that
 clash.
@@ -26,13 +26,13 @@ overlaps(first, second);
 ## Example
 
 ```ts
-import { overlaps, range } from "@aleksejdix/minuta";
+import { overlaps, period } from "@aleksejdix/minuta";
 
-const booking = range(
+const booking = period(
   Temporal.PlainDate.from("2026-03-01"),
   Temporal.PlainDate.from("2026-03-10")
 );
-const other = range(
+const other = period(
   Temporal.PlainDate.from("2026-03-05"),
   Temporal.PlainDate.from("2026-03-20")
 );
@@ -66,15 +66,15 @@ one period is _completely_ inside another, use [`contains`](../contains/).
 
 ## Neighbours do not overlap
 
-A period's `end` is not part of it. Periods from [`period`](../period/),
+A period's `end` is not part of it. Periods from [`month`](../month/),
 [`next`](../next/) and [`divide`](../divide/) end exactly where the next one
 starts, so neighbors touch but never overlap:
 
 ```ts
-import { overlaps, period } from "@aleksejdix/minuta";
+import { month, overlaps } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
-const april = period(Temporal.PlainDate.from("2026-04-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
+const april = month(Temporal.PlainDate.from("2026-04-01"));
 
 overlaps(march, april); // → false
 ```
@@ -82,7 +82,7 @@ overlaps(march, april); // → false
 A period that crosses the border does overlap both sides:
 
 ```ts
-overlaps(period(Temporal.PlainDate.from("2026-03-31"), "week"), april);
+overlaps(week(Temporal.PlainDate.from("2026-03-31")), april);
 // → true, the week Mon Mar 30 – Sun Apr 5
 ```
 
@@ -92,23 +92,24 @@ overlaps(period(Temporal.PlainDate.from("2026-03-31"), "week"), april);
     { label: "march", periods: [march], tone: "ink" },
     { label: "april", periods: [april], tone: "ink" },
     {
-      label: 'period(Mar 31, "week")',
-      periods: [period(plainDate("2026-03-31"), "week")],
+      label: "week(Mar 31)",
+      periods: [week(plainDate("2026-03-31"))],
       tone: "accent",
     },
   ]}
 />
 
-## Touching ranges do not overlap
+## Touching periods do not overlap
 
-The same holds for any [`range`](../range/). A range from 9:00 to 10:00 stops
-right before 10:00, so it does not clash with a range from 10:00 to 11:00:
+The same holds for any custom [`period`](../period/). A period from 9:00 to
+10:00 stops right before 10:00, so it does not clash with one from 10:00 to
+11:00:
 
 ```ts
 const at = (time) =>
   Temporal.ZonedDateTime.from(`2026-03-02T${time}[Europe/Zurich]`);
 
-overlaps(range(at("09:00"), at("10:00")), range(at("10:00"), at("11:00")));
+overlaps(period(at("09:00"), at("10:00")), period(at("10:00"), at("11:00")));
 // → false
 ```
 
@@ -127,5 +128,5 @@ runs from its start to the start of Mar 19.
 ## Related
 
 - [`contains`](../contains/) — is one period completely inside the other?
-- [`range`](../range/) — make the periods to compare.
+- [`period`](../period/) — make the periods to compare.
 - [`compare`](../compare/) — order two periods by start and end.

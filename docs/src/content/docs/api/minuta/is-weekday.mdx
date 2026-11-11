@@ -8,17 +8,18 @@ import {
   createUnits,
   divide,
   isWeekday,
+  month,
   period,
-  range,
+  week,
   withUnits,
 } from "@aleksejdix/minuta";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-01"), "month");
+export const march = month(plainDate("2026-03-01"));
 export const days = divide(march, "day");
-export const week = period(plainDate("2026-03-18"), "week");
-export const iso = (day) => day.start.toString();
+export const thisWeek = week(plainDate("2026-03-18"));
+export const iso = (piece) => piece.start.toString();
 export const fridayOff = withUnits(
   createUnits({ weekend: ["friday", "saturday"] })
 );
@@ -38,14 +39,14 @@ isWeekday(period);
 ## Example
 
 ```ts
-import { divide, isWeekday, period } from "@aleksejdix/minuta";
+import { day, divide, isWeekday, month } from "@aleksejdix/minuta";
 
-isWeekday(period(Temporal.PlainDate.from("2026-03-18"), "day")); // → true  (a Wednesday)
-isWeekday(period(Temporal.PlainDate.from("2026-03-21"), "day")); // → false (a Saturday)
+isWeekday(day(Temporal.PlainDate.from("2026-03-18"))); // → true  (a Wednesday)
+isWeekday(day(Temporal.PlainDate.from("2026-03-21"))); // → false (a Saturday)
 
 // The working days of March 2026
-divide(period(Temporal.PlainDate.from("2026-03-01"), "month"), "day").filter(
-  (day) => isWeekday(day)
+divide(month(Temporal.PlainDate.from("2026-03-01")), "day").filter((piece) =>
+  isWeekday(piece)
 ).length;
 // → 22
 ```
@@ -76,12 +77,12 @@ locale (`createUnits({ locale: "ar-EG" })`), and take `isWeekday` from
 [`withUnits`](../with-units/). Then Sunday is a working day:
 
 ```ts
-import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+import { createUnits, day, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ weekend: ["friday", "saturday"] }));
 
-time.isWeekday(period(Temporal.PlainDate.from("2026-03-22"), "day")); // → true  (a Sunday)
-time.isWeekday(period(Temporal.PlainDate.from("2026-03-20"), "day")); // → false (a Friday)
+time.isWeekday(day(Temporal.PlainDate.from("2026-03-22"))); // → true  (a Sunday)
+time.isWeekday(day(Temporal.PlainDate.from("2026-03-20"))); // → false (a Friday)
 ```
 
 The working days of March 2026 with both settings. With Friday and Saturday
@@ -112,19 +113,19 @@ working day for `isWeekday`.
 Every day the period touches counts, even partly:
 
 ```ts
-import { isWeekday, period, range } from "@aleksejdix/minuta";
+import { isWeekday, month, period, week } from "@aleksejdix/minuta";
 
 // Mon Mar 16 – Fri Mar 20 (the end, Sat Mar 21, is excluded)
 isWeekday(
-  range(
+  period(
     Temporal.PlainDate.from("2026-03-16"),
     Temporal.PlainDate.from("2026-03-21")
   )
 );
 // → true
 
-isWeekday(period(Temporal.PlainDate.from("2026-03-18"), "week")); // → false (has Sat and Sun)
-isWeekday(period(Temporal.PlainDate.from("2026-03-01"), "month")); // → false
+isWeekday(week(Temporal.PlainDate.from("2026-03-18"))); // → false (has Sat and Sun)
+isWeekday(month(Temporal.PlainDate.from("2026-03-01"))); // → false
 ```
 
 <Timeline
@@ -132,15 +133,15 @@ isWeekday(period(Temporal.PlainDate.from("2026-03-01"), "month")); // → false
   tracks={[
     {
       label: "working days",
-      periods: divide(week, "day").filter((day) => isWeekday(day)),
+      periods: divide(thisWeek, "day").filter((day) => isWeekday(day)),
       tone: "muted",
     },
     {
       label: "Mon – Fri: true",
-      periods: [range(plainDate("2026-03-16"), plainDate("2026-03-21"))],
+      periods: [period(plainDate("2026-03-16"), plainDate("2026-03-21"))],
       tone: "accent",
     },
-    { label: "the week: false", periods: [week] },
+    { label: "the week: false", periods: [thisWeek] },
   ]}
 />
 

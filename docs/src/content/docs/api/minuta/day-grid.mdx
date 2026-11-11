@@ -3,7 +3,7 @@ title: dayGrid
 description: Get the real hours of a day — 24 on most days, 23 or 25 when the clocks change — each labelled with its clock hour.
 ---
 
-import { createUnits, range, withUnits } from "@aleksejdix/minuta";
+import { createUnits, period, withUnits } from "@aleksejdix/minuta";
 import { plainDate } from "../../../../components/temporal";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
@@ -12,7 +12,7 @@ export const spring = newYork.dayGrid(plainDate("2024-03-10"));
 export const autumn = newYork.dayGrid(plainDate("2024-11-03"));
 export const fullDay = (grid) =>
   newYork.divide(
-    range(grid.periods[0].start, grid.periods[0].start.add({ hours: 24 })),
+    period(grid.periods[0].start, grid.periods[0].start.add({ hours: 24 })),
     "hour"
   );
 

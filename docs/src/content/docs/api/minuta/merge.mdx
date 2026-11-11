@@ -8,27 +8,27 @@ import {
   createUnits,
   divide,
   merge,
+  month,
   period,
-  range,
   withUnits,
 } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const sunday = withUnits(createUnits({ weekStartsOn: "sunday" }));
-export const jan = period(plainDate("2026-01-01"), "month");
-export const mar = period(plainDate("2026-03-01"), "month");
+export const jan = month(plainDate("2026-01-01"));
+export const mar = month(plainDate("2026-03-01"));
 export const meetings = [
-  range(
+  period(
     zonedDateTime("2026-01-01T09:00[Europe/Zurich]"),
     zonedDateTime("2026-01-01T11:00[Europe/Zurich]")
   ),
-  range(
+  period(
     zonedDateTime("2026-01-01T10:00[Europe/Zurich]"),
     zonedDateTime("2026-01-01T12:00[Europe/Zurich]")
   ),
 ];
 export const days7 = divide(
-  range(plainDate("2026-03-16"), plainDate("2026-03-23")),
+  period(plainDate("2026-03-16"), plainDate("2026-03-23")),
   "day"
 );
 
@@ -47,12 +47,9 @@ merge(periods, unit?)
 ## Example
 
 ```ts
-import { divide, merge, period } from "@aleksejdix/minuta";
+import { divide, merge, month } from "@aleksejdix/minuta";
 
-const days = divide(
-  period(Temporal.PlainDate.from("2026-03-01"), "month"),
-  "day"
-); // the 31 days of March
+const days = divide(month(Temporal.PlainDate.from("2026-03-01")), "day"); // the 31 days of March
 
 merge(days, "month");
 // → { start: 2026-03-01, end: 2026-04-01, unit: "month" }
@@ -85,8 +82,8 @@ the first start to the last end, so anything in between is included:
 
 ```ts
 merge([
-  period(Temporal.PlainDate.from("2026-01-01"), "month"),
-  period(Temporal.PlainDate.from("2026-03-01"), "month"),
+  month(Temporal.PlainDate.from("2026-01-01")),
+  month(Temporal.PlainDate.from("2026-03-01")),
 ]);
 // → { start: 2026-01-01, end: 2026-04-01, unit: "custom" } (February is included)
 ```
@@ -107,14 +104,14 @@ The same goes for overlapping periods: they become one period with no
 double counting.
 
 ```ts
-import { range } from "@aleksejdix/minuta";
+import { merge, period } from "@aleksejdix/minuta";
 
 merge([
-  range(
+  period(
     Temporal.ZonedDateTime.from("2026-01-01T09:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-01-01T11:00[Europe/Zurich]")
   ),
-  range(
+  period(
     Temporal.ZonedDateTime.from("2026-01-01T10:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-01-01T12:00[Europe/Zurich]")
   ),
@@ -144,10 +141,10 @@ group.
 The unit is checked, not guessed from the input:
 
 ```ts
-const jan = period(Temporal.PlainDate.from("2026-01-01"), "month");
-const feb = period(Temporal.PlainDate.from("2026-02-01"), "month");
-const mar = period(Temporal.PlainDate.from("2026-03-01"), "month");
-const mar3 = period(Temporal.PlainDate.from("2026-03-03"), "day");
+const jan = month(Temporal.PlainDate.from("2026-01-01"));
+const feb = month(Temporal.PlainDate.from("2026-02-01"));
+const mar = month(Temporal.PlainDate.from("2026-03-01"));
+const mar3 = day(Temporal.PlainDate.from("2026-03-03"));
 
 merge([jan, feb]); // → 2026-01-01 – 2026-03-01, "custom" (two months are not a month)
 merge([jan, feb], "quarter"); // → "custom" (only part of a quarter)
@@ -160,11 +157,11 @@ merge([mar3], "week"); // → 2026-03-03 – 2026-03-04, "custom"
 Two halves of a custom split come back as the month:
 
 ```ts
-const firstHalf = range(
+const firstHalf = period(
   Temporal.PlainDate.from("2026-01-01"),
   Temporal.PlainDate.from("2026-01-16")
 );
-const secondHalf = range(
+const secondHalf = period(
   Temporal.PlainDate.from("2026-01-16"),
   Temporal.PlainDate.from("2026-02-01")
 );
@@ -181,7 +178,7 @@ Mar 16 to Sun Mar 22 2026:
 
 ```ts
 const days7 = divide(
-  range(
+  period(
     Temporal.PlainDate.from("2026-03-16"),
     Temporal.PlainDate.from("2026-03-23")
   ),
@@ -217,6 +214,6 @@ units have no spec for the unit it has to check, and a `TypeError` when
 
 ## Related
 
-- [`split`](../split/) — the opposite: cut one period in two.
+- [`divide`](../divide/) — the opposite: cut one period into smaller ones.
 - [`clamp`](../clamp/) — keep only the overlap of two periods.
 - [`divide`](../divide/) — split a period into units.

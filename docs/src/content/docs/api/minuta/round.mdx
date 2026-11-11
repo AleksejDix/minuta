@@ -4,11 +4,11 @@ description: Round a date or moment to a neat boundary — the nearest quarter h
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { divide, period, round } from "@aleksejdix/minuta";
+import { divide, hour, month, round } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const date = zonedDateTime("2026-03-15T10:37[Europe/Zurich]");
-export const march = period(plainDate("2026-03-01"), "month");
+export const march = month(plainDate("2026-03-01"));
 
 Round a date or a moment to a neat boundary: the nearest quarter hour, the
 next midnight, the start of the week. It takes the options of Temporal's
@@ -64,7 +64,7 @@ round(Temporal.PlainDate.from("2026-03-18"), {
   tracks={[
     {
       label: "roundingIncrement: 15",
-      periods: divide(period(date, "hour"), "minute", { step: 15 }),
+      periods: divide(hour(date), "minute", { step: 15 }),
       tone: "muted",
     },
   ]}
@@ -299,6 +299,5 @@ round(Temporal.PlainDate.from("2026-03-18"), "hour");
 
 ## Related
 
-- [`period`](../period/) — the whole unit around a date, start and end.
-- [`move`](../move/) — move a period to the rounded date.
-- [`resize`](../resize/) — move an edge to the rounded date.
+- [`day`](../day/), [`hour`](../hour/) … — the whole unit around a date, start and end.
+- [`period`](../period/) — a period from or to the rounded date.

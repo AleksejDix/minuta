@@ -24,11 +24,11 @@ Await it once, before anything renders:
 
 ```ts
 import { temporalReady } from "@aleksejdix/minuta/temporal";
-import { period } from "@aleksejdix/minuta";
+import { month } from "@aleksejdix/minuta";
 
 await temporalReady();
 
-period(Temporal.PlainDate.from("2026-03-18"), "month");
+month(Temporal.PlainDate.from("2026-03-18"));
 ```
 
 ## What happens
@@ -51,7 +51,7 @@ period(Temporal.PlainDate.from("2026-03-18"), "month");
       text: "Safari, Node 24: loads the polyfill chunk and sets globalThis.Temporal.",
     },
     {
-      code: 'period(date, "month")',
+      code: "month(date)",
       layer: "minuta",
       text: "Reads globalThis.Temporal each time it computes.",
     },

@@ -4,10 +4,10 @@ description: A Vue component that shows the browsed month between "previous mont
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { next, period, previous } from "@aleksejdix/minuta";
+import { month, next, previous } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2024-03-13"), "month");
+export const march = month(plainDate("2024-03-13"));
 
 A component that shows the name of the browsed month between a "previous
 month" and a "next month" button.

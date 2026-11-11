@@ -1,0 +1,78 @@
+---
+title: quarter
+description: Get the quarter of the year that a date or a moment falls in — three months, Q2 from April 1 up to July 1.
+---
+
+import { plainDate } from "../../../../components/temporal";
+import { divide, quarter, year } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = plainDate("2026-05-15");
+export const q2 = quarter(date);
+
+Get the quarter of the year that a date or a moment falls in: three months,
+Q1 from January, Q2 from April, Q3 from July, Q4 from October.
+
+```ts
+import { quarter } from "@aleksejdix/minuta";
+```
+
+```ts
+quarter(value);
+```
+
+## Example
+
+```ts
+import { quarter } from "@aleksejdix/minuta";
+
+quarter(Temporal.PlainDate.from("2026-05-15"));
+// → { start: 2026-04-01, end: 2026-07-01, unit: "quarter" }: Q2, April to June
+```
+
+<Timeline
+  caption="May 15 falls in the second quarter: April, May and June. The end, Jul 1, is where Q3 starts."
+  marks={[{ date, label: "May 15" }]}
+  tracks={[
+    {
+      label: 'divide(year, "quarter")',
+      periods: divide(year(date), "quarter"),
+      tone: "muted",
+    },
+    { label: "quarter(date)", periods: [q2], tone: "accent" },
+  ]}
+/>
+
+## Parameters
+
+| Name    | What it is                                                      |
+| ------- | --------------------------------------------------------------- |
+| `value` | A `PlainDate` or a `ZonedDateTime` anywhere inside the quarter. |
+
+## Returns
+
+A `DatePeriod` with the unit `"quarter"`: `start` is the first day of the
+quarter's first month, `end` the first day of the next quarter. The end is
+excluded.
+
+[`toLocaleString`](../to-locale-string/) names a quarter by the month it
+starts in, "Apr 2026"; format `period(q2.start, q2.end)` to show both ends.
+
+## Other calendars
+
+In every calendar, a year has four quarters of three months. In a year
+with 13 months, the extra month joins a quarter: in a Hebrew leap year,
+Adar I joins the second quarter, which then runs from Tevet to Adar II.
+See [Quarters in years with 13 months](../../../concepts/calendar-systems/#quarters-in-years-with-13-months).
+
+## Errors
+
+The main entry's `quarter` does not throw for a date or a moment. From
+[`withUnits`](../with-units/), units without a `quarter` spec give
+`UNIT_NOT_SUPPORTED`.
+
+## Related
+
+- [`year`](../year/) and [`month`](../month/) — the units around and inside a quarter.
+- [`divide`](../divide/) — a year into its quarters, a quarter into months.
+- [`period`](../period/) — a period between any two dates or moments.

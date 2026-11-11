@@ -4,11 +4,11 @@ description: A React component that runs useMinuta once and shares the result wi
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { next, period } from "@aleksejdix/minuta";
+import { month, next, year } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const december = period(plainDate("2026-12-01"), "month");
+export const december = month(plainDate("2026-12-01"));
 export const january = next(december);
 
 A component that runs [`useMinuta`](../use-minuta/) once and shares the
@@ -88,12 +88,12 @@ root, so the click in one re-renders the other:
     { label: "browsing after Next", periods: [january], tone: "accent" },
     {
       label: 'usePeriod("year") before',
-      periods: [period(december.start, "year")],
+      periods: [year(december.start)],
       tone: "muted",
     },
     {
       label: 'usePeriod("year") after',
-      periods: [period(january.start, "year")],
+      periods: [year(january.start)],
       tone: "accent",
     },
   ]}

@@ -79,7 +79,7 @@ function showProblem(
 function show(root: HTMLElement): void {
   const timeZone = part(root, "zone", HTMLSelectElement).value;
   const time = withUnits(createUnits({ timeZone }));
-  const day = time.period(dateOf(part(root, "date", HTMLInputElement)), "day");
+  const day = time.day(dateOf(part(root, "date", HTMLInputElement)));
   const hours = time.count(day, "hour");
   // The day as moments in the zone: from its start to the next day's
   const start = day.start.toZonedDateTime({ timeZone });

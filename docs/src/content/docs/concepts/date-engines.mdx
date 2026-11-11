@@ -11,7 +11,7 @@ import Timeline from "../../../components/diagrams/Timeline.astro";
 
 export const weeksOfMarch = (units) => {
   const time = withUnits(units);
-  return time.divide(time.period(plainDate("2026-03-01"), "month"), "week");
+  return time.divide(time.month(plainDate("2026-03-01")), "week");
 };
 
 minuta does not hard-code what a week or a month is. It asks the **units**:
@@ -105,9 +105,9 @@ The main entry, [`minuta`](../../api/minuta/overview/), has
 is nothing to set up:
 
 ```ts
-import { period } from "@aleksejdix/minuta";
+import { week } from "@aleksejdix/minuta";
 
-period(Temporal.PlainDate.from("2026-03-18"), "week");
+week(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-16, end: 2026-03-23, unit: "week" }
 ```
 
@@ -117,14 +117,15 @@ Use it when Monday weeks and the runtime's zone are what you need.
 
 [`withUnits`](../../api/minuta/with-units/) binds every function to your
 units at once. You get an object with the same names as the main entry:
-`period`, `divide`, `round`, `monthGrid`, `isWeekend` and all the others.
+`month`, `week`, `divide`, `round`, `monthGrid`, `isWeekend` and all the
+others.
 
 ```ts
 import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 
-time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+time.week(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-15, end: 2026-03-22, unit: "week" }
 
 time.monthGrid(Temporal.PlainDate.from("2026-03-18")).periods[0].start;
@@ -140,10 +141,10 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 const { day, month } = createUnits();
 const time = withUnits({ day, month });
 
-time.next(time.period(Temporal.PlainDate.from("2026-03-18"), "month"));
+time.next(time.month(Temporal.PlainDate.from("2026-03-18")));
 // → { start: 2026-04-01, end: 2026-05-01, unit: "month" }
 
-time.period(Temporal.PlainDate.from("2026-03-18"), "week");
+time.week(Temporal.PlainDate.from("2026-03-18"));
 // RangeError: UNIT_NOT_SUPPORTED: no "week" spec in the units passed (available: day, month). …
 ```
 
@@ -158,7 +159,7 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 
 const newYork = withUnits(createUnits({ timeZone: "America/New_York" }));
 
-const day = newYork.period(Temporal.PlainDate.from("2026-03-08"), "day");
+const day = newYork.day(Temporal.PlainDate.from("2026-03-08"));
 // → { start: 2026-03-08, end: 2026-03-09, unit: "day" }
 
 newYork.count(day, "hour"); // → 23, the clocks go forward in New York that day
@@ -197,14 +198,14 @@ const fortnight: DateSpec = {
 
 const time = withUnits({ ...base, fortnight });
 
-const sprint = time.period(Temporal.PlainDate.from("2026-03-18"), "fortnight");
+const sprint = time.fortnight(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-16, end: 2026-03-30, unit: "fortnight" }
 
 time.next(sprint).start; // → 2026-03-30
 ```
 
 In TypeScript, add the name and its kind to `UnitRegistry`, so
-`"fortnight"` is accepted as a unit:
+`"fortnight"` is accepted as a unit and `time.fortnight` is typed:
 
 ```ts
 declare module "@aleksejdix/minuta" {

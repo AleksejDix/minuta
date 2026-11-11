@@ -4,11 +4,11 @@ description: Split a period into smaller periods — a month into days, a day in
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { divide, period, range } from "@aleksejdix/minuta";
+import { divide, month, period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-01"), "month");
-export const late = range(
+export const march = month(plainDate("2026-03-01"));
+export const late = period(
   zonedDateTime("2026-03-01T09:07[Europe/Zurich]"),
   zonedDateTime("2026-03-01T10:00[Europe/Zurich]")
 );
@@ -27,9 +27,9 @@ divide(period, unit, options?)
 ## Example
 
 ```ts
-import { divide, period } from "@aleksejdix/minuta";
+import { divide, month } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
 
 divide(march, "day");
 // → 31 periods: Mar 1, Mar 2, … Mar 31
@@ -39,7 +39,7 @@ divide(march, "day");
 
 | Name      | What it is                                                        |
 | --------- | ----------------------------------------------------------------- |
-| `period`  | The period to split, e.g. a month from `period()`.                |
+| `period`  | The period to split, e.g. a month from `month()`.                 |
 | `unit`    | The size of each piece: `"day"`, `"hour"`, `"week"`, …            |
 | `options` | Optional. `step` and `maxPeriods`, see [Options](#options) below. |
 
@@ -54,7 +54,7 @@ in the units' time zone, the runtime's by default. So a day the clocks change
 on has 23 or 25 hours:
 
 ```ts
-divide(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour").length;
+divide(day(Temporal.PlainDate.from("2026-03-29")), "hour").length;
 // → 23 in Europe/Zurich
 ```
 
@@ -71,9 +71,8 @@ made from a `ZonedDateTime` is a date, so it uses the units' zone.
 | `maxPeriods` | `100_000` | A safety limit. `divide` throws instead of creating more pieces than this.             |
 
 ```ts
-const nine = period(
-  Temporal.ZonedDateTime.from("2026-03-01T09:00[Europe/Zurich]"),
-  "hour"
+const nine = hour(
+  Temporal.ZonedDateTime.from("2026-03-01T09:00[Europe/Zurich]")
 );
 
 divide(nine, "minute", { step: 15 });
@@ -87,7 +86,7 @@ unit), not at round clock times:
 
 ```ts
 divide(
-  range(
+  period(
     Temporal.ZonedDateTime.from("2026-03-01T09:07[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-01T10:00[Europe/Zurich]")
   ),
@@ -98,9 +97,9 @@ divide(
 ```
 
 <Timeline
-  caption="15-minute steps from 9:07: the pieces start at the range's start, not at 9:00 or 9:15. The last one is cut at 10:00."
+  caption="15-minute steps from 9:07: the pieces start at the period's start, not at 9:00 or 9:15. The last one is cut at 10:00."
   tracks={[
-    { label: "range(9:07, 10:00)", periods: [late], tone: "muted" },
+    { label: "period(9:07, 10:00)", periods: [late], tone: "muted" },
     {
       label: "{ step: 15 }",
       periods: divide(late, "minute", { step: 15 }),
@@ -117,8 +116,8 @@ Hours are real elapsed hours, so a day with a clock change has fewer or more
 of them. In Europe/Zurich:
 
 ```ts
-divide(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour").length; // → 23
-divide(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour").length; // → 25
+divide(day(Temporal.PlainDate.from("2026-03-29")), "hour").length; // → 23
+divide(day(Temporal.PlainDate.from("2026-10-25")), "hour").length; // → 25
 ```
 
 On Oct 25 the hour from 2:00 to 3:00 comes twice, once in summer time and
@@ -170,7 +169,7 @@ Weeks start on Monday here. To start them on Sunday, take `divide` from
 | `INVALID_OPTION`   | `step` or `maxPeriods` is not a positive whole number.          |
 
 ```ts
-divide(period(Temporal.PlainDate.from("2026-01-01"), "year"), "second");
+divide(year(Temporal.PlainDate.from("2026-01-01")), "second");
 // RangeError: TOO_MANY_PERIODS: divide() generated over 100000 periods. …
 
 divide(march, "day", { step: 1.5 });
@@ -179,7 +178,7 @@ divide(march, "day", { step: 1.5 });
 
 ## Related
 
-- [`period`](../period/) — create the period to divide.
+- [`month`](../month/), [`period`](../period/) … — create the period to divide.
 - [`count`](../count/) — count the units without creating them.
 - [`withUnits`](../with-units/) — the same, with your own week start, time zone or calendar.
 - [`monthGrid`](../month-grid/) — a month as a calendar grid of weeks.

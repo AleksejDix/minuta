@@ -4,10 +4,10 @@ description: A Vue composable that returns the year, week, day or other period t
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { period } from "@aleksejdix/minuta";
+import { day, month, week, year } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const browsing = period(plainDate("2024-03-13"), "month");
+export const browsing = month(plainDate("2024-03-13"));
 
 A composable that returns, as a computed ref, the period of a given unit — a
 year, a week, a day, … — that contains the start of the browsed period of the
@@ -60,12 +60,12 @@ a Friday, and its week starts on the Monday before.
     { label: "browsing", periods: [browsing], tone: "ink" },
     {
       label: 'usePeriod("week")',
-      periods: [period(browsing.start, "week")],
+      periods: [week(browsing.start)],
       tone: "accent",
     },
     {
       label: 'usePeriod("day")',
-      periods: [period(browsing.start, "day")],
+      periods: [day(browsing.start)],
       tone: "accent",
     },
   ]}
@@ -76,7 +76,7 @@ a Friday, and its week starts on the Monday before.
   tracks={[
     {
       label: 'usePeriod("year")',
-      periods: [period(browsing.start, "year")],
+      periods: [year(browsing.start)],
       tone: "accent",
     },
     { label: "browsing", periods: [browsing], tone: "ink" },
@@ -104,12 +104,12 @@ unit.value = "day"; // current now holds the day
   tracks={[
     {
       label: 'current, unit "week"',
-      periods: [period(browsing.start, "week")],
+      periods: [week(browsing.start)],
       tone: "muted",
     },
     {
       label: 'current, unit "day"',
-      periods: [period(browsing.start, "day")],
+      periods: [day(browsing.start)],
       tone: "accent",
     },
   ]}

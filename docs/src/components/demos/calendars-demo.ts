@@ -5,7 +5,7 @@
 import type { DatePeriod, Minuta, PlainDate } from "@aleksejdix/minuta";
 import {
   createUnits,
-  range,
+  period,
   toLocaleString,
   withUnits,
 } from "@aleksejdix/minuta";
@@ -88,7 +88,7 @@ function quarterLines(quarters: readonly DatePeriod[]): string[] {
     const { months } = quarter.start.until(quarter.end, {
       largestUnit: "month",
     });
-    return `${toLocaleString(range(quarter.start, quarter.end), ENGLISH, { month: "long", year: "numeric" })} (${String(months)} months)`;
+    return `${toLocaleString(period(quarter.start, quarter.end), ENGLISH, { month: "long", year: "numeric" })} (${String(months)} months)`;
   });
 }
 
@@ -107,8 +107,8 @@ function showLabels(
 function showResult(root: HTMLElement, calendar: string): void {
   const time = withUnits(createUnits({ calendar }));
   const date = dateOf(root);
-  const month = time.period(date, "month");
-  const year = time.period(date, "year");
+  const month = time.month(date);
+  const year = time.year(date);
   showLabels(root, month, calendar);
   renderGrid(part(root, "grid", HTMLElement), time, date);
   part(root, "facts", HTMLElement).textContent =
@@ -122,11 +122,11 @@ function showResult(root: HTMLElement, calendar: string): void {
 // What a Date grid shows: the Gregorian month, numbered from 0
 function showNaive(root: HTMLElement, calendar: string): void {
   const date = dateOf(root);
-  const gregorian = withUnits(createUnits()).period(date, "month");
+  const gregorian = withUnits(createUnits()).month(date);
   part(root, "naive", HTMLElement).textContent =
     `new Date(${String(date.year)}, ${String(date.month - ONE)}, ${String(date.day)}).getMonth()  → ${String(date.month - ONE)} (${toLocaleString(gregorian, ENGLISH)})`;
   part(root, "code", HTMLElement).textContent =
-    `withUnits(createUnits({ calendar: "${calendar}" })).period(date, "month")`;
+    `withUnits(createUnits({ calendar: "${calendar}" })).month(date)`;
 }
 
 function show(root: HTMLElement): void {

@@ -4,15 +4,15 @@ description: Count how many whole units fit into a period — the hours in a day
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { divide, period, range } from "@aleksejdix/minuta";
+import { day, divide, month, period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const february = period(plainDate("2026-02-01"), "month");
-export const meeting = range(
+export const february = month(plainDate("2026-02-01"));
+export const meeting = period(
   zonedDateTime("2026-03-01T09:00[Europe/Zurich]"),
   zonedDateTime("2026-03-01T10:30[Europe/Zurich]")
 );
-export const overnight = range(
+export const overnight = period(
   zonedDateTime("2026-03-15T14:00[Europe/Zurich]"),
   zonedDateTime("2026-03-16T13:00[Europe/Zurich]")
 );
@@ -31,12 +31,12 @@ count(period, unit);
 ## Example
 
 ```ts
-import { count, period } from "@aleksejdix/minuta";
+import { count, day, month } from "@aleksejdix/minuta";
 
-count(period(Temporal.PlainDate.from("2026-02-01"), "month"), "day");
+count(month(Temporal.PlainDate.from("2026-02-01")), "day");
 // → 28
 
-count(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour");
+count(day(Temporal.PlainDate.from("2026-10-08")), "hour");
 // → 24
 ```
 
@@ -56,7 +56,7 @@ count(period(Temporal.PlainDate.from("2026-10-08"), "day"), "hour");
 
 | Name     | What it is                                               |
 | -------- | -------------------------------------------------------- |
-| `period` | The period to measure, e.g. a month from `period()`.     |
+| `period` | The period to measure, e.g. a month from `month()`.      |
 | `unit`   | What to count: `"day"`, `"hour"`, `"week"`, `"month"`, … |
 
 ## Returns
@@ -65,14 +65,14 @@ A whole number: how many complete `unit`s fit from the start of `period` to
 its end. Units that only partly fit are not counted.
 
 ```ts
-import { count, period, range } from "@aleksejdix/minuta";
+import { count, month, period } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
 
 count(march, "week"); // → 4  (31 days)
 count(march, "year"); // → 0
 
-const meeting = range(
+const meeting = period(
   Temporal.ZonedDateTime.from("2026-03-01T09:00[Europe/Zurich]"),
   Temporal.ZonedDateTime.from("2026-03-01T10:30[Europe/Zurich]")
 );
@@ -101,9 +101,9 @@ is not always 365 days. A day counted in hours becomes moments in the units'
 time zone first (the runtime's by default). In Europe/Zurich:
 
 ```ts
-count(period(Temporal.PlainDate.from("2026-03-29"), "day"), "hour"); // → 23 (clocks go forward)
-count(period(Temporal.PlainDate.from("2026-10-25"), "day"), "hour"); // → 25 (clocks go back)
-count(period(Temporal.PlainDate.from("2028-01-01"), "year"), "day"); // → 366 (leap year)
+count(day(Temporal.PlainDate.from("2026-03-29")), "hour"); // → 23 (clocks go forward)
+count(day(Temporal.PlainDate.from("2026-10-25")), "hour"); // → 25 (clocks go back)
+count(year(Temporal.PlainDate.from("2028-01-01")), "day"); // → 366 (leap year)
 ```
 
 `count` gives a number. For the elapsed time as a `Temporal.Duration`, use
@@ -116,11 +116,11 @@ counted in hours becomes moments in the units' `timeZone`. For a fixed zone,
 count with the functions of [`withUnits`](../with-units/):
 
 ```ts
-import { createUnits, period, withUnits } from "@aleksejdix/minuta";
+import { createUnits, day, withUnits } from "@aleksejdix/minuta";
 
 const newYork = withUnits(createUnits({ timeZone: "America/New_York" }));
 
-newYork.count(period(Temporal.PlainDate.from("2026-03-08"), "day"), "hour");
+newYork.count(day(Temporal.PlainDate.from("2026-03-08")), "hour");
 // → 23, the clocks go forward in New York on Mar 8 2026
 ```
 
@@ -132,7 +132,7 @@ whole days:
 
 ```ts
 count(
-  range(
+  period(
     Temporal.ZonedDateTime.from("2026-03-15T14:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-16T13:00[Europe/Zurich]")
   ),
@@ -146,13 +146,10 @@ count(
   tracks={[
     {
       label: "days",
-      periods: [
-        period(plainDate("2026-03-15"), "day"),
-        period(plainDate("2026-03-16"), "day"),
-      ],
+      periods: [day(plainDate("2026-03-15")), day(plainDate("2026-03-16"))],
       tone: "muted",
     },
-    { label: "range(14:00, 13:00)", periods: [overnight], tone: "accent" },
+    { label: "period(14:00, 13:00)", periods: [overnight], tone: "accent" },
   ]}
 />
 
@@ -161,7 +158,7 @@ day is cut to the shorter month), so this period already holds one month:
 
 ```ts
 count(
-  range(
+  period(
     Temporal.PlainDate.from("2026-01-31"),
     Temporal.PlainDate.from("2026-02-28")
   ),
@@ -173,16 +170,16 @@ count(
 ## The end is excluded
 
 The period's `end` is where it stops, so `count` measures up to `end`
-itself. A whole day counts as one day. A [`range`](../range/) that ends on
+itself. A whole day counts as one day. A [`period`](../period/) that ends on
 Mar 31 stops where Mar 31 begins:
 
 ```ts
 const jan1 = Temporal.PlainDate.from("2026-01-01");
 
-count(range(jan1, Temporal.PlainDate.from("2026-03-31")), "day");
+count(period(jan1, Temporal.PlainDate.from("2026-03-31")), "day");
 // → 89, Mar 31 itself is not included
 
-count(range(jan1, Temporal.PlainDate.from("2026-04-01")), "day");
+count(period(jan1, Temporal.PlainDate.from("2026-04-01")), "day");
 // → 90
 ```
 

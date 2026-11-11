@@ -110,26 +110,26 @@ units.value = createUnits({ weekStartsOn: "sunday" }); // weeks now start on Sun
 
 An object with reactive state and every bound function.
 
-| Name       | What it is                                                                                      |
-| ---------- | ----------------------------------------------------------------------------------------------- |
-| `browsing` | Computed ref. The browsed period, in `unit`. Starts as the period containing `date`.            |
-| `browse`   | `browse(period)` moves to the period of `unit` that contains `period.start`.                    |
-| `now`      | Computed ref. "Now" as a one-second period. `now.value.start` is the moment, a `ZonedDateTime`. |
-| `units`    | Computed ref. The units the functions are bound to.                                             |
-| `period`   | `period(value, unit)` — the period of `unit` that contains `value`.                             |
-| `next`     | `next(period)` — the period right after it, same unit.                                          |
-| `previous` | `previous(period)` — the period right before it, same unit.                                     |
-| `shift`    | `shift(period, steps)` — move a period by whole units, back with a negative number.             |
-| `divide`   | `divide(period, unit)` — split a period into smaller ones. See [divide](../../minuta/divide/).  |
-| `count`    | `count(period, unit)` — how many whole units fit into a period.                                 |
-| `contains` | `contains(period, target)` — whether a date, moment or period lies fully inside the period.     |
-| `same`     | `same(a, b, unit)` — whether two periods fall into the same `unit`.                             |
-| `overlaps` | `overlaps(a, b)` — whether two periods share any time.                                          |
-| `range`    | `range(start, end)` — a custom period between two dates or two moments.                         |
+| Name       | What it is                                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `browsing` | Computed ref. The browsed period, in `unit`. Starts as the period containing `date`.                                              |
+| `browse`   | `browse(period)` moves to the period of `unit` that contains `period.start`.                                                      |
+| `now`      | Computed ref. "Now" as a one-second period. `now.value.start` is the moment, a `ZonedDateTime`.                                   |
+| `units`    | Computed ref. The units the functions are bound to.                                                                               |
+| `month` …  | `month(value)`, `week(value)`, … — the period of that unit that contains `value`; `minuta[unit](value)` for a unit in a variable. |
+| `next`     | `next(period)` — the period right after it, same unit.                                                                            |
+| `previous` | `previous(period)` — the period right before it, same unit.                                                                       |
+| `shift`    | `shift(period, steps)` — move a period by whole units, back with a negative number.                                               |
+| `divide`   | `divide(period, unit)` — split a period into smaller ones. See [divide](../../minuta/divide/).                                    |
+| `count`    | `count(period, unit)` — how many whole units fit into a period.                                                                   |
+| `contains` | `contains(period, target)` — whether a date, moment or period lies fully inside the period.                                       |
+| `equals`   | `equals(a, b)` — whether two periods are identical; `equals(minuta.week(a.start), minuta.week(b.start))` for the same week.       |
+| `overlaps` | `overlaps(a, b)` — whether two periods share any time.                                                                            |
+| `period`   | `period(start, end)` — a custom period between two dates or two moments.                                                          |
 
 The functions are those of [`withUnits(units)`](../../minuta/with-units/), with the
 same names as the main entry. The table lists the common ones; `round`,
-`merge`, `equals`, `compare`, `monthGrid`, `isWeekend`, `toLocaleString` and
+`merge`, `compare`, `monthGrid`, `isWeekend`, `toLocaleString` and
 the rest are there too. When the
 units change, `minuta.period`, `minuta.next`, … use the new units. This holds
 for destructured functions too: `const { period } = minuta` keeps following
@@ -140,13 +140,13 @@ the current units.
   marks={[{ date: day, label: "Mar 18" }]}
   tracks={[
     {
-      label: 'period(day, "week"), before the switch',
-      periods: [mondayWeeks.period(day, "week")],
+      label: "week(day), before the switch",
+      periods: [mondayWeeks.week(day)],
       tone: "muted",
     },
     {
-      label: 'period(day, "week"), after the switch',
-      periods: [sundayWeeks.period(day, "week")],
+      label: "week(day), after the switch",
+      periods: [sundayWeeks.week(day)],
       tone: "accent",
     },
   ]}

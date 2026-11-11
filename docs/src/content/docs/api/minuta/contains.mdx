@@ -4,11 +4,11 @@ description: Check whether a date, a moment, or a whole other period lies inside
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { period } from "@aleksejdix/minuta";
+import { month, week } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-01"), "month");
-export const week = period(plainDate("2026-03-31"), "week");
+export const march = month(plainDate("2026-03-01"));
+export const weekOfMar31 = week(plainDate("2026-03-31"));
 
 Check whether a date, a moment, or a whole other period lies inside a period: is this
 appointment in March, is this day in this week.
@@ -24,14 +24,14 @@ contains(period, target);
 ## Example
 
 ```ts
-import { contains, period } from "@aleksejdix/minuta";
+import { contains, day, month } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
 
 contains(march, Temporal.PlainDate.from("2026-03-20"));
 // → true
 
-contains(march, period(Temporal.PlainDate.from("2026-04-01"), "day"));
+contains(march, day(Temporal.PlainDate.from("2026-04-01")));
 // → false, Apr 1 is outside March
 ```
 
@@ -82,30 +82,30 @@ contains(march, Temporal.ZonedDateTime.from("2026-03-31T23:59[Europe/Zurich]"));
 The week from Mon Mar 30 to Sun Apr 5 starts in March but ends in April:
 
 ```ts
-import { contains, overlaps, period } from "@aleksejdix/minuta";
+import { contains, overlaps, week } from "@aleksejdix/minuta";
 
-const week = period(Temporal.PlainDate.from("2026-03-31"), "week");
+const weekOfMar31 = week(Temporal.PlainDate.from("2026-03-31"));
 
-contains(march, week); // → false
-overlaps(march, week); // → true
+contains(march, weekOfMar31); // → false
+overlaps(march, weekOfMar31); // → true
 ```
 
 <Timeline
   caption="The week starts inside March but sticks out into April, so March does not contain it. They do overlap."
   tracks={[
     { label: "march", periods: [march], tone: "ink" },
-    { label: "week", periods: [week], tone: "accent" },
+    { label: "weekOfMar31", periods: [weekOfMar31], tone: "accent" },
   ]}
 />
 
 ## The unit does not matter
 
 `contains` only compares values. It works the same for months, custom
-[`range`](../range/)s and pieces from [`divide`](../divide/), and it needs no
+[`period`](../period/)s and pieces from [`divide`](../divide/), and it needs no
 units.
 
 ## Related
 
 - [`overlaps`](../overlaps/) — do two periods share any time?
-- [`same`](../same/) — are two periods in the same day, week, month …?
+- [`equals`](../equals/) — are two periods identical, or, with `week(a.start)`, in the same week?
 - [`equals`](../equals/) — are two periods identical?

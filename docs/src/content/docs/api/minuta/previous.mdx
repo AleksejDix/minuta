@@ -4,14 +4,11 @@ description: Get the period right before a period — the day before, the week b
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { divide, period, previous } from "@aleksejdix/minuta";
+import { divide, month, period, previous, week } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-15"), "month");
-export const firstPiece = divide(
-  period(plainDate("2026-03-01"), "month"),
-  "week"
-)[0];
+export const march = month(plainDate("2026-03-15"));
+export const firstPiece = divide(month(plainDate("2026-03-01")), "week")[0];
 
 Get the period right before a period: the day before a day, the week before
 a week, the month before a month.
@@ -27,9 +24,9 @@ previous(period);
 ## Example
 
 ```ts
-import { period, previous } from "@aleksejdix/minuta";
+import { month, previous } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-15"));
 
 previous(march);
 // → { start: 2026-02-01, end: 2026-03-01, unit: "month" }
@@ -45,9 +42,9 @@ previous(march);
 
 ## Parameters
 
-| Name     | What it is                                        |
-| -------- | ------------------------------------------------- |
-| `period` | The current period, e.g. a month from `period()`. |
+| Name     | What it is                                       |
+| -------- | ------------------------------------------------ |
+| `period` | The current period, e.g. a month from `month()`. |
 
 ## Returns
 
@@ -63,24 +60,24 @@ The previous period is found on the calendar, so it crosses year ends and
 daylight-saving changes without surprises:
 
 ```ts
-previous(period(Temporal.PlainDate.from("2026-03-18"), "year"));
+previous(year(Temporal.PlainDate.from("2026-03-18")));
 // → { start: 2025-01-01, end: 2026-01-01, unit: "year" }
 
-previous(period(Temporal.PlainDate.from("2026-03-30"), "day"));
+previous(day(Temporal.PlainDate.from("2026-03-30")));
 // → { start: 2026-03-29, end: 2026-03-30, unit: "day" } (23 hours in Europe/Zurich)
 ```
 
 ## Custom periods move by their own length
 
-A period with the unit `"custom"` (from [`range`](../range/), or a piece cut
+A period with the unit `"custom"` (from [`period`](../period/), or a piece cut
 by [`divide`](../divide/)) moves back by exactly its own length. The clipped
 one-day week at the start of March 2026 moves back one day, not one week:
 
 ```ts
-import { divide, period, previous } from "@aleksejdix/minuta";
+import { divide, month, previous } from "@aleksejdix/minuta";
 
 const [firstPiece] = divide(
-  period(Temporal.PlainDate.from("2026-03-01"), "month"),
+  month(Temporal.PlainDate.from("2026-03-01")),
   "week"
 );
 // → { start: 2026-03-01, end: 2026-03-02, unit: "custom" }
@@ -93,8 +90,8 @@ previous(firstPiece);
   caption="The first piece of March split into weeks is one day long, so previous moves it back one day. The whole week it was cut from is shown for comparison."
   tracks={[
     {
-      label: 'period(firstPiece.start, "week")',
-      periods: [period(firstPiece.start, "week")],
+      label: "week(firstPiece.start)",
+      periods: [week(firstPiece.start)],
       tone: "muted",
     },
     { label: "firstPiece", periods: [firstPiece], tone: "ink" },

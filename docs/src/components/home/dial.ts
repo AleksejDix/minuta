@@ -4,7 +4,14 @@
  * with a second hand sweeping over them.
  */
 import type { Period, ZonedDateTime } from "@aleksejdix/minuta";
-import { contains, divide, period, toLocaleString } from "@aleksejdix/minuta";
+import {
+  contains,
+  day,
+  divide,
+  month,
+  toLocaleString,
+  year,
+} from "@aleksejdix/minuta";
 import type { Temporal } from "temporal-polyfill";
 
 type TemporalApi = typeof Temporal;
@@ -112,42 +119,42 @@ function ringMarkup(ring: Ring, now: ZonedDateTime): string {
 function labelsMarkup(months: readonly Period[]): string {
   const step = FULL_TURN / months.length;
   return months
-    .map((month, index) => {
+    .map((piece, index) => {
       const { across, down } = coordinates(
         LABEL_RADIUS,
         index * step + step / HALF
       );
-      return `<text class="dial-label" x="${across}" y="${down}">${toLocaleString(month, "en-US", { month: "narrow" })}</text>`;
+      return `<text class="dial-label" x="${across}" y="${down}">${toLocaleString(piece, "en-US", { month: "narrow" })}</text>`;
     })
     .join("");
 }
 
 function centerMarkup(now: ZonedDateTime): string {
-  const month = toLocaleString(period(now, "month"), "en-US");
+  const monthName = toLocaleString(month(now), "en-US");
   return `<text class="dial-date" x="${String(CENTER)}" y="${String(CENTER)}">${String(now.day)}</text>
-<text class="dial-caption" x="${String(CENTER)}" y="${String(CENTER + TEXT_LINE)}">${month}</text>
+<text class="dial-caption" x="${String(CENTER)}" y="${String(CENTER + TEXT_LINE)}">${monthName}</text>
 <text class="dial-time" x="${String(CENTER)}" y="${String(CENTER + TEXT_LINE * HALF)}"></text>`;
 }
 
 function rings(now: ZonedDateTime): Ring[] {
-  const year = period(now, "year");
+  const thisYear = year(now);
   return [
     {
       gap: MONTH_GAP,
       name: "month",
-      pieces: divide(year, "month"),
+      pieces: divide(thisYear, "month"),
       radius: MONTH_RADIUS,
     },
     {
       gap: DAY_GAP,
       name: "day",
-      pieces: divide(period(now, "month"), "day"),
+      pieces: divide(month(now), "day"),
       radius: DAY_RADIUS,
     },
     {
       gap: HOUR_GAP,
       name: "hour",
-      pieces: divide(period(now, "day"), "hour"),
+      pieces: divide(day(now), "hour"),
       radius: HOUR_RADIUS,
     },
   ];
@@ -155,12 +162,12 @@ function rings(now: ZonedDateTime): Ring[] {
 
 function dialMarkup(now: ZonedDateTime): string {
   const all = rings(now);
-  const label = toLocaleString(period(now, "day"), "en-US", {
+  const label = toLocaleString(day(now), "en-US", {
     dateStyle: "full",
   });
   return `<svg viewBox="0 0 ${String(CENTER * HALF)} ${String(CENTER * HALF)}" role="img" aria-label="A dial of ${label}: the year's months, this month's days and today's hours">
 ${all.map((ring) => ringMarkup(ring, now)).join("")}
-${labelsMarkup(divide(period(now, "year"), "month"))}
+${labelsMarkup(divide(year(now), "month"))}
 <circle class="dial-track" cx="${String(CENTER)}" cy="${String(CENTER)}" r="${String(SECOND_RADIUS)}"/>
 <circle class="dial-hand" cx="${String(CENTER)}" cy="${String(CENTER - SECOND_RADIUS)}" r="${String(SECOND_SIZE)}"/>
 ${centerMarkup(now)}

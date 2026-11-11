@@ -1,0 +1,85 @@
+---
+title: year
+description: Get the whole year that a date or a moment falls in, from its first day up to the first day of the next year.
+---
+
+import { plainDate } from "../../../../components/temporal";
+import { divide, year } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const date = plainDate("2026-03-15");
+export const thisYear = year(date);
+
+Get the whole year that a date or a moment falls in.
+
+```ts
+import { year } from "@aleksejdix/minuta";
+```
+
+```ts
+year(value);
+```
+
+## Example
+
+```ts
+import { year } from "@aleksejdix/minuta";
+
+year(Temporal.PlainDate.from("2026-03-15"));
+// → { start: 2026-01-01, end: 2027-01-01, unit: "year" }
+```
+
+<Timeline
+  caption="The pin is the date you pass; the bar is the year around it, cut into its months below."
+  marks={[{ date, label: "Mar 15" }]}
+  tracks={[
+    { label: "year(date)", periods: [thisYear], tone: "accent" },
+    {
+      label: 'divide(…, "month")',
+      periods: divide(thisYear, "month"),
+      tone: "muted",
+    },
+  ]}
+/>
+
+## Parameters
+
+| Name    | What it is                                                   |
+| ------- | ------------------------------------------------------------ |
+| `value` | A `PlainDate` or a `ZonedDateTime` anywhere inside the year. |
+
+## Returns
+
+A `DatePeriod` with the unit `"year"`: `start` is the year's first day,
+`end` the first day of the next year. The end is excluded. A moment's year
+is the year of its date in its own zone.
+
+## Other calendars
+
+A year follows the calendar of the date, or the `calendar` of the units.
+A Hebrew leap year has 13 months:
+
+```ts
+import { createUnits, withUnits } from "@aleksejdix/minuta";
+
+const hebrew = withUnits(createUnits({ calendar: "hebrew" }));
+const leapYear = hebrew.year(Temporal.PlainDate.from("2027-03-01"));
+// → { start: 2026-09-12[u-ca=hebrew], end: 2027-10-02[u-ca=hebrew], unit: "year" }, 5787
+
+hebrew.count(leapYear, "month"); // → 13
+```
+
+See [Calendar systems](../../../concepts/calendar-systems/).
+
+## Errors
+
+The main entry's `year` does not throw for a date or a moment. From
+[`withUnits`](../with-units/), units without a `year` spec give
+`UNIT_NOT_SUPPORTED`.
+
+## Related
+
+- [`quarter`](../quarter/) and [`month`](../month/) — the smaller units.
+- [`yearGrid`](../year-grid/) — the whole weeks that cover a year.
+- [`next`](../next/) and [`previous`](../previous/) — the year after or before.
+- [`period`](../period/) — a period between any two dates or moments.

@@ -4,11 +4,11 @@ description: Check whether two periods are identical — the same unit, start an
 ---
 
 import { plainDate, zonedDateTime } from "../../../../components/temporal";
-import { period, range } from "@aleksejdix/minuta";
+import { month, period } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-15"), "month");
-export const marchRange = range(march.start, march.end);
+export const march = month(plainDate("2026-03-15"));
+export const marchRange = period(march.start, march.end);
 
 Check whether two periods are identical: the same unit, the same start and
 the same end. Like Temporal's `equals()`, the calendar and the time zone
@@ -25,20 +25,20 @@ equals(first, second);
 ## Example
 
 ```ts
-import { equals, period, range } from "@aleksejdix/minuta";
+import { equals, month, period } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-15"));
 
-equals(march, period(Temporal.PlainDate.from("2026-03-31"), "month")); // → true
-equals(march, range(march.start, march.end)); // → false: a month and a custom period
+equals(march, month(Temporal.PlainDate.from("2026-03-31"))); // → true
+equals(march, period(march.start, march.end)); // → false: a month and a custom period
 ```
 
 <Timeline
   caption="The month of March and a range over the same days cover the same time, but one has the unit month and the other custom (hatched): they are not equal."
   tracks={[
-    { label: 'period(date, "month")', periods: [march], tone: "accent" },
+    { label: "month(date)", periods: [march], tone: "accent" },
     {
-      label: "range(march.start, march.end)",
+      label: "period(march.start, march.end)",
       periods: [marchRange],
       tone: "accent",
     },
@@ -65,14 +65,10 @@ calendar, as `Temporal.ZonedDateTime#equals` checks. So two hours that start
 at the same instant in different zones are not equal:
 
 ```ts
-const zurich = period(
-  Temporal.ZonedDateTime.from("2026-03-16T10:00[Europe/Zurich]"),
-  "hour"
+const zurich = hour(
+  Temporal.ZonedDateTime.from("2026-03-16T10:00[Europe/Zurich]")
 );
-const utc = period(
-  Temporal.ZonedDateTime.from("2026-03-16T09:00[UTC]"),
-  "hour"
-);
+const utc = hour(Temporal.ZonedDateTime.from("2026-03-16T09:00[UTC]"));
 
 equals(zurich, utc); // → false, different zones
 compare(zurich, utc); // → 0, the same time
@@ -87,15 +83,21 @@ it returns `0`.
 ## Identical, or in the same week
 
 `equals` checks the whole period. To check whether two periods fall in the
-same day, week or month, use [`same`](../same/):
+same day, week or month, compare the units around their starts:
 
 ```ts
-const monday = period(Temporal.PlainDate.from("2026-03-16"), "day");
-const friday = period(Temporal.PlainDate.from("2026-03-20"), "day");
+const monday = day(Temporal.PlainDate.from("2026-03-16"));
+const friday = day(Temporal.PlainDate.from("2026-03-20"));
 
-same(monday, friday, "week"); // → true
+equals(week(monday.start), week(friday.start)); // → true
 equals(monday, friday); // → false
 ```
+
+This looks at the starts only: a week that starts in March is in March by
+`equals(month(w.start), month(date))`, even when it ends in April. For a
+unit held in a variable, use a bound object:
+`equals(time[unit](a.start), time[unit](b.start))`, with
+`time = withUnits(createUnits())`.
 
 ## Errors
 
@@ -104,5 +106,5 @@ equals(monday, friday); // → false
 ## Related
 
 - [`compare`](../compare/) — order two periods, `0` for the same time.
-- [`same`](../same/) — do two periods fall in the same unit?
+- [`week`](../week/), [`month`](../month/) … — the units around two starts, to compare with `equals`.
 - [`contains`](../contains/) — is a period inside another?

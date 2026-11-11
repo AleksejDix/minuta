@@ -8,8 +8,7 @@ import type { DatePeriod, Weekday } from "@aleksejdix/minuta";
 import {
   contains,
   createUnits,
-  period,
-  same,
+  equals,
   toLocaleString,
   withUnits,
 } from "@aleksejdix/minuta";
@@ -46,6 +45,8 @@ const {
   weekStartsOn = "monday",
 } = Astro.props;
 
+const time = withUnits(createUnits({ weekStartsOn }));
+
 /**
  * The day a `YYYY-MM-DD` string names.
  *
@@ -53,7 +54,7 @@ const {
  * @returns Its day period
  */
 function dayOf(iso: string): DatePeriod {
-  return period(plainDate(iso), "day");
+  return time.day(plainDate(iso));
 }
 
 /**
@@ -78,13 +79,12 @@ function inRange(day: DatePeriod): boolean {
  * @returns True for a day in `marks`
  */
 function isMarked(day: DatePeriod): boolean {
-  return marks.some((iso) => same(day, dayOf(iso), "day"));
+  return marks.some((iso) => equals(day, dayOf(iso)));
 }
 
-const time = withUnits(createUnits({ weekStartsOn }));
 const monthStart = plainDate(`${month}-01`);
 const grid = time.monthGrid(monthStart);
-const thisMonth = period(monthStart, "month");
+const thisMonth = time.month(monthStart);
 
 
 /**
@@ -97,7 +97,7 @@ function isSelected(day: DatePeriod): boolean {
   if (selected === undefined) {
     return false;
   }
-  return same(day, dayOf(selected), "day");
+  return equals(day, dayOf(selected));
 }
 
 const headers = grid.periods

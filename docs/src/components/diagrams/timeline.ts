@@ -8,7 +8,7 @@ import type {
   Unit,
   ZonedDateTime,
 } from "@aleksejdix/minuta";
-import { divide, range } from "@aleksejdix/minuta";
+import { divide, period } from "@aleksejdix/minuta";
 
 type Bar = Readonly<{
   custom: boolean;
@@ -161,7 +161,7 @@ function tickUnit(span: Span): Unit {
 function ticksOf(span: Span): Tick[] {
   const unit = tickUnit(span);
   const label = new Intl.DateTimeFormat("en-US", LABELS.get(unit));
-  const axis = range(span.first, span.last);
+  const axis = period(span.first, span.last);
   const ticks = divide(axis, unit).map((piece) => ({
     label: label.format(new Date(epochOf(piece.start))),
     left: position(span, epochOf(piece.start)),

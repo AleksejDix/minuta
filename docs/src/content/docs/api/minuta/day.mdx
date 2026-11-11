@@ -1,0 +1,91 @@
+---
+title: day
+description: Get the whole day that a date or a moment falls in — a calendar date, a moment's in its own time zone.
+---
+
+import { plainDate, zonedDateTime } from "../../../../components/temporal";
+import { day } from "@aleksejdix/minuta";
+import Timeline from "../../../../components/diagrams/Timeline.astro";
+
+export const moment = zonedDateTime("2026-03-18T14:35[Europe/Zurich]");
+
+Get the whole day that a date or a moment falls in.
+
+```ts
+import { day } from "@aleksejdix/minuta";
+```
+
+```ts
+day(value);
+```
+
+## Example
+
+```ts
+import { day } from "@aleksejdix/minuta";
+
+day(Temporal.PlainDate.from("2026-03-18"));
+// → { start: 2026-03-18, end: 2026-03-19, unit: "day" }
+```
+
+<Timeline
+  caption="Any moment of Mar 18 gives the same day: from Mar 18 up to Mar 19, where the next day starts."
+  marks={[{ date: moment, label: "Mar 18, 14:35" }]}
+  tracks={[
+    { label: "day(moment)", periods: [day(moment)], tone: "accent" },
+    {
+      label: "day(Mar 19)",
+      periods: [day(plainDate("2026-03-19"))],
+      tone: "muted",
+    },
+  ]}
+/>
+
+## Parameters
+
+| Name    | What it is                                                  |
+| ------- | ----------------------------------------------------------- |
+| `value` | A `PlainDate` or a `ZonedDateTime` anywhere inside the day. |
+
+## Returns
+
+A `DatePeriod` with the unit `"day"`: `start` is the date, `end` the next
+date. The end is excluded. A day holds dates with no time of day, so a clock
+change cannot move it: Mar 29 2026, when the clocks jump from 2:00 to 3:00
+in Europe/Zurich, is still one date.
+
+## A moment's day is its date, in its own zone
+
+A `ZonedDateTime` keeps its zone, and its day is the date it shows there:
+
+```ts
+day(Temporal.ZonedDateTime.from("2026-03-18T23:30[Asia/Tokyo]"));
+// → { start: 2026-03-18, end: 2026-03-19, unit: "day" }
+```
+
+`day` takes no `Instant`, so it never guesses a zone. Give the instant one
+first. The zone decides the day:
+
+```ts
+const instant = Temporal.Instant.from("2026-03-18T23:35:00Z");
+
+day(instant.toZonedDateTimeISO("Europe/Zurich"));
+// → { start: 2026-03-19, end: 2026-03-20, unit: "day" }
+day(instant.toZonedDateTimeISO("America/New_York"));
+// → { start: 2026-03-18, end: 2026-03-19, unit: "day" }
+```
+
+See [Time zones](../../../concepts/time-zones/).
+
+## Errors
+
+The main entry's `day` does not throw for a date or a moment. From
+[`withUnits`](../with-units/), units without a `day` spec give
+`UNIT_NOT_SUPPORTED`.
+
+## Related
+
+- [`hour`](../hour/) — the hours of a day, 23 or 25 when the clocks change.
+- [`isWeekday`](../is-weekday/) and [`isWeekend`](../is-weekend/) — what kind of day it is.
+- [`next`](../next/) and [`previous`](../previous/) — the day after or before.
+- [`period`](../period/) — a period between any two dates or moments.

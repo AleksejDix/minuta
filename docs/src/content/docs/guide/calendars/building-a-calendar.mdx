@@ -7,17 +7,17 @@ sidebar:
 
 import { plainDate } from "../../../../components/temporal";
 import { Tabs, TabItem } from "@astrojs/starlight/components";
-import { createUnits, period, shift, withUnits } from "@aleksejdix/minuta";
+import { createUnits, day, shift, withUnits } from "@aleksejdix/minuta";
 import Anatomy from "../../../../components/diagrams/Anatomy.astro";
 import MonthGrid from "../../../../components/diagrams/MonthGrid.astro";
 
-export const iso = (day) => day.start.toString();
+export const iso = (piece) => piece.start.toString();
 export const fridaySaturday = withUnits(
   createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] })
 );
 export const sundayFirst = withUnits(createUnits({ weekStartsOn: "sunday" }));
-export const focused = period(plainDate("2026-03-18"), "day");
-export const focusedWeek = sundayFirst.period(focused.start, "week");
+export const focused = day(plainDate("2026-03-18"));
+export const focusedWeek = sundayFirst.week(focused.start);
 
 This page builds a month calendar in six steps. The first three use plain
 JavaScript and a few lines of HTML, so you see where every day comes from.
@@ -105,15 +105,10 @@ days of March from the grey days around it.
   [`contain`](../../../api/minuta/contains/) it.
 
 ```ts
-import {
-  contains,
-  monthGrid,
-  period,
-  toLocaleString,
-} from "@aleksejdix/minuta";
+import { contains, month, monthGrid, toLocaleString } from "@aleksejdix/minuta";
 
 const grid = monthGrid(Temporal.PlainDate.from("2026-03-15"));
-const month = period(grid.monthStart, "month");
+const shown = month(grid.monthStart);
 const weekday = { weekday: "short" };
 
 const weeks = [];
@@ -128,7 +123,7 @@ const names = weeks[0].map(
 
 const rows = weeks.map((week) => {
   const cells = week.map((day) => {
-    const outside = contains(month, day) ? "" : ` class="outside"`;
+    const outside = contains(shown, day) ? "" : ` class="outside"`;
     return `<td${outside}>${day.start.day}</td>`;
   });
   return `<tr>${cells.join("")}</tr>`;
@@ -179,7 +174,6 @@ with the bound functions and a `weekend` class:
 import {
   contains,
   createUnits,
-  period,
   toLocaleString,
   withUnits,
 } from "@aleksejdix/minuta";
@@ -188,7 +182,7 @@ const time = withUnits(
   createUnits({ weekStartsOn: "sunday", weekend: ["friday", "saturday"] })
 );
 const grid = time.monthGrid(Temporal.PlainDate.from("2026-03-15"));
-const month = period(grid.monthStart, "month");
+const shown = time.month(grid.monthStart);
 const weekday = { weekday: "short" };
 
 const weeks = [];
@@ -203,7 +197,7 @@ const names = weeks[0].map(
 const rows = weeks.map((week) => {
   const cells = week.map((day) => {
     const classes = [];
-    if (!contains(month, day)) classes.push("outside");
+    if (!contains(shown, day)) classes.push("outside");
     if (time.isWeekend(day)) classes.push("weekend");
     return `<td class="${classes.join(" ")}">${day.start.day}</td>`;
   });
@@ -246,13 +240,13 @@ a period, and step it with [`next`](../../../api/minuta/next/) and
 28, 30 or 31 days and the step from December to January are handled for you.
 
 ```ts
-import { next, period, previous } from "@aleksejdix/minuta";
+import { month, next, previous } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-15"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-15"));
 
 next(march); //     → April 2026
 previous(march); // → February 2026
-next(period(Temporal.PlainDate.from("2026-12-01"), "month")); // → January 2027
+next(month(Temporal.PlainDate.from("2026-12-01"))); // → January 2027
 ```
 
 Now put it together. The month is the only state; `render` draws the label
@@ -272,7 +266,6 @@ import {
   contains,
   createUnits,
   next,
-  period,
   previous,
   toLocaleString,
   withUnits,
@@ -283,10 +276,10 @@ const time = withUnits(createUnits({ weekStartsOn: "sunday" }));
 const weekday = { weekday: "short" };
 
 // The month on screen: the only state of the calendar
-let month = period(Temporal.PlainDate.from("2026-03-15"), "month");
+let shown = time.month(Temporal.PlainDate.from("2026-03-15"));
 
 function render() {
-  const grid = time.monthGrid(month.start);
+  const grid = time.monthGrid(shown.start);
 
   const weeks = [];
   for (let i = 0; i < grid.periods.length; i += 7) {
@@ -299,14 +292,14 @@ function render() {
   const rows = weeks.map((week) => {
     const cells = week.map((day) => {
       const classes = [];
-      if (!contains(month, day)) classes.push("outside");
+      if (!contains(shown, day)) classes.push("outside");
       if (time.isWeekend(day)) classes.push("weekend");
       return `<td class="${classes.join(" ")}">${day.start.day}</td>`;
     });
     return `<tr>${cells.join("")}</tr>`;
   });
 
-  document.querySelector("#label").textContent = toLocaleString(month, locale);
+  document.querySelector("#label").textContent = toLocaleString(shown, locale);
   document.querySelector("#grid").innerHTML = `
     <thead><tr>${names.join("")}</tr></thead>
     <tbody>${rows.join("")}</tbody>
@@ -314,11 +307,11 @@ function render() {
 }
 
 document.querySelector("#previous").addEventListener("click", () => {
-  month = previous(month);
+  shown = previous(shown);
   render();
 });
 document.querySelector("#next").addEventListener("click", () => {
-  month = next(month);
+  shown = next(shown);
   render();
 });
 
@@ -690,8 +683,8 @@ Sat Mar 21 with End.
     shift(focused, 1),
     shift(focused, -7),
     shift(focused, 7),
-    period(focusedWeek.start, "day"),
-    period(focusedWeek.end.subtract({ days: 1 }), "day"),
+    day(focusedWeek.start),
+    day(focusedWeek.end.subtract({ days: 1 })),
   ].map(iso)}
 />
 

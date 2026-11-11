@@ -58,9 +58,9 @@ import SiteLink from "../../components/SiteLink.astro";
   <div class="almanac-code">
 
 ```ts
-import { divide, period } from "@aleksejdix/minuta";
+import { divide, month } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-01"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-01"));
 divide(march, "week");
 
 // → Mar 1          custom

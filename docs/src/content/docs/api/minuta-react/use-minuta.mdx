@@ -4,12 +4,12 @@ description: A React hook that binds every minuta function to your units and kee
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { period } from "@aleksejdix/minuta";
+import { day, month, week } from "@aleksejdix/minuta";
 import Flow from "../../../../components/diagrams/Flow.astro";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-01"), "month");
-export const someDay = period(plainDate("2026-03-18"), "day");
+export const march = month(plainDate("2026-03-01"));
+export const someDay = day(plainDate("2026-03-18"));
 
 A hook that gives you every minuta function bound to your units, plus a
 _browsed period_ — the month (or week, day, …) the user is looking at — kept
@@ -94,26 +94,26 @@ useMinuta({ units: sundayFirst, unit: "week" });
 
 An object with the state and every bound function.
 
-| Name       | What it is                                                                                     |
-| ---------- | ---------------------------------------------------------------------------------------------- |
-| `browsing` | The browsed period, in `unit`. Starts as the period that contains `date`.                      |
-| `browse`   | `browse(period)` moves to the period of `unit` that contains `period.start`.                   |
-| `now`      | "Now" as a one-second period. `now.start` is the current moment, a `ZonedDateTime`.            |
-| `units`    | The units the functions are bound to.                                                          |
-| `period`   | `period(value, unit)` — the period of `unit` that contains `value`.                            |
-| `next`     | `next(period)` — the period right after it, same unit.                                         |
-| `previous` | `previous(period)` — the period right before it, same unit.                                    |
-| `shift`    | `shift(period, steps)` — move a period by whole units, back with a negative number.            |
-| `divide`   | `divide(period, unit)` — split a period into smaller ones. See [divide](../../minuta/divide/). |
-| `count`    | `count(period, unit)` — how many whole units fit into a period.                                |
-| `contains` | `contains(period, target)` — whether a date, moment or period lies fully inside the period.    |
-| `same`     | `same(a, b, unit)` — whether two periods fall into the same `unit`.                            |
-| `overlaps` | `overlaps(a, b)` — whether two periods share any time.                                         |
-| `range`    | `range(start, end)` — a custom period between two dates or two moments.                        |
+| Name       | What it is                                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `browsing` | The browsed period, in `unit`. Starts as the period that contains `date`.                                                         |
+| `browse`   | `browse(period)` moves to the period of `unit` that contains `period.start`.                                                      |
+| `now`      | "Now" as a one-second period. `now.start` is the current moment, a `ZonedDateTime`.                                               |
+| `units`    | The units the functions are bound to.                                                                                             |
+| `month` …  | `month(value)`, `week(value)`, … — the period of that unit that contains `value`; `minuta[unit](value)` for a unit in a variable. |
+| `next`     | `next(period)` — the period right after it, same unit.                                                                            |
+| `previous` | `previous(period)` — the period right before it, same unit.                                                                       |
+| `shift`    | `shift(period, steps)` — move a period by whole units, back with a negative number.                                               |
+| `divide`   | `divide(period, unit)` — split a period into smaller ones. See [divide](../../minuta/divide/).                                    |
+| `count`    | `count(period, unit)` — how many whole units fit into a period.                                                                   |
+| `contains` | `contains(period, target)` — whether a date, moment or period lies fully inside the period.                                       |
+| `equals`   | `equals(a, b)` — whether two periods are identical; `equals(minuta.week(a.start), minuta.week(b.start))` for the same week.       |
+| `overlaps` | `overlaps(a, b)` — whether two periods share any time.                                                                            |
+| `period`   | `period(start, end)` — a custom period between two dates or two moments.                                                          |
 
 These are the functions of [`withUnits(units)`](../../minuta/with-units/), with the
 same names as the main entry. The table lists the common ones; `round`,
-`merge`, `equals`, `compare`, `monthGrid`, `isWeekend`, `toLocaleString` and
+`merge`, `compare`, `monthGrid`, `isWeekend`, `toLocaleString` and
 the rest are there too.
 
 `browse` takes any period, not only one of `unit`. With `unit: "month"`,
@@ -125,7 +125,7 @@ the rest are there too.
     { label: "someDay", periods: [someDay], tone: "ink" },
     {
       label: "browsing",
-      periods: [period(someDay.start, "month")],
+      periods: [month(someDay.start)],
       tone: "accent",
     },
   ]}
@@ -155,7 +155,7 @@ Switching the unit from `"month"` to `"week"` after `browse(march)`:
     { label: 'browsing, unit "month"', periods: [march], tone: "muted" },
     {
       label: 'browsing, unit "week"',
-      periods: [period(march.start, "week")],
+      periods: [week(march.start)],
       tone: "accent",
     },
   ]}

@@ -6,12 +6,12 @@ sidebar:
 ---
 
 import { plainDate } from "../../../../components/temporal";
-import { next, period, previous, range, shift } from "@aleksejdix/minuta";
+import { month, next, period, previous, shift } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
-export const march = period(plainDate("2026-03-18"), "month");
-export const january = period(plainDate("2026-01-31"), "month");
-export const trip = range(plainDate("2026-03-13"), plainDate("2026-03-16"));
+export const march = month(plainDate("2026-03-18"));
+export const january = month(plainDate("2026-01-31"));
+export const trip = period(plainDate("2026-03-13"), plainDate("2026-03-16"));
 
 A calendar has two buttons: ‹ and ›. A week planner has them too, and so has
 a report that shows "this quarter". All of them ask the same question: _what
@@ -30,9 +30,9 @@ the month after it, [`previous`](../../../api/minuta/previous/) the month
 before:
 
 ```ts
-import { next, period, previous } from "@aleksejdix/minuta";
+import { month, next, previous } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-18"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-18"));
 // → { start: 2026-03-01, end: 2026-04-01, unit: "month" }
 
 next(march);
@@ -65,19 +65,19 @@ has: a day moves by a day, a week by a week, a year by a year.
 ```ts
 const date = Temporal.PlainDate.from("2026-03-18");
 
-const day = period(date, "day");
-next(day); //     → { start: 2026-03-19, end: 2026-03-20, unit: "day" }
-previous(day); // → { start: 2026-03-17, end: 2026-03-18, unit: "day" }
+const wednesday = day(date);
+next(wednesday); //     → { start: 2026-03-19, end: 2026-03-20, unit: "day" }
+previous(wednesday); // → { start: 2026-03-17, end: 2026-03-18, unit: "day" }
 
-const week = period(date, "week");
+const thisWeek = week(date);
 // → { start: 2026-03-16, end: 2026-03-23, unit: "week" }, Mon Mar 16 – Sun Mar 22
-next(week);
+next(thisWeek);
 // → { start: 2026-03-23, end: 2026-03-30, unit: "week" }
 
-next(period(date, "quarter"));
+next(quarter(date));
 // → { start: 2026-04-01, end: 2026-07-01, unit: "quarter" }
 
-previous(period(date, "year"));
+previous(year(date));
 // → { start: 2025-01-01, end: 2026-01-01, unit: "year" }
 ```
 
@@ -90,9 +90,9 @@ A calendar keeps the period it shows in its state. The buttons replace it with
 its neighbour:
 
 ```ts
-import { next, period, previous } from "@aleksejdix/minuta";
+import { month, next, previous } from "@aleksejdix/minuta";
 
-let shown = period(Temporal.PlainDate.from("2026-03-18"), "month"); // → March 2026
+let shown = month(Temporal.PlainDate.from("2026-03-18")); // → March 2026
 
 shown = next(shown); //     → April 2026
 shown = next(shown); //     → May 2026
@@ -102,7 +102,7 @@ shown = previous(shown); // → April 2026
 A "Today" button just asks for the period around the current date again:
 
 ```ts
-shown = period(Temporal.Now.plainDateISO(), "month");
+shown = month(Temporal.Now.plainDateISO());
 ```
 
 In React or Vue, `shown` is a piece of state, and each button calls a setter
@@ -120,9 +120,9 @@ To move more than one step, use [`shift`](../../../api/minuta/shift/). A
 positive number moves forward, a negative number moves back:
 
 ```ts
-import { period, shift } from "@aleksejdix/minuta";
+import { month, shift, week } from "@aleksejdix/minuta";
 
-const march = period(Temporal.PlainDate.from("2026-03-18"), "month");
+const march = month(Temporal.PlainDate.from("2026-03-18"));
 
 shift(march, 3);
 // → { start: 2026-06-01, end: 2026-07-01, unit: "month" }
@@ -130,7 +130,7 @@ shift(march, 3);
 shift(march, -14);
 // → { start: 2025-01-01, end: 2025-02-01, unit: "month" }
 
-shift(period(Temporal.PlainDate.from("2026-03-18"), "week"), -2);
+shift(week(Temporal.PlainDate.from("2026-03-18")), -2);
 // → { start: 2026-03-02, end: 2026-03-09, unit: "week" }
 ```
 
@@ -172,7 +172,7 @@ date.setMonth(date.getMonth() + 1);
 minuta steps whole periods, so there is no day of the month that can overflow:
 
 ```ts
-next(period(Temporal.PlainDate.from("2026-01-31"), "month"));
+next(month(Temporal.PlainDate.from("2026-01-31")));
 // → { start: 2026-02-01, end: 2026-03-01, unit: "month" }
 ```
 
@@ -180,7 +180,7 @@ next(period(Temporal.PlainDate.from("2026-01-31"), "month"));
   caption="Starting from Jan 31 (the pin), next steps the whole month, so it lands on all of February, not on Mar 3."
   marks={[{ date: plainDate("2026-01-31"), label: "Jan 31" }]}
   tracks={[
-    { label: 'period(Jan 31, "month")', periods: [january], tone: "ink" },
+    { label: "month(Jan 31)", periods: [january], tone: "ink" },
     { label: "next(…)", periods: [next(january)], tone: "accent" },
   ]}
 />
@@ -189,10 +189,10 @@ Leap years work the same way. The day after Feb 28 2028 is Feb 29, and the
 February one year later has 28 days again:
 
 ```ts
-next(period(Temporal.PlainDate.from("2028-02-28"), "day"));
+next(day(Temporal.PlainDate.from("2028-02-28")));
 // → { start: 2028-02-29, end: 2028-03-01, unit: "day" }
 
-shift(period(Temporal.PlainDate.from("2028-02-10"), "month"), 12);
+shift(month(Temporal.PlainDate.from("2028-02-10")), 12);
 // → { start: 2029-02-01, end: 2029-03-01, unit: "month" }
 ```
 
@@ -204,12 +204,10 @@ only 23 hours. The next day is still one date, and the hour after 1:00 is
 3:00:
 
 ```ts
-next(period(Temporal.PlainDate.from("2026-03-28"), "day"));
+next(day(Temporal.PlainDate.from("2026-03-28")));
 // → { start: 2026-03-29, end: 2026-03-30, unit: "day" } (23 hours long)
 
-next(
-  period(Temporal.ZonedDateTime.from("2026-03-29T01:00[Europe/Zurich]"), "hour")
-);
+next(hour(Temporal.ZonedDateTime.from("2026-03-29T01:00[Europe/Zurich]")));
 // → { start: 03:00, end: 04:00, unit: "hour" } (2:00 does not exist that night)
 ```
 
@@ -219,25 +217,25 @@ next(
 first get the month it falls in, then step:
 
 ```ts
-const day = period(Temporal.PlainDate.from("2026-03-18"), "day");
+const wednesday = day(Temporal.PlainDate.from("2026-03-18"));
 
-shift(period(day.start, "month"), 2);
+shift(month(wednesday.start), 2);
 // → { start: 2026-05-01, end: 2026-06-01, unit: "month" }
 ```
 
-The same trick moves between views: `period(day.start, "week")` is the week
-of that day, `period(week.start, "month")` the month the week starts in.
+The same trick moves between views: `week(wednesday.start)` is the week of
+that day, `month(thisWeek.start)` the month the week starts in.
 
 ## Custom periods move by their length
 
-A period made with [`range`](../../../api/minuta/range/) has the unit
+A period made with [`period`](../../../api/minuta/period/) has the unit
 `"custom"`. It is not one whole unit, so there is no unit to step by.
 Instead it moves by its own length:
 
 ```ts
-import { next, previous, range, shift } from "@aleksejdix/minuta";
+import { next, period, previous, shift } from "@aleksejdix/minuta";
 
-const slot = range(
+const slot = period(
   Temporal.ZonedDateTime.from("2026-03-02T09:00[Europe/Zurich]"),
   Temporal.ZonedDateTime.from("2026-03-02T10:00[Europe/Zurich]")
 );
@@ -253,7 +251,7 @@ two-hour shift, a billing cycle. A trip from Friday to Sunday moves to Monday
 to Wednesday:
 
 ```ts
-const trip = range(
+const trip = period(
   Temporal.PlainDate.from("2026-03-13"),
   Temporal.PlainDate.from("2026-03-16")
 );
@@ -271,13 +269,13 @@ next(trip);
   ]}
 />
 
-A date range moves by days. A range of moments moves by elapsed time, not
+A custom period of dates moves by days. One of moments moves by elapsed time, not
 on the calendar, so a custom week of moments that is moved over a clock
 change ends up an hour off:
 
 ```ts
 next(
-  range(
+  period(
     Temporal.ZonedDateTime.from("2026-03-23T00:00[Europe/Zurich]"),
     Temporal.ZonedDateTime.from("2026-03-30T00:00[Europe/Zurich]")
   )
@@ -287,8 +285,8 @@ next(
 
 The pieces at the edges of a [`divide`](../dividing-time/) are often custom
 too. The first piece of March split into weeks is just Sun Mar 1, so its
-`next` is Mon Mar 2, not the next week. To step by whole weeks, use a period
-from `period`.
+`next` is Mon Mar 2, not the next week. To step by whole weeks, step
+`week(piece.start)` instead.
 
 ## Next
 
@@ -297,5 +295,5 @@ from `period`.
 - Reference: [`next`](../../../api/minuta/next/),
   [`previous`](../../../api/minuta/previous/),
   [`shift`](../../../api/minuta/shift/),
-  [`period`](../../../api/minuta/period/),
-  [`range`](../../../api/minuta/range/).
+  [`month`](../../../api/minuta/month/),
+  [`period`](../../../api/minuta/period/).
