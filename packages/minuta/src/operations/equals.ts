@@ -14,7 +14,7 @@ function sameValue(
 /**
  * Whether two periods are identical, like Temporal's `equals()`: the same
  * unit and the same start and end, calendar and time zone included. For
- * "in the same week", use `same`.
+ * "in the same week", compare the weeks: `equals(week(a.start), week(b.start))`.
  *
  * @example
  * equals(month(today), month(today)); // true
