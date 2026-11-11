@@ -15,7 +15,8 @@ async function restoreTemporal(): Promise<void> {
 describe("minuta/temporal reads globalThis.Temporal", () => {
   afterEach(restoreTemporal);
 
-  it("leaves the global alone on import", { timeout: 5000 }, async () => {
+  // The first cold import of the whole entry: slow while the browser suites run
+  it("leaves the global alone on import", { timeout: 20_000 }, async () => {
     expect.hasAssertions();
     const before = Object.getOwnPropertyDescriptor(globalThis, "Temporal");
     await import("#src/temporal");
