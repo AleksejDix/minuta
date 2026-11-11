@@ -8,6 +8,7 @@ import { createUnits, withUnits } from "@aleksejdix/minuta";
 import Timeline from "../../../../components/diagrams/Timeline.astro";
 
 export const hijri = createUnits({ calendar: "islamic-umalqura" });
+export const isoUnits = createUnits();
 export const earlyMonths = (units) =>
   withUnits(units).divide(
     {
@@ -98,6 +99,57 @@ has to become a moment, as when a day is divided into hours.
 The units: a spec for each unit, plus `timeZone`, `weekStartsOn` (a number,
 0 = Sunday) and `weekend` (numbers). Add your own units by spreading them:
 `{ ...createUnits(), fortnight }`.
+
+## A unit's spec
+
+Each unit is a spec: its `kind` and three functions. Every unit-aware
+function in minuta is built from these three, and a unit of your own is a
+spec of the same shape.
+
+| Member               | What it is                                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `kind`               | `"date"` for `"day"` and larger (works on `PlainDate`), `"time"` for `"hour"` and smaller (`ZonedDateTime`). |
+| `startOf(value)`     | The start of the unit that contains `value`.                                                                 |
+| `add(value, amount)` | `value` moved by `amount` units; negative moves back.                                                        |
+| `diff(from, to)`     | How many whole units fit from `from` to `to`, rounded toward zero.                                           |
+
+There is no `endOf`: a unit ends where the next one starts, at
+`add(startOf(value), 1)`.
+
+```ts
+const { month, week } = createUnits();
+
+week.startOf(Temporal.PlainDate.from("2026-03-18")); // → 2026-03-16, a Monday
+month.add(Temporal.PlainDate.from("2026-01-31"), 1); // → 2026-02-28
+month.diff(
+  Temporal.PlainDate.from("2026-01-31"),
+  Temporal.PlainDate.from("2026-02-28")
+); // → 1
+```
+
+Adding a month to Jan 31 gives Feb 28: the day is cut to fit the shorter
+month.
+
+<Timeline
+  caption="The week spec around Mar 18: from startOf(date) to add(startOf(date), 1), Monday Mar 16 up to Monday Mar 23."
+  marks={[{ date: plainDate("2026-03-18"), label: "Mar 18" }]}
+  tracks={[
+    {
+      label: "startOf(date) – add(startOf(date), 1)",
+      periods: [
+        {
+          end: isoUnits.week.add(
+            isoUnits.week.startOf(plainDate("2026-03-18")),
+            1
+          ),
+          start: isoUnits.week.startOf(plainDate("2026-03-18")),
+          unit: "week",
+        },
+      ],
+      tone: "accent",
+    },
+  ]}
+/>
 
 ## Calendars
 
