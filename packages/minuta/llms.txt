@@ -473,18 +473,6 @@ Options of `createUnits`: the week, the weekend and the time zone.
 
 Codes at the start of the messages of errors minuta throws.
 
-### `specFor`
-
-```ts
-specFor(units: Units, unit: Name): SpecOf<Name>
-```
-
-The spec for `unit`.
-
-```ts
-specFor(createUnits(), "week").startOf(Temporal.PlainDate.from("2026-03-18")); // 2026-03-16, a Monday
-```
-
 ### `MinutaErrorCode`
 
 ```ts

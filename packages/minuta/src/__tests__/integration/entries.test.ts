@@ -36,12 +36,7 @@ const FUNCTIONS: readonly string[] = [
   "yearGrid",
 ];
 
-const SETUP: readonly string[] = [
-  "MinutaError",
-  "createUnits",
-  "specFor",
-  "withUnits",
-];
+const SETUP: readonly string[] = ["MinutaError", "createUnits", "withUnits"];
 
 const REMOVED_ENTRIES: readonly string[] = [
   "calendar",
