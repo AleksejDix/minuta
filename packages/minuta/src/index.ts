@@ -186,7 +186,7 @@ export {
 export { toLocaleString } from "#src/format/format";
 export { createUnits } from "#src/create-units";
 export type { UnitsOptions } from "#src/create-units";
-export { MinutaError, specFor } from "#src/units";
+export { MinutaError } from "#src/units";
 export type { MinutaErrorCode } from "#src/units";
 export { withUnits } from "#src/with-units";
 export type { Minuta, Round } from "#src/with-units";
